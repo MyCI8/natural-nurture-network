@@ -25,17 +25,19 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/");
   };
 
   const menuItems = [
     { name: "Home", path: "/" },
-    { name: "Remedies", path: "/remedies" },
+    { name: "Remedies", path: "/remedies", protected: true },
     { name: "News", path: "/news" },
     { name: "Symptoms", path: "/symptoms" },
     { name: "Experts", path: "/experts" },
-    { name: "Shopping List", path: "/shopping" },
+    { name: "Shopping List", path: "/shopping", protected: true },
   ];
+
+  const filteredMenuItems = menuItems.filter(item => !item.protected || session);
 
   return (
     <nav className="bg-white shadow-sm fixed w-full z-50">
@@ -50,27 +52,25 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
+            {filteredMenuItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="text-text-light hover:text-primary transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
             {session ? (
-              <>
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.path}
-                    className="text-text-light hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </Button>
-              </>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
             ) : (
               <Link to="/auth">
                 <Button variant="default" size="sm">
@@ -95,28 +95,26 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden">
             <div className="pt-2 pb-3 space-y-1">
+              {filteredMenuItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
               {session ? (
-                <>
-                  {menuItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.path}
-                      className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                  <button
-                    onClick={() => {
-                      handleSignOut();
-                      setIsOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
-                  >
-                    Sign Out
-                  </button>
-                </>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                >
+                  Sign Out
+                </button>
               ) : (
                 <Link
                   to="/auth"
