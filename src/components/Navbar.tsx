@@ -1,9 +1,32 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Leaf } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Leaf, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [session, setSession] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(!!session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   const menuItems = [
     { name: "Home", path: "/" },
@@ -12,7 +35,6 @@ const Navbar = () => {
     { name: "Symptoms", path: "/symptoms" },
     { name: "Experts", path: "/experts" },
     { name: "Shopping List", path: "/shopping" },
-    { name: "Login", path: "/login" },
   ];
 
   return (
@@ -28,15 +50,34 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            {menuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="text-text-light hover:text-primary transition-colors"
-              >
-                {item.name}
+            {session ? (
+              <>
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className="text-text-light hover:text-primary transition-colors"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button variant="default" size="sm">
+                  Sign In
+                </Button>
               </Link>
-            ))}
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -54,16 +95,37 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden">
             <div className="pt-2 pb-3 space-y-1">
-              {menuItems.map((item) => (
+              {session ? (
+                <>
+                  {menuItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.path}
+                      className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
                 <Link
-                  key={item.name}
-                  to={item.path}
+                  to="/auth"
                   className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
                   onClick={() => setIsOpen(false)}
                 >
-                  {item.name}
+                  Sign In
                 </Link>
-              ))}
+              )}
             </div>
           </div>
         )}
