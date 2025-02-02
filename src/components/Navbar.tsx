@@ -50,51 +50,22 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            {filteredMenuItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className="text-text-light hover:text-primary transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
-            {session ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Button>
-            ) : (
-              <Link to="/auth">
-                <Button variant="default" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          {/* Hamburger Menu Button */}
+          <div className="flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-text-light hover:text-primary"
+              className="text-text-light hover:text-primary p-2 rounded-md"
+              aria-label="Toggle menu"
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Dropdown Menu */}
         {isOpen && (
-          <div className="md:hidden">
-            <div className="pt-2 pb-3 space-y-1">
+          <div className="absolute top-16 left-0 right-0 bg-white shadow-lg border-t">
+            <div className="px-4 py-2 space-y-1">
               {filteredMenuItems.map((item) => (
                 <Link
                   key={item.name}
