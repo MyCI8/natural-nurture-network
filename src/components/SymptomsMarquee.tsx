@@ -17,35 +17,36 @@ const SymptomsMarquee = () => {
   return (
     <section className="py-8 bg-accent overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-            dragFree: true,
-            containScroll: false,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="animate-marquee">
-            {[...symptoms, ...symptoms].map((symptom, index) => (
-              <CarouselItem
-                key={index}
-                className="basis-auto pl-8 group cursor-pointer"
-              >
-                <a
-                  href={`#${symptom.toLowerCase().replace(/\s+/g, '-')}`}
-                  className={cn(
-                    "text-lg font-medium text-primary hover:text-primary-dark",
-                    "transition-colors duration-200",
-                    "group-hover:pause-animation"
-                  )}
+        <div className="group">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+              dragFree: true,
+              containScroll: false,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="animate-marquee group-hover:[animation-play-state:paused]">
+              {[...symptoms, ...symptoms].map((symptom, index) => (
+                <CarouselItem
+                  key={index}
+                  className="basis-auto pl-8 cursor-pointer"
                 >
-                  {symptom}
-                </a>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
+                  <a
+                    href={`#${symptom.toLowerCase().replace(/\s+/g, '-')}`}
+                    className={cn(
+                      "text-lg font-medium text-primary hover:text-primary-dark",
+                      "transition-colors duration-200"
+                    )}
+                  >
+                    {symptom}
+                  </a>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
       </div>
     </section>
   );
