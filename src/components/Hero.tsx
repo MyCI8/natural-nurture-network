@@ -17,7 +17,7 @@ const Hero = () => {
                 alternative medicine solutions. Join our community of wellness enthusiasts
                 and expert practitioners.
               </p>
-              <div className="mt-10 sm:mt-12 max-w-md mx-auto">
+              <div className="mt-10 sm:mt-12 max-w-md mx-auto lg:mx-0 lg:max-w-md">
                 <div className="relative">
                   <Input 
                     type="text"
