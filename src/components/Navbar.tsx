@@ -64,13 +64,13 @@ const Navbar = () => {
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-16 left-0 right-0 bg-white shadow-lg border-t">
+          <div className="absolute right-0 top-16 bg-white shadow-lg border-t min-w-[200px] max-w-fit">
             <div className="px-4 py-2 space-y-1">
               {filteredMenuItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                  className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md text-right"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
@@ -82,14 +82,14 @@ const Navbar = () => {
                     handleSignOut();
                     setIsOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                  className="w-full text-right px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
                 >
                   Sign Out
                 </button>
               ) : (
                 <Link
                   to="/auth"
-                  className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                  className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md text-right"
                   onClick={() => setIsOpen(false)}
                 >
                   Sign In
