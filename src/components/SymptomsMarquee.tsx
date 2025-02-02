@@ -5,6 +5,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const symptoms = [
   'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
@@ -14,6 +15,8 @@ const symptoms = [
 ];
 
 const SymptomsMarquee = () => {
+  const isMobile = useIsMobile();
+
   return (
     <section className="py-8 bg-accent overflow-hidden">
       <div className="max-w-7xl mx-auto">
@@ -27,7 +30,10 @@ const SymptomsMarquee = () => {
             }}
             className="w-full"
           >
-            <CarouselContent className="animate-marquee group-hover:[animation-play-state:paused]">
+            <CarouselContent className={cn(
+              "group-hover:[animation-play-state:paused]",
+              isMobile ? "animate-marquee-fast" : "animate-marquee"
+            )}>
               {[...symptoms, ...symptoms].map((symptom, index) => (
                 <CarouselItem
                   key={index}
