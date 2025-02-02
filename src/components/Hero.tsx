@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const Hero = () => {
   return (
@@ -17,10 +17,11 @@ const Hero = () => {
                 and expert practitioners.
               </p>
               <div className="mt-10 sm:mt-12">
-                <button className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark transition-colors">
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </button>
+                <Input 
+                  type="text"
+                  placeholder="Ask me anything about natural healing..."
+                  className="w-full max-w-md mx-auto text-center"
+                />
               </div>
             </div>
           </div>
