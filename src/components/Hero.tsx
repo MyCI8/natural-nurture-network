@@ -1,3 +1,4 @@
+import { ArrowUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const Hero = () => {
@@ -16,12 +17,20 @@ const Hero = () => {
                 alternative medicine solutions. Join our community of wellness enthusiasts
                 and expert practitioners.
               </p>
-              <div className="mt-10 sm:mt-12">
-                <Input 
-                  type="text"
-                  placeholder="Ask me anything about natural healing..."
-                  className="w-full max-w-md mx-auto text-center"
-                />
+              <div className="mt-10 sm:mt-12 max-w-md mx-auto">
+                <div className="relative">
+                  <Input 
+                    type="text"
+                    placeholder="Ask me anything about natural healing..."
+                    className="pr-12 text-base"
+                  />
+                  <button 
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="Send message"
+                  >
+                    <ArrowUp className="h-5 w-5 text-primary" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
