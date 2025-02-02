@@ -30,6 +30,54 @@ export type Database = {
         }
         Relationships: []
       }
+      remedies: {
+        Row: {
+          click_count: number | null
+          created_at: string | null
+          id: string
+          image_url: string
+          name: string
+          summary: string
+        }
+        Insert: {
+          click_count?: number | null
+          created_at?: string | null
+          id?: string
+          image_url: string
+          name: string
+          summary: string
+        }
+        Update: {
+          click_count?: number | null
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          name?: string
+          summary?: string
+        }
+        Relationships: []
+      }
+      symptom_clicks: {
+        Row: {
+          clicked_at: string | null
+          id: string
+          symptom: Database["public"]["Enums"]["symptom_type"]
+          user_id: string | null
+        }
+        Insert: {
+          clicked_at?: string | null
+          id?: string
+          symptom: Database["public"]["Enums"]["symptom_type"]
+          user_id?: string | null
+        }
+        Update: {
+          clicked_at?: string | null
+          id?: string
+          symptom?: Database["public"]["Enums"]["symptom_type"]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -56,6 +104,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_top_symptoms: {
+        Args: {
+          limit_count?: number
+        }
+        Returns: {
+          symptom: Database["public"]["Enums"]["symptom_type"]
+          click_count: number
+        }[]
+      }
       has_role: {
         Args: {
           role: Database["public"]["Enums"]["user_role"]
@@ -64,6 +121,27 @@ export type Database = {
       }
     }
     Enums: {
+      symptom_type:
+        | "Cough"
+        | "Cold"
+        | "Sore Throat"
+        | "Cancer"
+        | "Stress"
+        | "Anxiety"
+        | "Depression"
+        | "Insomnia"
+        | "Headache"
+        | "Joint Pain"
+        | "Digestive Issues"
+        | "Fatigue"
+        | "Skin Irritation"
+        | "High Blood Pressure"
+        | "Allergies"
+        | "Weak Immunity"
+        | "Back Pain"
+        | "Poor Circulation"
+        | "Hair Loss"
+        | "Eye Strain"
       user_role: "user" | "admin"
     }
     CompositeTypes: {

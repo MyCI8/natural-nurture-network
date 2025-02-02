@@ -1,83 +1,55 @@
 import { Card, CardContent } from "@/components/ui/card";
-
-const remedies = [
-  {
-    image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
-    name: "Chamomile",
-    summary: "A gentle herb known for its calming properties, helping with sleep and digestion."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    name: "Lavender",
-    summary: "Natural stress reliever that promotes relaxation and better sleep quality."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9",
-    name: "Ginger Root",
-    summary: "Powerful anti-inflammatory properties, aids digestion and boosts immunity."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901",
-    name: "Peppermint",
-    summary: "Refreshing herb that helps with digestive issues and headache relief."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1",
-    name: "Echinacea",
-    summary: "Boosts immune system and helps fight off colds and infections."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
-    name: "Turmeric",
-    summary: "Natural anti-inflammatory that supports joint health and immunity."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07",
-    name: "Green Tea",
-    summary: "Rich in antioxidants, promotes heart health and mental clarity."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    name: "Aloe Vera",
-    summary: "Soothes skin conditions and supports digestive health."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9",
-    name: "Garlic",
-    summary: "Natural antibiotic that supports heart health and immune system."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901",
-    name: "Rosemary",
-    summary: "Improves memory and concentration while supporting digestion."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1",
-    name: "Sage",
-    summary: "Traditional herb for cognitive health and memory enhancement."
-  },
-  {
-    image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
-    name: "Thyme",
-    summary: "Natural antimicrobial that supports respiratory health."
-  }
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const RemediesSection = () => {
+  const { data: remedies = [] } = useQuery({
+    queryKey: ['remedies'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('remedies')
+        .select('*')
+        .order('click_count', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching remedies:', error);
+        throw error;
+      }
+      
+      return data;
+    }
+  });
+
+  const handleRemedyClick = async (remedyId: string) => {
+    try {
+      const { error } = await supabase
+        .from('remedies')
+        .update({ click_count: remedies.find(r => r.id === remedyId)?.click_count + 1 || 1 })
+        .eq('id', remedyId);
+
+      if (error) {
+        console.error('Error updating remedy click count:', error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {remedies.map((remedy, index) => (
+          {remedies.map((remedy) => (
             <Card 
-              key={index} 
-              className="overflow-hidden hover:shadow-lg transition-shadow duration-300 animate-fadeIn"
+              key={remedy.id} 
+              className="overflow-hidden hover:shadow-lg transition-shadow duration-300 animate-fadeIn cursor-pointer"
+              onClick={() => handleRemedyClick(remedy.id)}
             >
               <CardContent className="p-0">
                 <div className="h-48">
                   <img
-                    src={remedy.image}
+                    src={remedy.image_url}
                     alt={remedy.name}
                     className="w-full h-full object-cover"
                   />

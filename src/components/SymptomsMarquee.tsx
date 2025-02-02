@@ -6,8 +6,13 @@ import {
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
-const symptoms = [
+type SymptomType = Database['public']['Enums']['symptom_type'];
+
+const defaultSymptoms: SymptomType[] = [
   'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
   'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
   'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
@@ -16,6 +21,34 @@ const symptoms = [
 
 const SymptomsMarquee = () => {
   const isMobile = useIsMobile();
+
+  const { data: topSymptoms } = useQuery({
+    queryKey: ['topSymptoms'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_top_symptoms', { limit_count: 20 });
+      if (error) {
+        console.error('Error fetching top symptoms:', error);
+        return defaultSymptoms;
+      }
+      return data.length > 0 ? data.map(item => item.symptom) : defaultSymptoms;
+    }
+  });
+
+  const handleSymptomClick = async (symptom: SymptomType) => {
+    try {
+      const { error } = await supabase
+        .from('symptom_clicks')
+        .insert([{ symptom, user_id: (await supabase.auth.getUser()).data.user?.id }]);
+      
+      if (error) {
+        console.error('Error logging symptom click:', error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const symptoms = topSymptoms || defaultSymptoms;
 
   return (
     <section className="py-8 bg-accent overflow-hidden">
@@ -38,6 +71,7 @@ const SymptomsMarquee = () => {
                 <CarouselItem
                   key={index}
                   className="basis-auto pl-8 cursor-pointer"
+                  onClick={() => handleSymptomClick(symptom)}
                 >
                   <a
                     href={`#${symptom.toLowerCase().replace(/\s+/g, '-')}`}
