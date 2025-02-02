@@ -40,7 +40,7 @@ const Navbar = () => {
   const filteredMenuItems = menuItems.filter(item => !item.protected || session);
 
   return (
-    <nav className="bg-white shadow-sm fixed w-full z-50">
+    <nav className="bg-white/70 backdrop-blur-sm shadow-sm fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -50,7 +50,6 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Hamburger Menu Button */}
           <div className="flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
