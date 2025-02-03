@@ -38,7 +38,7 @@ const Admin = () => {
   const { data: recentActivity, isLoading: isLoadingActivity } = useQuery({
     queryKey: ["recentActivity"],
     queryFn: async () => {
-      const { data: comments } = await supabase
+      const { data } = await supabase
         .from("comments")
         .select(`
           id,
@@ -46,14 +46,14 @@ const Admin = () => {
           status,
           created_at,
           user_id,
-          profiles!comments_user_id_fkey (
+          profiles:user_id (
             full_name
           )
         `)
         .order("created_at", { ascending: false })
         .limit(5);
 
-      return comments || [];
+      return data || [];
     },
   });
 
