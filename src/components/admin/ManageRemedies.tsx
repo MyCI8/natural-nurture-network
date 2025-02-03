@@ -88,7 +88,7 @@ const ManageRemedies = () => {
             <SelectValue placeholder="Filter by symptom" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Symptoms</SelectItem>
+            <SelectItem value="all">All Symptoms</SelectItem>
             {defaultSymptoms.map((symptom) => (
               <SelectItem key={symptom} value={symptom}>
                 {symptom}
