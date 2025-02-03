@@ -48,9 +48,14 @@ const IngredientDetail = () => {
 
   if (!ingredient) return null;
 
-  // Parse videos from JSON if it exists
+  // Parse videos from JSON if it exists and validate the structure
   const videos: Video[] = Array.isArray(ingredient.videos) 
-    ? ingredient.videos 
+    ? ingredient.videos.filter((video): video is Video => 
+        typeof video === 'object' && 
+        video !== null && 
+        typeof (video as Video).title === 'string' && 
+        typeof (video as Video).url === 'string'
+      )
     : [];
 
   return (
