@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,19 +32,33 @@ const defaultSymptoms: SymptomType[] = [
 
 interface RemedyFormProps {
   onClose: () => void;
-  remedy?: any; // We'll type this properly later
+  remedy?: any;
 }
 
 const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
   const [formData, setFormData] = useState({
-    name: remedy?.name || "",
-    summary: remedy?.summary || "",
-    description: remedy?.description || "",
-    symptoms: remedy?.symptoms || [],
-    ingredients: remedy?.ingredients || [],
-    video_url: remedy?.video_url || "",
-    status: remedy?.status || "draft",
+    name: "",
+    summary: "",
+    description: "",
+    symptoms: [] as string[],
+    ingredients: [] as string[],
+    video_url: "",
+    status: "draft",
   });
+
+  useEffect(() => {
+    if (remedy) {
+      setFormData({
+        name: remedy.name || "",
+        summary: remedy.summary || "",
+        description: remedy.description || "",
+        symptoms: remedy.symptoms || [],
+        ingredients: remedy.ingredients || [],
+        video_url: remedy.video_url || "",
+        status: remedy.status || "draft",
+      });
+    }
+  }, [remedy]);
 
   const { data: ingredients } = useQuery({
     queryKey: ["ingredients"],
@@ -76,6 +91,12 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <DialogTitle>
             {remedy ? "Edit Remedy" : "Create New Remedy"}
           </DialogTitle>
+          <DialogDescription>
+            {remedy 
+              ? "Update the details of this remedy" 
+              : "Fill in the details to create a new remedy"
+            }
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -178,7 +199,9 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit">
+              {remedy ? "Update" : "Create"}
+            </Button>
           </div>
         </form>
       </DialogContent>

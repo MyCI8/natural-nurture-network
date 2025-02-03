@@ -29,6 +29,7 @@ const ManageRemedies = () => {
   const [symptomFilter, setSymptomFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<"popularity" | "recent">("recent");
   const [showForm, setShowForm] = useState(false);
+  const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
 
   const { data: remedies = [], isLoading } = useQuery({
     queryKey: ["admin-remedies", searchQuery, symptomFilter, sortBy],
@@ -62,6 +63,16 @@ const ManageRemedies = () => {
       return data;
     },
   });
+
+  const handleEdit = (remedy: any) => {
+    setSelectedRemedy(remedy);
+    setShowForm(true);
+  };
+
+  const handleClose = () => {
+    setSelectedRemedy(null);
+    setShowForm(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -130,7 +141,7 @@ const ManageRemedies = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowForm(true)}
+                  onClick={() => handleEdit(remedy)}
                 >
                   Edit
                 </Button>
@@ -143,7 +154,12 @@ const ManageRemedies = () => {
         ))}
       </div>
 
-      {showForm && <RemedyForm onClose={() => setShowForm(false)} />}
+      {showForm && (
+        <RemedyForm 
+          onClose={handleClose} 
+          remedy={selectedRemedy}
+        />
+      )}
     </div>
   );
 };
