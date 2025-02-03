@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Users, BookOpen, MessageSquare, Newspaper, Activity } from "lucide-react";
+import { Users, BookOpen, MessageSquare, Newspaper } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -44,7 +44,10 @@ const Admin = () => {
           content,
           status,
           created_at,
-          profiles:user_id (full_name)
+          user_id,
+          profiles (
+            full_name
+          )
         `)
         .order("created_at", { ascending: false })
         .limit(5);
