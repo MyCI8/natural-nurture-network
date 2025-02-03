@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,11 @@ const defaultSymptoms: SymptomType[] = [
 ];
 
 const ManageRemedies = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [symptomFilter, setSymptomFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<"popularity" | "recent">("recent");
   const [showForm, setShowForm] = useState(false);
-  const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
 
   const { data: remedies = [], isLoading } = useQuery({
     queryKey: ["admin-remedies", searchQuery, symptomFilter, sortBy],
@@ -63,16 +64,6 @@ const ManageRemedies = () => {
       return data;
     },
   });
-
-  const handleEdit = (remedy: any) => {
-    setSelectedRemedy(remedy);
-    setShowForm(true);
-  };
-
-  const handleClose = () => {
-    setSelectedRemedy(null);
-    setShowForm(false);
-  };
 
   return (
     <div className="space-y-6">
@@ -141,7 +132,7 @@ const ManageRemedies = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleEdit(remedy)}
+                  onClick={() => navigate(`/admin/remedies/${remedy.id}`)}
                 >
                   Edit
                 </Button>
@@ -156,8 +147,7 @@ const ManageRemedies = () => {
 
       {showForm && (
         <RemedyForm 
-          onClose={handleClose} 
-          remedy={selectedRemedy}
+          onClose={() => setShowForm(false)}
         />
       )}
     </div>
