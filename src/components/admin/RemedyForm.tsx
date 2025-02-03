@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 
@@ -69,14 +71,22 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     },
   });
 
-  const { data: experts } = useQuery({
-    queryKey: ["experts"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("experts").select("*");
-      if (error) throw error;
-      return data;
-    },
-  });
+  const handleIngredientSelect = (ingredientId: string) => {
+    const ingredient = ingredients?.find(i => i.id === ingredientId);
+    if (ingredient && !formData.ingredients.includes(ingredient.name)) {
+      setFormData({
+        ...formData,
+        ingredients: [...formData.ingredients, ingredient.name]
+      });
+    }
+  };
+
+  const removeIngredient = (ingredientToRemove: string) => {
+    setFormData({
+      ...formData,
+      ingredients: formData.ingredients.filter(i => i !== ingredientToRemove)
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,7 +145,17 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
           <div>
             <Label>Symptoms</Label>
-            <Select>
+            <Select
+              value={formData.symptoms[formData.symptoms.length - 1]}
+              onValueChange={(value: string) => {
+                if (!formData.symptoms.includes(value)) {
+                  setFormData({
+                    ...formData,
+                    symptoms: [...formData.symptoms, value]
+                  });
+                }
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select symptoms" />
               </SelectTrigger>
@@ -147,11 +167,29 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 ))}
               </SelectContent>
             </Select>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {formData.symptoms.map((symptom, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  {symptom}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => setFormData({
+                      ...formData,
+                      symptoms: formData.symptoms.filter((_, i) => i !== index)
+                    })}
+                  />
+                </Badge>
+              ))}
+            </div>
           </div>
 
           <div>
             <Label>Ingredients</Label>
-            <Select>
+            <Select onValueChange={handleIngredientSelect}>
               <SelectTrigger>
                 <SelectValue placeholder="Select ingredients" />
               </SelectTrigger>
@@ -163,6 +201,21 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 ))}
               </SelectContent>
             </Select>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {formData.ingredients.map((ingredient, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  {ingredient}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => removeIngredient(ingredient)}
+                  />
+                </Badge>
+              ))}
+            </div>
           </div>
 
           <div>
