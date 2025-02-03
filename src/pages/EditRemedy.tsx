@@ -32,6 +32,7 @@ import {
 import { Database } from "@/integrations/supabase/types";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
+type ShoppingListItem = { name: string; url: string };
 
 const defaultSymptoms: SymptomType[] = [
   'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
@@ -60,8 +61,8 @@ const EditRemedy = () => {
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [newIngredient, setNewIngredient] = useState("");
-  const [shoppingList, setShoppingList] = useState<Array<{ name: string; url: string }>>([]);
-  const [newShoppingItem, setNewShoppingItem] = useState({ name: "", url: "" });
+  const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
+  const [newShoppingItem, setNewShoppingItem] = useState<ShoppingListItem>({ name: "", url: "" });
 
   const { data: remedy, isLoading: isLoadingRemedy } = useQuery({
     queryKey: ["remedy", id],
@@ -137,7 +138,8 @@ const EditRemedy = () => {
       setImageUrl(remedy.image_url);
       setSelectedSymptoms(remedy.symptoms || []);
       setIngredients(remedy.ingredients || []);
-      setShoppingList(remedy.shopping_list || []);
+      const shoppingListData = remedy.shopping_list as ShoppingListItem[] || [];
+      setShoppingList(shoppingListData);
       editor?.commands.setContent(remedy.description || "");
     }
   }, [remedy, editor]);
@@ -155,7 +157,6 @@ const EditRemedy = () => {
 
       setUploading(true);
       
-      // Upload file to Supabase storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -171,7 +172,6 @@ const EditRemedy = () => {
         return;
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('Hero')
         .getPublicUrl(fileName);
@@ -206,7 +206,6 @@ const EditRemedy = () => {
 
   const handleSave = async () => {
     try {
-      // Update remedy
       const { error: remedyError } = await supabase
         .from("remedies")
         .update({
@@ -216,20 +215,15 @@ const EditRemedy = () => {
           image_url: imageUrl,
           symptoms: selectedSymptoms,
           ingredients,
-          shopping_list: shoppingList.map(item => ({
-            name: item.name,
-            url: item.url
-          }))
+          shopping_list: shoppingList
         })
         .eq("id", id);
 
       if (remedyError) throw remedyError;
 
-      // Update expert recommendations
       if (expertRemedies) {
         const currentExpertIds = expertRemedies.map(er => er.expert_id);
         
-        // Remove old recommendations
         const expertsToRemove = currentExpertIds.filter(eid => !selectedExperts.includes(eid));
         if (expertsToRemove.length > 0) {
           const { error } = await supabase
@@ -240,7 +234,6 @@ const EditRemedy = () => {
           if (error) throw error;
         }
 
-        // Add new recommendations
         const expertsToAdd = selectedExperts.filter(eid => !currentExpertIds.includes(eid));
         if (expertsToAdd.length > 0) {
           const { error } = await supabase
