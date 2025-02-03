@@ -12,6 +12,11 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import ManageRemedies from "@/components/admin/ManageRemedies";
+import { Tables } from "@/integrations/supabase/types";
+
+type CommentWithProfile = Tables<"comments"> & {
+  profile?: Pick<Tables<"profiles">, "id" | "full_name">;
+};
 
 const Admin = () => {
   // Fetch dashboard statistics
@@ -58,11 +63,11 @@ const Admin = () => {
         // Merge the profile data with comments
         return comments.map(comment => ({
           ...comment,
-          profiles: profiles?.find(profile => profile.id === comment.user_id),
-        }));
+          profile: profiles?.find(profile => profile.id === comment.user_id),
+        })) as CommentWithProfile[];
       }
 
-      return comments || [];
+      return (comments || []) as CommentWithProfile[];
     },
   });
 
@@ -175,7 +180,7 @@ const Admin = () => {
                   <TableBody>
                     {recentActivity?.map((activity) => (
                       <TableRow key={activity.id}>
-                        <TableCell>{activity.profiles?.full_name || "Anonymous"}</TableCell>
+                        <TableCell>{activity.profile?.full_name || "Anonymous"}</TableCell>
                         <TableCell>Added a comment</TableCell>
                         <TableCell>
                           {new Date(activity.created_at).toLocaleDateString()}
