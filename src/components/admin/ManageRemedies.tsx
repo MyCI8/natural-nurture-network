@@ -13,6 +13,16 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import RemedyForm from "./RemedyForm";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database['public']['Enums']['symptom_type'];
+
+const defaultSymptoms: SymptomType[] = [
+  'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
+  'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
+  'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
+  'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
+];
 
 const ManageRemedies = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,14 +63,6 @@ const ManageRemedies = () => {
     },
   });
 
-  const { data: symptoms } = useQuery({
-    queryKey: ["symptoms"],
-    queryFn: async () => {
-      const { data: enumData } = await supabase.rpc("get_symptom_types");
-      return enumData || [];
-    },
-  });
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -87,7 +89,7 @@ const ManageRemedies = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">All Symptoms</SelectItem>
-            {symptoms?.map((symptom: string) => (
+            {defaultSymptoms.map((symptom) => (
               <SelectItem key={symptom} value={symptom}>
                 {symptom}
               </SelectItem>

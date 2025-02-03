@@ -18,6 +18,16 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database['public']['Enums']['symptom_type'];
+
+const defaultSymptoms: SymptomType[] = [
+  'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
+  'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
+  'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
+  'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
+];
 
 interface RemedyFormProps {
   onClose: () => void;
@@ -33,14 +43,6 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     ingredients: remedy?.ingredients || [],
     video_url: remedy?.video_url || "",
     status: remedy?.status || "draft",
-  });
-
-  const { data: symptoms } = useQuery({
-    queryKey: ["symptoms"],
-    queryFn: async () => {
-      const { data: enumData } = await supabase.rpc("get_symptom_types");
-      return enumData || [];
-    },
   });
 
   const { data: ingredients } = useQuery({
@@ -117,7 +119,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 <SelectValue placeholder="Select symptoms" />
               </SelectTrigger>
               <SelectContent>
-                {symptoms?.map((symptom: string) => (
+                {defaultSymptoms.map((symptom) => (
                   <SelectItem key={symptom} value={symptom}>
                     {symptom}
                   </SelectItem>

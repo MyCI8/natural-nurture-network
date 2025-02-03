@@ -46,7 +46,7 @@ const Admin = () => {
           status,
           created_at,
           user_id,
-          profiles (
+          profiles!comments_user_id_fkey (
             full_name
           )
         `)
