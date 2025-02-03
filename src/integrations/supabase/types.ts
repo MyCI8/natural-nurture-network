@@ -137,6 +137,24 @@ export type Database = {
         }
         Relationships: []
       }
+      ingredients: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       news_articles: {
         Row: {
           content: string
@@ -195,28 +213,81 @@ export type Database = {
         Row: {
           click_count: number | null
           created_at: string | null
+          description: string | null
           id: string
           image_url: string
+          ingredients: string[] | null
           name: string
+          shopping_list: Json | null
+          status: string | null
           summary: string
+          symptoms: Database["public"]["Enums"]["symptom_type"][] | null
+          video_url: string | null
         }
         Insert: {
           click_count?: number | null
           created_at?: string | null
+          description?: string | null
           id?: string
           image_url: string
+          ingredients?: string[] | null
           name: string
+          shopping_list?: Json | null
+          status?: string | null
           summary: string
+          symptoms?: Database["public"]["Enums"]["symptom_type"][] | null
+          video_url?: string | null
         }
         Update: {
           click_count?: number | null
           created_at?: string | null
+          description?: string | null
           id?: string
           image_url?: string
+          ingredients?: string[] | null
           name?: string
+          shopping_list?: Json | null
+          status?: string | null
           summary?: string
+          symptoms?: Database["public"]["Enums"]["symptom_type"][] | null
+          video_url?: string | null
         }
         Relationships: []
+      }
+      shopping_items: {
+        Row: {
+          affiliate_link: string | null
+          created_at: string | null
+          id: string
+          name: string
+          remedy_id: string | null
+          url: string | null
+        }
+        Insert: {
+          affiliate_link?: string | null
+          created_at?: string | null
+          id?: string
+          name: string
+          remedy_id?: string | null
+          url?: string | null
+        }
+        Update: {
+          affiliate_link?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          remedy_id?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_items_remedy_id_fkey"
+            columns: ["remedy_id"]
+            isOneToOne: false
+            referencedRelation: "remedies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       symptom_clicks: {
         Row: {

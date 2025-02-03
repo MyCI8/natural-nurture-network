@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import ManageRemedies from "@/components/admin/ManageRemedies";
 
 const Admin = () => {
   // Fetch dashboard statistics
@@ -111,7 +112,7 @@ const Admin = () => {
         </div>
 
         {/* Recent Activity */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 mb-8">
           {/* Recent News */}
           <Card>
             <CardHeader>
@@ -178,6 +179,9 @@ const Admin = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Manage Remedies Section */}
+        <ManageRemedies />
       </div>
     </div>
   );
