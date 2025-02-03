@@ -1,94 +1,164 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { Plus, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import IngredientForm from "./IngredientForm";
 
 const ManageIngredients = () => {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const { toast } = useToast();
+  const [selectedIngredient, setSelectedIngredient] = useState<any>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [deleteIngredient, setDeleteIngredient] = useState<any>(null);
 
-  const { data: ingredients = [], isLoading } = useQuery({
-    queryKey: ["admin-ingredients", searchQuery],
+  const { data: ingredients = [], refetch } = useQuery({
+    queryKey: ["ingredients"],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from("ingredients")
-        .select("*");
-
-      if (searchQuery) {
-        query = query.ilike("name", `%${searchQuery}%`);
-      }
-
-      const { data, error } = await query.order("name", { ascending: true });
-
+        .select("*")
+        .order("name");
       if (error) throw error;
       return data;
     },
   });
 
+  const handleDelete = async () => {
+    if (!deleteIngredient) return;
+
+    try {
+      const { error } = await supabase
+        .from("ingredients")
+        .delete()
+        .eq("id", deleteIngredient.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Ingredient deleted successfully",
+      });
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete ingredient",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteIngredient(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Manage Ingredients</h2>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Ingredient
+        <h2 className="text-3xl font-bold">Manage Ingredients</h2>
+        <Button onClick={() => {
+          setSelectedIngredient(null);
+          setIsFormOpen(true);
+        }}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Ingredient
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="relative">
-          <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search ingredients..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Image</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead className="w-[100px]">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {ingredients.map((ingredient) => (
+            <TableRow key={ingredient.id}>
+              <TableCell>
+                {ingredient.image_url ? (
+                  <img
+                    src={ingredient.image_url}
+                    alt={ingredient.name}
+                    className="w-12 h-12 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gray-100 rounded" />
+                )}
+              </TableCell>
+              <TableCell className="font-medium">{ingredient.name}</TableCell>
+              <TableCell>{ingredient.description}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedIngredient(ingredient);
+                      setIsFormOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setDeleteIngredient(ingredient)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {ingredients.map((ingredient) => (
-          <Card key={ingredient.id}>
-            <CardContent className="p-4">
-              <div className="aspect-video mb-4">
-                <img
-                  src={ingredient.image_url || "/placeholder.svg"}
-                  alt={ingredient.name}
-                  className="w-full h-full object-cover rounded"
-                />
-              </div>
-              <h3 className="font-semibold mb-2">{ingredient.name}</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                {ingredient.description || "No description available"}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/admin/ingredients/${ingredient.id}`)}
-                >
-                  Edit
-                </Button>
-                <Button variant="destructive" size="sm">
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {showForm && (
-        <IngredientForm 
-          onClose={() => setShowForm(false)}
+      {isFormOpen && (
+        <IngredientForm
+          ingredient={selectedIngredient}
+          onClose={() => {
+            setIsFormOpen(false);
+            setSelectedIngredient(null);
+          }}
+          onSave={refetch}
         />
       )}
+
+      <AlertDialog open={!!deleteIngredient} onOpenChange={() => setDeleteIngredient(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the ingredient
+              and remove it from our records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
