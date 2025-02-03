@@ -9,6 +9,7 @@ import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import ManageRemedies from "./pages/ManageRemedies";
+import ManageIngredients from "./pages/ManageIngredients";
 import EditRemedy from "./pages/EditRemedy";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -66,6 +67,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ManageRemedies />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/ingredients"
+              element={
+                <ProtectedRoute>
+                  <ManageIngredients />
                 </ProtectedRoute>
               }
             />

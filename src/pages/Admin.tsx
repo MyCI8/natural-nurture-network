@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Users, BookOpen, MessageSquare, Newspaper } from "lucide-react";
+import { Users, BookOpen, MessageSquare, Newspaper, Apple } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,11 +25,12 @@ const Admin = () => {
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => {
-      const [usersCount, remediesCount, pendingCommentsCount, newsArticles] = await Promise.all([
+      const [usersCount, remediesCount, pendingCommentsCount, newsArticles, ingredientsCount] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact" }),
         supabase.from("remedies").select("id", { count: "exact" }),
         supabase.from("comments").select("id", { count: "exact" }).eq("status", "pending"),
         supabase.from("news_articles").select("*").order("created_at", { ascending: false }).limit(5),
+        supabase.from("ingredients").select("id", { count: "exact" }),
       ]);
 
       return {
@@ -37,6 +38,7 @@ const Admin = () => {
         remedies: remediesCount.count || 0,
         pendingComments: pendingCommentsCount.count || 0,
         recentNews: newsArticles.data || [],
+        ingredients: ingredientsCount.count || 0,
       };
     },
   });
@@ -89,6 +91,13 @@ const Admin = () => {
       onClick: () => navigate("/admin/remedies"),
     },
     {
+      title: "Ingredients",
+      value: stats?.ingredients || 0,
+      icon: Apple,
+      description: "Available ingredients",
+      onClick: () => navigate("/admin/ingredients"),
+    },
+    {
       title: "Pending Comments",
       value: stats?.pendingComments || 0,
       icon: MessageSquare,
@@ -110,7 +119,7 @@ const Admin = () => {
         <h1 className="text-3xl font-bold mb-8">Dashboard Overview</h1>
 
         {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5 mb-8">
           {statCards.map((stat) => (
             <Card 
               key={stat.title}
