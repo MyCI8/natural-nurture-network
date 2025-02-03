@@ -202,19 +202,25 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
           updated_at: string
         }
         Insert: {
+          account_status?: string
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
           updated_at?: string
         }
         Update: {
+          account_status?: string
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           updated_at?: string
@@ -348,6 +354,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_user_data: {
+        Args: {
+          user_id: string
+          delete_content: boolean
+        }
+        Returns: undefined
+      }
       get_top_symptoms: {
         Args: {
           limit_count?: number
@@ -394,7 +407,7 @@ export type Database = {
         | "Poor Circulation"
         | "Hair Loss"
         | "Eye Strain"
-      user_role: "user" | "admin"
+      user_role: "user" | "admin" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -16,15 +16,18 @@ const IngredientDetail = () => {
   const { data: ingredient, isLoading } = useQuery({
     queryKey: ["ingredient", id],
     queryFn: async () => {
+      if (!id) throw new Error("No ingredient ID provided");
+      
       const { data, error } = await supabase
         .from("ingredients")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     },
+    enabled: !!id, // Only run query if we have an ID
   });
 
   if (isLoading) {
@@ -46,7 +49,15 @@ const IngredientDetail = () => {
     );
   }
 
-  if (!ingredient) return null;
+  if (!ingredient) {
+    return (
+      <div className="min-h-screen bg-background pt-16">
+        <div className="container mx-auto p-6">
+          <h1 className="text-2xl font-bold">Ingredient not found</h1>
+        </div>
+      </div>
+    );
+  }
 
   // Parse videos from JSON if it exists and validate the structure
   const videos: Video[] = Array.isArray(ingredient.videos) 
