@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Json } from "@/integrations/supabase/types";
 
 interface Video {
   title: string;
@@ -27,7 +28,7 @@ const IngredientDetail = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id, // Only run query if we have an ID
+    enabled: !!id,
   });
 
   if (isLoading) {
@@ -60,17 +61,17 @@ const IngredientDetail = () => {
   }
 
   // Parse videos from JSON if it exists and validate the structure
-  const videos: Video[] = ingredient.videos && typeof ingredient.videos === 'object' 
-    ? (Array.isArray(ingredient.videos) 
-        ? ingredient.videos
-            .filter((video): video is Video => 
-              typeof video === 'object' && 
-              video !== null && 
-              typeof video.title === 'string' && 
-              typeof video.url === 'string'
-            )
-        : [])
-    : [];
+  const parseVideos = (videosData: Json | null): Video[] => {
+    if (!videosData || !Array.isArray(videosData)) return [];
+    
+    return videosData.filter((video): video is Video => {
+      if (typeof video !== 'object' || video === null) return false;
+      const v = video as Record<string, unknown>;
+      return typeof v.title === 'string' && typeof v.url === 'string';
+    });
+  };
+
+  const videos = parseVideos(ingredient.videos);
 
   return (
     <div className="min-h-screen bg-background pt-16">
