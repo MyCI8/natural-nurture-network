@@ -81,11 +81,15 @@ const IngredientDetail = () => {
   const parseVideos = (videosData: Json | null): Video[] => {
     if (!videosData || !Array.isArray(videosData)) return [];
     
-    return videosData.filter((video): video is { [key: string]: Json } => {
-      return typeof video === 'object' && video !== null;
-    }).filter((video): video is Video => {
-      return typeof video.title === 'string' && typeof video.url === 'string';
-    });
+    return videosData
+      .filter((video): video is { [key: string]: Json } => {
+        return typeof video === 'object' && video !== null;
+      })
+      .filter((video): video is { title: string; url: string; thumbnail?: string } => {
+        return typeof video.title === 'string' && 
+               typeof video.url === 'string' && 
+               (video.thumbnail === undefined || typeof video.thumbnail === 'string');
+      });
   };
 
   if (isLoadingIngredient || isLoadingExperts) {
