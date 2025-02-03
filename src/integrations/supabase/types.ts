@@ -9,6 +9,167 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          remedy_id: string | null
+          status: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          remedy_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          remedy_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_remedy_id_fkey"
+            columns: ["remedy_id"]
+            isOneToOne: false
+            referencedRelation: "remedies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expert_remedies: {
+        Row: {
+          created_at: string | null
+          expert_id: string
+          remedy_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expert_id: string
+          remedy_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expert_id?: string
+          remedy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expert_remedies_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "experts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expert_remedies_remedy_id_fkey"
+            columns: ["remedy_id"]
+            isOneToOne: false
+            referencedRelation: "remedies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      experts: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          full_name: string
+          id: string
+          image_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          full_name: string
+          id?: string
+          image_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          image_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      news_articles: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          published_at: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          published_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -118,6 +279,14 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
         }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          action: string
+          entity_type: string
+          entity_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
