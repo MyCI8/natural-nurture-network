@@ -148,6 +148,62 @@ const EditRemedy = () => {
     }
   }, [expertRemedies]);
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      setUploading(true);
+      
+      // Upload file to Supabase storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('Hero')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('Hero')
+        .getPublicUrl(fileName);
+
+      setImageUrl(publicUrl);
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const addTable = () => {
+    editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  };
+
+  const addImage = () => {
+    const url = window.prompt('Enter image URL');
+    if (url) {
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  };
+
   const handleSave = async () => {
     try {
       // Update remedy
@@ -160,7 +216,10 @@ const EditRemedy = () => {
           image_url: imageUrl,
           symptoms: selectedSymptoms,
           ingredients,
-          shopping_list: shoppingList
+          shopping_list: shoppingList.map(item => ({
+            name: item.name,
+            url: item.url
+          }))
         })
         .eq("id", id);
 
