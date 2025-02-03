@@ -38,23 +38,31 @@ const Admin = () => {
   const { data: recentActivity, isLoading: isLoadingActivity } = useQuery({
     queryKey: ["recentActivity"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get comments with user_ids
+      const { data: comments, error } = await supabase
         .from("comments")
-        .select(`
-          id,
-          content,
-          status,
-          created_at,
-          user_id,
-          profiles (
-            full_name
-          )
-        `)
+        .select("id, content, status, created_at, user_id")
         .order("created_at", { ascending: false })
         .limit(5);
 
       if (error) throw error;
-      return data || [];
+
+      // Then fetch the corresponding profiles
+      if (comments && comments.length > 0) {
+        const userIds = comments.map(comment => comment.user_id).filter(Boolean);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", userIds);
+
+        // Merge the profile data with comments
+        return comments.map(comment => ({
+          ...comment,
+          profiles: profiles?.find(profile => profile.id === comment.user_id),
+        }));
+      }
+
+      return comments || [];
     },
   });
 
