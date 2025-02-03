@@ -11,6 +11,7 @@ import Admin from "./pages/Admin";
 import ManageRemedies from "./pages/ManageRemedies";
 import ManageIngredients from "./pages/ManageIngredients";
 import EditRemedy from "./pages/EditRemedy";
+import IngredientDetail from "./pages/IngredientDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -83,6 +84,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <EditRemedy />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/ingredients/:id"
+              element={
+                <ProtectedRoute>
+                  <IngredientDetail />
                 </ProtectedRoute>
               }
             />

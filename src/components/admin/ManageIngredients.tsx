@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -25,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import IngredientForm from "./IngredientForm";
 
 const ManageIngredients = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedIngredient, setSelectedIngredient] = useState<any>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -93,8 +95,12 @@ const ManageIngredients = () => {
         </TableHeader>
         <TableBody>
           {ingredients.map((ingredient) => (
-            <TableRow key={ingredient.id}>
-              <TableCell>
+            <TableRow 
+              key={ingredient.id}
+              className="cursor-pointer hover:bg-accent/50"
+              onClick={() => navigate(`/admin/ingredients/${ingredient.id}`)}
+            >
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 {ingredient.image_url ? (
                   <img
                     src={ingredient.image_url}
@@ -107,12 +113,13 @@ const ManageIngredients = () => {
               </TableCell>
               <TableCell className="font-medium">{ingredient.name}</TableCell>
               <TableCell>{ingredient.description}</TableCell>
-              <TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedIngredient(ingredient);
                       setIsFormOpen(true);
                     }}
@@ -122,7 +129,10 @@ const ManageIngredients = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setDeleteIngredient(ingredient)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteIngredient(ingredient);
+                    }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
