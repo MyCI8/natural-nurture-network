@@ -64,10 +64,10 @@ const IngredientDetail = () => {
   const parseVideos = (videosData: Json | null): Video[] => {
     if (!videosData || !Array.isArray(videosData)) return [];
     
-    return videosData.filter((video): video is Video => {
-      if (typeof video !== 'object' || video === null) return false;
-      const v = video as Record<string, unknown>;
-      return typeof v.title === 'string' && typeof v.url === 'string';
+    return videosData.filter((video): video is Record<string, unknown> => {
+      return typeof video === 'object' && video !== null;
+    }).filter((video): video is Video => {
+      return typeof video.title === 'string' && typeof video.url === 'string';
     });
   };
 
