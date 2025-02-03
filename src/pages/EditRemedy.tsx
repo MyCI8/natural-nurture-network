@@ -13,13 +13,14 @@ import FontFamily from '@tiptap/extension-font-family';
 import { 
   ArrowLeft, Bold, Italic, AlignLeft, AlignCenter, 
   AlignRight, List, ListOrdered, Table as TableIcon,
-  Image as ImageIcon, Trash2, Plus
+  Image as ImageIcon, Trash2, Plus, X
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
@@ -28,6 +29,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database['public']['Enums']['symptom_type'];
+
+const defaultSymptoms: SymptomType[] = [
+  'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
+  'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
+  'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
+  'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
+];
 
 const fontFamilies = [
   'Arial',
@@ -45,8 +56,14 @@ const EditRemedy = () => {
   const [summary, setSummary] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<SymptomType[]>([]);
+  const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
+  const [ingredients, setIngredients] = useState<string[]>([]);
+  const [newIngredient, setNewIngredient] = useState("");
+  const [shoppingList, setShoppingList] = useState<Array<{ name: string; url: string }>>([]);
+  const [newShoppingItem, setNewShoppingItem] = useState({ name: "", url: "" });
 
-  const { data: remedy, isLoading } = useQuery({
+  const { data: remedy, isLoading: isLoadingRemedy } = useQuery({
     queryKey: ["remedy", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -55,6 +72,29 @@ const EditRemedy = () => {
         .eq("id", id)
         .single();
 
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: experts } = useQuery({
+    queryKey: ["experts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("experts")
+        .select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: expertRemedies } = useQuery({
+    queryKey: ["expert_remedies", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("expert_remedies")
+        .select("expert_id")
+        .eq("remedy_id", id);
       if (error) throw error;
       return data;
     },
@@ -95,23 +135,64 @@ const EditRemedy = () => {
       setName(remedy.name);
       setSummary(remedy.summary);
       setImageUrl(remedy.image_url);
+      setSelectedSymptoms(remedy.symptoms || []);
+      setIngredients(remedy.ingredients || []);
+      setShoppingList(remedy.shopping_list || []);
       editor?.commands.setContent(remedy.description || "");
     }
   }, [remedy, editor]);
 
+  useEffect(() => {
+    if (expertRemedies) {
+      setSelectedExperts(expertRemedies.map(er => er.expert_id));
+    }
+  }, [expertRemedies]);
+
   const handleSave = async () => {
     try {
-      const { error } = await supabase
+      // Update remedy
+      const { error: remedyError } = await supabase
         .from("remedies")
         .update({
           name,
           summary,
           description: editor?.getHTML(),
           image_url: imageUrl,
+          symptoms: selectedSymptoms,
+          ingredients,
+          shopping_list: shoppingList
         })
         .eq("id", id);
 
-      if (error) throw error;
+      if (remedyError) throw remedyError;
+
+      // Update expert recommendations
+      if (expertRemedies) {
+        const currentExpertIds = expertRemedies.map(er => er.expert_id);
+        
+        // Remove old recommendations
+        const expertsToRemove = currentExpertIds.filter(eid => !selectedExperts.includes(eid));
+        if (expertsToRemove.length > 0) {
+          const { error } = await supabase
+            .from("expert_remedies")
+            .delete()
+            .eq("remedy_id", id)
+            .in("expert_id", expertsToRemove);
+          if (error) throw error;
+        }
+
+        // Add new recommendations
+        const expertsToAdd = selectedExperts.filter(eid => !currentExpertIds.includes(eid));
+        if (expertsToAdd.length > 0) {
+          const { error } = await supabase
+            .from("expert_remedies")
+            .insert(expertsToAdd.map(expertId => ({
+              expert_id: expertId,
+              remedy_id: id
+            })));
+          if (error) throw error;
+        }
+      }
 
       toast({
         title: "Success",
@@ -126,56 +207,29 @@ const EditRemedy = () => {
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
-      }
-      setUploading(true);
-
-      const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('Hero')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('Hero')
-        .getPublicUrl(filePath);
-
-      setImageUrl(publicUrl);
-      
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
+  const addIngredient = () => {
+    if (newIngredient.trim()) {
+      setIngredients([...ingredients, newIngredient.trim()]);
+      setNewIngredient("");
     }
   };
 
-  const addImage = () => {
-    const url = window.prompt("Enter image URL");
-    if (url) {
-      editor?.chain().focus().setImage({ src: url }).run();
+  const removeIngredient = (index: number) => {
+    setIngredients(ingredients.filter((_, i) => i !== index));
+  };
+
+  const addShoppingItem = () => {
+    if (newShoppingItem.name.trim() && newShoppingItem.url.trim()) {
+      setShoppingList([...shoppingList, { ...newShoppingItem }]);
+      setNewShoppingItem({ name: "", url: "" });
     }
   };
 
-  const addTable = () => {
-    editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  const removeShoppingItem = (index: number) => {
+    setShoppingList(shoppingList.filter((_, i) => i !== index));
   };
 
-  if (isLoading) {
+  if (isLoadingRemedy) {
     return <div>Loading...</div>;
   }
 
@@ -209,6 +263,150 @@ const EditRemedy = () => {
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div>
+            <Label>Symptoms</Label>
+            <Select
+              value={selectedSymptoms[selectedSymptoms.length - 1]}
+              onValueChange={(value: SymptomType) => {
+                if (!selectedSymptoms.includes(value)) {
+                  setSelectedSymptoms([...selectedSymptoms, value]);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select symptoms" />
+              </SelectTrigger>
+              <SelectContent>
+                {defaultSymptoms.map((symptom) => (
+                  <SelectItem key={symptom} value={symptom}>
+                    {symptom}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {selectedSymptoms.map((symptom, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  {symptom}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => setSelectedSymptoms(selectedSymptoms.filter((_, i) => i !== index))}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label>Expert Recommendations</Label>
+            <Select
+              value={selectedExperts[selectedExperts.length - 1]}
+              onValueChange={(value) => {
+                if (!selectedExperts.includes(value)) {
+                  setSelectedExperts([...selectedExperts, value]);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select experts" />
+              </SelectTrigger>
+              <SelectContent>
+                {experts?.map((expert) => (
+                  <SelectItem key={expert.id} value={expert.id}>
+                    {expert.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {selectedExperts.map((expertId, index) => {
+                const expert = experts?.find(e => e.id === expertId);
+                return expert ? (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {expert.full_name}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => setSelectedExperts(selectedExperts.filter((_, i) => i !== index))}
+                    />
+                  </Badge>
+                ) : null;
+              })}
+            </div>
+          </div>
+
+          <div>
+            <Label>Ingredients</Label>
+            <div className="flex gap-2">
+              <Input
+                value={newIngredient}
+                onChange={(e) => setNewIngredient(e.target.value)}
+                placeholder="Enter ingredient"
+              />
+              <Button onClick={addIngredient}>Add</Button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {ingredients.map((ingredient, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
+                  {ingredient}
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => removeIngredient(index)}
+                  />
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label>Shopping List</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  value={newShoppingItem.name}
+                  onChange={(e) => setNewShoppingItem({ ...newShoppingItem, name: e.target.value })}
+                  placeholder="Item name"
+                />
+                <Input
+                  value={newShoppingItem.url}
+                  onChange={(e) => setNewShoppingItem({ ...newShoppingItem, url: e.target.value })}
+                  placeholder="Purchase URL"
+                />
+                <Button onClick={addShoppingItem}>Add</Button>
+              </div>
+              <div className="space-y-2">
+                {shoppingList.map((item, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 border rounded">
+                    <span className="flex-grow">{item.name}</span>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      Link
+                    </a>
+                    <X
+                      className="h-4 w-4 cursor-pointer"
+                      onClick={() => removeShoppingItem(index)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
