@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Users, BookOpen, MessageSquare, Newspaper } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -11,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
-import ManageRemedies from "@/components/admin/ManageRemedies";
 import { Tables } from "@/integrations/supabase/types";
 
 type CommentWithProfile = Tables<"comments"> & {
@@ -19,6 +19,8 @@ type CommentWithProfile = Tables<"comments"> & {
 };
 
 const Admin = () => {
+  const navigate = useNavigate();
+  
   // Fetch dashboard statistics
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["adminStats"],
@@ -77,24 +79,28 @@ const Admin = () => {
       value: stats?.users || 0,
       icon: Users,
       description: "Registered users",
+      onClick: undefined,
     },
     {
       title: "Published Remedies",
       value: stats?.remedies || 0,
       icon: BookOpen,
       description: "Active remedies",
+      onClick: () => navigate("/admin/remedies"),
     },
     {
       title: "Pending Comments",
       value: stats?.pendingComments || 0,
       icon: MessageSquare,
       description: "Awaiting moderation",
+      onClick: undefined,
     },
     {
       title: "Recent News",
       value: stats?.recentNews?.length || 0,
       icon: Newspaper,
       description: "Articles published",
+      onClick: undefined,
     },
   ];
 
@@ -106,7 +112,11 @@ const Admin = () => {
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {statCards.map((stat) => (
-            <Card key={stat.title}>
+            <Card 
+              key={stat.title}
+              className={stat.onClick ? "cursor-pointer hover:bg-accent transition-colors" : ""}
+              onClick={stat.onClick}
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                 <stat.icon className="h-4 w-4 text-muted-foreground" />
@@ -126,7 +136,7 @@ const Admin = () => {
         </div>
 
         {/* Recent Activity */}
-        <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <div className="grid gap-6 md:grid-cols-2">
           {/* Recent News */}
           <Card>
             <CardHeader>
@@ -193,9 +203,6 @@ const Admin = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Manage Remedies Section */}
-        <ManageRemedies />
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { supabase } from "./integrations/supabase/client";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
+import ManageRemedies from "./pages/ManageRemedies";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -56,6 +57,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/remedies"
+              element={
+                <ProtectedRoute>
+                  <ManageRemedies />
                 </ProtectedRoute>
               }
             />
