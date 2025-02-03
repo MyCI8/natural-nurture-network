@@ -4,6 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface Video {
+  title: string;
+  url: string;
+  thumbnail?: string;
+}
+
 const IngredientDetail = () => {
   const { id } = useParams();
 
@@ -42,6 +48,11 @@ const IngredientDetail = () => {
 
   if (!ingredient) return null;
 
+  // Parse videos from JSON if it exists
+  const videos: Video[] = Array.isArray(ingredient.videos) 
+    ? ingredient.videos 
+    : [];
+
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6">
@@ -77,7 +88,7 @@ const IngredientDetail = () => {
           <div>
             <h2 className="text-xl font-semibold mb-4">Related Videos</h2>
             <div className="space-y-4">
-              {ingredient.videos?.map((video: any, index: number) => (
+              {videos.map((video, index) => (
                 <Card key={index} className="p-4">
                   {video.thumbnail && (
                     <img
