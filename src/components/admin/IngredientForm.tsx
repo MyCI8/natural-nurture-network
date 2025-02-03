@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import TextEditor from "@/components/ui/text-editor";
 
 interface IngredientFormProps {
   onClose: () => void;
@@ -159,11 +159,10 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
 
           <div>
             <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
+            <TextEditor
+              content={formData.description}
+              onChange={(content) =>
+                setFormData({ ...formData, description: content })
               }
             />
           </div>
