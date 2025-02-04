@@ -58,12 +58,12 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
       }
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `Ingredients/${crypto.randomUUID()}.${fileExt}`;
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
       // Upload file with authenticated client
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('Hero')
-        .upload(fileName, file, {
+        .upload(`Ingredients/${fileName}`, file, {
           upsert: false,
           contentType: file.type,
         });
@@ -80,7 +80,7 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
 
       const { data: { publicUrl } } = supabase.storage
         .from('Hero')
-        .getPublicUrl(fileName);
+        .getPublicUrl(`Ingredients/${fileName}`);
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
       toast({
