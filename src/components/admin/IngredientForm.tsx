@@ -58,7 +58,7 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
       }
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const fileName = `Ingredients/${crypto.randomUUID()}.${fileExt}`;
       
       // Upload file with authenticated client
       const { error: uploadError } = await supabase.storage
