@@ -60,10 +60,10 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
-      // Upload file with authenticated client
+      // Upload file to the remedy-images bucket
       const { error: uploadError, data } = await supabase.storage
-        .from('Hero')
-        .upload(`Ingredients/${fileName}`, file, {
+        .from('remedy-images')
+        .upload(`ingredients/${fileName}`, file, {
           upsert: false,
           contentType: file.type,
         });
@@ -79,8 +79,8 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from('Hero')
-        .getPublicUrl(`Ingredients/${fileName}`);
+        .from('remedy-images')
+        .getPublicUrl(`ingredients/${fileName}`);
 
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
       toast({
