@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,39 @@ const ManageIngredients = () => {
   const [selectedIngredient, setSelectedIngredient] = useState<any>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteIngredient, setDeleteIngredient] = useState<any>(null);
+
+  // Check if user is authenticated and has admin role
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Unauthorized",
+          description: "Please log in to access this page",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!roles || roles.role !== "admin") {
+        toast({
+          title: "Unauthorized",
+          description: "You don't have permission to access this page",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
+    };
+
+    checkAuth();
+  }, [navigate, toast]);
 
   const { data: ingredients = [], refetch } = useQuery({
     queryKey: ["ingredients"],
