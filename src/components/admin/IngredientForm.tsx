@@ -46,16 +46,33 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
 
       setUploading(true);
       
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('Hero')
-        .upload(fileName, file);
-
-      if (uploadError) {
+      // First check if user is authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast({
           title: "Error",
-          description: "Failed to upload image",
+          description: "You must be logged in to upload images",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      
+      // Upload file with authenticated client
+      const { error: uploadError } = await supabase.storage
+        .from('Hero')
+        .upload(fileName, file, {
+          upsert: false,
+          contentType: file.type,
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        toast({
+          title: "Error",
+          description: "Failed to upload image. Please ensure you have admin permissions.",
           variant: "destructive",
         });
         return;
