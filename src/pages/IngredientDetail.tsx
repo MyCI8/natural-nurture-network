@@ -82,13 +82,11 @@ const IngredientDetail = () => {
     if (!videosData || !Array.isArray(videosData)) return [];
     
     return videosData
-      .filter((video): video is { [key: string]: Json } => {
-        return typeof video === 'object' && video !== null;
-      })
       .filter((video): video is { title: string; url: string; thumbnail?: string } => {
-        return typeof video.title === 'string' && 
-               typeof video.url === 'string' && 
-               (video.thumbnail === undefined || typeof video.thumbnail === 'string');
+        if (typeof video !== 'object' || video === null) return false;
+        const v = video as any;
+        return typeof v.title === 'string' && typeof v.url === 'string' &&
+               (v.thumbnail === undefined || typeof v.thumbnail === 'string');
       });
   };
 
