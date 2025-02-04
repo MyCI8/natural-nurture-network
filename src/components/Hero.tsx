@@ -14,7 +14,7 @@ const Hero = () => {
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source
-            src="https://tdnuswekfcjgvqyiotoj.supabase.co/storage/v1/object/public/Hero/hero-background.mp4"
+            src="https://tdnuswekfcjgvqyiotoj.supabase.co/storage/v1/object/public/site-assets/hero-background.mp4"
             type="video/mp4"
           />
           Your browser does not support the video tag.
