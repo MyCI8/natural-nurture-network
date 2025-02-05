@@ -54,7 +54,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.recentNews?.length || 0,
       icon: Newspaper,
       description: "Articles published",
-      onClick: undefined,
+      onClick: () => navigate("/admin/news"),
     },
     {
       title: "Experts",
