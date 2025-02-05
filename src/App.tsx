@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "@/components/ui/toaster";
 import Admin from "@/pages/Admin";
 import ManageRemedies from "@/pages/ManageRemedies";
 import ManageNews from "./pages/ManageNews";
