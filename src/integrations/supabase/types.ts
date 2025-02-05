@@ -167,13 +167,49 @@ export type Database = {
         }
         Relationships: []
       }
+      news_article_links: {
+        Row: {
+          article_id: string | null
+          created_at: string | null
+          id: string
+          title: string
+          url: string
+        }
+        Insert: {
+          article_id?: string | null
+          created_at?: string | null
+          id?: string
+          title: string
+          url: string
+        }
+        Update: {
+          article_id?: string | null
+          created_at?: string | null
+          id?: string
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_article_links_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news_articles: {
         Row: {
           content: string
           created_at: string | null
           id: string
+          image_caption: string | null
+          image_credit: string | null
           image_url: string | null
           published_at: string | null
+          related_experts: string[] | null
+          related_links: Json | null
           status: string
           title: string
           updated_at: string | null
@@ -182,8 +218,12 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          image_caption?: string | null
+          image_credit?: string | null
           image_url?: string | null
           published_at?: string | null
+          related_experts?: string[] | null
+          related_links?: Json | null
           status?: string
           title: string
           updated_at?: string | null
@@ -192,8 +232,12 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          image_caption?: string | null
+          image_credit?: string | null
           image_url?: string | null
           published_at?: string | null
+          related_experts?: string[] | null
+          related_links?: Json | null
           status?: string
           title?: string
           updated_at?: string | null
