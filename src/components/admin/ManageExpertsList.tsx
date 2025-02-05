@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Edit2, Trash2, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Edit2, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,7 +69,7 @@ const ManageExpertsList = () => {
         .not("field_of_expertise", "is", null);
 
       if (error) throw error;
-      return [...new Set(data.map(e => e.field_of_expertise))];
+      return [...new Set(data.map(e => e.field_of_expertise))].filter(Boolean);
     },
   });
 
@@ -123,8 +123,8 @@ const ManageExpertsList = () => {
           <SelectContent>
             <SelectItem value="all">All Expertise</SelectItem>
             {expertiseFields.map((field) => (
-              <SelectItem key={field} value={field}>
-                {field}
+              <SelectItem key={field} value={field || "unknown"}>
+                {field || "Unknown"}
               </SelectItem>
             ))}
           </SelectContent>

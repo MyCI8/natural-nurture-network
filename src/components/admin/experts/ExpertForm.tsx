@@ -10,6 +10,7 @@ import { ExpertDetailsSection } from "./ExpertDetailsSection";
 import { ExpertCredentialsSection } from "./ExpertCredentialsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 interface ExpertFormProps {
   expertId?: string;
@@ -61,7 +62,18 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
       setBio(data.bio || "");
       setFieldOfExpertise(data.field_of_expertise || "");
       setAffiliations(data.affiliations || []);
-      setSocialMedia(data.social_media as SocialMediaLinks || defaultSocialMedia);
+      
+      // Handle social media data from Supabase
+      const socialMediaData = data.social_media as Json;
+      if (socialMediaData && typeof socialMediaData === 'object') {
+        setSocialMedia({
+          youtube: (socialMediaData as any).youtube || "",
+          linkedin: (socialMediaData as any).linkedin || "",
+          twitter: (socialMediaData as any).twitter || "",
+          instagram: (socialMediaData as any).instagram || "",
+          website: (socialMediaData as any).website || "",
+        });
+      }
 
       return data;
     },
@@ -78,7 +90,7 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
       image_url: imageUrl,
       field_of_expertise: fieldOfExpertise,
       affiliations,
-      social_media: socialMedia,
+      social_media: socialMedia as Json,
     };
 
     const { error } = expertId
