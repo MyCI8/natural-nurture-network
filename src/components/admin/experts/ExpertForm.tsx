@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ImageManagementSection } from "./ImageManagementSection";
 import { ExpertDetailsSection } from "./ExpertDetailsSection";
 import { ExpertCredentialsSection } from "./ExpertCredentialsSection";
@@ -63,7 +60,6 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
       setFieldOfExpertise(data.field_of_expertise || "");
       setAffiliations(data.affiliations || []);
       
-      // Handle social media data from Supabase
       const socialMediaData = data.social_media as Json;
       if (socialMediaData && typeof socialMediaData === 'object') {
         setSocialMedia({
