@@ -207,11 +207,17 @@ export type Database = {
           image_caption: string | null
           image_credit: string | null
           image_url: string | null
+          last_edited_by: string | null
+          main_image_description: string | null
+          main_image_url: string | null
           published_at: string | null
           related_experts: string[] | null
           related_links: Json | null
+          scheduled_publish_date: string | null
+          slug: string | null
           status: string
           summary: string | null
+          thumbnail_description: string | null
           title: string
           updated_at: string | null
         }
@@ -222,11 +228,17 @@ export type Database = {
           image_caption?: string | null
           image_credit?: string | null
           image_url?: string | null
+          last_edited_by?: string | null
+          main_image_description?: string | null
+          main_image_url?: string | null
           published_at?: string | null
           related_experts?: string[] | null
           related_links?: Json | null
+          scheduled_publish_date?: string | null
+          slug?: string | null
           status?: string
           summary?: string | null
+          thumbnail_description?: string | null
           title: string
           updated_at?: string | null
         }
@@ -237,11 +249,17 @@ export type Database = {
           image_caption?: string | null
           image_credit?: string | null
           image_url?: string | null
+          last_edited_by?: string | null
+          main_image_description?: string | null
+          main_image_url?: string | null
           published_at?: string | null
           related_experts?: string[] | null
           related_links?: Json | null
+          scheduled_publish_date?: string | null
+          slug?: string | null
           status?: string
           summary?: string | null
+          thumbnail_description?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -407,6 +425,12 @@ export type Database = {
           delete_content: boolean
         }
         Returns: undefined
+      }
+      generate_slug: {
+        Args: {
+          title: string
+        }
+        Returns: string
       }
       get_top_symptoms: {
         Args: {

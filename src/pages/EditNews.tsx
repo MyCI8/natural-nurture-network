@@ -1,21 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, Link as LinkIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Save, Eye, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
 import TextEditor from "@/components/ui/text-editor";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
+import { NewsDetailsSection } from "@/components/admin/news/NewsDetailsSection";
+import { ImageManagementSection } from "@/components/admin/news/ImageManagementSection";
+import { PublishingOptionsSection } from "@/components/admin/news/PublishingOptionsSection";
 
 const EditNews = () => {
   const { id } = useParams();
@@ -24,13 +17,17 @@ const EditNews = () => {
   const { toast } = useToast();
   
   const [heading, setHeading] = useState("");
+  const [slug, setSlug] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
+  const [thumbnailDescription, setThumbnailDescription] = useState("");
+  const [mainImageUrl, setMainImageUrl] = useState("");
+  const [mainImageDescription, setMainImageDescription] = useState("");
   const [status, setStatus] = useState<"draft" | "published">("draft");
+  const [scheduledDate, setScheduledDate] = useState<Date>();
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
   const [relatedLinks, setRelatedLinks] = useState<{ title: string; url: string }[]>([]);
-  const [uploading, setUploading] = useState(false);
 
   // Fetch experts for the dropdown
   const { data: experts = [] } = useQuery({
@@ -65,83 +62,37 @@ const EditNews = () => {
   useEffect(() => {
     if (article) {
       setHeading(article.title);
+      setSlug(article.slug || "");
       setSummary(article.summary || "");
       setContent(article.content);
-      setImageUrl(article.image_url || "");
+      setThumbnailUrl(article.image_url || "");
+      setThumbnailDescription(article.thumbnail_description || "");
+      setMainImageUrl(article.main_image_url || "");
+      setMainImageDescription(article.main_image_description || "");
       setStatus(article.status as "draft" | "published");
+      setScheduledDate(article.scheduled_publish_date ? new Date(article.scheduled_publish_date) : undefined);
       setSelectedExperts(article.related_experts || []);
       setRelatedLinks(article.news_article_links || []);
     }
   }, [article]);
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      setUploading(true);
-      
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('news-images')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        toast({
-          title: "Error",
-          description: "Failed to upload image",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('news-images')
-        .getPublicUrl(fileName);
-
-      setImageUrl(publicUrl);
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const addRelatedLink = () => {
-    setRelatedLinks([...relatedLinks, { title: "", url: "" }]);
-  };
-
-  const removeRelatedLink = (index: number) => {
-    setRelatedLinks(relatedLinks.filter((_, i) => i !== index));
-  };
-
-  const updateRelatedLink = (index: number, field: 'title' | 'url', value: string) => {
-    const updatedLinks = [...relatedLinks];
-    updatedLinks[index] = { ...updatedLinks[index], [field]: value };
-    setRelatedLinks(updatedLinks);
-  };
-
-  const handleSave = async () => {
+  const handleSave = async (shouldPublish = false) => {
     try {
       const articleData = {
         title: heading,
+        slug,
         summary,
         content,
-        image_url: imageUrl,
-        status,
+        image_url: thumbnailUrl,
+        thumbnail_description: thumbnailDescription,
+        main_image_url: mainImageUrl || thumbnailUrl,
+        main_image_description: mainImageDescription,
+        status: shouldPublish ? "published" : status,
         related_experts: selectedExperts,
+        scheduled_publish_date: scheduledDate?.toISOString(),
         updated_at: new Date().toISOString(),
-        published_at: status === 'published' ? new Date().toISOString() : null,
+        published_at: shouldPublish ? new Date().toISOString() : null,
+        last_edited_by: (await supabase.auth.getUser()).data.user?.id,
       };
 
       if (isNewArticle) {
@@ -214,6 +165,14 @@ const EditNews = () => {
     }
   };
 
+  const handlePreview = () => {
+    // Implement preview functionality
+    toast({
+      title: "Info",
+      description: "Preview functionality coming soon",
+    });
+  };
+
   if (isLoading && !isNewArticle) {
     return <div>Loading...</div>;
   }
@@ -221,154 +180,67 @@ const EditNews = () => {
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/admin/news")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to News
-        </Button>
-
-        <div className="space-y-6">
-          <div>
-            <Label htmlFor="heading">Heading</Label>
-            <Input
-              id="heading"
-              value={heading}
-              onChange={(e) => setHeading(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="summary">Summary</Label>
-            <Textarea
-              id="summary"
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              className="h-24"
-            />
-          </div>
-
-          <div>
-            <Label>Status</Label>
-            <Select
-              value={status}
-              onValueChange={(value: "draft" | "published") => setStatus(value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Thumbnail</Label>
-            <div className="mt-2 flex items-center gap-4">
-              {imageUrl && (
-                <div className="relative">
-                  <img
-                    src={imageUrl}
-                    alt="Thumbnail"
-                    className="w-32 h-32 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2"
-                    onClick={() => setImageUrl("")}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              <Label
-                htmlFor="thumbnail"
-                className="cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary"
-              >
-                <input
-                  type="file"
-                  id="thumbnail"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                />
-                <Plus className="h-6 w-6 text-gray-400" />
-              </Label>
-            </div>
-          </div>
-
-          <div>
-            <Label>Related Experts</Label>
-            <Select
-              value={selectedExperts[0] || ""}
-              onValueChange={(value) => setSelectedExperts([value])}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select an expert" />
-              </SelectTrigger>
-              <SelectContent>
-                {experts.map((expert) => (
-                  <SelectItem key={expert.id} value={expert.id}>
-                    {expert.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Related Links</Label>
-            <div className="space-y-4">
-              {relatedLinks.map((link, index) => (
-                <div key={index} className="flex gap-4 items-start">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Link title"
-                      value={link.title}
-                      onChange={(e) => updateRelatedLink(index, 'title', e.target.value)}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Input
-                      placeholder="URL"
-                      value={link.url}
-                      onChange={(e) => updateRelatedLink(index, 'url', e.target.value)}
-                    />
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => removeRelatedLink(index)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                onClick={addRelatedLink}
-                className="w-full"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Related Link
-              </Button>
-            </div>
-          </div>
-
-          <div>
-            <Label>Content</Label>
-            <TextEditor content={content} onChange={setContent} />
-          </div>
-
-          <Button onClick={handleSave} className="w-full">
-            {isNewArticle ? "Create Article" : "Save Changes"}
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/admin/news")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to News
           </Button>
+          <div className="space-x-2">
+            <Button variant="outline" onClick={handlePreview}>
+              <Eye className="mr-2 h-4 w-4" />
+              Preview
+            </Button>
+            <Button variant="outline" onClick={() => handleSave(false)}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Draft
+            </Button>
+            <Button onClick={() => handleSave(true)}>
+              <Send className="mr-2 h-4 w-4" />
+              Publish
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-[2fr,1fr]">
+          <div className="space-y-6">
+            <NewsDetailsSection
+              heading={heading}
+              setHeading={setHeading}
+              slug={slug}
+              setSlug={setSlug}
+              summary={summary}
+              setSummary={setSummary}
+            />
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Content</h3>
+              <TextEditor content={content} onChange={setContent} />
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <ImageManagementSection
+              thumbnailUrl={thumbnailUrl}
+              setThumbnailUrl={setThumbnailUrl}
+              thumbnailDescription={thumbnailDescription}
+              setThumbnailDescription={setThumbnailDescription}
+              mainImageUrl={mainImageUrl}
+              setMainImageUrl={setMainImageUrl}
+              mainImageDescription={mainImageDescription}
+              setMainImageDescription={setMainImageDescription}
+            />
+
+            <PublishingOptionsSection
+              status={status}
+              setStatus={setStatus}
+              scheduledDate={scheduledDate}
+              setScheduledDate={setScheduledDate}
+              lastEditedAt={article?.updated_at}
+            />
+          </div>
         </div>
       </div>
     </div>
