@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ImageManagementSection } from "./ImageManagementSection";
 import { ExpertDetailsSection } from "./ExpertDetailsSection";
 import { ExpertCredentialsSection } from "./ExpertCredentialsSection";
@@ -86,13 +88,7 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
       image_url: imageUrl,
       field_of_expertise: fieldOfExpertise,
       affiliations,
-      social_media: {
-        youtube: socialMedia.youtube,
-        linkedin: socialMedia.linkedin,
-        twitter: socialMedia.twitter,
-        instagram: socialMedia.instagram,
-        website: socialMedia.website
-      } as Json,
+      social_media: socialMedia as unknown as Json,
     };
 
     const { error } = expertId
