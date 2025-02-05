@@ -6,6 +6,33 @@ import { ExpertRemediesSection } from "@/components/experts/ExpertRemediesSectio
 import { ExpertMediaSection } from "@/components/experts/ExpertMediaSection";
 import { RelatedExpertsSection } from "@/components/experts/RelatedExpertsSection";
 
+interface SocialMedia {
+  youtube?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+  instagram?: string | null;
+  website?: string | null;
+}
+
+interface MediaLinks {
+  podcasts: string[];
+  news_articles: string[];
+  youtube_videos: string[];
+  research_papers: string[];
+}
+
+interface Expert {
+  id: string;
+  full_name: string;
+  title: string;
+  bio: string;
+  image_url: string | null;
+  field_of_expertise: string;
+  social_media: SocialMedia;
+  affiliations: string[];
+  media_links: MediaLinks;
+}
+
 const ExpertProfile = () => {
   const { id } = useParams();
 
@@ -29,7 +56,7 @@ const ExpertProfile = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Expert;
     },
   });
 
