@@ -1,47 +1,69 @@
-import { Card, CardContent } from "@/components/ui/card";
 
-const newsItems = [
-  {
-    thumbnail: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81",
-    headline: "New Study Reveals Benefits of Traditional Herbal Remedies",
-    summary: "Research confirms the effectiveness of ancient healing practices in modern healthcare, highlighting specific benefits for chronic conditions."
-  },
-  {
-    thumbnail: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-    headline: "Digital Revolution in Natural Medicine",
-    summary: "How technology is transforming the way we approach holistic health and natural healing methods."
-  },
-  {
-    thumbnail: "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
-    headline: "Global Summit on Alternative Medicine Announces Key Findings",
-    summary: "Leading practitioners share breakthrough discoveries in natural healing methodologies at international conference."
-  },
-  {
-    thumbnail: "https://images.unsplash.com/photo-1472396961693-142e6e269027",
-    headline: "Sustainable Wellness: Nature's Role in Healing",
-    summary: "Exploring the connection between environmental conservation and natural healing practices."
-  }
-];
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const NewsSection = () => {
+  const { data: newsItems, isLoading } = useQuery({
+    queryKey: ["news-articles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("news_articles")
+        .select("*")
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <section className="py-12 bg-secondary">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="space-y-8">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row md:items-center">
+                    <div className="w-full md:w-1/3">
+                      <Skeleton className="h-48 w-full" />
+                    </div>
+                    <div className="p-6 md:w-2/3 space-y-2">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-12 bg-secondary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
-          {newsItems.map((item, index) => (
-            <Card key={index} className="overflow-hidden animate-fadeIn">
+          {newsItems?.map((item) => (
+            <Card key={item.id} className="overflow-hidden animate-fadeIn">
               <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row md:items-center">
                   <div className="w-full md:w-1/3 h-48">
                     <img
-                      src={item.thumbnail}
-                      alt=""
+                      src={item.image_url || "/placeholder.svg"}
+                      alt={item.thumbnail_description || ""}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="p-6 md:w-2/3">
                     <h3 className="text-xl font-semibold text-text mb-2">
-                      {item.headline}
+                      {item.title}
                     </h3>
                     <p className="text-text-light">
                       {item.summary}
