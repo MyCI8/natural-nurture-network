@@ -21,6 +21,7 @@ import {
 
 const EditNews = () => {
   const { id } = useParams();
+  const isNewArticle = id === 'new';
   const navigate = useNavigate();
   const { toast } = useToast();
   const [title, setTitle] = useState("");
@@ -31,6 +32,8 @@ const EditNews = () => {
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
     queryFn: async () => {
+      if (isNewArticle) return null;
+      
       const { data, error } = await supabase
         .from("news_articles")
         .select("*")
@@ -40,6 +43,7 @@ const EditNews = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !isNewArticle, // Only run query if we're editing an existing article
   });
 
   const editor = useEditor({
@@ -66,7 +70,7 @@ const EditNews = () => {
     if (article) {
       setTitle(article.title);
       setImageUrl(article.image_url || "");
-      setStatus(article.status);
+      setStatus(article.status as "draft" | "published");
       editor?.commands.setContent(article.content);
     }
   }, [article, editor]);
@@ -116,36 +120,51 @@ const EditNews = () => {
 
   const handleSave = async () => {
     try {
-      const { error } = await supabase
-        .from("news_articles")
-        .update({
-          title,
-          content: editor?.getHTML(),
-          image_url: imageUrl,
-          status,
-          updated_at: new Date().toISOString(),
-          published_at: status === 'published' ? new Date().toISOString() : null,
-        })
-        .eq("id", id);
+      const articleData = {
+        title,
+        content: editor?.getHTML() || "",
+        image_url: imageUrl,
+        status,
+        updated_at: new Date().toISOString(),
+        published_at: status === 'published' ? new Date().toISOString() : null,
+      };
 
-      if (error) throw error;
+      if (isNewArticle) {
+        const { error } = await supabase
+          .from("news_articles")
+          .insert([articleData]);
 
-      toast({
-        title: "Success",
-        description: "Article updated successfully",
-      });
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Article created successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from("news_articles")
+          .update(articleData)
+          .eq("id", id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Article updated successfully",
+        });
+      }
       
       navigate("/admin/news");
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update article",
+        description: isNewArticle ? "Failed to create article" : "Failed to update article",
         variant: "destructive",
       });
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !isNewArticle) {
     return <div>Loading...</div>;
   }
 
@@ -282,7 +301,9 @@ const EditNews = () => {
             <EditorContent editor={editor} />
           </div>
 
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave}>
+            {isNewArticle ? "Create Article" : "Save Changes"}
+          </Button>
         </div>
       </div>
     </div>
