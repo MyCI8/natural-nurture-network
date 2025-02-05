@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,7 @@ const NewsArticle = () => {
       // First, fetch the article
       const { data: articleData, error: articleError } = await supabase
         .from("news_articles")
-        .select("*")
+        .select("*, news_article_links(*)")
         .eq("id", id)
         .single();
 
@@ -93,38 +93,40 @@ const NewsArticle = () => {
         {article.experts && article.experts.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-6">Related Experts</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {article.experts.map((expert) => (
-                <Card key={expert.id} className="text-center">
-                  <CardContent className="pt-6">
-                    {expert.image_url ? (
-                      <img
-                        src={expert.image_url}
-                        alt={expert.full_name}
-                        className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                      />
-                    ) : (
-                      <div className="w-32 h-32 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-                        <span className="text-4xl text-text-light">
-                          {expert.full_name.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                    <h3 className="font-semibold text-lg">{expert.full_name}</h3>
-                    <p className="text-text-light">{expert.title}</p>
-                  </CardContent>
-                </Card>
+                <Link to={`/admin/ingredients/${expert.id}`} key={expert.id}>
+                  <Card className="hover:shadow-lg transition-shadow duration-200">
+                    <CardContent className="p-4">
+                      {expert.image_url ? (
+                        <img
+                          src={expert.image_url}
+                          alt={expert.full_name}
+                          className="w-24 h-24 rounded-full mx-auto mb-3 object-cover"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-secondary mx-auto mb-3 flex items-center justify-center">
+                          <span className="text-3xl text-text-light">
+                            {expert.full_name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <h3 className="font-semibold text-base text-center">{expert.full_name}</h3>
+                      <p className="text-text-light text-sm text-center">{expert.title}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </section>
         )}
 
         {/* Related Links Section */}
-        {Array.isArray(article.related_links) && article.related_links.length > 0 && (
+        {article.news_article_links && article.news_article_links.length > 0 && (
           <section>
             <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
             <div className="space-y-4">
-              {article.related_links.map((link: { title: string; url: string }, index: number) => (
+              {article.news_article_links.map((link, index) => (
                 <a
                   key={index}
                   href={link.url}
