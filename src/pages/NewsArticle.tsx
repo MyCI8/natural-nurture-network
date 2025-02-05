@@ -136,11 +136,11 @@ const NewsArticle = () => {
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
                 >
-                  <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded flex items-center justify-center">
+                  <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded overflow-hidden">
                     <img
-                      src={`https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=64`}
+                      src={`https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d`}
                       alt=""
-                      className="w-8 h-8"
+                      className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "/placeholder.svg";
