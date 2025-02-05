@@ -9,6 +9,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { NewsDetailsSection } from "@/components/admin/news/NewsDetailsSection";
 import { ImageManagementSection } from "@/components/admin/news/ImageManagementSection";
 import { PublishingOptionsSection } from "@/components/admin/news/PublishingOptionsSection";
+import { RelatedLinksSection } from "@/components/admin/news/RelatedLinksSection";
+import { ExpertsSection } from "@/components/admin/news/ExpertsSection";
 
 const EditNews = () => {
   const { id } = useParams();
@@ -30,12 +32,12 @@ const EditNews = () => {
   const [relatedLinks, setRelatedLinks] = useState<{ title: string; url: string }[]>([]);
 
   // Fetch experts for the dropdown
-  const { data: experts = [] } = useQuery({
+  const { data: experts = [], refetch: refetchExperts } = useQuery({
     queryKey: ["experts"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("experts")
-        .select("id, full_name");
+        .select("id, full_name, title");
       if (error) throw error;
       return data;
     },
@@ -166,7 +168,6 @@ const EditNews = () => {
   };
 
   const handlePreview = () => {
-    // Implement preview functionality
     toast({
       title: "Info",
       description: "Preview functionality coming soon",
@@ -219,6 +220,11 @@ const EditNews = () => {
               <h3 className="text-lg font-semibold mb-4">Content</h3>
               <TextEditor content={content} onChange={setContent} />
             </div>
+
+            <RelatedLinksSection
+              relatedLinks={relatedLinks}
+              setRelatedLinks={setRelatedLinks}
+            />
           </div>
 
           <div className="space-y-6">
@@ -231,6 +237,13 @@ const EditNews = () => {
               setMainImageUrl={setMainImageUrl}
               mainImageDescription={mainImageDescription}
               setMainImageDescription={setMainImageDescription}
+            />
+
+            <ExpertsSection
+              experts={experts}
+              selectedExperts={selectedExperts}
+              setSelectedExperts={setSelectedExperts}
+              onExpertAdded={refetchExperts}
             />
 
             <PublishingOptionsSection
