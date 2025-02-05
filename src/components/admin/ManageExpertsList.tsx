@@ -94,7 +94,7 @@ const ManageExpertsList = () => {
   };
 
   const handleExpertClick = (expertId: string) => {
-    navigate(`/admin/manage-experts/${expertId}`);
+    navigate(`/experts/${expertId}`);
   };
 
   return (
