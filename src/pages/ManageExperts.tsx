@@ -114,7 +114,7 @@ const ManageExperts = () => {
               setFullName={setFullName}
               title={title}
               setTitle={setTitle}
-              bio={setBio}
+              bio={bio}
               setBio={setBio}
             />
 
