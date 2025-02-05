@@ -61,7 +61,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.experts || 0,
       icon: GraduationCap,
       description: "Medical experts",
-      onClick: undefined,
+      onClick: () => navigate("/admin/experts"),
     },
   ];
 
