@@ -1,8 +1,9 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
@@ -14,6 +15,7 @@ type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
 
 const NewsArticle = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
@@ -70,8 +72,18 @@ const NewsArticle = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mb-8">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center text-text-light hover:text-primary mb-4"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back
+        </button>
+        <h1 className="text-3xl font-bold mb-6">News</h1>
+      </div>
+
       <article className="text-left">
-        <h1 className="text-3xl font-bold mb-6">{article.title}</h1>
         {article.main_image_url && (
           <figure className="mb-8">
             <img
@@ -86,6 +98,9 @@ const NewsArticle = () => {
             )}
           </figure>
         )}
+        
+        <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
+        
         <div 
           className="prose prose-lg max-w-none mb-12"
           dangerouslySetInnerHTML={{ __html: article.content }}
