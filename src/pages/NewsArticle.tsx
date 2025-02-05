@@ -1,9 +1,14 @@
-
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Database } from "@/integrations/supabase/types";
+
+type Expert = Database["public"]["Tables"]["experts"]["Row"];
+type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
+  experts?: Expert[];
+};
 
 const NewsArticle = () => {
   const { id } = useParams();
@@ -11,6 +16,7 @@ const NewsArticle = () => {
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
     queryFn: async () => {
+      // First, fetch the article
       const { data: articleData, error: articleError } = await supabase
         .from("news_articles")
         .select("*")
@@ -19,6 +25,7 @@ const NewsArticle = () => {
 
       if (articleError) throw articleError;
 
+      // If there are related experts, fetch their details
       if (articleData.related_experts && articleData.related_experts.length > 0) {
         const { data: expertsData, error: expertsError } = await supabase
           .from("experts")
@@ -26,10 +33,14 @@ const NewsArticle = () => {
           .in("id", articleData.related_experts);
 
         if (expertsError) throw expertsError;
-        articleData.expertDetails = expertsData;
+        
+        return {
+          ...articleData,
+          experts: expertsData
+        } as NewsArticle;
       }
 
-      return articleData;
+      return articleData as NewsArticle;
     },
   });
 
@@ -79,11 +90,11 @@ const NewsArticle = () => {
         />
 
         {/* Related Experts Section */}
-        {article.expertDetails && article.expertDetails.length > 0 && (
+        {article.experts && article.experts.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-6">Related Experts</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {article.expertDetails.map((expert) => (
+              {article.experts.map((expert) => (
                 <Card key={expert.id} className="text-center">
                   <CardContent className="pt-6">
                     {expert.image_url ? (
@@ -109,7 +120,7 @@ const NewsArticle = () => {
         )}
 
         {/* Related Links Section */}
-        {article.related_links && article.related_links.length > 0 && (
+        {Array.isArray(article.related_links) && article.related_links.length > 0 && (
           <section>
             <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
             <div className="space-y-4">
