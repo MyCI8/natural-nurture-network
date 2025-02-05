@@ -8,6 +8,7 @@ import ManageIngredients from "@/pages/ManageIngredients";
 import IngredientDetail from "@/pages/IngredientDetail";
 import Index from "@/pages/Index";
 import EditRemedy from "@/pages/EditRemedy";
+import EditNews from "@/pages/EditNews";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/admin/remedies" element={<ManageRemedies />} />
         <Route path="/admin/remedies/:id" element={<EditRemedy />} />
         <Route path="/admin/news" element={<ManageNews />} />
+        <Route path="/admin/news/:id" element={<EditNews />} />
         <Route path="/admin/ingredients" element={<ManageIngredients />} />
         <Route path="/admin/ingredients/:id" element={<IngredientDetail />} />
       </Routes>
