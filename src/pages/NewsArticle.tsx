@@ -6,8 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { Database } from "@/integrations/supabase/types";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
+type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
 type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
   experts?: Expert[];
+  news_article_links?: NewsArticleLink[];
 };
 
 const NewsArticle = () => {
