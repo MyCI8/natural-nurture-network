@@ -5,6 +5,7 @@ import { Youtube, Linkedin, Twitter, Instagram, Globe } from "lucide-react";
 import { ExpertRemediesSection } from "@/components/experts/ExpertRemediesSection";
 import { ExpertMediaSection } from "@/components/experts/ExpertMediaSection";
 import { RelatedExpertsSection } from "@/components/experts/RelatedExpertsSection";
+import { Json } from "@/integrations/supabase/types";
 
 interface SocialMedia {
   youtube?: string | null;
@@ -68,10 +69,10 @@ const ExpertProfile = () => {
         social_media: data.social_media as SocialMedia || {},
         affiliations: data.affiliations || [],
         media_links: {
-          podcasts: (data.media_links?.podcasts as string[]) || [],
-          news_articles: (data.media_links?.news_articles as string[]) || [],
-          youtube_videos: (data.media_links?.youtube_videos as string[]) || [],
-          research_papers: (data.media_links?.research_papers as string[]) || [],
+          podcasts: ((data.media_links as any)?.podcasts || []) as string[],
+          news_articles: ((data.media_links as any)?.news_articles || []) as string[],
+          youtube_videos: ((data.media_links as any)?.youtube_videos || []) as string[],
+          research_papers: ((data.media_links as any)?.research_papers || []) as string[],
         },
       };
       
