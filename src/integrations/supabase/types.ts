@@ -109,29 +109,41 @@ export type Database = {
       }
       experts: {
         Row: {
+          affiliations: string[] | null
           bio: string | null
           created_at: string | null
+          field_of_expertise: string | null
           full_name: string
           id: string
           image_url: string | null
+          media_links: Json | null
+          social_media: Json | null
           title: string
           updated_at: string | null
         }
         Insert: {
+          affiliations?: string[] | null
           bio?: string | null
           created_at?: string | null
+          field_of_expertise?: string | null
           full_name: string
           id?: string
           image_url?: string | null
+          media_links?: Json | null
+          social_media?: Json | null
           title: string
           updated_at?: string | null
         }
         Update: {
+          affiliations?: string[] | null
           bio?: string | null
           created_at?: string | null
+          field_of_expertise?: string | null
           full_name?: string
           id?: string
           image_url?: string | null
+          media_links?: Json | null
+          social_media?: Json | null
           title?: string
           updated_at?: string | null
         }

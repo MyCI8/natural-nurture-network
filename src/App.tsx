@@ -11,6 +11,7 @@ import IngredientDetail from "@/pages/IngredientDetail";
 import ManageNews from "@/pages/ManageNews";
 import EditNews from "@/pages/EditNews";
 import ManageExperts from "@/pages/ManageExperts";
+import EditExpert from "@/pages/EditExpert";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function App() {
           <Route path="/admin/news" element={<ManageNews />} />
           <Route path="/admin/news/:id" element={<EditNews />} />
           <Route path="/admin/manage-experts" element={<ManageExperts />} />
+          <Route path="/admin/manage-experts/:id" element={<EditExpert />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
