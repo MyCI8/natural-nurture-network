@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Save, Eye } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -84,13 +84,6 @@ const ManageExperts = () => {
     }
   };
 
-  const handlePreview = () => {
-    toast({
-      title: "Info",
-      description: "Preview functionality coming soon",
-    });
-  };
-
   if (isLoading && !isNewExpert) {
     return <div>Loading...</div>;
   }
@@ -107,10 +100,6 @@ const ManageExperts = () => {
             Back to Experts
           </Button>
           <div className="space-x-2">
-            <Button variant="outline" onClick={handlePreview}>
-              <Eye className="mr-2 h-4 w-4" />
-              Preview
-            </Button>
             <Button onClick={handleSave}>
               <Save className="mr-2 h-4 w-4" />
               Save Expert
@@ -125,7 +114,7 @@ const ManageExperts = () => {
               setFullName={setFullName}
               title={title}
               setTitle={setTitle}
-              bio={bio}
+              bio={setBio}
               setBio={setBio}
             />
 
