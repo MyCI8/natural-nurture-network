@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,6 +10,7 @@ import IngredientDetail from "@/pages/IngredientDetail";
 import Index from "@/pages/Index";
 import EditRemedy from "@/pages/EditRemedy";
 import EditNews from "@/pages/EditNews";
+import NewsArticle from "@/pages/NewsArticle";
 
 const App = () => {
   return (
@@ -23,6 +25,7 @@ const App = () => {
         <Route path="/admin/news/:id" element={<EditNews />} />
         <Route path="/admin/ingredients" element={<ManageIngredients />} />
         <Route path="/admin/ingredients/:id" element={<IngredientDetail />} />
+        <Route path="/news/:id" element={<NewsArticle />} />
       </Routes>
       <Toaster />
     </BrowserRouter>
