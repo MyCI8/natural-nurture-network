@@ -25,12 +25,37 @@ interface Expert {
   id: string;
   full_name: string;
   title: string;
-  bio: string;
+  bio: string | null;
   image_url: string | null;
-  field_of_expertise: string;
+  field_of_expertise: string | null;
   social_media: SocialMedia;
   affiliations: string[];
   media_links: MediaLinks;
+}
+
+interface ExpertResponse {
+  id: string;
+  full_name: string;
+  title: string;
+  bio: string | null;
+  image_url: string | null;
+  field_of_expertise: string | null;
+  social_media: SocialMedia;
+  affiliations: string[];
+  media_links: {
+    podcasts: string[];
+    news_articles: string[];
+    youtube_videos: string[];
+    research_papers: string[];
+  };
+  expert_remedies: {
+    remedies: {
+      id: string;
+      name: string;
+      summary: string;
+      image_url: string;
+    };
+  }[];
 }
 
 const ExpertProfile = () => {
@@ -56,7 +81,21 @@ const ExpertProfile = () => {
         .single();
 
       if (error) throw error;
-      return data as Expert;
+      
+      // Transform the response to match our Expert interface
+      const expertData: Expert = {
+        id: data.id,
+        full_name: data.full_name,
+        title: data.title,
+        bio: data.bio,
+        image_url: data.image_url,
+        field_of_expertise: data.field_of_expertise,
+        social_media: data.social_media as SocialMedia,
+        affiliations: data.affiliations || [],
+        media_links: data.media_links as MediaLinks,
+      };
+      
+      return expertData;
     },
   });
 
@@ -140,7 +179,7 @@ const ExpertProfile = () => {
       {/* Related Experts Section */}
       <RelatedExpertsSection
         currentExpertId={expert.id}
-        fieldOfExpertise={expert.field_of_expertise}
+        fieldOfExpertise={expert.field_of_expertise || ''}
       />
     </div>
   );
