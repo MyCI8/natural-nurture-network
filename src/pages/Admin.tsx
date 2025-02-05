@@ -12,12 +12,13 @@ const Admin = () => {
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => {
-      const [usersCount, remediesCount, pendingCommentsCount, newsArticles, ingredientsCount] = await Promise.all([
+      const [usersCount, remediesCount, pendingCommentsCount, newsArticles, ingredientsCount, expertsCount] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact" }),
         supabase.from("remedies").select("id", { count: "exact" }),
         supabase.from("comments").select("id", { count: "exact" }).eq("status", "pending"),
         supabase.from("news_articles").select("*").order("created_at", { ascending: false }).limit(5),
         supabase.from("ingredients").select("id", { count: "exact" }),
+        supabase.from("experts").select("id", { count: "exact" }),
       ]);
 
       return {
@@ -26,6 +27,7 @@ const Admin = () => {
         pendingComments: pendingCommentsCount.count || 0,
         recentNews: newsArticles.data || [],
         ingredients: ingredientsCount.count || 0,
+        experts: expertsCount.count || 0,
       };
     },
   });
