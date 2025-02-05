@@ -93,6 +93,10 @@ const ManageExpertsList = () => {
     }
   };
 
+  const handleExpertClick = (expertId: string) => {
+    navigate(`/admin/manage-experts/${expertId}`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -162,10 +166,16 @@ const ManageExpertsList = () => {
                   <img
                     src={expert.image_url || "/placeholder.svg"}
                     alt={expert.full_name}
-                    className="w-12 h-12 rounded-full object-cover"
+                    className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => handleExpertClick(expert.id)}
                   />
                 </TableCell>
-                <TableCell className="font-medium">{expert.full_name}</TableCell>
+                <TableCell 
+                  className="font-medium cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => handleExpertClick(expert.id)}
+                >
+                  {expert.full_name}
+                </TableCell>
                 <TableCell>{expert.field_of_expertise}</TableCell>
                 <TableCell className="text-center">
                   {expert.expert_remedies?.[0]?.count || 0}
