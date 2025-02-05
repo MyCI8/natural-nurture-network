@@ -33,31 +33,6 @@ interface Expert {
   media_links: MediaLinks;
 }
 
-interface ExpertResponse {
-  id: string;
-  full_name: string;
-  title: string;
-  bio: string | null;
-  image_url: string | null;
-  field_of_expertise: string | null;
-  social_media: SocialMedia;
-  affiliations: string[];
-  media_links: {
-    podcasts: string[];
-    news_articles: string[];
-    youtube_videos: string[];
-    research_papers: string[];
-  };
-  expert_remedies: {
-    remedies: {
-      id: string;
-      name: string;
-      summary: string;
-      image_url: string;
-    };
-  }[];
-}
-
 const ExpertProfile = () => {
   const { id } = useParams();
 
@@ -90,9 +65,14 @@ const ExpertProfile = () => {
         bio: data.bio,
         image_url: data.image_url,
         field_of_expertise: data.field_of_expertise,
-        social_media: data.social_media as SocialMedia,
+        social_media: data.social_media as SocialMedia || {},
         affiliations: data.affiliations || [],
-        media_links: data.media_links as MediaLinks,
+        media_links: {
+          podcasts: (data.media_links?.podcasts as string[]) || [],
+          news_articles: (data.media_links?.news_articles as string[]) || [],
+          youtube_videos: (data.media_links?.youtube_videos as string[]) || [],
+          research_papers: (data.media_links?.research_papers as string[]) || [],
+        },
       };
       
       return expertData;
