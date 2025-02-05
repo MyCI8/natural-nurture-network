@@ -30,6 +30,10 @@ const RecentNews = ({ news, isLoading }: RecentNewsProps) => {
     );
   };
 
+  const handleArticleClick = (articleId: string) => {
+    navigate(`/admin/news/${articleId}`);
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -55,7 +59,14 @@ const RecentNews = ({ news, isLoading }: RecentNewsProps) => {
               <div
                 key={article.id}
                 className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
-                onClick={() => navigate(`/admin/news/${article.id}`)}
+                onClick={() => handleArticleClick(article.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleArticleClick(article.id);
+                  }
+                }}
               >
                 <div className="space-y-1">
                   <p className="font-medium">{article.title}</p>
