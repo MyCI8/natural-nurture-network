@@ -15,6 +15,22 @@ interface ExpertFormProps {
   expertId?: string;
 }
 
+interface SocialMediaLinks {
+  youtube: string;
+  linkedin: string;
+  twitter: string;
+  instagram: string;
+  website: string;
+}
+
+const defaultSocialMedia: SocialMediaLinks = {
+  youtube: "",
+  linkedin: "",
+  twitter: "",
+  instagram: "",
+  website: "",
+};
+
 export const ExpertForm = ({ expertId }: ExpertFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,13 +40,7 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
   const [bio, setBio] = useState("");
   const [fieldOfExpertise, setFieldOfExpertise] = useState("");
   const [affiliations, setAffiliations] = useState<string[]>([]);
-  const [socialMedia, setSocialMedia] = useState({
-    youtube: "",
-    linkedin: "",
-    twitter: "",
-    instagram: "",
-    website: "",
-  });
+  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(defaultSocialMedia);
 
   useQuery({
     queryKey: ["expert", expertId],
@@ -51,13 +61,7 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
       setBio(data.bio || "");
       setFieldOfExpertise(data.field_of_expertise || "");
       setAffiliations(data.affiliations || []);
-      setSocialMedia(data.social_media || {
-        youtube: "",
-        linkedin: "",
-        twitter: "",
-        instagram: "",
-        website: "",
-      });
+      setSocialMedia(data.social_media as SocialMediaLinks || defaultSocialMedia);
 
       return data;
     },
