@@ -48,7 +48,7 @@ const NewsArticle = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 py-16">
+      <div className="max-w-4xl mx-auto px-1 sm:px-2 py-20">
         <Skeleton className="h-8 w-3/4 mb-4" />
         <Skeleton className="h-64 w-full mb-6" />
         <div className="space-y-4">
@@ -62,14 +62,14 @@ const NewsArticle = () => {
 
   if (!article) {
     return (
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 py-16">
+      <div className="max-w-4xl mx-auto px-1 sm:px-2 py-20">
         <h1 className="text-2xl font-bold mb-4">Article not found</h1>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-2 sm:px-4 py-16">
+    <div className="max-w-4xl mx-auto px-1 sm:px-2 py-20">
       <div className="mb-8">
         <button 
           onClick={() => navigate(-1)} 
