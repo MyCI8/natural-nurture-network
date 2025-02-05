@@ -90,7 +90,13 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
       image_url: imageUrl,
       field_of_expertise: fieldOfExpertise,
       affiliations,
-      social_media: socialMedia as Json,
+      social_media: {
+        youtube: socialMedia.youtube,
+        linkedin: socialMedia.linkedin,
+        twitter: socialMedia.twitter,
+        instagram: socialMedia.instagram,
+        website: socialMedia.website
+      } as Json,
     };
 
     const { error } = expertId
