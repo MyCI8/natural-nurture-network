@@ -80,7 +80,7 @@ const NewsArticle = () => {
               className="w-full rounded-lg"
             />
             {article.main_image_description && (
-              <figcaption className="mt-2 text-sm text-text-light text-center">
+              <figcaption className="mt-2 text-sm text-text-light text-center italic">
                 {article.main_image_description}
               </figcaption>
             )}
@@ -95,26 +95,26 @@ const NewsArticle = () => {
         {article.experts && article.experts.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-6">Related Experts</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {article.experts.map((expert) => (
-                <Link to={`/admin/ingredients/${expert.id}`} key={expert.id}>
+                <Link to={`/experts/${expert.id}`} key={expert.id}>
                   <Card className="hover:shadow-lg transition-shadow duration-200">
-                    <CardContent className="p-4">
+                    <CardContent className="p-3">
                       {expert.image_url ? (
                         <img
                           src={expert.image_url}
                           alt={expert.full_name}
-                          className="w-24 h-24 rounded-full mx-auto mb-3 object-cover"
+                          className="w-16 h-16 rounded-full mx-auto mb-2 object-cover"
                         />
                       ) : (
-                        <div className="w-24 h-24 rounded-full bg-secondary mx-auto mb-3 flex items-center justify-center">
-                          <span className="text-3xl text-text-light">
+                        <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-2 flex items-center justify-center">
+                          <span className="text-2xl text-text-light">
                             {expert.full_name.charAt(0)}
                           </span>
                         </div>
                       )}
-                      <h3 className="font-semibold text-base text-center">{expert.full_name}</h3>
-                      <p className="text-text-light text-sm text-center">{expert.title}</p>
+                      <h3 className="font-semibold text-sm text-center line-clamp-1">{expert.full_name}</h3>
+                      <p className="text-text-light text-xs text-center line-clamp-1">{expert.title}</p>
                     </CardContent>
                   </Card>
                 </Link>
@@ -134,10 +134,23 @@ const NewsArticle = () => {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
+                  className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
                 >
-                  <h3 className="font-medium text-lg text-text">{link.title}</h3>
-                  <p className="text-sm text-text-light mt-1">{link.url}</p>
+                  <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded flex items-center justify-center">
+                    <img
+                      src={`https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=64`}
+                      alt=""
+                      className="w-8 h-8"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder.svg";
+                      }}
+                    />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h3 className="font-medium text-lg text-text truncate">{link.title}</h3>
+                    <p className="text-sm text-text-light truncate">{link.url}</p>
+                  </div>
                 </a>
               ))}
             </div>
