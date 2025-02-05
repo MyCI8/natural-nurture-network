@@ -211,6 +211,7 @@ export type Database = {
           related_experts: string[] | null
           related_links: Json | null
           status: string
+          summary: string | null
           title: string
           updated_at: string | null
         }
@@ -225,6 +226,7 @@ export type Database = {
           related_experts?: string[] | null
           related_links?: Json | null
           status?: string
+          summary?: string | null
           title: string
           updated_at?: string | null
         }
@@ -239,6 +241,7 @@ export type Database = {
           related_experts?: string[] | null
           related_links?: Json | null
           status?: string
+          summary?: string | null
           title?: string
           updated_at?: string | null
         }

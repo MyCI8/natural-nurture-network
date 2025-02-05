@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import TextAlign from '@tiptap/extension-text-align';
-import { ArrowLeft, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Image as ImageIcon, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Link as LinkIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import TextEditor from "@/components/ui/text-editor";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
@@ -24,11 +22,29 @@ const EditNews = () => {
   const isNewArticle = id === 'new';
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [title, setTitle] = useState("");
+  
+  const [heading, setHeading] = useState("");
+  const [summary, setSummary] = useState("");
+  const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [status, setStatus] = useState<"draft" | "published">("draft");
+  const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
+  const [relatedLinks, setRelatedLinks] = useState<{ title: string; url: string }[]>([]);
   const [uploading, setUploading] = useState(false);
 
+  // Fetch experts for the dropdown
+  const { data: experts = [] } = useQuery({
+    queryKey: ["experts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("experts")
+        .select("id, full_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch article data if editing
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
     queryFn: async () => {
@@ -36,44 +52,27 @@ const EditNews = () => {
       
       const { data, error } = await supabase
         .from("news_articles")
-        .select("*")
+        .select("*, news_article_links(*)")
         .eq("id", id)
         .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !isNewArticle, // Only run query if we're editing an existing article
-  });
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image.configure({
-        HTMLAttributes: {
-          class: "rounded-lg max-w-full h-auto",
-        },
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-    ],
-    content: "",
-    editorProps: {
-      attributes: {
-        class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none min-h-[500px] p-4",
-      },
-    },
+    enabled: !isNewArticle,
   });
 
   useEffect(() => {
     if (article) {
-      setTitle(article.title);
+      setHeading(article.title);
+      setSummary(article.summary || "");
+      setContent(article.content);
       setImageUrl(article.image_url || "");
       setStatus(article.status as "draft" | "published");
-      editor?.commands.setContent(article.content);
+      setSelectedExperts(article.related_experts || []);
+      setRelatedLinks(article.news_article_links || []);
     }
-  }, [article, editor]);
+  }, [article]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -118,23 +117,56 @@ const EditNews = () => {
     }
   };
 
+  const addRelatedLink = () => {
+    setRelatedLinks([...relatedLinks, { title: "", url: "" }]);
+  };
+
+  const removeRelatedLink = (index: number) => {
+    setRelatedLinks(relatedLinks.filter((_, i) => i !== index));
+  };
+
+  const updateRelatedLink = (index: number, field: 'title' | 'url', value: string) => {
+    const updatedLinks = [...relatedLinks];
+    updatedLinks[index] = { ...updatedLinks[index], [field]: value };
+    setRelatedLinks(updatedLinks);
+  };
+
   const handleSave = async () => {
     try {
       const articleData = {
-        title,
-        content: editor?.getHTML() || "",
+        title: heading,
+        summary,
+        content,
         image_url: imageUrl,
         status,
+        related_experts: selectedExperts,
         updated_at: new Date().toISOString(),
         published_at: status === 'published' ? new Date().toISOString() : null,
       };
 
       if (isNewArticle) {
-        const { error } = await supabase
+        const { data: newArticle, error } = await supabase
           .from("news_articles")
-          .insert([articleData]);
+          .insert([articleData])
+          .select()
+          .single();
 
         if (error) throw error;
+
+        // Insert related links
+        if (relatedLinks.length > 0) {
+          const { error: linksError } = await supabase
+            .from("news_article_links")
+            .insert(
+              relatedLinks.map(link => ({
+                article_id: newArticle.id,
+                title: link.title,
+                url: link.url
+              }))
+            );
+
+          if (linksError) throw linksError;
+        }
 
         toast({
           title: "Success",
@@ -147,6 +179,24 @@ const EditNews = () => {
           .eq("id", id);
 
         if (error) throw error;
+
+        // Update related links
+        await supabase
+          .from("news_article_links")
+          .delete()
+          .eq("article_id", id);
+
+        if (relatedLinks.length > 0) {
+          await supabase
+            .from("news_article_links")
+            .insert(
+              relatedLinks.map(link => ({
+                article_id: id,
+                title: link.title,
+                url: link.url
+              }))
+            );
+        }
 
         toast({
           title: "Success",
@@ -182,11 +232,21 @@ const EditNews = () => {
 
         <div className="space-y-6">
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="heading">Heading</Label>
             <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              id="heading"
+              value={heading}
+              onChange={(e) => setHeading(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="summary">Summary</Label>
+            <Textarea
+              id="summary"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              className="h-24"
             />
           </div>
 
@@ -243,65 +303,70 @@ const EditNews = () => {
             </div>
           </div>
 
-          <div className="border rounded-lg">
-            <div className="border-b p-4 flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => editor?.chain().focus().toggleBold().run()}
-                className={editor?.isActive('bold') ? "bg-muted" : ""}
-              >
-                <Bold className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => editor?.chain().focus().toggleItalic().run()}
-                className={editor?.isActive('italic') ? "bg-muted" : ""}
-              >
-                <Italic className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => editor?.chain().focus().setTextAlign('left').run()}
-                className={editor?.isActive({ textAlign: 'left' }) ? "bg-muted" : ""}
-              >
-                <AlignLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => editor?.chain().focus().setTextAlign('center').run()}
-                className={editor?.isActive({ textAlign: 'center' }) ? "bg-muted" : ""}
-              >
-                <AlignCenter className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => editor?.chain().focus().setTextAlign('right').run()}
-                className={editor?.isActive({ textAlign: 'right' }) ? "bg-muted" : ""}
-              >
-                <AlignRight className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const url = window.prompt('Enter image URL');
-                  if (url) {
-                    editor?.chain().focus().setImage({ src: url }).run();
-                  }
-                }}
-              >
-                <ImageIcon className="h-4 w-4" />
-              </Button>
-            </div>
-            <EditorContent editor={editor} />
+          <div>
+            <Label>Related Experts</Label>
+            <Select
+              value={selectedExperts[0] || ""}
+              onValueChange={(value) => setSelectedExperts([value])}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an expert" />
+              </SelectTrigger>
+              <SelectContent>
+                {experts.map((expert) => (
+                  <SelectItem key={expert.id} value={expert.id}>
+                    {expert.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <Button onClick={handleSave}>
+          <div>
+            <Label>Related Links</Label>
+            <div className="space-y-4">
+              {relatedLinks.map((link, index) => (
+                <div key={index} className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Link title"
+                      value={link.title}
+                      onChange={(e) => updateRelatedLink(index, 'title', e.target.value)}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      placeholder="URL"
+                      value={link.url}
+                      onChange={(e) => updateRelatedLink(index, 'url', e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => removeRelatedLink(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                onClick={addRelatedLink}
+                className="w-full"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Related Link
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <Label>Content</Label>
+            <TextEditor content={content} onChange={setContent} />
+          </div>
+
+          <Button onClick={handleSave} className="w-full">
             {isNewArticle ? "Create Article" : "Save Changes"}
           </Button>
         </div>
