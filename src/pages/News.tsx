@@ -25,30 +25,35 @@ const News = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-white pt-16">
+      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <button 
-              onClick={() => navigate(-1)} 
-              className="flex items-center text-text-light hover:text-primary mb-4"
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              Back
-            </button>
-            <h1 className="text-3xl font-bold mb-6">News</h1>
+          <button 
+            onClick={() => navigate(-1)} 
+            className="flex items-center text-text-light hover:text-primary mb-8"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back
+          </button>
+          
+          <div className="mb-12">
+            <Skeleton className="h-12 w-32 mb-4" />
+            <Skeleton className="h-6 w-64" />
           </div>
-          <div className="space-y-8">
+
+          <div className="mb-16">
+            <Skeleton className="w-full aspect-[21/9] rounded-xl mb-8" />
+            <Skeleton className="h-8 w-2/3 mb-4" />
+            <Skeleton className="h-4 w-full max-w-2xl" />
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row md:items-center">
-                    <div className="w-full md:w-1/3">
-                      <Skeleton className="h-48 w-full" />
-                    </div>
-                    <div className="p-6 md:w-2/3 space-y-2">
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-4 w-full" />
-                    </div>
+                  <Skeleton className="w-full aspect-video" />
+                  <div className="p-6">
+                    <Skeleton className="h-6 w-3/4 mb-3" />
+                    <Skeleton className="h-4 w-full" />
                   </div>
                 </CardContent>
               </Card>
@@ -59,40 +64,83 @@ const News = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary to-white pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+  if (!newsItems?.length) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button 
             onClick={() => navigate(-1)} 
-            className="flex items-center text-text-light hover:text-primary mb-4"
+            className="flex items-center text-text-light hover:text-primary mb-8"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-3xl font-bold mb-6">News</h1>
+          <h1 className="text-4xl font-bold mb-2">News</h1>
+          <p className="text-xl text-text-light mb-8">Latest Health News Articles</p>
+          <p className="text-center text-text-light py-12">No news articles available.</p>
         </div>
-        <div className="space-y-8">
-          {newsItems?.map((item) => (
-            <Link to={`/news/${item.id}`} key={item.id}>
-              <Card className="overflow-hidden animate-fadeIn hover:shadow-lg transition-shadow duration-200">
+      </div>
+    );
+  }
+
+  const [featuredArticle, ...otherArticles] = newsItems;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center text-text-light hover:text-primary mb-8"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back
+        </button>
+
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold mb-2">News</h1>
+          <p className="text-xl text-text-light">Latest Health News Articles</p>
+        </div>
+
+        <Link to={`/news/${featuredArticle.id}`} className="block mb-16">
+          <div className="relative rounded-xl overflow-hidden">
+            <div className="aspect-[21/9] relative">
+              <img
+                src={featuredArticle.image_url || "/placeholder.svg"}
+                alt={featuredArticle.thumbnail_description || featuredArticle.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90" />
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-8">
+              <h2 className="text-3xl font-bold mb-4 text-text">
+                {featuredArticle.title}
+              </h2>
+              <p className="text-lg text-text-light max-w-2xl">
+                {featuredArticle.summary}
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {otherArticles.map((article) => (
+            <Link to={`/news/${article.id}`} key={article.id}>
+              <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow duration-200">
                 <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row md:items-center">
-                    <div className="w-full md:w-1/3 h-48">
-                      <img
-                        src={item.image_url || "/placeholder.svg"}
-                        alt={item.thumbnail_description || ""}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-6 md:w-2/3">
-                      <h3 className="text-xl font-semibold text-text mb-2">
-                        {item.title}
-                      </h3>
-                      <p className="text-text-light">
-                        {item.summary}
-                      </p>
-                    </div>
+                  <div className="aspect-video">
+                    <img
+                      src={article.image_url || "/placeholder.svg"}
+                      alt={article.thumbnail_description || article.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-text mb-2 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <p className="text-text-light line-clamp-3">
+                      {article.summary}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
