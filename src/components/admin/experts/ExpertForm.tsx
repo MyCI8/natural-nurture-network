@@ -13,6 +13,21 @@ import { Json } from "@/integrations/supabase/types";
 
 interface ExpertFormProps {
   expertId?: string;
+  initialData?: {
+    full_name?: string;
+    image_url?: string;
+    bio?: string;
+    social_media?: {
+      youtube?: string;
+      linkedin?: string;
+      twitter?: string;
+      instagram?: string;
+      website?: string;
+      wikipedia?: string;
+    };
+    website?: string;
+  };
+  onSuccess?: () => void;
 }
 
 interface SocialMediaLinks {
@@ -21,6 +36,7 @@ interface SocialMediaLinks {
   twitter: string;
   instagram: string;
   website: string;
+  wikipedia: string;
 }
 
 const defaultSocialMedia: SocialMediaLinks = {
@@ -29,18 +45,23 @@ const defaultSocialMedia: SocialMediaLinks = {
   twitter: "",
   instagram: "",
   website: "",
+  wikipedia: "",
 };
 
-export const ExpertForm = ({ expertId }: ExpertFormProps) => {
+export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [imageUrl, setImageUrl] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [imageUrl, setImageUrl] = useState(initialData?.image_url || "");
+  const [fullName, setFullName] = useState(initialData?.full_name || "");
   const [title, setTitle] = useState("");
-  const [bio, setBio] = useState("");
+  const [bio, setBio] = useState(initialData?.bio || "");
   const [fieldOfExpertise, setFieldOfExpertise] = useState("");
   const [affiliations, setAffiliations] = useState<string[]>([]);
-  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(defaultSocialMedia);
+  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(
+    initialData?.social_media ? 
+      { ...defaultSocialMedia, ...initialData.social_media } : 
+      defaultSocialMedia
+  );
 
   useQuery({
     queryKey: ["expert", expertId],
@@ -70,6 +91,7 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
           twitter: (socialMediaData as any).twitter || "",
           instagram: (socialMediaData as any).instagram || "",
           website: (socialMediaData as any).website || "",
+          wikipedia: (socialMediaData as any).wikipedia || "",
         });
       }
 
@@ -111,7 +133,11 @@ export const ExpertForm = ({ expertId }: ExpertFormProps) => {
         title: "Success",
         description: "Expert saved successfully",
       });
-      navigate("/admin/manage-experts");
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate("/admin/manage-experts");
+      }
     }
   };
 
