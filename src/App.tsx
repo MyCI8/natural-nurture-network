@@ -32,8 +32,11 @@ const App = () => {
           <Route path="news/:id" element={<NewsArticle />} />
           <Route path="admin" element={<Admin />}>
             <Route index element={<AdminDashboard />} />
-            <Route path="experts" element={<ManageExperts />} />
-            <Route path="experts/:id" element={<EditExpert />} />
+            <Route path="experts">
+              <Route index element={<ManageExperts />} />
+              <Route path="new" element={<EditExpert />} />
+              <Route path=":id" element={<EditExpert />} />
+            </Route>
             <Route path="remedies" element={<ManageRemedies />} />
             <Route path="remedies/:id" element={<EditRemedy />} />
             <Route path="ingredients" element={<ManageIngredients />} />
