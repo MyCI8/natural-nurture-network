@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserList } from "./users/UserList";
 import { RoleSettings } from "./users/RoleSettings";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const ManageUsersComponent = () => {
   const [activeTab, setActiveTab] = useState("users");
@@ -12,30 +13,37 @@ const ManageUsersComponent = () => {
   const { data: users, isLoading: isLoadingUsers } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from("profiles")
-        .select(`
-          id,
-          full_name,
-          email,
-          avatar_url,
-          account_status,
-          user_roles (
-            role
-          )
-        `)
-        .order('created_at', { ascending: false });
+      try {
+        const { data: profiles, error } = await supabase
+          .from("profiles")
+          .select(`
+            id,
+            full_name,
+            email,
+            avatar_url,
+            account_status,
+            user_roles (
+              role
+            )
+          `)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching users:", error);
+        if (error) {
+          console.error("Error fetching users:", error);
+          toast.error("Failed to fetch users");
+          throw error;
+        }
+
+        // Transform the data to match the expected type
+        return (profiles || []).map(profile => ({
+          ...profile,
+          user_roles: profile.user_roles?.[0] || { role: 'user' }
+        }));
+      } catch (error) {
+        console.error("Error in query function:", error);
+        toast.error("Failed to fetch users");
         throw error;
       }
-
-      // Transform the data to match the expected type
-      return (profiles || []).map(profile => ({
-        ...profile,
-        user_roles: profile.user_roles?.[0] || { role: 'user' }
-      }));
     },
   });
 
@@ -48,6 +56,7 @@ const ManageUsersComponent = () => {
 
       if (error) {
         console.error("Error fetching role settings:", error);
+        toast.error("Failed to fetch role settings");
         throw error;
       }
 

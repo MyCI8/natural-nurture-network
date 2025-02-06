@@ -41,12 +41,29 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
 
   const updateRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
-      const { error } = await supabase
+      // First, check if a role exists for this user
+      const { data: existingRole } = await supabase
         .from("user_roles")
-        .update({ role })
-        .eq("user_id", userId);
+        .select("*")
+        .eq("user_id", userId)
+        .single();
 
-      if (error) throw error;
+      if (existingRole) {
+        // Update existing role
+        const { error } = await supabase
+          .from("user_roles")
+          .update({ role })
+          .eq("user_id", userId);
+
+        if (error) throw error;
+      } else {
+        // Insert new role
+        const { error } = await supabase
+          .from("user_roles")
+          .insert([{ user_id: userId, role }]);
+
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
