@@ -28,18 +28,17 @@ const App = () => {
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
         <Router>
           <Routes>
-            {/* Admin routes without Layout */}
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/manage-experts" element={<ManageExperts />} />
-            <Route path="/admin/manage-experts/:id" element={<EditExpert />} />
-            <Route path="/admin/manage-news" element={<ManageNews />} />
-            <Route path="/admin/manage-news/:id" element={<EditNews />} />
-            <Route path="/admin/manage-remedies" element={<ManageRemedies />} />
-            <Route path="/admin/manage-remedies/:id" element={<EditRemedy />} />
-            <Route path="/admin/manage-ingredients" element={<ManageIngredients />} />
+            {/* All routes now have Layout */}
+            <Route path="/admin" element={<Layout><Admin /></Layout>} />
+            <Route path="/admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
+            <Route path="/admin/manage-experts" element={<Layout><ManageExperts /></Layout>} />
+            <Route path="/admin/manage-experts/:id" element={<Layout><EditExpert /></Layout>} />
+            <Route path="/admin/manage-news" element={<Layout><ManageNews /></Layout>} />
+            <Route path="/admin/manage-news/:id" element={<Layout><EditNews /></Layout>} />
+            <Route path="/admin/manage-remedies" element={<Layout><ManageRemedies /></Layout>} />
+            <Route path="/admin/manage-remedies/:id" element={<Layout><EditRemedy /></Layout>} />
+            <Route path="/admin/manage-ingredients" element={<Layout><ManageIngredients /></Layout>} />
 
-            {/* Public routes with Layout */}
             <Route path="/" element={<Layout><Home /></Layout>} />
             <Route path="/auth" element={<Layout><Auth /></Layout>} />
             <Route path="/experts" element={<Layout><Experts /></Layout>} />
