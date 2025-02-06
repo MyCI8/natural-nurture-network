@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Outlet, useLocation } from "react-router-dom";
 import StatsGrid from "@/components/admin/dashboard/StatsGrid";
 import RecentNews from "@/components/admin/dashboard/RecentNews";
 import RecentActivity from "@/components/admin/dashboard/RecentActivity";
@@ -9,6 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { CommentWithProfile } from "@/types";
 
 const Admin = () => {
+  const location = useLocation();
+  const isRootAdminPath = location.pathname === '/admin';
+
   const { data: stats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => {
@@ -73,6 +77,10 @@ const Admin = () => {
       return [];
     },
   });
+
+  if (!isRootAdminPath) {
+    return <Outlet />;
+  }
 
   return (
     <div className="min-h-screen bg-background pt-16">

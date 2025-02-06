@@ -20,48 +20,54 @@ interface StatsGridProps {
 const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
   const navigate = useNavigate();
 
+  const handleCardClick = (path: string | undefined) => {
+    if (path) {
+      navigate(path);
+    }
+  };
+
   const statCards = [
     {
       title: "Total Users",
       value: stats?.users || 0,
       icon: Users,
       description: "Registered users",
-      onClick: undefined, // No navigation for users yet
+      path: undefined, // No navigation for users yet
     },
     {
       title: "Published Remedies",
       value: stats?.remedies || 0,
       icon: BookOpen,
       description: "Active remedies",
-      onClick: () => navigate("/admin/remedies"),
+      path: "/admin/remedies",
     },
     {
       title: "Ingredients",
       value: stats?.ingredients || 0,
       icon: Apple,
       description: "Available ingredients",
-      onClick: () => navigate("/admin/ingredients"),
+      path: "/admin/ingredients",
     },
     {
       title: "Pending Comments",
       value: stats?.pendingComments || 0,
       icon: MessageSquare,
       description: "Awaiting moderation",
-      onClick: undefined, // No navigation for comments yet
+      path: undefined, // No navigation for comments yet
     },
     {
       title: "Recent News",
       value: stats?.recentNews?.length || 0,
       icon: Newspaper,
       description: "Articles published",
-      onClick: () => navigate("/admin/news"),
+      path: "/admin/news",
     },
     {
       title: "Experts",
       value: stats?.experts || 0,
       icon: GraduationCap,
       description: "Medical experts",
-      onClick: () => navigate("/admin/experts"),
+      path: "/admin/experts",
     },
   ];
 
@@ -72,8 +78,8 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
         {statCards.map((stat) => (
           <Card 
             key={stat.title}
-            className={stat.onClick ? "cursor-pointer hover:bg-accent/50 transition-colors" : ""}
-            onClick={stat.onClick}
+            className={stat.path ? "cursor-pointer hover:bg-accent/50 transition-colors" : ""}
+            onClick={() => handleCardClick(stat.path)}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
