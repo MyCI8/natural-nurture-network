@@ -46,10 +46,17 @@ interface TextEditorProps {
   onChange: (content: string) => void;
 }
 
+// Create a custom extension for font size
+const CustomTextStyle = TextStyle.configure({
+  types: ['textStyle'],
+  defaultFontSize: 'normal',
+});
+
 const TextEditor = ({ content, onChange }: TextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
+      CustomTextStyle,
       Image.configure({
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
@@ -64,7 +71,6 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      TextStyle,
       FontFamily.configure({
         types: ['textStyle'],
       }),
@@ -136,16 +142,19 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
 
           <Select
             value={editor.getAttributes('textStyle').fontSize}
-            onValueChange={(value) => editor.chain().focus().setFontSize(value).run()}
+            onValueChange={(value) => editor.chain().focus().setStyle({ fontSize: value }).run()}
           >
             <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Size" icon={<Type />} />
+              <SelectValue placeholder="Size">
+                <span className="flex items-center gap-2">
+                  <Type className="h-4 w-4" />
+                  Size
+                </span>
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {fontSizes.map((size) => (
-                <SelectItem key={size} value={size}>
-                  {size}
-                </SelectItem>
+                <SelectItem key={size} value={size}>{size}</SelectItem>
               ))}
             </SelectContent>
           </Select>
