@@ -15,13 +15,15 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+type UserRole = "user" | "admin" | "super_admin";
+
 type User = {
   id: string;
   full_name: string | null;
   email: string | null;
   avatar_url: string | null;
   account_status: string;
-  user_roles: { role: string }[];
+  user_roles: Array<{ role: UserRole }>;
 };
 
 interface UserListProps {
@@ -34,7 +36,7 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
   const queryClient = useQueryClient();
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
       const { error } = await supabase
         .from("user_roles")
         .update({ role })
@@ -102,7 +104,7 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
             <TableCell>
               <Select
                 defaultValue={user.user_roles[0]?.role || "user"}
-                onValueChange={(value) => {
+                onValueChange={(value: UserRole) => {
                   updateRoleMutation.mutate({ userId: user.id, role: value });
                 }}
               >

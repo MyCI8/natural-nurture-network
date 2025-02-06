@@ -6,17 +6,21 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+type RolePermissions = {
+  can_manage_roles?: boolean;
+  can_manage_users?: boolean;
+  can_manage_content?: boolean;
+  can_manage_settings?: boolean;
+};
+
+interface RoleSetting {
+  id: string;
+  role: "user" | "admin" | "super_admin";
+  permissions: RolePermissions;
+}
+
 interface RoleSettingsProps {
-  settings: Array<{
-    id: string;
-    role: string;
-    permissions: {
-      can_manage_roles?: boolean;
-      can_manage_users?: boolean;
-      can_manage_content?: boolean;
-      can_manage_settings?: boolean;
-    };
-  }>;
+  settings: RoleSetting[];
   isLoading: boolean;
 }
 
@@ -29,7 +33,7 @@ export const RoleSettings = ({ settings, isLoading }: RoleSettingsProps) => {
       permissions,
     }: {
       roleId: string;
-      permissions: Record<string, boolean>;
+      permissions: RolePermissions;
     }) => {
       const { error } = await supabase
         .from("role_settings")

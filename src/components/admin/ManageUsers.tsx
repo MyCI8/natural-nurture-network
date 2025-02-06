@@ -38,7 +38,18 @@ const ManageUsersComponent = () => {
         .select("*");
 
       if (error) throw error;
-      return data;
+
+      // Transform the data to ensure correct typing
+      return data.map((setting) => ({
+        id: setting.id,
+        role: setting.role,
+        permissions: setting.permissions as {
+          can_manage_roles?: boolean;
+          can_manage_users?: boolean;
+          can_manage_content?: boolean;
+          can_manage_settings?: boolean;
+        },
+      }));
     },
   });
 
