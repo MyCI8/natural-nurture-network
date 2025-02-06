@@ -9,6 +9,9 @@ import EditExpert from "@/pages/EditExpert";
 import ExpertProfile from "@/pages/ExpertProfile";
 import ManageRemedies from "@/pages/ManageRemedies";
 import EditRemedy from "@/pages/EditRemedy";
+import ManageNews from "@/pages/ManageNews";
+import EditNews from "@/pages/EditNews";
+import ManageIngredients from "@/pages/ManageIngredients";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +29,10 @@ const App = () => {
             <Route path="/admin/manage-remedies" element={<ManageRemedies />} />
             <Route path="/admin/manage-remedies/:id" element={<EditRemedy />} />
             <Route path="/admin/manage-remedies/new" element={<EditRemedy />} />
+            <Route path="/admin/manage-news" element={<ManageNews />} />
+            <Route path="/admin/manage-news/:id" element={<EditNews />} />
+            <Route path="/admin/manage-news/new" element={<EditNews />} />
+            <Route path="/admin/manage-ingredients" element={<ManageIngredients />} />
             <Route path="/experts/:id" element={<ExpertProfile />} />
           </Routes>
         </Router>

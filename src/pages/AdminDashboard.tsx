@@ -5,7 +5,7 @@ import {
   Leaf,
   Newspaper,
   UserCog,
-  ShoppingBag,
+  Apple,
   MessageSquare,
   ChevronRight,
 } from "lucide-react";
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
     {
       title: "Manage Ingredients",
       description: "Add and update remedy ingredients",
-      icon: ShoppingBag,
+      icon: Apple,
       path: "/admin/manage-ingredients",
     },
   ];
