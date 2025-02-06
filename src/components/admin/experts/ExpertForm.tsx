@@ -66,7 +66,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
   useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
-      if (!expertId) return null;
+      if (!expertId || expertId === "new") return null;
       
       const { data, error } = await supabase
         .from("experts")
@@ -97,7 +97,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
 
       return data;
     },
-    enabled: !!expertId,
+    enabled: !!expertId && expertId !== "new",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

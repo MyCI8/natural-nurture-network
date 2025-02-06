@@ -46,19 +46,8 @@ const SuggestionsList = ({ suggestions, onApprove, onReject }: SuggestionsListPr
     setIsEditModalOpen(true);
   };
 
-  const transformSocialLinks = (socialLinks: Json): { [key: string]: string } => {
-    if (typeof socialLinks === 'object' && socialLinks !== null) {
-      const defaultLinks = {
-        youtube: '',
-        linkedin: '',
-        twitter: '',
-        instagram: '',
-        website: '',
-        wikipedia: ''
-      };
-      return { ...defaultLinks, ...socialLinks };
-    }
-    return {
+  const transformSocialLinks = (socialLinks: Json) => {
+    const defaultLinks = {
       youtube: '',
       linkedin: '',
       twitter: '',
@@ -66,7 +55,15 @@ const SuggestionsList = ({ suggestions, onApprove, onReject }: SuggestionsListPr
       website: '',
       wikipedia: ''
     };
+
+    if (socialLinks && typeof socialLinks === 'object' && !Array.isArray(socialLinks)) {
+      return { ...defaultLinks, ...socialLinks as Record<string, string> };
+    }
+    
+    return defaultLinks;
   };
+
+  // ... keep existing code (JSX for the table)
 
   return (
     <>
