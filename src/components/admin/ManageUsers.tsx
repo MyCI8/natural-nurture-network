@@ -20,16 +20,22 @@ const ManageUsersComponent = () => {
           email,
           avatar_url,
           account_status,
-          user_roles!inner (
+          user_roles (
             role
           )
-        `);
+        `)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error("Error fetching users:", error);
         throw error;
       }
-      return profiles || [];
+
+      // Transform the data to match the expected type
+      return (profiles || []).map(profile => ({
+        ...profile,
+        user_roles: profile.user_roles?.[0] || { role: 'user' }
+      }));
     },
   });
 
