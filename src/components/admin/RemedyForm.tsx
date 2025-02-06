@@ -48,10 +48,10 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     name: "",
     summary: "",
     description: "",
-    symptoms: [] as string[],
+    symptoms: [] as SymptomType[],
     ingredients: [] as string[],
     video_url: "",
-    status: "draft",
+    status: "draft" as "draft" | "published",
   });
 
   useEffect(() => {
@@ -108,7 +108,6 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
         imageUrl = publicUrl;
 
-        // Delete old image if exists
         if (remedy?.image_url) {
           const oldImagePath = remedy.image_url.split("/").pop();
           if (oldImagePath) {
@@ -234,8 +233,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Symptoms</Label>
             <Select
-              value={formData.symptoms[formData.symptoms.length - 1]}
-              onValueChange={(value: string) => {
+              value={formData.symptoms[formData.symptoms.length - 1] || ""}
+              onValueChange={(value: SymptomType) => {
                 if (!formData.symptoms.includes(value)) {
                   setFormData({
                     ...formData,
@@ -278,7 +277,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Ingredients</Label>
             <Select
-              value=""
+              value={formData.ingredients[formData.ingredients.length - 1] || ""}
               onValueChange={(value: string) => {
                 const ingredient = ingredients?.find(i => i.id === value);
                 if (ingredient && !formData.ingredients.includes(ingredient.name)) {
@@ -334,7 +333,9 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             <Label>Status</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value })}
+              onValueChange={(value: "draft" | "published") => 
+                setFormData({ ...formData, status: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
