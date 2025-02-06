@@ -233,9 +233,9 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Symptoms</Label>
             <Select
-              value={formData.symptoms[formData.symptoms.length - 1] || ""}
+              value={formData.symptoms[formData.symptoms.length - 1] || "none"}
               onValueChange={(value: SymptomType) => {
-                if (!formData.symptoms.includes(value)) {
+                if (value !== "none" && !formData.symptoms.includes(value)) {
                   setFormData({
                     ...formData,
                     symptoms: [...formData.symptoms, value]
@@ -247,6 +247,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 <SelectValue placeholder="Select symptoms" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">Select a symptom</SelectItem>
                 {defaultSymptoms.map((symptom) => (
                   <SelectItem key={symptom} value={symptom}>
                     {symptom}
@@ -277,14 +278,16 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Ingredients</Label>
             <Select
-              value={ingredients?.find(i => formData.ingredients.includes(i.name))?.id || ""}
+              value={ingredients?.find(i => formData.ingredients.includes(i.name))?.id || "none"}
               onValueChange={(value: string) => {
-                const ingredient = ingredients?.find(i => i.id === value);
-                if (ingredient && !formData.ingredients.includes(ingredient.name)) {
-                  setFormData({
-                    ...formData,
-                    ingredients: [...formData.ingredients, ingredient.name]
-                  });
+                if (value !== "none") {
+                  const ingredient = ingredients?.find(i => i.id === value);
+                  if (ingredient && !formData.ingredients.includes(ingredient.name)) {
+                    setFormData({
+                      ...formData,
+                      ingredients: [...formData.ingredients, ingredient.name]
+                    });
+                  }
                 }
               }}
             >
@@ -292,6 +295,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 <SelectValue placeholder="Select ingredients" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">Select an ingredient</SelectItem>
                 {ingredients?.map((ingredient) => (
                   <SelectItem key={ingredient.id} value={ingredient.id}>
                     {ingredient.name}
