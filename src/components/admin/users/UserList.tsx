@@ -25,7 +25,9 @@ type User = {
   email: string | null;
   avatar_url: string | null;
   account_status: string;
-  user_roles: Array<{ role: UserRole }>;
+  user_roles: {
+    role: UserRole;
+  };
 };
 
 interface UserListProps {
@@ -161,7 +163,7 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
               </TableCell>
               <TableCell>
                 <Select
-                  defaultValue={user.user_roles[0]?.role || "user"}
+                  defaultValue={user.user_roles.role}
                   onValueChange={(value: UserRole) => {
                     updateRoleMutation.mutate({ userId: user.id, role: value });
                   }}

@@ -20,10 +20,11 @@ const ManageUsersComponent = () => {
           email,
           avatar_url,
           account_status,
-          user_roles (
+          user_roles!inner (
             role
           )
-        `);
+        `)
+        .single();
 
       if (error) {
         console.error("Error fetching users:", error);
