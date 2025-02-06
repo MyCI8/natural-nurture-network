@@ -12,7 +12,7 @@ import {
 import {
   Users,
   Leaf,
-  News,
+  Newspaper,
   UserCog,
   ShoppingBag,
   MessageSquare,
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
     {
       title: "Manage News",
       description: "Publish and edit news articles",
-      icon: News,
+      icon: Newspaper,
       path: "/admin/manage-news",
     },
     {
