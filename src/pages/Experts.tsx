@@ -64,9 +64,11 @@ const Experts = () => {
     },
   });
 
+  console.log("Experts data:", experts); // Add this line for debugging
+
   return (
     <Layout>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-16">
         {/* Hero Section with Page Title and Brief */}
         <section className="relative bg-gradient-to-b from-secondary to-background py-20">
           <div className="container mx-auto px-4">
