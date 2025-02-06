@@ -16,21 +16,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Json } from "@/integrations/supabase/types";
 
 interface Suggestion {
   id: string;
   full_name: string;
-  website: string;
-  comment: string;
-  image_url: string;
+  website: string | null;
+  comment: string | null;
+  image_url: string | null;
   status: string;
-  social_links: {
-    twitter: string;
-    linkedin: string;
-    instagram: string;
-    youtube: string;
-    wikipedia: string;
-  };
+  social_links: Json;
+  created_at: string | null;
+  updated_at: string | null;
+  submitted_by: string | null;
 }
 
 interface SuggestionsListProps {
@@ -149,10 +147,10 @@ const SuggestionsList = ({ suggestions, onApprove, onReject }: SuggestionsListPr
             <ExpertForm 
               initialData={{
                 full_name: selectedSuggestion.full_name,
-                image_url: selectedSuggestion.image_url,
-                bio: selectedSuggestion.comment,
+                image_url: selectedSuggestion.image_url || undefined,
+                bio: selectedSuggestion.comment || undefined,
                 social_media: selectedSuggestion.social_links,
-                website: selectedSuggestion.website,
+                website: selectedSuggestion.website || undefined,
               }}
               onSuccess={() => {
                 setIsEditModalOpen(false);
