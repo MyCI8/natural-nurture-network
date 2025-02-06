@@ -37,30 +37,41 @@ export const ImageManagementSection = ({
   ) => {
     try {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        console.log('No file selected');
+        return;
+      }
 
+      console.log('Starting upload for file:', file.name);
       setUploading(true);
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
+      console.log('Generated filename:', fileName);
+
+      const { error: uploadError, data } = await supabase.storage
         .from('news-images')
         .upload(fileName, file);
 
       if (uploadError) {
+        console.error('Upload error:', uploadError);
         toast({
           title: "Error",
-          description: "Failed to upload image",
+          description: `Failed to upload image: ${uploadError.message}`,
           variant: "destructive",
         });
         return;
       }
 
+      console.log('Upload successful:', data);
+
       const { data: { publicUrl } } = supabase.storage
         .from('news-images')
         .getPublicUrl(fileName);
 
+      console.log('Public URL generated:', publicUrl);
       setImageUrl(publicUrl);
+      
       toast({
         title: "Success",
         description: "Image uploaded successfully",
@@ -69,7 +80,7 @@ export const ImageManagementSection = ({
       console.error('Error uploading image:', error);
       toast({
         title: "Error",
-        description: "Failed to upload image",
+        description: error instanceof Error ? error.message : "Failed to upload image",
         variant: "destructive",
       });
     } finally {
@@ -175,3 +186,4 @@ export const ImageManagementSection = ({
     </div>
   );
 };
+
