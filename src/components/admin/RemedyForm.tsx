@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 
@@ -38,6 +39,11 @@ interface RemedyFormProps {
 }
 
 const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     summary: "",
@@ -59,6 +65,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         video_url: remedy.video_url || "",
         status: remedy.status || "draft",
       });
+      setImagePreview(remedy.image_url || "");
     }
   }, [remedy]);
 
@@ -71,32 +78,94 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     },
   });
 
-  const handleIngredientSelect = (ingredientId: string) => {
-    const ingredient = ingredients?.find(i => i.id === ingredientId);
-    if (ingredient && !formData.ingredients.includes(ingredient.name)) {
-      setFormData({
-        ...formData,
-        ingredients: [...formData.ingredients, ingredient.name]
-      });
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
-  };
-
-  const removeIngredient = (ingredientToRemove: string) => {
-    setFormData({
-      ...formData,
-      ingredients: formData.ingredients.filter(i => i !== ingredientToRemove)
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission
-    onClose();
+    setIsSubmitting(true);
+
+    try {
+      let imageUrl = remedy?.image_url || "";
+
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("remedy-images")
+          .upload(fileName, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("remedy-images")
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl;
+
+        // Delete old image if exists
+        if (remedy?.image_url) {
+          const oldImagePath = remedy.image_url.split("/").pop();
+          if (oldImagePath) {
+            await supabase.storage
+              .from("remedy-images")
+              .remove([oldImagePath]);
+          }
+        }
+      }
+
+      const remedyData = {
+        ...formData,
+        image_url: imageUrl,
+      };
+
+      if (remedy) {
+        const { error } = await supabase
+          .from("remedies")
+          .update(remedyData)
+          .eq("id", remedy.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Remedy updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from("remedies")
+          .insert([remedyData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Remedy created successfully",
+        });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
+      onClose();
+    } catch (error) {
+      console.error("Error saving remedy:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save remedy",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {remedy ? "Edit Remedy" : "Create New Remedy"}
@@ -111,13 +180,34 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
+            <Label htmlFor="image">Thumbnail Image</Label>
+            <div className="mt-2">
+              <div className="flex items-center gap-4">
+                {(imagePreview || remedy?.image_url) && (
+                  <img
+                    src={imagePreview || remedy?.image_url}
+                    alt="Preview"
+                    className="w-32 h-32 object-cover rounded-lg"
+                  />
+                )}
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
             />
           </div>
 
@@ -126,9 +216,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             <Input
               id="summary"
               value={formData.summary}
-              onChange={(e) =>
-                setFormData({ ...formData, summary: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+              required
             />
           </div>
 
@@ -137,9 +226,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="min-h-[200px]"
             />
           </div>
 
@@ -189,7 +277,18 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
           <div>
             <Label>Ingredients</Label>
-            <Select onValueChange={handleIngredientSelect}>
+            <Select
+              value=""
+              onValueChange={(value: string) => {
+                const ingredient = ingredients?.find(i => i.id === value);
+                if (ingredient && !formData.ingredients.includes(ingredient.name)) {
+                  setFormData({
+                    ...formData,
+                    ingredients: [...formData.ingredients, ingredient.name]
+                  });
+                }
+              }}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select ingredients" />
               </SelectTrigger>
@@ -211,7 +310,10 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                   {ingredient}
                   <X
                     className="h-3 w-3 cursor-pointer"
-                    onClick={() => removeIngredient(ingredient)}
+                    onClick={() => setFormData({
+                      ...formData,
+                      ingredients: formData.ingredients.filter((_, i) => i !== index)
+                    })}
                   />
                 </Badge>
               ))}
@@ -223,9 +325,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             <Input
               id="video_url"
               value={formData.video_url}
-              onChange={(e) =>
-                setFormData({ ...formData, video_url: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
               placeholder="YouTube or MP4 link"
             />
           </div>
@@ -234,9 +334,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             <Label>Status</Label>
             <Select
               value={formData.status}
-              onValueChange={(value) =>
-                setFormData({ ...formData, status: value })
-              }
+              onValueChange={(value) => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -249,10 +347,11 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {remedy ? "Update" : "Create"}
             </Button>
           </div>
