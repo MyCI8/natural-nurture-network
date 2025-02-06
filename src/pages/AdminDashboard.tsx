@@ -1,14 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Users,
   Leaf,
@@ -18,7 +9,15 @@ import {
   MessageSquare,
   ChevronRight,
 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -30,15 +29,11 @@ const AdminDashboard = () => {
         usersCount,
         remediesCount,
         expertsCount,
-        ingredientsCount,
-        newsCount,
         commentsCount,
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
         supabase.from("experts").select("*", { count: "exact" }),
-        supabase.from("ingredients").select("*", { count: "exact" }),
-        supabase.from("news_articles").select("*", { count: "exact" }),
         supabase.from("comments").select("*", { count: "exact" }),
       ]);
 
@@ -46,12 +41,17 @@ const AdminDashboard = () => {
         users: usersCount.count || 0,
         remedies: remediesCount.count || 0,
         experts: expertsCount.count || 0,
-        ingredients: ingredientsCount.count || 0,
-        news: newsCount.count || 0,
         comments: commentsCount.count || 0,
       };
     },
   });
+
+  const statsCards = [
+    { title: "Total Users", value: stats?.users || 0, icon: Users },
+    { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf },
+    { title: "Total Experts", value: stats?.experts || 0, icon: UserCog },
+    { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
+  ];
 
   const quickLinks = [
     {
@@ -78,13 +78,6 @@ const AdminDashboard = () => {
       icon: ShoppingBag,
       path: "/admin/manage-ingredients",
     },
-  ];
-
-  const statsCards = [
-    { title: "Total Users", value: stats?.users || 0, icon: Users },
-    { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf },
-    { title: "Total Experts", value: stats?.experts || 0, icon: UserCog },
-    { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
   ];
 
   return (

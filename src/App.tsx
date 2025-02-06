@@ -7,6 +7,8 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import ManageExperts from "@/pages/ManageExperts";
 import EditExpert from "@/pages/EditExpert";
 import ExpertProfile from "@/pages/ExpertProfile";
+import ManageRemedies from "@/pages/ManageRemedies";
+import EditRemedy from "@/pages/EditRemedy";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,9 @@ const App = () => {
             <Route path="/admin/manage-experts" element={<ManageExperts />} />
             <Route path="/admin/manage-experts/:id" element={<EditExpert />} />
             <Route path="/admin/manage-experts/new" element={<EditExpert />} />
+            <Route path="/admin/manage-remedies" element={<ManageRemedies />} />
+            <Route path="/admin/manage-remedies/:id" element={<EditRemedy />} />
+            <Route path="/admin/manage-remedies/new" element={<EditRemedy />} />
             <Route path="/experts/:id" element={<ExpertProfile />} />
           </Routes>
         </Router>
