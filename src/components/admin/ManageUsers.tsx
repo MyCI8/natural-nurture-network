@@ -23,14 +23,13 @@ const ManageUsersComponent = () => {
           user_roles!inner (
             role
           )
-        `)
-        .single();
+        `);
 
       if (error) {
         console.error("Error fetching users:", error);
         throw error;
       }
-      return profiles;
+      return profiles || [];
     },
   });
 
