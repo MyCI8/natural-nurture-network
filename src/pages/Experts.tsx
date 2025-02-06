@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SuggestExpertModal } from "@/components/experts/SuggestExpertModal";
 
 const Experts = () => {
   const navigate = useNavigate();
@@ -133,16 +134,9 @@ const Experts = () => {
                 </Select>
               </div>
 
-              <Button
-                onClick={() => navigate("/suggest-expert")}
-                variant="outline"
-                className="w-full sm:w-auto"
-              >
-                Suggest an Expert
-              </Button>
+              <SuggestExpertModal />
             </div>
 
-            {/* Experts Grid */}
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (

@@ -107,6 +107,45 @@ export type Database = {
           },
         ]
       }
+      expert_suggestions: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          full_name: string
+          id: string
+          image_url: string | null
+          social_links: Json | null
+          status: string | null
+          submitted_by: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          full_name: string
+          id?: string
+          image_url?: string | null
+          social_links?: Json | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          image_url?: string | null
+          social_links?: Json | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       experts: {
         Row: {
           affiliations: string[] | null
