@@ -46,6 +46,28 @@ const SuggestionsList = ({ suggestions, onApprove, onReject }: SuggestionsListPr
     setIsEditModalOpen(true);
   };
 
+  const transformSocialLinks = (socialLinks: Json): { [key: string]: string } => {
+    if (typeof socialLinks === 'object' && socialLinks !== null) {
+      const defaultLinks = {
+        youtube: '',
+        linkedin: '',
+        twitter: '',
+        instagram: '',
+        website: '',
+        wikipedia: ''
+      };
+      return { ...defaultLinks, ...socialLinks };
+    }
+    return {
+      youtube: '',
+      linkedin: '',
+      twitter: '',
+      instagram: '',
+      website: '',
+      wikipedia: ''
+    };
+  };
+
   return (
     <>
       <div className="rounded-md border">
@@ -149,7 +171,7 @@ const SuggestionsList = ({ suggestions, onApprove, onReject }: SuggestionsListPr
                 full_name: selectedSuggestion.full_name,
                 image_url: selectedSuggestion.image_url || undefined,
                 bio: selectedSuggestion.comment || undefined,
-                social_media: selectedSuggestion.social_links,
+                social_media: transformSocialLinks(selectedSuggestion.social_links),
                 website: selectedSuggestion.website || undefined,
               }}
               onSuccess={() => {
