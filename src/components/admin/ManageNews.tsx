@@ -1,27 +1,23 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 
 const ManageNews = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "draft" | "published">("all");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
+  const [currentTab, setCurrentTab] = useState<"all" | "draft" | "published" | "submitted">("all");
 
   const { data: articles = [], isLoading } = useQuery({
-    queryKey: ["admin-news", searchQuery, statusFilter, sortBy],
+    queryKey: ["admin-news", searchQuery, currentTab, sortBy],
     queryFn: async () => {
       let query = supabase
         .from("news_articles")
@@ -31,8 +27,8 @@ const ManageNews = () => {
         query = query.ilike("title", `%${searchQuery}%`);
       }
 
-      if (statusFilter !== "all") {
-        query = query.eq("status", statusFilter);
+      if (currentTab !== "all") {
+        query = query.eq("status", currentTab);
       }
 
       if (sortBy === "title") {
@@ -57,75 +53,97 @@ const ManageNews = () => {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="relative">
-          <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search articles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
+      <div className="space-y-6">
+        <Tabs defaultValue="all" value={currentTab} onValueChange={(value: "all" | "draft" | "published" | "submitted") => setCurrentTab(value)}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all">All Articles</TabsTrigger>
+            <TabsTrigger value="draft">Drafts</TabsTrigger>
+            <TabsTrigger value="published">Published</TabsTrigger>
+            <TabsTrigger value="submitted">Submitted</TabsTrigger>
+          </TabsList>
 
-        <Select value={statusFilter} onValueChange={(value: "all" | "draft" | "published") => setStatusFilter(value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={sortBy}
-          onValueChange={(value: "recent" | "title") => setSortBy(value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recent">Most Recent</SelectItem>
-            <SelectItem value="title">Title</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {articles.map((article) => (
-          <Card key={article.id}>
-            <CardContent className="p-4">
-              <div className="aspect-video mb-4">
-                <img
-                  src={article.image_url || "/placeholder.svg"}
-                  alt={article.title}
-                  className="w-full h-full object-cover rounded-lg"
+          <div className="mt-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search articles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8"
                 />
               </div>
-              <h3 className="font-semibold mb-2">{article.title}</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                {article.content.substring(0, 100)}...
-              </p>
-              <div className="flex items-center justify-between">
-                <span className={`text-sm ${
-                  article.status === 'published' ? 'text-green-600' : 'text-yellow-600'
-                }`}>
-                  {article.status.charAt(0).toUpperCase() + article.status.slice(1)}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/admin/news/${article.id}`)}
-                >
-                  Edit
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+              <Select
+                value={sortBy}
+                onValueChange={(value: "recent" | "title") => setSortBy(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Most Recent</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <TabsContent value="all" className="mt-6">
+            <ArticleGrid articles={articles} navigate={navigate} />
+          </TabsContent>
+          <TabsContent value="draft" className="mt-6">
+            <ArticleGrid articles={articles} navigate={navigate} />
+          </TabsContent>
+          <TabsContent value="published" className="mt-6">
+            <ArticleGrid articles={articles} navigate={navigate} />
+          </TabsContent>
+          <TabsContent value="submitted" className="mt-6">
+            <ArticleGrid articles={articles} navigate={navigate} />
+          </TabsContent>
+        </Tabs>
       </div>
+    </div>
+  );
+};
+
+// Helper component for the article grid
+const ArticleGrid = ({ articles, navigate }) => {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {articles.map((article) => (
+        <Card key={article.id}>
+          <CardContent className="p-4">
+            <div className="aspect-video mb-4">
+              <img
+                src={article.image_url || "/placeholder.svg"}
+                alt={article.title}
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
+            <h3 className="font-semibold mb-2">{article.title}</h3>
+            <p className="text-sm text-muted-foreground mb-2">
+              {article.content.substring(0, 100)}...
+            </p>
+            <div className="flex items-center justify-between">
+              <span className={`text-sm ${
+                article.status === 'published' ? 'text-green-600' : 
+                article.status === 'submitted' ? 'text-blue-600' : 
+                'text-yellow-600'
+              }`}>
+                {article.status.charAt(0).toUpperCase() + article.status.slice(1)}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/admin/news/${article.id}`)}
+              >
+                Edit
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };
