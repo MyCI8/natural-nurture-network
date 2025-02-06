@@ -319,29 +319,46 @@ export type Database = {
       profiles: {
         Row: {
           account_status: string
+          avatar_url: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          role_id: string | null
+          settings: Json | null
           updated_at: string
         }
         Insert: {
           account_status?: string
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          role_id?: string | null
+          settings?: Json | null
           updated_at?: string
         }
         Update: {
           account_status?: string
+          avatar_url?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          role_id?: string | null
+          settings?: Json | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "user_roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       remedies: {
         Row: {
@@ -385,6 +402,30 @@ export type Database = {
           summary?: string
           symptoms?: Database["public"]["Enums"]["symptom_type"][] | null
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      role_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          permissions: Json | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permissions?: Json | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permissions?: Json | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
         }
         Relationships: []
       }

@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -55,28 +56,34 @@ const AdminDashboard = () => {
 
   const quickLinks = [
     {
+      title: "Manage Users",
+      description: "Manage user roles and permissions",
+      icon: Users,
+      path: "/admin/users",
+    },
+    {
       title: "Manage Experts",
       description: "Add, edit, or remove expert profiles",
       icon: UserCog,
-      path: "/admin/manage-experts",
+      path: "/admin/experts",
     },
     {
       title: "Manage Remedies",
       description: "Create and update natural remedies",
       icon: Leaf,
-      path: "/admin/manage-remedies",
+      path: "/admin/remedies",
     },
     {
       title: "Manage News",
       description: "Publish and edit news articles",
       icon: Newspaper,
-      path: "/admin/manage-news",
+      path: "/admin/news",
     },
     {
       title: "Manage Ingredients",
       description: "Add and update remedy ingredients",
       icon: Apple,
-      path: "/admin/manage-ingredients",
+      path: "/admin/ingredients",
     },
   ];
 
