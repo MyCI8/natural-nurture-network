@@ -233,12 +233,12 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Symptoms</Label>
             <Select
-              value={formData.symptoms[formData.symptoms.length - 1] || "none"}
-              onValueChange={(value: SymptomType) => {
-                if (value !== "none" && !formData.symptoms.includes(value)) {
+              value={formData.symptoms[formData.symptoms.length - 1] || "_empty_"}
+              onValueChange={(value) => {
+                if (value !== "_empty_" && !formData.symptoms.includes(value as SymptomType)) {
                   setFormData({
                     ...formData,
-                    symptoms: [...formData.symptoms, value]
+                    symptoms: [...formData.symptoms, value as SymptomType]
                   });
                 }
               }}
@@ -247,7 +247,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 <SelectValue placeholder="Select symptoms" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Select a symptom</SelectItem>
+                <SelectItem value="_empty_">Select a symptom</SelectItem>
                 {defaultSymptoms.map((symptom) => (
                   <SelectItem key={symptom} value={symptom}>
                     {symptom}
@@ -278,9 +278,9 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Ingredients</Label>
             <Select
-              value={ingredients?.find(i => formData.ingredients.includes(i.name))?.id || "none"}
-              onValueChange={(value: string) => {
-                if (value !== "none") {
+              value={ingredients?.find(i => formData.ingredients.includes(i.name))?.id || "_empty_"}
+              onValueChange={(value) => {
+                if (value !== "_empty_") {
                   const ingredient = ingredients?.find(i => i.id === value);
                   if (ingredient && !formData.ingredients.includes(ingredient.name)) {
                     setFormData({
@@ -295,7 +295,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 <SelectValue placeholder="Select ingredients" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Select an ingredient</SelectItem>
+                <SelectItem value="_empty_">Select an ingredient</SelectItem>
                 {ingredients?.map((ingredient) => (
                   <SelectItem key={ingredient.id} value={ingredient.id}>
                     {ingredient.name}
