@@ -50,9 +50,7 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      TextStyle.configure({
-        types: ['textStyle'],
-      }),
+      TextStyle,
       Image.configure({
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
@@ -136,19 +134,19 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
             </SelectContent>
           </Select>
 
-          <Select
-            value={editor.getAttributes('textStyle').fontSize}
-            onValueChange={(value) => editor.chain().focus().setStyle({ fontSize: value }).run()}
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Size" />
-            </SelectTrigger>
-            <SelectContent>
-              {fontSizes.map((size) => (
-                <SelectItem key={size} value={size}>{size}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const fontSize = window.getComputedStyle(editor.view.dom).fontSize;
+                const newSize = fontSize === '16px' ? '20px' : '16px';
+                editor.chain().focus().setMark('textStyle', { fontSize: newSize }).run();
+              }}
+            >
+              <Type className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="flex gap-1 border-r pr-2">
