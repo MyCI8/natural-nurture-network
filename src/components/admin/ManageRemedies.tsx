@@ -41,7 +41,7 @@ const ManageRemedies = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [symptomFilter, setSymptomFilter] = useState<string>("");
+  const [symptomFilter, setSymptomFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"popularity" | "recent">("recent");
   const [showForm, setShowForm] = useState(false);
   const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
@@ -63,7 +63,7 @@ const ManageRemedies = () => {
         query = query.ilike("name", `%${searchQuery}%`);
       }
 
-      if (symptomFilter) {
+      if (symptomFilter && symptomFilter !== "all") {
         query = query.contains("symptoms", [symptomFilter]);
       }
 
@@ -151,7 +151,7 @@ const ManageRemedies = () => {
             <SelectValue placeholder="Filter by symptom" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Symptoms</SelectItem>
+            <SelectItem value="all">All Symptoms</SelectItem>
             {defaultSymptoms.map((symptom) => (
               <SelectItem key={symptom} value={symptom}>
                 {symptom}
