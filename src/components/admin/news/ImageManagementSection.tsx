@@ -45,13 +45,33 @@ export const ImageManagementSection = ({
       console.log('Starting upload for file:', file.name);
       setUploading(true);
       
+      // Reset the file input value to ensure the same file can be selected again
+      event.target.value = '';
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       console.log('Generated filename:', fileName);
 
+      // First, check if the bucket exists by trying to get its details
+      const { error: bucketError } = await supabase.storage
+        .getBucket('news-images');
+
+      if (bucketError) {
+        console.error('Bucket error:', bucketError);
+        toast({
+          title: "Error",
+          description: "Storage bucket not found. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error: uploadError, data } = await supabase.storage
         .from('news-images')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
@@ -114,7 +134,9 @@ export const ImageManagementSection = ({
           )}
           <Label
             htmlFor="thumbnail"
-            className="cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary"
+            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary ${
+              uploading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <input
               type="file"
@@ -160,7 +182,9 @@ export const ImageManagementSection = ({
           )}
           <Label
             htmlFor="mainImage"
-            className="cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary"
+            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary ${
+              uploading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <input
               type="file"
@@ -186,4 +210,3 @@ export const ImageManagementSection = ({
     </div>
   );
 };
-
