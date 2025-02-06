@@ -277,7 +277,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Ingredients</Label>
             <Select
-              value={formData.ingredients[formData.ingredients.length - 1] || ""}
+              value={ingredients?.find(i => formData.ingredients.includes(i.name))?.id || ""}
               onValueChange={(value: string) => {
                 const ingredient = ingredients?.find(i => i.id === value);
                 if (ingredient && !formData.ingredients.includes(ingredient.name)) {
