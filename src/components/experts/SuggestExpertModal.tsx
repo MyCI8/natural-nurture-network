@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { ImageManagementSection } from "@/components/admin/experts/ImageManagementSection";
 import { supabase } from "@/integrations/supabase/client";
+import { Youtube, Linkedin, Twitter, Instagram, Globe, Plus } from "lucide-react";
 
 export const SuggestExpertModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [activeField, setActiveField] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     full_name: "",
     website: "",
@@ -30,6 +32,14 @@ export const SuggestExpertModal = () => {
     },
   });
   const { toast } = useToast();
+
+  const socialIcons = [
+    { name: 'youtube', icon: Youtube, label: 'YouTube Channel' },
+    { name: 'linkedin', icon: Linkedin, label: 'LinkedIn Profile' },
+    { name: 'twitter', icon: Twitter, label: 'Twitter Profile' },
+    { name: 'instagram', icon: Instagram, label: 'Instagram Profile' },
+    { name: 'website', icon: Globe, label: 'Website' }
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +83,16 @@ export const SuggestExpertModal = () => {
     }
   };
 
+  const handleSocialLinkChange = (platform: string, value: string) => {
+    setFormData({
+      ...formData,
+      social_links: {
+        ...formData.social_links,
+        [platform]: value,
+      },
+    });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -97,15 +117,37 @@ export const SuggestExpertModal = () => {
             </div>
 
             <div>
-              <Label htmlFor="website">Website</Label>
-              <Input
-                id="website"
-                type="url"
-                value={formData.website}
-                onChange={(e) =>
-                  setFormData({ ...formData, website: e.target.value })
-                }
-              />
+              <Label>Social Links</Label>
+              <div className="flex gap-4 items-center mt-2">
+                {socialIcons.map(({ name, icon: Icon, label }) => (
+                  <div key={name} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setActiveField(activeField === name ? null : name)}
+                      className={`p-2 rounded-full transition-colors ${
+                        formData.social_links[name] 
+                          ? 'bg-primary text-white' 
+                          : 'bg-secondary hover:bg-primary/10'
+                      }`}
+                      title={label}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </button>
+                    {activeField === name && (
+                      <div className="absolute z-50 top-12 left-1/2 transform -translate-x-1/2 w-64 bg-white p-4 rounded-lg shadow-lg border animate-fadeIn">
+                        <Label htmlFor={name}>{label}</Label>
+                        <Input
+                          id={name}
+                          value={formData.social_links[name] || ''}
+                          onChange={(e) => handleSocialLinkChange(name, e.target.value)}
+                          placeholder={`Enter ${label} URL`}
+                          className="mt-1"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div>
@@ -118,31 +160,6 @@ export const SuggestExpertModal = () => {
                 }
                 placeholder="Tell us why you're suggesting this expert..."
               />
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Social Links</h3>
-              {Object.keys(formData.social_links).map((platform) => (
-                <div key={platform}>
-                  <Label htmlFor={platform} className="capitalize">
-                    {platform}
-                  </Label>
-                  <Input
-                    id={platform}
-                    value={formData.social_links[platform]}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        social_links: {
-                          ...formData.social_links,
-                          [platform]: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder={`${platform} profile URL`}
-                  />
-                </div>
-              ))}
             </div>
 
             <ImageManagementSection
