@@ -54,6 +54,15 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     status: "draft" as "draft" | "published",
   });
 
+  const { data: ingredients } = useQuery({
+    queryKey: ["ingredients"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("ingredients").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     if (remedy) {
       setFormData({
@@ -65,18 +74,11 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         video_url: remedy.video_url || "",
         status: remedy.status || "draft",
       });
-      setImagePreview(remedy.image_url || "");
+      if (remedy.image_url) {
+        setImagePreview(remedy.image_url);
+      }
     }
   }, [remedy]);
-
-  const { data: ingredients } = useQuery({
-    queryKey: ["ingredients"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("ingredients").select("*");
-      if (error) throw error;
-      return data;
-    },
-  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -123,7 +125,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         image_url: imageUrl,
       };
 
-      if (remedy) {
+      if (remedy?.id) {
         const { error } = await supabase
           .from("remedies")
           .update(remedyData)
@@ -278,7 +280,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div>
             <Label>Ingredients</Label>
             <Select
-              value={ingredients?.find(i => formData.ingredients.includes(i.name))?.id || "select-ingredient"}
+              value="select-ingredient"
               onValueChange={(value) => {
                 if (value !== "select-ingredient") {
                   const ingredient = ingredients?.find(i => i.id === value);
