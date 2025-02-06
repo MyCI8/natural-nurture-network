@@ -24,11 +24,10 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <QueryClientProvider client={queryClient}>
         <Router>
           <Routes>
-            {/* All routes now have Layout */}
             <Route path="/admin" element={<Layout><Admin /></Layout>} />
             <Route path="/admin/dashboard" element={<Layout><AdminDashboard /></Layout>} />
             <Route path="/admin/manage-experts" element={<Layout><ManageExperts /></Layout>} />
@@ -49,8 +48,8 @@ const App = () => {
           </Routes>
           <Toaster />
         </Router>
-      </ThemeProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 

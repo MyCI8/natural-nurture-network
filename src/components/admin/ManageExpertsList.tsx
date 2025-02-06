@@ -122,6 +122,7 @@ const ManageExpertsList = () => {
       .insert([
         {
           full_name: suggestion.full_name,
+          title: "Expert", // Adding default title as required by the schema
           image_url: suggestion.image_url,
           social_media: suggestion.social_links,
           bio: suggestion.comment,
