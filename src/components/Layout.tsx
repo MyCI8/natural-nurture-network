@@ -18,7 +18,7 @@ const Layout = ({ children }: LayoutProps) => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       {showBackButton && (
-        <div className="fixed left-4 top-20 z-40">
+        <div className="fixed left-4 top-24 z-40">
           <Button
             variant="ghost"
             size="icon"
