@@ -1,3 +1,4 @@
+
 import { Users, BookOpen, MessageSquare, Newspaper, Apple, GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +33,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.users || 0,
       icon: Users,
       description: "Registered users",
-      path: undefined, // No navigation for users yet
+      path: "/admin/users", // Added path for users management
     },
     {
       title: "Published Remedies",
