@@ -26,7 +26,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.users || 0,
       icon: Users,
       description: "Registered users",
-      onClick: undefined,
+      onClick: undefined, // No navigation for users yet
     },
     {
       title: "Published Remedies",
@@ -47,7 +47,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.pendingComments || 0,
       icon: MessageSquare,
       description: "Awaiting moderation",
-      onClick: undefined,
+      onClick: undefined, // No navigation for comments yet
     },
     {
       title: "Recent News",
