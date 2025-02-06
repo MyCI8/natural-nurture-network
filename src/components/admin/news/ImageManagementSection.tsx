@@ -52,20 +52,6 @@ export const ImageManagementSection = ({
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       console.log('Generated filename:', fileName);
 
-      // First, check if the bucket exists by trying to get its details
-      const { error: bucketError } = await supabase.storage
-        .getBucket('news-images');
-
-      if (bucketError) {
-        console.error('Bucket error:', bucketError);
-        toast({
-          title: "Error",
-          description: "Storage bucket not found. Please contact support.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error: uploadError, data } = await supabase.storage
         .from('news-images')
         .upload(fileName, file, {
