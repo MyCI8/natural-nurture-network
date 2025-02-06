@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { ImageManagementSection } from "@/components/admin/experts/ImageManagementSection";
 import { supabase } from "@/integrations/supabase/client";
-import { Youtube, Linkedin, Twitter, Instagram, Globe, Plus } from "lucide-react";
+import { Youtube, Linkedin, Twitter, Instagram, Globe, Book } from "lucide-react";
 
 export const SuggestExpertModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,6 +29,7 @@ export const SuggestExpertModal = () => {
       linkedin: "",
       instagram: "",
       youtube: "",
+      wikipedia: "",
     },
   });
   const { toast } = useToast();
@@ -38,7 +39,8 @@ export const SuggestExpertModal = () => {
     { name: 'linkedin', icon: Linkedin, label: 'LinkedIn Profile' },
     { name: 'twitter', icon: Twitter, label: 'Twitter Profile' },
     { name: 'instagram', icon: Instagram, label: 'Instagram Profile' },
-    { name: 'website', icon: Globe, label: 'Website' }
+    { name: 'website', icon: Globe, label: 'Website' },
+    { name: 'wikipedia', icon: Book, label: 'Wikipedia Page' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,6 +71,7 @@ export const SuggestExpertModal = () => {
           linkedin: "",
           instagram: "",
           youtube: "",
+          wikipedia: "",
         },
       });
       setImageUrl("");
