@@ -1,15 +1,10 @@
-import { ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "./ui/button";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-const Layout = ({ children }: LayoutProps) => {
+const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const showBackButton = location.pathname !== "/";
@@ -30,7 +25,7 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       )}
       <main className="flex-grow">
-        {children}
+        <Outlet />
       </main>
       <Footer />
     </div>
