@@ -46,17 +46,11 @@ interface TextEditorProps {
   onChange: (content: string) => void;
 }
 
-// Create a custom extension for font size
-const CustomTextStyle = TextStyle.configure({
-  types: ['textStyle'],
-  defaultFontSize: 'normal',
-});
-
 const TextEditor = ({ content, onChange }: TextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
-      CustomTextStyle,
+      TextStyle,
       Image.configure({
         HTMLAttributes: {
           class: "rounded-lg max-w-full h-auto",
@@ -142,7 +136,7 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
 
           <Select
             value={editor.getAttributes('textStyle').fontSize}
-            onValueChange={(value) => editor.chain().focus().setStyle({ fontSize: value }).run()}
+            onValueChange={(value) => editor.chain().focus().setFontSize(value).run()}
           >
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Size">
