@@ -25,7 +25,10 @@ const ManageUsersComponent = () => {
           )
         `);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+      }
       return profiles;
     },
   });
@@ -37,9 +40,11 @@ const ManageUsersComponent = () => {
         .from("role_settings")
         .select("*");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching role settings:", error);
+        throw error;
+      }
 
-      // Transform the data to ensure correct typing
       return data.map((setting) => ({
         id: setting.id,
         role: setting.role,
@@ -54,8 +59,13 @@ const ManageUsersComponent = () => {
   });
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-8">User Management</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold">User Management</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage users, their roles, and permissions
+        </p>
+      </div>
       
       <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-8">
