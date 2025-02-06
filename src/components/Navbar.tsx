@@ -1,13 +1,30 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Leaf, LogOut } from "lucide-react";
+import { Menu, X, Leaf, LogOut, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [session, setSession] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["userRole"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('has_role', {
+        role: 'admin'
+      });
+      if (error) {
+        console.error('Error checking admin role:', error);
+        return false;
+      }
+      return data || false;
+    },
+    enabled: !!session,
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -50,7 +67,19 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center space-x-2"
+                onClick={() => navigate("/admin")}
+              >
+                <Shield className="h-4 w-4" />
+                <span>Admin Dashboard</span>
+              </Button>
+            )}
+            
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-text-light hover:text-primary p-2 rounded-md"
