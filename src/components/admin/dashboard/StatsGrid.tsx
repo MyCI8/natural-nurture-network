@@ -72,7 +72,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
         {statCards.map((stat) => (
           <Card 
             key={stat.title}
-            className={stat.onClick ? "cursor-pointer hover:bg-accent transition-colors" : ""}
+            className={stat.onClick ? "cursor-pointer hover:bg-accent/50 transition-colors" : ""}
             onClick={stat.onClick}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
