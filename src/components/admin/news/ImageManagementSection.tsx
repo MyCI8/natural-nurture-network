@@ -2,7 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Image, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -48,7 +48,7 @@ export const ImageManagementSection = ({
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
       const { error: uploadError, data } = await supabase.storage
-        .from('news-images')
+        .from('news-images-draft')
         .upload(fileName, file);
 
       if (uploadError) {
@@ -62,7 +62,7 @@ export const ImageManagementSection = ({
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from('news-images')
+        .from('news-images-draft')
         .getPublicUrl(fileName);
 
       setImageUrl(publicUrl);

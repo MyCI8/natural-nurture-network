@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -80,13 +79,13 @@ const EditNews = () => {
   }, [article]);
 
   const moveImageToPublicBucket = async (imageUrl: string): Promise<string | null> => {
-    if (!imageUrl) return null;
+    if (!imageUrl || !imageUrl.includes('news-images-draft')) return imageUrl;
     
-    // Extract the file name from the URL
-    const fileName = imageUrl.split('/').pop();
-    if (!fileName) return null;
-
     try {
+      // Extract the file name from the URL
+      const fileName = imageUrl.split('/').pop();
+      if (!fileName) return null;
+
       // Download the file from the draft bucket
       const { data: fileData, error: downloadError } = await supabase.storage
         .from('news-images-draft')
@@ -133,7 +132,6 @@ const EditNews = () => {
       let finalMainImageUrl = mainImageUrl;
 
       if (shouldPublish) {
-        // Move images to public bucket when publishing
         if (thumbnailUrl) {
           const publicThumbnailUrl = await moveImageToPublicBucket(thumbnailUrl);
           if (publicThumbnailUrl) {
