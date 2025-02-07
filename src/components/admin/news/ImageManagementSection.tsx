@@ -52,11 +52,24 @@ export const ImageManagementSection = ({
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       console.log('Generated filename:', fileName);
 
-      const { error: uploadError, data } = await supabase.storage
+      // First check if file already exists and remove it
+      const { data: existingFiles } = await supabase.storage
+        .from('news-images-draft')
+        .list();
+
+      const existingFile = existingFiles?.find(f => f.name === fileName);
+      if (existingFile) {
+        await supabase.storage
+          .from('news-images-draft')
+          .remove([fileName]);
+      }
+
+      // Upload the new file
+      const { error: uploadError } = await supabase.storage
         .from('news-images-draft')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true
         });
 
       if (uploadError) {
@@ -69,13 +82,14 @@ export const ImageManagementSection = ({
         return;
       }
 
-      console.log('Upload successful:', data);
-
-      const { data: { publicUrl } } = supabase.storage
+      // Get the public URL
+      const { data: publicUrlData } = supabase.storage
         .from('news-images-draft')
         .getPublicUrl(fileName);
 
+      const publicUrl = publicUrlData.publicUrl;
       console.log('Public URL generated:', publicUrl);
+      
       setImageUrl(publicUrl);
       
       toast({
