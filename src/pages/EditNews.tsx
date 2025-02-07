@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -78,16 +79,84 @@ const EditNews = () => {
     }
   }, [article]);
 
+  const moveImageToPublicBucket = async (imageUrl: string): Promise<string | null> => {
+    if (!imageUrl) return null;
+    
+    // Extract the file name from the URL
+    const fileName = imageUrl.split('/').pop();
+    if (!fileName) return null;
+
+    try {
+      // Download the file from the draft bucket
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('news-images-draft')
+        .download(fileName);
+
+      if (downloadError) {
+        console.error('Error downloading file:', downloadError);
+        return null;
+      }
+
+      // Upload to the public bucket
+      const { error: uploadError } = await supabase.storage
+        .from('news-images')
+        .upload(fileName, fileData, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Error uploading to public bucket:', uploadError);
+        return null;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('news-images')
+        .getPublicUrl(fileName);
+
+      // Delete from draft bucket
+      await supabase.storage
+        .from('news-images-draft')
+        .remove([fileName]);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error moving image:', error);
+      return null;
+    }
+  };
+
   const handleSave = async (shouldPublish = false) => {
     try {
+      let finalThumbnailUrl = thumbnailUrl;
+      let finalMainImageUrl = mainImageUrl;
+
+      if (shouldPublish) {
+        // Move images to public bucket when publishing
+        if (thumbnailUrl) {
+          const publicThumbnailUrl = await moveImageToPublicBucket(thumbnailUrl);
+          if (publicThumbnailUrl) {
+            finalThumbnailUrl = publicThumbnailUrl;
+          }
+        }
+
+        if (mainImageUrl) {
+          const publicMainImageUrl = await moveImageToPublicBucket(mainImageUrl);
+          if (publicMainImageUrl) {
+            finalMainImageUrl = publicMainImageUrl;
+          }
+        }
+      }
+
       const articleData = {
         title: heading,
         slug,
         summary,
         content,
-        image_url: thumbnailUrl,
+        image_url: finalThumbnailUrl,
         thumbnail_description: thumbnailDescription,
-        main_image_url: mainImageUrl || thumbnailUrl,
+        main_image_url: finalMainImageUrl || finalThumbnailUrl,
         main_image_description: mainImageDescription,
         status: shouldPublish ? "published" : status,
         related_experts: selectedExperts,
@@ -106,7 +175,6 @@ const EditNews = () => {
 
         if (error) throw error;
 
-        // Insert related links
         if (relatedLinks.length > 0) {
           const { error: linksError } = await supabase
             .from("news_article_links")
@@ -133,7 +201,6 @@ const EditNews = () => {
 
         if (error) throw error;
 
-        // Update related links
         await supabase
           .from("news_article_links")
           .delete()
@@ -159,6 +226,7 @@ const EditNews = () => {
       
       navigate("/admin/news");
     } catch (error) {
+      console.error('Error saving article:', error);
       toast({
         title: "Error",
         description: isNewArticle ? "Failed to create article" : "Failed to update article",

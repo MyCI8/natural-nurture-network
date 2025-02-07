@@ -53,7 +53,7 @@ export const ImageManagementSection = ({
       console.log('Generated filename:', fileName);
 
       const { error: uploadError, data } = await supabase.storage
-        .from('news-images')
+        .from('news-images-draft')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
@@ -72,7 +72,7 @@ export const ImageManagementSection = ({
       console.log('Upload successful:', data);
 
       const { data: { publicUrl } } = supabase.storage
-        .from('news-images')
+        .from('news-images-draft')
         .getPublicUrl(fileName);
 
       console.log('Public URL generated:', publicUrl);
