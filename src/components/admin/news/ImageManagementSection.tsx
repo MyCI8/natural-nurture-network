@@ -2,7 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
+import { Image, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -37,70 +37,44 @@ export const ImageManagementSection = ({
   ) => {
     try {
       const file = event.target.files?.[0];
-      if (!file) {
-        console.log('No file selected');
-        return;
-      }
+      if (!file) return;
 
-      console.log('Starting upload for file:', file.name);
       setUploading(true);
       
-      // Reset the file input value to ensure the same file can be selected again
+      // Reset input value to allow selecting the same file again
       event.target.value = '';
       
       const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      console.log('Generated filename:', fileName);
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      // First check if file already exists and remove it
-      const { data: existingFiles } = await supabase.storage
-        .from('news-images-draft')
-        .list();
-
-      const existingFile = existingFiles?.find(f => f.name === fileName);
-      if (existingFile) {
-        await supabase.storage
-          .from('news-images-draft')
-          .remove([fileName]);
-      }
-
-      // Upload the new file
-      const { error: uploadError } = await supabase.storage
-        .from('news-images-draft')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
+      const { error: uploadError, data } = await supabase.storage
+        .from('news-images')
+        .upload(fileName, file);
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
         toast({
           title: "Error",
-          description: `Failed to upload image: ${uploadError.message}`,
+          description: "Failed to upload image. Please try again.",
           variant: "destructive",
         });
         return;
       }
 
-      // Get the public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('news-images-draft')
+      const { data: { publicUrl } } = supabase.storage
+        .from('news-images')
         .getPublicUrl(fileName);
 
-      const publicUrl = publicUrlData.publicUrl;
-      console.log('Public URL generated:', publicUrl);
-      
       setImageUrl(publicUrl);
-      
       toast({
         title: "Success",
         description: "Image uploaded successfully",
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload image",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -134,7 +108,7 @@ export const ImageManagementSection = ({
           )}
           <Label
             htmlFor="thumbnail"
-            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary ${
+            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary transition-colors ${
               uploading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -146,7 +120,11 @@ export const ImageManagementSection = ({
               onChange={(e) => handleImageUpload(e, setThumbnailUrl)}
               disabled={uploading}
             />
-            <Plus className="h-6 w-6 text-gray-400" />
+            {uploading ? (
+              <div className="animate-pulse">Uploading...</div>
+            ) : (
+              <Plus className="h-6 w-6 text-gray-400" />
+            )}
           </Label>
         </div>
         <div>
@@ -182,7 +160,7 @@ export const ImageManagementSection = ({
           )}
           <Label
             htmlFor="mainImage"
-            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary ${
+            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary transition-colors ${
               uploading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -194,7 +172,11 @@ export const ImageManagementSection = ({
               onChange={(e) => handleImageUpload(e, setMainImageUrl)}
               disabled={uploading}
             />
-            <Plus className="h-6 w-6 text-gray-400" />
+            {uploading ? (
+              <div className="animate-pulse">Uploading...</div>
+            ) : (
+              <Plus className="h-6 w-6 text-gray-400" />
+            )}
           </Label>
         </div>
         <div>
