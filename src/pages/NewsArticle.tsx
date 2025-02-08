@@ -94,7 +94,7 @@ const NewsArticle = () => {
         <h1 className="text-3xl font-bold mb-6">News</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr,1fr] gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,1fr] gap-8">
         <article className="text-left">
           <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
           
@@ -187,10 +187,10 @@ const NewsArticle = () => {
 
         {/* Videos Section */}
         {(article.video_links || article.video_description) && (
-          <aside className="space-y-8 lg:sticky lg:top-8">
+          <aside className="lg:sticky lg:top-8 w-full">
             <h2 className="text-2xl font-semibold">Videos</h2>
             {article.video_description && (
-              <p className="text-text-light">{article.video_description}</p>
+              <p className="text-text-light mb-6">{article.video_description}</p>
             )}
             <div className="space-y-8">
               {Array.isArray(article.video_links) && article.video_links.map((video: VideoLink, index: number) => {
@@ -199,7 +199,7 @@ const NewsArticle = () => {
                 
                 return (
                   <div key={index} className="space-y-4">
-                    <div className="relative aspect-video">
+                    <div className="relative aspect-video w-full">
                       <iframe
                         src={`https://www.youtube.com/embed/${videoId}`}
                         title={video.title}
