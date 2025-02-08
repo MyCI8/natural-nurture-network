@@ -23,7 +23,7 @@ export const RelatedNewsLinks = ({ links }: RelatedNewsLinksProps) => {
             className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
           >
             <div className="flex-shrink-0 w-24 h-24 bg-primary/10 rounded overflow-hidden">
-              {link.thumbnail_url ? (
+              {link.thumbnail_url && (
                 <img
                   src={link.thumbnail_url}
                   alt=""
@@ -36,7 +36,7 @@ export const RelatedNewsLinks = ({ links }: RelatedNewsLinksProps) => {
                     target.nextElementSibling?.classList.remove('hidden');
                   }}
                 />
-              ) : null}
+              )}
               <div className={`w-full h-full flex items-center justify-center ${link.thumbnail_url ? 'hidden' : ''}`}>
                 <img
                   src="/placeholder.svg"

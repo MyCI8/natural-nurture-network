@@ -100,7 +100,7 @@ export const RelatedLinksSection = ({
       {relatedLinks.map((link, index) => (
         <div key={index} className="flex gap-4 items-start">
           <div className="flex-shrink-0 w-24 h-24 bg-primary/10 rounded overflow-hidden">
-            {link.thumbnail_url ? (
+            {link.thumbnail_url && (
               <img
                 src={link.thumbnail_url}
                 alt=""
@@ -112,7 +112,7 @@ export const RelatedLinksSection = ({
                   target.nextElementSibling?.classList.remove('hidden');
                 }}
               />
-            ) : null}
+            )}
             <div className={`w-full h-full flex items-center justify-center ${link.thumbnail_url ? 'hidden' : ''}`}>
               <img
                 src="/placeholder.svg"
