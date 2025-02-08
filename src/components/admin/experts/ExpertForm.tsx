@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -143,6 +142,18 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
     }
   };
 
+  const handleCrawlerData = (data: any) => {
+    if (data.name) setFullName(data.name);
+    if (data.biography) setBio(data.biography);
+    if (data.image) setImageUrl(data.image);
+    if (data.socialLinks) {
+      setSocialMedia(prev => ({
+        ...prev,
+        ...data.socialLinks
+      }));
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="grid gap-8 md:grid-cols-2">
@@ -173,7 +184,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
         </div>
 
         <div className="space-y-8">
-          <ExpertCrawlerSection />
+          <ExpertCrawlerSection onDataSelect={handleCrawlerData} />
           
           <ExpertCredentialsSection />
 

@@ -1,31 +1,89 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
+import { Key, Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface CrawlResult {
   success: boolean;
-  data?: any;
+  data?: {
+    name?: string;
+    biography?: string;
+    image?: string;
+    socialLinks?: {
+      wikipedia?: string;
+      linkedin?: string;
+      twitter?: string;
+      website?: string;
+    };
+    credentials?: string[];
+  };
   error?: string;
 }
 
-export const ExpertCrawlerSection = () => {
-  const [url, setUrl] = useState('');
+interface ExpertCrawlerSectionProps {
+  onDataSelect?: (data: Partial<CrawlResult['data']>) => void;
+}
+
+export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps) => {
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [crawlResult, setCrawlResult] = useState<CrawlResult | null>(null);
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState('');
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
 
-  const handleCrawl = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!apiKey) {
+  useEffect(() => {
+    loadApiKey();
+  }, []);
+
+  const loadApiKey = async () => {
+    const { data, error } = await supabase
+      .from('api_keys')
+      .select('key_value')
+      .eq('name', 'firecrawl')
+      .single();
+
+    if (data?.key_value) {
+      setApiKey(data.key_value);
+    }
+  };
+
+  const saveApiKey = async (key: string) => {
+    const { error } = await supabase
+      .from('api_keys')
+      .upsert(
+        { name: 'firecrawl', key_value: key },
+        { onConflict: 'name' }
+      );
+
+    if (error) {
       toast({
         title: "Error",
-        description: "Please enter your Firecrawl API key",
+        description: "Failed to save API key",
         variant: "destructive",
       });
+      return false;
+    }
+    setApiKey(key);
+    setShowApiKeyDialog(false);
+    return true;
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!apiKey) {
+      setShowApiKeyDialog(true);
       return;
     }
 
@@ -34,11 +92,10 @@ export const ExpertCrawlerSection = () => {
       // Initialize Firecrawl with the API key
       const firecrawl = new (window as any).FirecrawlApp({ apiKey });
       
-      const response = await firecrawl.crawlUrl(url, {
-        limit: 10,
-        scrapeOptions: {
-          formats: ['markdown', 'html'],
-        }
+      const response = await firecrawl.searchExperts(searchQuery, {
+        sources: ['wikipedia', 'linkedin', 'professional_websites'],
+        includeImages: true,
+        includeSocialLinks: true
       });
 
       if (response.success) {
@@ -48,24 +105,24 @@ export const ExpertCrawlerSection = () => {
         });
         toast({
           title: "Success",
-          description: "Website crawled successfully",
+          description: "Found expert information",
         });
       } else {
         setCrawlResult({
           success: false,
-          error: response.error || "Failed to crawl website"
+          error: response.error || "Failed to find expert information"
         });
         toast({
           title: "Error",
-          description: response.error || "Failed to crawl website",
+          description: response.error || "Failed to find expert information",
           variant: "destructive",
         });
       }
     } catch (error) {
-      console.error('Crawl error:', error);
+      console.error('Search error:', error);
       toast({
         title: "Error",
-        description: "Failed to crawl website",
+        description: "Failed to search for expert",
         variant: "destructive",
       });
     } finally {
@@ -73,38 +130,116 @@ export const ExpertCrawlerSection = () => {
     }
   };
 
+  const handleSelectData = (data: Partial<CrawlResult['data']>) => {
+    if (onDataSelect) {
+      onDataSelect(data);
+      toast({
+        title: "Success",
+        description: "Data applied to form",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold">Expert Web Crawler</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Expert Search</h3>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setShowApiKeyDialog(true)}
+          className="h-8 w-8"
+        >
+          <Key className="h-4 w-4" />
+        </Button>
+      </div>
       
-      <form onSubmit={handleCrawl} className="space-y-4">
-        <div>
-          <Input
-            type="password"
-            placeholder="Enter your Firecrawl API key"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            className="mb-4"
-          />
-          <Input
-            type="url"
-            placeholder="Enter website URL (e.g., Wikipedia page)"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-        </div>
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <Input
+          type="text"
+          placeholder="Enter expert name to search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1"
+        />
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Crawling..." : "Start Crawl"}
+          {isLoading ? "Searching..." : <Search className="h-4 w-4" />}
         </Button>
       </form>
 
+      <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Firecrawl API Key</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              type="password"
+              placeholder="Enter your Firecrawl API key"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+            />
+            <Button 
+              onClick={() => saveApiKey(apiKey)}
+              className="w-full"
+            >
+              Save API Key
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {crawlResult && (
-        <Card className="p-4 mt-4">
-          <h4 className="font-semibold mb-2">Crawl Results</h4>
-          {crawlResult.success ? (
-            <pre className="whitespace-pre-wrap overflow-auto max-h-96">
-              {JSON.stringify(crawlResult.data, null, 2)}
-            </pre>
+        <Card className="p-4">
+          <h4 className="font-semibold mb-4">Search Results</h4>
+          {crawlResult.success && crawlResult.data ? (
+            <div className="space-y-4">
+              {crawlResult.data.image && (
+                <div className="flex justify-center">
+                  <img 
+                    src={crawlResult.data.image} 
+                    alt={crawlResult.data.name} 
+                    className="max-w-[200px] rounded-lg"
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-2">
+                {crawlResult.data.name && (
+                  <div>
+                    <h5 className="font-medium">Name</h5>
+                    <p>{crawlResult.data.name}</p>
+                  </div>
+                )}
+                
+                {crawlResult.data.biography && (
+                  <div>
+                    <h5 className="font-medium">Biography</h5>
+                    <p className="text-sm">{crawlResult.data.biography}</p>
+                  </div>
+                )}
+
+                {crawlResult.data.socialLinks && Object.keys(crawlResult.data.socialLinks).length > 0 && (
+                  <div>
+                    <h5 className="font-medium">Social Links</h5>
+                    <ul className="text-sm">
+                      {Object.entries(crawlResult.data.socialLinks).map(([platform, url]) => (
+                        <li key={platform} className="capitalize">
+                          {platform}: {url}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <Button 
+                onClick={() => handleSelectData(crawlResult.data)}
+                className="w-full"
+              >
+                Use This Data
+              </Button>
+            </div>
           ) : (
             <p className="text-red-500">{crawlResult.error}</p>
           )}
