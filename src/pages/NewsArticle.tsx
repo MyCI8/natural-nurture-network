@@ -1,10 +1,12 @@
 
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
+import { RelatedNewsExperts } from "@/components/news/RelatedNewsExperts";
+import { RelatedNewsLinks } from "@/components/news/RelatedNewsLinks";
+import { NewsVideos } from "@/components/news/NewsVideos";
 import type { Database } from "@/integrations/supabase/types";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
@@ -12,18 +14,6 @@ type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"]
 type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
   experts?: Expert[];
   news_article_links?: NewsArticleLink[];
-};
-
-type VideoLink = {
-  title: string;
-  url: string;
-};
-
-// Helper function to extract YouTube video ID
-const getYouTubeVideoId = (url: string) => {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return match && match[2].length === 11 ? match[2] : null;
 };
 
 const NewsArticle = () => {
@@ -119,104 +109,17 @@ const NewsArticle = () => {
           />
 
           {/* Related Experts Section */}
-          {article.experts && article.experts.length > 0 && (
-            <section className="mb-12">
-              <h2 className="text-2xl font-semibold mb-6">Related Experts</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {article.experts.map((expert) => (
-                  <Link key={expert.id} to={`/experts/${expert.id}`}>
-                    <Card className="hover:shadow-lg transition-shadow duration-200">
-                      <CardContent className="p-3">
-                        {expert.image_url ? (
-                          <img
-                            src={expert.image_url}
-                            alt={expert.full_name}
-                            className="w-16 h-16 rounded-full mx-auto mb-2 object-cover"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-2 flex items-center justify-center">
-                            <span className="text-2xl text-text-light">
-                              {expert.full_name.charAt(0)}
-                            </span>
-                          </div>
-                        )}
-                        <h3 className="font-semibold text-sm text-center line-clamp-1">{expert.full_name}</h3>
-                        <p className="text-text-light text-xs text-center line-clamp-1">{expert.title}</p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
+          {article.experts && <RelatedNewsExperts experts={article.experts} />}
 
           {/* Related Links Section */}
-          {article.news_article_links && article.news_article_links.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
-              <div className="space-y-4">
-                {article.news_article_links.map((link, index) => (
-                  <a
-                    key={index}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded overflow-hidden">
-                      <img
-                        src={`https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d`}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = "/placeholder.svg";
-                        }}
-                      />
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <h3 className="font-medium text-lg text-text truncate">{link.title}</h3>
-                      <p className="text-sm text-text-light truncate">{link.url}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </section>
-          )}
+          {article.news_article_links && <RelatedNewsLinks links={article.news_article_links} />}
         </article>
 
         {/* Videos Section */}
-        {(article.video_links || article.video_description) && (
-          <aside className="lg:sticky lg:top-8 w-full">
-            <h2 className="text-2xl font-semibold">Videos</h2>
-            {article.video_description && (
-              <p className="text-text-light mb-6">{article.video_description}</p>
-            )}
-            <div className="space-y-8">
-              {Array.isArray(article.video_links) && article.video_links.map((video: VideoLink, index: number) => {
-                const videoId = getYouTubeVideoId(video.url);
-                if (!videoId) return null;
-                
-                return (
-                  <div key={index} className="space-y-4">
-                    <div className="relative aspect-video w-full">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${videoId}`}
-                        title={video.title}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
-                      />
-                    </div>
-                    <h3 className="font-medium text-xl text-text line-clamp-2">
-                      {video.title}
-                    </h3>
-                  </div>
-                );
-              })}
-            </div>
-          </aside>
-        )}
+        <NewsVideos 
+          videoLinks={article.video_links} 
+          videoDescription={article.video_description} 
+        />
       </div>
     </div>
   );
