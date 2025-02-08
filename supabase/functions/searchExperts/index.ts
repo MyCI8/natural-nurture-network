@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     const { data: keyData, error: keyError } = await supabaseClient
       .from('api_keys')
       .select('key_value')
-      .eq('name', 'firecrawl')
+      .eq('name', 'Firecrawl API key')
       .maybeSingle()
 
     if (keyError || !keyData?.key_value) {
