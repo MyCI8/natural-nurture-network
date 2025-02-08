@@ -37,11 +37,7 @@ const App = () => {
           <Route path="admin" element={<Admin />}>
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<ManageUsers />} />
-            <Route path="experts">
-              <Route index element={<ManageExperts />} />
-              <Route path="new" element={<EditExpert />} />
-              <Route path=":id" element={<EditExpert />} />
-            </Route>
+            <Route path="manage-experts/*" element={<ManageExperts />} />
             <Route path="remedies">
               <Route index element={<ManageRemedies />} />
               <Route path=":id" element={<EditRemedy />} />
