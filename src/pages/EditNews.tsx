@@ -6,6 +6,7 @@ import { ArticleActionButtons } from "@/components/admin/news/ArticleActionButto
 import { EditNewsForm } from "@/components/admin/news/edit/EditNewsForm";
 import { useArticleOperations } from "@/hooks/useArticleOperations";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const EditNews = () => {
   const { id } = useParams();
@@ -46,7 +47,10 @@ const EditNews = () => {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Error loading article");
+        throw error;
+      }
       return data;
     },
     enabled: Boolean(id) && !isNewArticle,

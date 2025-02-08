@@ -14,7 +14,7 @@ export const ArticleContentSection = ({
     <div>
       <h3 className="text-lg font-semibold mb-4">Content</h3>
       <TextEditor 
-        content={content} 
+        content={content || ""} 
         onChange={onChange}
       />
     </div>
