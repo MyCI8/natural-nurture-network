@@ -22,11 +22,12 @@ export const RelatedNewsLinks = ({ links }: RelatedNewsLinksProps) => {
             rel="noopener noreferrer"
             className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
           >
-            <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded overflow-hidden">
+            <div className="flex-shrink-0 w-24 h-24 bg-primary/10 rounded overflow-hidden">
               <img
                 src={link.thumbnail_url || "/placeholder.svg"}
                 alt=""
                 className="w-full h-full object-cover"
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "/placeholder.svg";

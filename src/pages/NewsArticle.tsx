@@ -108,7 +108,7 @@ const NewsArticle = () => {
                 className="w-full rounded-lg"
               />
               {article.main_image_description && (
-                <figcaption className="mt-2 text-sm text-text-light text-center italic">
+                <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
                   {article.main_image_description}
                 </figcaption>
               )}
