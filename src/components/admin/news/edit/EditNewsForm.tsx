@@ -18,6 +18,8 @@ interface EditNewsFormProps {
   experts: any[];
   onExpertAdded: () => void;
   onSave: (articleData: any, relatedLinks: any[], shouldPublish: boolean) => Promise<void>;
+  onFormDataChange: (formData: any) => void;
+  onRelatedLinksChange: (links: any[]) => void;
 }
 
 export const EditNewsForm = ({
@@ -25,6 +27,8 @@ export const EditNewsForm = ({
   experts,
   onExpertAdded,
   onSave,
+  onFormDataChange,
+  onRelatedLinksChange,
 }: EditNewsFormProps) => {
   const [heading, setHeading] = useState("");
   const [slug, setSlug] = useState("");
@@ -56,11 +60,13 @@ export const EditNewsForm = ({
       setSelectedExperts(article.related_experts || []);
       
       if (article.news_article_links) {
-        setRelatedLinks(article.news_article_links.map((link: any) => ({
+        const links = article.news_article_links.map((link: any) => ({
           title: link.title,
           url: link.url,
           thumbnail_url: link.thumbnail_url
-        })));
+        }));
+        setRelatedLinks(links);
+        onRelatedLinksChange(links);
       }
       
       const transformedVideoLinks = Array.isArray(article.video_links) 
@@ -72,10 +78,10 @@ export const EditNewsForm = ({
       setVideoLinks(transformedVideoLinks);
       setVideoDescription(article.video_description || "");
     }
-  }, [article]);
+  }, [article, onRelatedLinksChange]);
 
-  const handleSubmit = async (shouldPublish: boolean) => {
-    const articleData = {
+  useEffect(() => {
+    const formData = {
       title: heading,
       slug,
       summary,
@@ -90,9 +96,16 @@ export const EditNewsForm = ({
       video_links: videoLinks,
       video_description: videoDescription,
     };
+    onFormDataChange(formData);
+  }, [
+    heading, slug, summary, content, thumbnailUrl, thumbnailDescription,
+    mainImageUrl, mainImageDescription, status, selectedExperts,
+    scheduledDate, videoLinks, videoDescription, onFormDataChange
+  ]);
 
-    await onSave(articleData, relatedLinks, shouldPublish);
-  };
+  useEffect(() => {
+    onRelatedLinksChange(relatedLinks);
+  }, [relatedLinks, onRelatedLinksChange]);
 
   return (
     <div className="grid gap-6 md:grid-cols-[2fr,1fr]">

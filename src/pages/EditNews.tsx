@@ -5,11 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArticleActionButtons } from "@/components/admin/news/ArticleActionButtons";
 import { EditNewsForm } from "@/components/admin/news/edit/EditNewsForm";
 import { useArticleOperations } from "@/hooks/useArticleOperations";
+import { useState } from "react";
 
 const EditNews = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { handleSave, isNewArticle } = useArticleOperations(id);
+  const [formData, setFormData] = useState<any>(null);
+  const [relatedLinks, setRelatedLinks] = useState<any[]>([]);
 
   // Fetch experts for the dropdown
   const { data: experts = [], refetch: refetchExperts } = useQuery({
@@ -59,6 +62,8 @@ const EditNews = () => {
         <ArticleActionButtons
           onBack={() => navigate("/admin/news")}
           onSave={handleSave}
+          formData={formData}
+          relatedLinks={relatedLinks}
         />
         
         <EditNewsForm
@@ -66,6 +71,8 @@ const EditNews = () => {
           experts={experts}
           onExpertAdded={refetchExperts}
           onSave={handleSave}
+          onFormDataChange={setFormData}
+          onRelatedLinksChange={setRelatedLinks}
         />
       </div>
     </div>

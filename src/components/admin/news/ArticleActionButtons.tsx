@@ -5,10 +5,17 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface ArticleActionButtonsProps {
   onBack: () => void;
-  onSave: (shouldPublish: boolean) => void;
+  onSave: (articleData: any, relatedLinks: any[], shouldPublish: boolean) => void;
+  formData: any;
+  relatedLinks: any[];
 }
 
-export const ArticleActionButtons = ({ onBack, onSave }: ArticleActionButtonsProps) => {
+export const ArticleActionButtons = ({ 
+  onBack, 
+  onSave,
+  formData,
+  relatedLinks 
+}: ArticleActionButtonsProps) => {
   const { toast } = useToast();
 
   const handlePreview = () => {
@@ -29,11 +36,11 @@ export const ArticleActionButtons = ({ onBack, onSave }: ArticleActionButtonsPro
           <Eye className="mr-2 h-4 w-4" />
           Preview
         </Button>
-        <Button variant="outline" onClick={() => onSave(false)}>
+        <Button variant="outline" onClick={() => onSave(formData, relatedLinks, false)}>
           <Save className="mr-2 h-4 w-4" />
           Save Draft
         </Button>
-        <Button onClick={() => onSave(true)}>
+        <Button onClick={() => onSave(formData, relatedLinks, true)}>
           <Send className="mr-2 h-4 w-4" />
           Publish
         </Button>
