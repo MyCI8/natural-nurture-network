@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ImageManagementSection } from "./ImageManagementSection";
 import { ExpertDetailsSection } from "./ExpertDetailsSection";
 import { ExpertCredentialsSection } from "./ExpertCredentialsSection";
+import { ExpertCrawlerSection } from "./ExpertCrawlerSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Json } from "@/integrations/supabase/types";
@@ -171,6 +173,8 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
         </div>
 
         <div className="space-y-8">
+          <ExpertCrawlerSection />
+          
           <ExpertCredentialsSection />
 
           <div className="space-y-4">
