@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -159,8 +158,8 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Expert Search</h3>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">Firecrawl</span>
         <Button
           variant="outline"
           size="icon"
@@ -170,18 +169,21 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
           <Key className="h-4 w-4" />
         </Button>
       </div>
-      
-      <div className="flex gap-2">
-        <Input
-          type="text"
-          placeholder="Enter expert name to search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1"
-        />
-        <Button onClick={handleSearch} disabled={isLoading}>
-          {isLoading ? "Searching..." : <Search className="h-4 w-4" />}
-        </Button>
+
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Expert Search</h3>
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="Enter expert name to search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1"
+          />
+          <Button onClick={handleSearch} disabled={isLoading}>
+            {isLoading ? "Searching..." : <Search className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
 
       <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
