@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,12 +66,15 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
     try {
       const { error } = await supabase
         .from('api_keys')
-        .upsert(
-          { name: 'firecrawl', key_value: key },
-          { onConflict: 'name' }
-        );
+        .upsert({ 
+          name: 'firecrawl', 
+          key_value: key 
+        }, { 
+          onConflict: 'name_key'  // Updated to use the constraint name
+        });
 
       if (error) {
+        console.error('Error saving API key:', error);
         toast({
           title: "Error",
           description: "Failed to save API key",
