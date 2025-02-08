@@ -34,18 +34,24 @@ Deno.serve(async (req) => {
   try {
     const { searchQuery } = await req.json()
     
-    // Get the API key from Supabase secrets
-    const apiKey = Deno.env.get('FIRECRAWL_API_KEY')
-    if (!apiKey) {
-      throw new Error('Firecrawl API key not configured')
-    }
-
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     )
 
+    // Get the API key from the database
+    const { data: keyData, error: keyError } = await supabaseClient
+      .from('api_keys')
+      .select('key_value')
+      .eq('name', 'firecrawl')
+      .maybeSingle()
+
+    if (keyError || !keyData?.key_value) {
+      throw new Error('Firecrawl API key not found in database')
+    }
+
+    const apiKey = keyData.key_value
     console.log('Searching for expert:', searchQuery)
 
     // Make request to Firecrawl API
