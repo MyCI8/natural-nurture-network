@@ -1,7 +1,9 @@
+
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ManageExpertsList from "@/components/admin/ManageExpertsList";
+import { ExpertForm } from "@/components/admin/experts/ExpertForm";
 
 const ManageExperts = () => {
   const navigate = useNavigate();
@@ -19,7 +21,11 @@ const ManageExperts = () => {
             Back to Dashboard
           </Button>
         </div>
-        <ManageExpertsList />
+        <Routes>
+          <Route index element={<ManageExpertsList />} />
+          <Route path="new" element={<ExpertForm />} />
+          <Route path=":id" element={<ExpertForm />} />
+        </Routes>
       </div>
     </div>
   );
