@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
@@ -30,34 +29,105 @@ serve(async (req) => {
     let title = '';
     let thumbnailUrl = '';
 
-    // Try to get OpenGraph title and image
-    const ogTitle = doc?.querySelector('meta[property="og:title"]')?.getAttribute('content');
-    const ogImage = doc?.querySelector('meta[property="og:image"]')?.getAttribute('content');
-    
-    // Fallback to Twitter card data
-    const twitterTitle = doc?.querySelector('meta[name="twitter:title"]')?.getAttribute('content');
-    const twitterImage = doc?.querySelector('meta[name="twitter:image"]')?.getAttribute('content');
-    
-    // Further fallbacks
-    const metaTitle = doc?.querySelector('meta[name="title"]')?.getAttribute('content');
-    const htmlTitle = doc?.querySelector('title')?.textContent;
+    // Get meta tags (including OpenGraph and Twitter Card)
+    const metaTags = doc?.querySelectorAll('meta');
+    const possibleMetaSelectors = [
+      { property: 'og:image:secure_url' },
+      { property: 'og:image' },
+      { name: 'twitter:image' },
+      { property: 'og:image:url' },
+      { property: 'twitter:image:src' },
+      { name: 'thumbnail' },
+      { itemprop: 'image' }
+    ];
 
-    // Get the best available title
-    title = ogTitle || twitterTitle || metaTitle || htmlTitle || '';
+    // First try to get the best title
+    const titleSelectors = [
+      { selector: 'meta[property="og:title"]', attr: 'content' },
+      { selector: 'meta[name="twitter:title"]', attr: 'content' },
+      { selector: 'meta[name="title"]', attr: 'content' },
+      { selector: 'title', attr: 'textContent' }
+    ];
 
-    // Get the best available image
-    thumbnailUrl = ogImage || twitterImage || '';
+    for (const { selector, attr } of titleSelectors) {
+      const element = doc?.querySelector(selector);
+      const value = element?.[attr] || element?.getAttribute(attr);
+      if (value) {
+        title = value;
+        break;
+      }
+    }
 
-    // If no social media preview image is found, try to find the first image on the page
-    if (!thumbnailUrl) {
-      const firstImage = doc?.querySelector('img')?.getAttribute('src');
-      if (firstImage) {
-        // Convert relative URLs to absolute
-        try {
-          thumbnailUrl = new URL(firstImage, url).href;
-        } catch {
-          thumbnailUrl = firstImage;
+    // Then try to get the best image
+    for (const metaConfig of possibleMetaSelectors) {
+      const [property, value] = Object.entries(metaConfig)[0];
+      const tag = Array.from(metaTags || []).find(meta => 
+        meta.getAttribute(property) === value
+      );
+      
+      if (tag) {
+        const content = tag.getAttribute('content');
+        if (content && isValidImageUrl(content)) {
+          thumbnailUrl = content;
+          break;
         }
+      }
+    }
+
+    // If no meta image found, look for the largest image that's likely to be a preview
+    if (!thumbnailUrl) {
+      const images = Array.from(doc?.querySelectorAll('img') || []);
+      let bestImage = null;
+      let bestScore = 0;
+
+      for (const img of images) {
+        const src = img.getAttribute('src');
+        if (!src || !isValidImageUrl(src)) continue;
+
+        // Convert relative URLs to absolute
+        const absoluteSrc = new URL(src, url).href;
+        
+        // Calculate image score based on attributes and position
+        const width = parseInt(img.getAttribute('width') || '0');
+        const height = parseInt(img.getAttribute('height') || '0');
+        const area = width * height;
+        
+        // Scoring factors
+        let score = 0;
+        
+        // Prefer larger images
+        if (area > 10000) score += area / 10000;
+        
+        // Prefer images higher in the document
+        const position = images.indexOf(img);
+        score += (images.length - position) / images.length * 10;
+        
+        // Avoid small icons and common UI elements
+        if (width < 100 || height < 100) score -= 50;
+        if (src.toLowerCase().includes('logo')) score -= 30;
+        if (src.toLowerCase().includes('icon')) score -= 30;
+        
+        // Prefer images with descriptive attributes
+        if (img.getAttribute('alt')) score += 10;
+        if (img.getAttribute('title')) score += 10;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestImage = absoluteSrc;
+        }
+      }
+
+      if (bestImage) {
+        thumbnailUrl = bestImage;
+      }
+    }
+
+    // Make sure the URL is absolute
+    if (thumbnailUrl) {
+      try {
+        thumbnailUrl = new URL(thumbnailUrl, url).href;
+      } catch {
+        // If URL parsing fails, keep the original URL
       }
     }
 
@@ -76,3 +146,20 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to validate image URLs
+function isValidImageUrl(url: string): boolean {
+  if (!url) return false;
+  
+  // Check if it's a data URL for an image
+  if (url.startsWith('data:image/')) return true;
+  
+  // Check if it has a valid image extension
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+  const lowercaseUrl = url.toLowerCase();
+  return imageExtensions.some(ext => lowercaseUrl.endsWith(ext)) ||
+    // Also allow URLs that might be dynamic but contain image-related keywords
+    lowercaseUrl.includes('/image') ||
+    lowercaseUrl.includes('/photo') ||
+    lowercaseUrl.includes('/picture');
+}
