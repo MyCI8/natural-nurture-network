@@ -70,11 +70,11 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex items-center space-x-2"
+                className="flex items-center"
                 onClick={() => navigate("/admin/manage-experts")}
               >
                 <Shield className="h-4 w-4" />
-                <span className="hidden sm:inline">Admin Dashboard</span>
+                <span className="sr-only">Admin Dashboard</span>
               </Button>
             )}
             
@@ -130,4 +130,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
