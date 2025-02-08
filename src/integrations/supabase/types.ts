@@ -506,6 +506,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       delete_user_data: {
         Args: {
           user_id: string
@@ -527,12 +531,6 @@ export type Database = {
           symptom: Database["public"]["Enums"]["symptom_type"]
           click_count: number
         }[]
-      }
-      has_role: {
-        Args: {
-          role: Database["public"]["Enums"]["user_role"]
-        }
-        Returns: boolean
       }
       log_admin_action: {
         Args: {
