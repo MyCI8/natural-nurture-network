@@ -119,11 +119,12 @@ export const ImageUploader = ({
       <Label>{label}</Label>
       <div className="relative">
         {imageUrl ? (
-          <div className="relative w-full h-48 bg-gray-100 rounded-lg">
+          <div className="relative w-full bg-gray-100 rounded-lg">
             <img
               src={imageUrl}
               alt={label}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full rounded-lg"
+              style={{ maxHeight: '400px', width: 'auto' }}
             />
             <Button
               variant="destructive"
@@ -157,3 +158,4 @@ export const ImageUploader = ({
     </div>
   );
 };
+
