@@ -45,6 +45,7 @@ export const EditNewsForm = ({
   const [videoLinks, setVideoLinks] = useState<VideoLink[]>([]);
   const [videoDescription, setVideoDescription] = useState("");
 
+  // Initialize form data when article is loaded
   useEffect(() => {
     if (article) {
       setHeading(article.title || "");
@@ -80,6 +81,7 @@ export const EditNewsForm = ({
     }
   }, [article, onRelatedLinksChange]);
 
+  // Update form data when any field changes
   useEffect(() => {
     const formData = {
       title: heading,
@@ -119,7 +121,10 @@ export const EditNewsForm = ({
           setSummary={setSummary}
         />
 
-        <ArticleContentSection content={content} onChange={setContent} />
+        <ArticleContentSection 
+          content={content} 
+          onChange={(newContent: string) => setContent(newContent)} 
+        />
 
         <RelatedLinksSection
           relatedLinks={relatedLinks}
