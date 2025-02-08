@@ -71,7 +71,7 @@ const Navbar = () => {
                 variant="ghost"
                 size="sm"
                 className="flex items-center space-x-2"
-                onClick={() => navigate("/admin")}
+                onClick={() => navigate("/admin/manage-experts")}
               >
                 <Shield className="h-4 w-4" />
                 <span>Admin Dashboard</span>

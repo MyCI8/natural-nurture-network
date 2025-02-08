@@ -131,6 +131,39 @@ export type Database = {
           },
         ]
       }
+      expert_searches: {
+        Row: {
+          biography: string | null
+          created_at: string | null
+          credentials: string[] | null
+          id: string
+          image_url: string | null
+          name: string | null
+          social_links: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          biography?: string | null
+          created_at?: string | null
+          credentials?: string[] | null
+          id?: string
+          image_url?: string | null
+          name?: string | null
+          social_links?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          biography?: string | null
+          created_at?: string | null
+          credentials?: string[] | null
+          id?: string
+          image_url?: string | null
+          name?: string | null
+          social_links?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       expert_suggestions: {
         Row: {
           comment: string | null
