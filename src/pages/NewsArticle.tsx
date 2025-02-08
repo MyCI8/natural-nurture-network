@@ -1,9 +1,10 @@
+
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
@@ -48,7 +49,7 @@ const NewsArticle = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-1 sm:px-2 py-20">
+      <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
         <Skeleton className="h-8 w-3/4 mb-4" />
         <Skeleton className="h-64 w-full mb-6" />
         <div className="space-y-4">
@@ -62,14 +63,14 @@ const NewsArticle = () => {
 
   if (!article) {
     return (
-      <div className="max-w-4xl mx-auto px-1 sm:px-2 py-20">
+      <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
         <h1 className="text-2xl font-bold mb-4">Article not found</h1>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-1 sm:px-2 py-20">
+    <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
       <div className="mb-8">
         <button 
           onClick={() => navigate(-1)} 
@@ -81,97 +82,131 @@ const NewsArticle = () => {
         <h1 className="text-3xl font-bold mb-6">News</h1>
       </div>
 
-      <article className="text-left">
-        {article.main_image_url && (
-          <figure className="mb-8">
-            <img
-              src={article.main_image_url}
-              alt={article.main_image_description || ""}
-              className="w-full rounded-lg"
-            />
-            {article.main_image_description && (
-              <figcaption className="mt-2 text-sm text-text-light text-center italic">
-                {article.main_image_description}
-              </figcaption>
+      <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-8">
+        <article className="text-left">
+          {article.main_image_url && (
+            <figure className="mb-8">
+              <img
+                src={article.main_image_url}
+                alt={article.main_image_description || ""}
+                className="w-full rounded-lg"
+              />
+              {article.main_image_description && (
+                <figcaption className="mt-2 text-sm text-text-light text-center italic">
+                  {article.main_image_description}
+                </figcaption>
+              )}
+            </figure>
+          )}
+          
+          <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
+          
+          <div 
+            className="prose prose-lg max-w-none mb-12"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
+
+          {/* Related Experts Section */}
+          {article.experts && article.experts.length > 0 && (
+            <section className="mb-12">
+              <h2 className="text-2xl font-semibold mb-6">Related Experts</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {article.experts.map((expert) => (
+                  <Link to={`/experts/${expert.id}`} key={expert.id}>
+                    <Card className="hover:shadow-lg transition-shadow duration-200">
+                      <CardContent className="p-3">
+                        {expert.image_url ? (
+                          <img
+                            src={expert.image_url}
+                            alt={expert.full_name}
+                            className="w-16 h-16 rounded-full mx-auto mb-2 object-cover"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-2 flex items-center justify-center">
+                            <span className="text-2xl text-text-light">
+                              {expert.full_name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <h3 className="font-semibold text-sm text-center line-clamp-1">{expert.full_name}</h3>
+                        <p className="text-text-light text-xs text-center line-clamp-1">{expert.title}</p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Related Links Section */}
+          {article.news_article_links && article.news_article_links.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
+              <div className="space-y-4">
+                {article.news_article_links.map((link, index) => (
+                  <a
+                    key={index}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
+                  >
+                    <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded overflow-hidden">
+                      <img
+                        src={`https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d`}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder.svg";
+                        }}
+                      />
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <h3 className="font-medium text-lg text-text truncate">{link.title}</h3>
+                      <p className="text-sm text-text-light truncate">{link.url}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+        </article>
+
+        {/* Videos Section */}
+        {(article.video_links?.length > 0 || article.video_description) && (
+          <aside className="space-y-6">
+            <h2 className="text-2xl font-semibold">Videos</h2>
+            {article.video_description && (
+              <p className="text-text-light">{article.video_description}</p>
             )}
-          </figure>
-        )}
-        
-        <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
-        
-        <div 
-          className="prose prose-lg max-w-none mb-12"
-          dangerouslySetInnerHTML={{ __html: article.content }}
-        />
-
-        {/* Related Experts Section */}
-        {article.experts && article.experts.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">Related Experts</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {article.experts.map((expert) => (
-                <Link to={`/experts/${expert.id}`} key={expert.id}>
-                  <Card className="hover:shadow-lg transition-shadow duration-200">
-                    <CardContent className="p-3">
-                      {expert.image_url ? (
-                        <img
-                          src={expert.image_url}
-                          alt={expert.full_name}
-                          className="w-16 h-16 rounded-full mx-auto mb-2 object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-2 flex items-center justify-center">
-                          <span className="text-2xl text-text-light">
-                            {expert.full_name.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                      <h3 className="font-semibold text-sm text-center line-clamp-1">{expert.full_name}</h3>
-                      <p className="text-text-light text-xs text-center line-clamp-1">{expert.title}</p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Related Links Section */}
-        {article.news_article_links && article.news_article_links.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
             <div className="space-y-4">
-              {article.news_article_links.map((link, index) => (
+              {article.video_links?.map((video: any, index: number) => (
                 <a
                   key={index}
-                  href={link.url}
+                  href={video.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
+                  className="block p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
                 >
-                  <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded overflow-hidden">
-                    <img
-                      src={`https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d`}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/placeholder.svg";
-                      }}
-                    />
+                  <div className="relative aspect-video bg-background/50 rounded-lg mb-3 flex items-center justify-center group">
+                    <Play className="h-12 w-12 text-primary opacity-75 group-hover:opacity-100 transition-opacity" />
                   </div>
-                  <div className="flex-grow min-w-0">
-                    <h3 className="font-medium text-lg text-text truncate">{link.title}</h3>
-                    <p className="text-sm text-text-light truncate">{link.url}</p>
-                  </div>
+                  <h3 className="font-medium text-lg text-text line-clamp-2 mb-1">
+                    {video.title}
+                  </h3>
+                  <p className="text-sm text-text-light truncate">
+                    {video.url}
+                  </p>
                 </a>
               ))}
             </div>
-          </section>
+          </aside>
         )}
-      </article>
+      </div>
     </div>
   );
 };
 
 export default NewsArticle;
+
