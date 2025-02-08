@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 interface CrawlResult {
@@ -48,26 +47,47 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
   }, []);
 
   const loadApiKey = async () => {
-    const { data, error } = await supabase
-      .from('api_keys')
-      .select('key_value')
-      .eq('name', 'firecrawl')
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('api_keys')
+        .select('key_value')
+        .eq('name', 'firecrawl')
+        .maybeSingle();
 
-    if (data?.key_value) {
-      setApiKey(data.key_value);
+      if (data?.key_value) {
+        setApiKey(data.key_value);
+      }
+    } catch (error) {
+      console.error('Error loading API key:', error);
     }
   };
 
   const saveApiKey = async (key: string) => {
-    const { error } = await supabase
-      .from('api_keys')
-      .upsert(
-        { name: 'firecrawl', key_value: key },
-        { onConflict: 'name' }
-      );
+    try {
+      const { error } = await supabase
+        .from('api_keys')
+        .upsert(
+          { name: 'firecrawl', key_value: key },
+          { onConflict: 'name' }
+        );
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save API key",
+          variant: "destructive",
+        });
+        return false;
+      }
+      setApiKey(key);
+      setShowApiKeyDialog(false);
+      toast({
+        title: "Success",
+        description: "API key saved successfully",
+      });
+      return true;
+    } catch (error) {
+      console.error('Error saving API key:', error);
       toast({
         title: "Error",
         description: "Failed to save API key",
@@ -75,9 +95,6 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
       });
       return false;
     }
-    setApiKey(key);
-    setShowApiKeyDialog(false);
-    return true;
   };
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -154,7 +171,7 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
         </Button>
       </div>
       
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <div className="flex gap-2">
         <Input
           type="text"
           placeholder="Enter expert name to search..."
@@ -162,10 +179,10 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
           onChange={(e) => setSearchQuery(e.target.value)}
           className="flex-1"
         />
-        <Button type="submit" disabled={isLoading}>
+        <Button onClick={handleSearch} disabled={isLoading}>
           {isLoading ? "Searching..." : <Search className="h-4 w-4" />}
         </Button>
-      </form>
+      </div>
 
       <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
         <DialogContent>
