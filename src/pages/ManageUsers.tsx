@@ -2,7 +2,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import ManageUsersComponent from "@/components/admin/ManageUsers";
 
 const ManageUsers = () => {
   const navigate = useNavigate();
@@ -20,7 +19,12 @@ const ManageUsers = () => {
             Back to Dashboard
           </Button>
         </div>
-        <ManageUsersComponent />
+        <div className="text-center py-8">
+          <h2 className="text-2xl font-semibold mb-4">User Management</h2>
+          <p className="text-muted-foreground">
+            User management functionality will be implemented soon.
+          </p>
+        </div>
       </div>
     </div>
   );
