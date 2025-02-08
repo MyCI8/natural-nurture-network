@@ -23,6 +23,8 @@ export const useArticleOperations = (id: string | undefined) => {
       status: "draft" | "published";
       related_experts: string[];
       scheduled_publish_date?: string;
+      video_links: { title: string; url: string }[];
+      video_description: string;
     },
     relatedLinks: { title: string; url: string }[],
     shouldPublish = false

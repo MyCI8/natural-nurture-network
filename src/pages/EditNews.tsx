@@ -8,6 +8,7 @@ import { NewsDetailsSection } from "@/components/admin/news/NewsDetailsSection";
 import { ImageManagementSection } from "@/components/admin/news/ImageManagementSection";
 import { PublishingOptionsSection } from "@/components/admin/news/PublishingOptionsSection";
 import { RelatedLinksSection } from "@/components/admin/news/RelatedLinksSection";
+import { VideoLinksSection } from "@/components/admin/news/VideoLinksSection";
 import { ExpertsSection } from "@/components/admin/news/ExpertsSection";
 import { ArticleActionButtons } from "@/components/admin/news/ArticleActionButtons";
 import { useArticleOperations } from "@/hooks/useArticleOperations";
@@ -28,6 +29,8 @@ const EditNews = () => {
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
   const [relatedLinks, setRelatedLinks] = useState<{ title: string; url: string }[]>([]);
+  const [videoLinks, setVideoLinks] = useState<{ title: string; url: string }[]>([]);
+  const [videoDescription, setVideoDescription] = useState("");
 
   const { handleSave, isNewArticle } = useArticleOperations(id);
 
@@ -67,7 +70,7 @@ const EditNews = () => {
       setHeading(article.title);
       setSlug(article.slug || "");
       setSummary(article.summary || "");
-      setContent(article.content);
+      setContent(article.content || "");
       setThumbnailUrl(article.image_url || "");
       setThumbnailDescription(article.thumbnail_description || "");
       setMainImageUrl(article.main_image_url || "");
@@ -76,6 +79,8 @@ const EditNews = () => {
       setScheduledDate(article.scheduled_publish_date ? new Date(article.scheduled_publish_date) : undefined);
       setSelectedExperts(article.related_experts || []);
       setRelatedLinks(article.news_article_links || []);
+      setVideoLinks(article.video_links || []);
+      setVideoDescription(article.video_description || "");
     }
   }, [article]);
 
@@ -92,6 +97,8 @@ const EditNews = () => {
       status,
       related_experts: selectedExperts,
       scheduled_publish_date: scheduledDate?.toISOString(),
+      video_links: videoLinks,
+      video_description: videoDescription,
     };
 
     await handleSave(articleData, relatedLinks, shouldPublish);
@@ -141,6 +148,13 @@ const EditNews = () => {
               setMainImageUrl={setMainImageUrl}
               mainImageDescription={mainImageDescription}
               setMainImageDescription={setMainImageDescription}
+            />
+
+            <VideoLinksSection
+              videoLinks={videoLinks}
+              setVideoLinks={setVideoLinks}
+              videoDescription={videoDescription}
+              setVideoDescription={setVideoDescription}
             />
 
             <ExpertsSection

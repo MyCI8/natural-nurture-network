@@ -328,6 +328,8 @@ export type Database = {
           thumbnail_description: string | null
           title: string
           updated_at: string | null
+          video_description: string | null
+          video_links: Json | null
         }
         Insert: {
           content: string
@@ -349,6 +351,8 @@ export type Database = {
           thumbnail_description?: string | null
           title: string
           updated_at?: string | null
+          video_description?: string | null
+          video_links?: Json | null
         }
         Update: {
           content?: string
@@ -370,6 +374,8 @@ export type Database = {
           thumbnail_description?: string | null
           title?: string
           updated_at?: string | null
+          video_description?: string | null
+          video_links?: Json | null
         }
         Relationships: []
       }
