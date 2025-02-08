@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -20,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 
@@ -86,6 +87,47 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleDeleteImage = async () => {
+    if (remedy?.image_url) {
+      const oldImagePath = remedy.image_url.split("/").pop();
+      if (oldImagePath) {
+        const { error } = await supabase.storage
+          .from("remedy-images")
+          .remove([oldImagePath]);
+        
+        if (error) {
+          toast({
+            title: "Error",
+            description: "Failed to delete image",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+    setImageFile(null);
+    setImagePreview("");
+    if (remedy) {
+      const { error } = await supabase
+        .from("remedies")
+        .update({ image_url: null })
+        .eq("id", remedy.id);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update remedy",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    toast({
+      title: "Success",
+      description: "Image deleted successfully",
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -185,11 +227,22 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             <div className="mt-2">
               <div className="flex items-center gap-4">
                 {(imagePreview || remedy?.image_url) && (
-                  <img
-                    src={imagePreview || remedy?.image_url}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded-lg"
-                  />
+                  <div className="relative">
+                    <img
+                      src={imagePreview || remedy?.image_url}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2"
+                      onClick={handleDeleteImage}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
                 <Input
                   id="image"
