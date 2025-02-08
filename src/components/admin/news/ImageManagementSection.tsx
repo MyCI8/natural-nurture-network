@@ -82,50 +82,83 @@ export const ImageManagementSection = ({
     }
   };
 
+  const handleImageDelete = async (imageUrl: string, setImageUrl: (url: string) => void) => {
+    try {
+      if (!imageUrl) return;
+
+      const fileName = imageUrl.split('/').pop();
+      if (!fileName) return;
+
+      const { error } = await supabase.storage
+        .from('news-images-draft')
+        .remove([fileName]);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete image",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setImageUrl("");
+      toast({
+        title: "Success",
+        description: "Image deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete image",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">Image Management</h3>
       
       <div className="space-y-4">
         <Label>Thumbnail Image</Label>
-        <div className="flex items-center gap-4">
-          {thumbnailUrl && (
-            <div className="relative">
+        <div className="relative">
+          {thumbnailUrl ? (
+            <div className="relative w-full h-48 bg-gray-100 rounded-lg">
               <img
                 src={thumbnailUrl}
                 alt="Thumbnail"
-                className="w-32 h-32 object-cover rounded-lg"
+                className="w-full h-full object-cover rounded-lg"
               />
               <Button
                 variant="destructive"
                 size="icon"
-                className="absolute -top-2 -right-2"
-                onClick={() => setThumbnailUrl("")}
+                className="absolute top-2 right-2"
+                onClick={() => handleImageDelete(thumbnailUrl, setThumbnailUrl)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
+          ) : (
+            <Label
+              htmlFor="thumbnail"
+              className={`cursor-pointer flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg hover:border-primary transition-colors ${
+                uploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <input
+                type="file"
+                id="thumbnail"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, setThumbnailUrl)}
+                disabled={uploading}
+              />
+              <Plus className="h-8 w-8 text-gray-400 mb-2" />
+              <span className="text-sm text-gray-500">Add thumbnail image</span>
+            </Label>
           )}
-          <Label
-            htmlFor="thumbnail"
-            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary transition-colors ${
-              uploading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <input
-              type="file"
-              id="thumbnail"
-              className="hidden"
-              accept="image/*"
-              onChange={(e) => handleImageUpload(e, setThumbnailUrl)}
-              disabled={uploading}
-            />
-            {uploading ? (
-              <div className="animate-pulse">Uploading...</div>
-            ) : (
-              <Plus className="h-6 w-6 text-gray-400" />
-            )}
-          </Label>
         </div>
         <div>
           <Label htmlFor="thumbnailDescription">Thumbnail Description</Label>
@@ -140,44 +173,42 @@ export const ImageManagementSection = ({
 
       <div className="space-y-4">
         <Label>Main Article Image (Optional)</Label>
-        <div className="flex items-center gap-4">
-          {mainImageUrl && (
-            <div className="relative">
+        <div className="relative">
+          {mainImageUrl ? (
+            <div className="relative w-full h-48 bg-gray-100 rounded-lg">
               <img
                 src={mainImageUrl}
                 alt="Main"
-                className="w-32 h-32 object-cover rounded-lg"
+                className="w-full h-full object-cover rounded-lg"
               />
               <Button
                 variant="destructive"
                 size="icon"
-                className="absolute -top-2 -right-2"
-                onClick={() => setMainImageUrl("")}
+                className="absolute top-2 right-2"
+                onClick={() => handleImageDelete(mainImageUrl, setMainImageUrl)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
+          ) : (
+            <Label
+              htmlFor="mainImage"
+              className={`cursor-pointer flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg hover:border-primary transition-colors ${
+                uploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <input
+                type="file"
+                id="mainImage"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, setMainImageUrl)}
+                disabled={uploading}
+              />
+              <Plus className="h-8 w-8 text-gray-400 mb-2" />
+              <span className="text-sm text-gray-500">Add main article image</span>
+            </Label>
           )}
-          <Label
-            htmlFor="mainImage"
-            className={`cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary transition-colors ${
-              uploading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <input
-              type="file"
-              id="mainImage"
-              className="hidden"
-              accept="image/*"
-              onChange={(e) => handleImageUpload(e, setMainImageUrl)}
-              disabled={uploading}
-            />
-            {uploading ? (
-              <div className="animate-pulse">Uploading...</div>
-            ) : (
-              <Plus className="h-6 w-6 text-gray-400" />
-            )}
-          </Label>
         </div>
         <div>
           <Label htmlFor="mainImageDescription">Main Image Description</Label>
