@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
@@ -21,6 +22,8 @@ serve(async (req) => {
       );
     }
 
+    console.log('Fetching preview for URL:', url);
+
     const response = await fetch(url);
     const html = await response.text();
     const parser = new DOMParser();
@@ -31,6 +34,8 @@ serve(async (req) => {
 
     // Get meta tags (including OpenGraph and Twitter Card)
     const metaTags = doc?.querySelectorAll('meta');
+    
+    // Enhanced meta selectors for thumbnails
     const possibleMetaSelectors = [
       { property: 'og:image:secure_url' },
       { property: 'og:image' },
@@ -38,7 +43,11 @@ serve(async (req) => {
       { property: 'og:image:url' },
       { property: 'twitter:image:src' },
       { name: 'thumbnail' },
-      { itemprop: 'image' }
+      { itemprop: 'image' },
+      // Additional selectors for specific sites
+      { property: 'og:image:secure' },
+      { name: 'image' },
+      { property: 'image' }
     ];
 
     // First try to get the best title
@@ -53,12 +62,13 @@ serve(async (req) => {
       const element = doc?.querySelector(selector);
       const value = element?.[attr] || element?.getAttribute(attr);
       if (value) {
-        title = value;
+        title = value.trim();
         break;
       }
     }
 
     // Then try to get the best image
+    // First check meta tags
     for (const metaConfig of possibleMetaSelectors) {
       const [property, value] = Object.entries(metaConfig)[0];
       const tag = Array.from(metaTags || []).find(meta => 
@@ -74,7 +84,29 @@ serve(async (req) => {
       }
     }
 
-    // If no meta image found, look for the largest image that's likely to be a preview
+    // If no meta image found, look for JSON-LD data
+    if (!thumbnailUrl) {
+      const jsonLdScripts = doc?.querySelectorAll('script[type="application/ld+json"]');
+      if (jsonLdScripts) {
+        for (const script of Array.from(jsonLdScripts)) {
+          try {
+            const jsonLd = JSON.parse(script.textContent || '');
+            const image = jsonLd.image || 
+                         (jsonLd['@graph']?.[0]?.image) ||
+                         (jsonLd.thumbnailUrl);
+            
+            if (image && typeof image === 'string' && isValidImageUrl(image)) {
+              thumbnailUrl = image;
+              break;
+            }
+          } catch (e) {
+            console.error('Error parsing JSON-LD:', e);
+          }
+        }
+      }
+    }
+
+    // If still no image found, look for the largest image that's likely to be a preview
     if (!thumbnailUrl) {
       const images = Array.from(doc?.querySelectorAll('img') || []);
       let bestImage = null;
@@ -111,6 +143,15 @@ serve(async (req) => {
         if (img.getAttribute('alt')) score += 10;
         if (img.getAttribute('title')) score += 10;
 
+        // Boost score for images in main content area
+        const parent = img.parentElement;
+        if (parent) {
+          const parentClasses = parent.getAttribute('class') || '';
+          if (parentClasses.includes('content') || parentClasses.includes('main')) {
+            score += 20;
+          }
+        }
+
         if (score > bestScore) {
           bestScore = score;
           bestImage = absoluteSrc;
@@ -126,10 +167,12 @@ serve(async (req) => {
     if (thumbnailUrl) {
       try {
         thumbnailUrl = new URL(thumbnailUrl, url).href;
-      } catch {
-        // If URL parsing fails, keep the original URL
+      } catch (error) {
+        console.error('Error converting thumbnail URL to absolute:', error);
       }
     }
+
+    console.log('Preview results:', { title, thumbnailUrl, url });
 
     return new Response(
       JSON.stringify({
@@ -140,6 +183,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    console.error('Error generating preview:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
