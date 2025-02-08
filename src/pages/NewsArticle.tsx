@@ -124,7 +124,7 @@ const NewsArticle = () => {
               <h2 className="text-2xl font-semibold mb-6">Related Experts</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {article.experts.map((expert) => (
-                  <Link to={`/experts/${expert.id}`} key={expert.id}>
+                  <Link key={expert.id} to={`/experts/${expert.id}`}>
                     <Card className="hover:shadow-lg transition-shadow duration-200">
                       <CardContent className="p-3">
                         {expert.image_url ? (
@@ -223,4 +223,3 @@ const NewsArticle = () => {
 };
 
 export default NewsArticle;
-
