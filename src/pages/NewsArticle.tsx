@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Play } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
@@ -12,6 +12,18 @@ type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"]
 type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
   experts?: Expert[];
   news_article_links?: NewsArticleLink[];
+};
+
+type VideoLink = {
+  title: string;
+  url: string;
+};
+
+// Helper function to extract YouTube video ID
+const getYouTubeVideoId = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
 };
 
 const NewsArticle = () => {
@@ -84,6 +96,8 @@ const NewsArticle = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-8">
         <article className="text-left">
+          <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
+          
           {article.main_image_url && (
             <figure className="mb-8">
               <img
@@ -98,8 +112,6 @@ const NewsArticle = () => {
               )}
             </figure>
           )}
-          
-          <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
           
           <div 
             className="prose prose-lg max-w-none mb-12"
@@ -174,32 +186,34 @@ const NewsArticle = () => {
         </article>
 
         {/* Videos Section */}
-        {(article.video_links?.length > 0 || article.video_description) && (
+        {(article.video_links || article.video_description) && (
           <aside className="space-y-6">
             <h2 className="text-2xl font-semibold">Videos</h2>
             {article.video_description && (
               <p className="text-text-light">{article.video_description}</p>
             )}
-            <div className="space-y-4">
-              {article.video_links?.map((video: any, index: number) => (
-                <a
-                  key={index}
-                  href={video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
-                >
-                  <div className="relative aspect-video bg-background/50 rounded-lg mb-3 flex items-center justify-center group">
-                    <Play className="h-12 w-12 text-primary opacity-75 group-hover:opacity-100 transition-opacity" />
+            <div className="space-y-6">
+              {Array.isArray(article.video_links) && article.video_links.map((video: VideoLink, index: number) => {
+                const videoId = getYouTubeVideoId(video.url);
+                if (!videoId) return null;
+                
+                return (
+                  <div key={index} className="space-y-3">
+                    <div className="relative aspect-video">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title={video.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="absolute top-0 left-0 w-full h-full rounded-lg"
+                      />
+                    </div>
+                    <h3 className="font-medium text-lg text-text line-clamp-2">
+                      {video.title}
+                    </h3>
                   </div>
-                  <h3 className="font-medium text-lg text-text line-clamp-2 mb-1">
-                    {video.title}
-                  </h3>
-                  <p className="text-sm text-text-light truncate">
-                    {video.url}
-                  </p>
-                </a>
-              ))}
+                );
+              })}
             </div>
           </aside>
         )}
@@ -209,4 +223,3 @@ const NewsArticle = () => {
 };
 
 export default NewsArticle;
-
