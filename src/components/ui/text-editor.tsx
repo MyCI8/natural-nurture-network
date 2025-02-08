@@ -1,3 +1,4 @@
+
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -49,7 +50,13 @@ interface TextEditorProps {
 const TextEditor = ({ content, onChange }: TextEditorProps) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        paragraph: {
+          HTMLAttributes: {
+            class: 'mb-4',
+          },
+        },
+      }),
       TextStyle,
       Image.configure({
         HTMLAttributes: {
@@ -76,6 +83,16 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
     editorProps: {
       attributes: {
         class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none min-h-[200px] p-4",
+      },
+      handlePaste: (view, event) => {
+        // Let TipTap handle the paste event by default
+        return false;
+      },
+      transformPastedHTML: (html) => {
+        // Preserve line breaks and spacing in pasted content
+        return html
+          .replace(/<p><br><\/p>/g, '<p>&nbsp;</p>')
+          .replace(/<p[^>]*>/g, '<p class="mb-4">');
       },
     },
   });
