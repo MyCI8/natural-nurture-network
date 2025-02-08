@@ -56,6 +56,15 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
             class: 'mb-4',
           },
         },
+        heading: {
+          levels: [1, 2, 3],
+          HTMLAttributes: {
+            class: 'font-bold',
+            1: { class: 'text-4xl mb-4' },
+            2: { class: 'text-3xl mb-3' },
+            3: { class: 'text-2xl mb-2' },
+          },
+        },
       }),
       TextStyle,
       Image.configure({
@@ -89,10 +98,13 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
         return false;
       },
       transformPastedHTML: (html) => {
-        // Preserve line breaks and spacing in pasted content
+        // Preserve line breaks, spacing, and heading structure in pasted content
         return html
           .replace(/<p><br><\/p>/g, '<p>&nbsp;</p>')
-          .replace(/<p[^>]*>/g, '<p class="mb-4">');
+          .replace(/<p[^>]*>/g, '<p class="mb-4">')
+          .replace(/<h1[^>]*>/g, '<h1 class="text-4xl mb-4 font-bold">')
+          .replace(/<h2[^>]*>/g, '<h2 class="text-3xl mb-3 font-bold">')
+          .replace(/<h3[^>]*>/g, '<h3 class="text-2xl mb-2 font-bold">');
       },
     },
   });
