@@ -11,6 +11,10 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
 type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
+type VideoLink = {
+  title: string;
+  url: string;
+};
 type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
   experts?: Expert[];
   news_article_links?: NewsArticleLink[];
@@ -71,6 +75,14 @@ const NewsArticle = () => {
     );
   }
 
+  // Safely transform video_links to the correct type
+  const videoLinks: VideoLink[] = Array.isArray(article.video_links) 
+    ? article.video_links.map((link: any) => ({
+        title: typeof link.title === 'string' ? link.title : '',
+        url: typeof link.url === 'string' ? link.url : ''
+      }))
+    : [];
+
   return (
     <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
       <div className="mb-8">
@@ -117,7 +129,7 @@ const NewsArticle = () => {
 
         {/* Videos Section */}
         <NewsVideos 
-          videoLinks={article.video_links} 
+          videoLinks={videoLinks}
           videoDescription={article.video_description} 
         />
       </div>
