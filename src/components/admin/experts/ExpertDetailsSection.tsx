@@ -29,7 +29,7 @@ export const ExpertDetailsSection = ({
           id="fullName"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          className="text-lg"
+          className="text-lg bg-background"
         />
       </div>
       <div>
@@ -39,6 +39,7 @@ export const ExpertDetailsSection = ({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Medical Doctor, Herbalist"
+          className="bg-background"
         />
       </div>
       <div>
@@ -47,7 +48,7 @@ export const ExpertDetailsSection = ({
           id="bio"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
-          className="h-48"
+          className="h-48 bg-background"
           placeholder="Expert's biography and credentials"
         />
       </div>
