@@ -94,7 +94,7 @@ const NewsArticle = () => {
         <h1 className="text-3xl font-bold mb-6">News</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr,1fr] gap-8">
         <article className="text-left">
           <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
           
@@ -187,28 +187,28 @@ const NewsArticle = () => {
 
         {/* Videos Section */}
         {(article.video_links || article.video_description) && (
-          <aside className="space-y-6">
+          <aside className="space-y-8 lg:sticky lg:top-8">
             <h2 className="text-2xl font-semibold">Videos</h2>
             {article.video_description && (
               <p className="text-text-light">{article.video_description}</p>
             )}
-            <div className="space-y-6">
+            <div className="space-y-8">
               {Array.isArray(article.video_links) && article.video_links.map((video: VideoLink, index: number) => {
                 const videoId = getYouTubeVideoId(video.url);
                 if (!videoId) return null;
                 
                 return (
-                  <div key={index} className="space-y-3">
+                  <div key={index} className="space-y-4">
                     <div className="relative aspect-video">
                       <iframe
                         src={`https://www.youtube.com/embed/${videoId}`}
                         title={video.title}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                        className="absolute top-0 left-0 w-full h-full rounded-lg"
+                        className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
                       />
                     </div>
-                    <h3 className="font-medium text-lg text-text line-clamp-2">
+                    <h3 className="font-medium text-xl text-text line-clamp-2">
                       {video.title}
                     </h3>
                   </div>
@@ -223,3 +223,4 @@ const NewsArticle = () => {
 };
 
 export default NewsArticle;
+
