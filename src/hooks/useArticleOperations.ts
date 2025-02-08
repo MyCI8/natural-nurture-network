@@ -26,7 +26,7 @@ export const useArticleOperations = (id: string | undefined) => {
       video_links: { title: string; url: string }[];
       video_description: string;
     },
-    relatedLinks: { title: string; url: string }[],
+    relatedLinks: { title: string; url: string; thumbnail_url?: string }[],
     shouldPublish = false
   ) => {
     try {
@@ -78,7 +78,8 @@ export const useArticleOperations = (id: string | undefined) => {
               relatedLinks.map(link => ({
                 article_id: newArticle.id,
                 title: link.title,
-                url: link.url
+                url: link.url,
+                thumbnail_url: link.thumbnail_url
               }))
             );
 
@@ -114,7 +115,8 @@ export const useArticleOperations = (id: string | undefined) => {
               relatedLinks.map(link => ({
                 article_id: id,
                 title: link.title,
-                url: link.url
+                url: link.url,
+                thumbnail_url: link.thumbnail_url
               }))
             );
 

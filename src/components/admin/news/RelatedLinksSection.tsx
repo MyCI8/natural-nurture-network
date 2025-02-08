@@ -50,7 +50,6 @@ export const RelatedLinksSection = ({
   const updateLink = async (index: number, field: keyof RelatedLink, value: string) => {
     const newLinks = [...relatedLinks];
     newLinks[index] = { ...newLinks[index], [field]: value };
-    setRelatedLinks(newLinks);
 
     // If URL field is updated and is a valid URL, fetch preview
     if (field === 'url' && value && isValidUrl(value)) {
@@ -63,7 +62,6 @@ export const RelatedLinksSection = ({
             title: preview.title || newLinks[index].title,
             thumbnail_url: preview.thumbnailUrl
           };
-          setRelatedLinks(newLinks);
         }
       } catch (error) {
         console.error('Error updating link preview:', error);
@@ -76,6 +74,8 @@ export const RelatedLinksSection = ({
         setIsProcessing(false);
       }
     }
+    
+    setRelatedLinks(newLinks);
   };
 
   const isValidUrl = (string: string) => {
