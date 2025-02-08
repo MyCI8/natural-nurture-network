@@ -62,6 +62,7 @@ export const RelatedLinksSection = ({
             title: preview.title || newLinks[index].title,
             thumbnail_url: preview.thumbnailUrl
           };
+          console.log('Updated link with preview:', newLinks[index]);
         }
       } catch (error) {
         console.error('Error updating link preview:', error);

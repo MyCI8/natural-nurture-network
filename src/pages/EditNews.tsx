@@ -33,7 +33,7 @@ const EditNews = () => {
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
-  const [relatedLinks, setRelatedLinks] = useState<{ title: string; url: string }[]>([]);
+  const [relatedLinks, setRelatedLinks] = useState<{ title: string; url: string; thumbnail_url?: string }[]>([]);
   const [videoLinks, setVideoLinks] = useState<VideoLink[]>([]);
   const [videoDescription, setVideoDescription] = useState("");
 
@@ -96,7 +96,8 @@ const EditNews = () => {
       if (article.news_article_links) {
         setRelatedLinks(article.news_article_links.map((link: any) => ({
           title: link.title,
-          url: link.url
+          url: link.url,
+          thumbnail_url: link.thumbnail_url
         })));
       }
       
@@ -207,3 +208,4 @@ const EditNews = () => {
 };
 
 export default EditNews;
+
