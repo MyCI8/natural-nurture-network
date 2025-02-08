@@ -70,7 +70,7 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
           name: 'firecrawl', 
           key_value: key 
         }, { 
-          onConflict: 'name_key'  // Updated to use the constraint name
+          onConflict: 'name' // Specify the column name, not the constraint name
         });
 
       if (error) {
