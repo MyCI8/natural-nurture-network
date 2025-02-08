@@ -21,26 +21,71 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-interface Expert {
-  id: string;
-  full_name: string;
-  image_url: string;
-  field_of_expertise: string;
-  expert_remedies: { count: number }[];
-}
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Expert } from "@/types/expert";
 
 interface ExpertListProps {
   experts: Expert[];
+  isLoading: boolean;
   onDelete: (expertId: string) => void;
 }
 
-const ExpertList = ({ experts, onDelete }: ExpertListProps) => {
+const ExpertList = ({ experts, isLoading, onDelete }: ExpertListProps) => {
   const navigate = useNavigate();
 
   const handleExpertClick = (expertId: string) => {
     navigate(`/experts/${expertId}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-md border mt-6">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Image</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Expertise</TableHead>
+              <TableHead className="text-center">Remedies</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(5)].map((_, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-[200px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-[150px]" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="h-4 w-8 mx-auto" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  }
+
+  if (experts.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        No experts found. Try adjusting your filters or add a new expert.
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border mt-6">

@@ -1,13 +1,20 @@
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Expert } from "@/types/expert";
 
-export const useExpertManagement = (
-  searchQuery: string,
-  sortBy: "name" | "remedies",
-  expertiseFilter: string
-) => {
+interface UseExpertManagementProps {
+  searchQuery: string;
+  sortBy: "name" | "remedies";
+  expertiseFilter: string;
+}
+
+export const useExpertManagement = ({
+  searchQuery,
+  sortBy,
+  expertiseFilter,
+}: UseExpertManagementProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -36,8 +43,13 @@ export const useExpertManagement = (
       }
 
       const { data, error } = await query;
-      if (error) throw error;
-      return data;
+      
+      if (error) {
+        console.error("Error fetching experts:", error);
+        throw error;
+      }
+
+      return data as Expert[];
     },
   });
 
@@ -49,50 +61,54 @@ export const useExpertManagement = (
         .select("field_of_expertise")
         .not("field_of_expertise", "is", null);
 
-      if (error) throw error;
-      return [...new Set(data.map(e => e.field_of_expertise))].filter(Boolean);
+      if (error) {
+        console.error("Error fetching expertise fields:", error);
+        throw error;
+      }
+
+      return [...new Set(data.map(e => e.field_of_expertise))].filter(Boolean) as string[];
     },
   });
 
-  const handleDeleteExpert = async (expertId: string) => {
-    const { error: remediesError } = await supabase
-      .from("expert_remedies")
-      .delete()
-      .eq("expert_id", expertId);
+  const deleteExpertMutation = useMutation({
+    mutationFn: async (expertId: string) => {
+      // First delete expert's remedies
+      const { error: remediesError } = await supabase
+        .from("expert_remedies")
+        .delete()
+        .eq("expert_id", expertId);
 
-    if (remediesError) {
-      toast({
-        title: "Error",
-        description: "Failed to delete expert's remedies",
-        variant: "destructive",
-      });
-      return;
-    }
+      if (remediesError) throw remediesError;
 
-    const { error } = await supabase
-      .from("experts")
-      .delete()
-      .eq("id", expertId);
+      // Then delete the expert
+      const { error } = await supabase
+        .from("experts")
+        .delete()
+        .eq("id", expertId);
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete expert",
-        variant: "destructive",
-      });
-    } else {
+      if (error) throw error;
+    },
+    onSuccess: () => {
       toast({
         title: "Success",
         description: "Expert deleted successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["admin-experts"] });
-    }
-  };
+    },
+    onError: (error) => {
+      console.error("Error deleting expert:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete expert",
+        variant: "destructive",
+      });
+    },
+  });
 
   return {
     experts,
     isLoading,
     expertiseFields,
-    handleDeleteExpert,
+    handleDeleteExpert: deleteExpertMutation.mutate,
   };
 };

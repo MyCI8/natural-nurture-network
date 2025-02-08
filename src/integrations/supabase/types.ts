@@ -208,6 +208,7 @@ export type Database = {
           affiliations: string[] | null
           bio: string | null
           created_at: string | null
+          credentials: string[] | null
           field_of_expertise: string | null
           full_name: string
           id: string
@@ -221,6 +222,7 @@ export type Database = {
           affiliations?: string[] | null
           bio?: string | null
           created_at?: string | null
+          credentials?: string[] | null
           field_of_expertise?: string | null
           full_name: string
           id?: string
@@ -234,6 +236,7 @@ export type Database = {
           affiliations?: string[] | null
           bio?: string | null
           created_at?: string | null
+          credentials?: string[] | null
           field_of_expertise?: string | null
           full_name?: string
           id?: string

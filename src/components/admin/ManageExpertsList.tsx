@@ -20,9 +20,14 @@ const ManageExpertsList = () => {
 
   const {
     experts,
+    isLoading,
     expertiseFields,
     handleDeleteExpert,
-  } = useExpertManagement(searchQuery, sortBy, expertiseFilter);
+  } = useExpertManagement({
+    searchQuery,
+    sortBy,
+    expertiseFilter,
+  });
 
   const {
     suggestions,
@@ -30,22 +35,24 @@ const ManageExpertsList = () => {
     handleRejectSuggestion,
   } = useSuggestionManagement();
 
+  const pendingSuggestionsCount = suggestions.filter(s => s.status === "pending").length;
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="experts">
         <TabsList>
           <TabsTrigger value="experts">Experts</TabsTrigger>
-          <TabsTrigger value="suggestions">
+          <TabsTrigger value="suggestions" className="relative">
             Suggestions
-            {suggestions.filter(s => s.status === "pending").length > 0 && (
+            {pendingSuggestionsCount > 0 && (
               <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs">
-                {suggestions.filter(s => s.status === "pending").length}
+                {pendingSuggestionsCount}
               </span>
             )}
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="experts">
+        <TabsContent value="experts" className="space-y-6">
           <ExpertListHeader />
           <ExpertFilters
             searchQuery={searchQuery}
@@ -58,6 +65,7 @@ const ManageExpertsList = () => {
           />
           <ExpertList 
             experts={experts}
+            isLoading={isLoading}
             onDelete={handleDeleteExpert}
           />
         </TabsContent>
