@@ -23,16 +23,27 @@ export const RelatedNewsLinks = ({ links }: RelatedNewsLinksProps) => {
             className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-accent transition-colors"
           >
             <div className="flex-shrink-0 w-24 h-24 bg-primary/10 rounded overflow-hidden">
-              <img
-                src={link.thumbnail_url || "/placeholder.svg"}
-                alt=""
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/placeholder.svg";
-                }}
-              />
+              {link.thumbnail_url ? (
+                <img
+                  src={link.thumbnail_url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  onError={(e) => {
+                    console.log('Image load error:', e);
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                  <img
+                    src="/placeholder.svg"
+                    alt=""
+                    className="w-12 h-12 opacity-50"
+                  />
+                </div>
+              )}
             </div>
             <div className="flex-grow min-w-0">
               <h3 className="font-medium text-lg text-text truncate">{link.title}</h3>
