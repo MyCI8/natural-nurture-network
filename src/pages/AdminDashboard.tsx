@@ -65,7 +65,7 @@ const AdminDashboard = () => {
       title: "Manage Experts",
       description: "Add, edit, or remove expert profiles",
       icon: UserCog,
-      path: "/admin/experts",
+      path: "/admin/manage-experts", // Updated this path
     },
     {
       title: "Manage Remedies",
