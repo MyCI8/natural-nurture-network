@@ -33,7 +33,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.users || 0,
       icon: Users,
       description: "Registered users",
-      path: "/admin/users", // Added path for users management
+      path: "/admin/users",
     },
     {
       title: "Published Remedies",
@@ -68,7 +68,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.experts || 0,
       icon: GraduationCap,
       description: "Medical experts",
-      path: "/admin/experts",
+      path: "/admin/manage-experts", // Fixed the path here
     },
   ];
 
