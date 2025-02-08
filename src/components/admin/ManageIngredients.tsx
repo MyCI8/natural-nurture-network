@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -31,33 +32,42 @@ const ManageIngredients = () => {
   const [selectedIngredient, setSelectedIngredient] = useState<any>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteIngredient, setDeleteIngredient] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is authenticated and has admin role
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Unauthorized",
-          description: "Please log in to access this page",
-          variant: "destructive",
-        });
-        navigate("/auth");
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          toast({
+            title: "Unauthorized",
+            description: "Please log in to access this page",
+            variant: "destructive",
+          });
+          navigate("/auth");
+          return;
+        }
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .single();
+        const { data: roles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .single();
 
-      if (!roles || roles.role !== "admin") {
-        toast({
-          title: "Unauthorized",
-          description: "You don't have permission to access this page",
-          variant: "destructive",
-        });
+        if (rolesError || !roles || roles.role !== "admin") {
+          toast({
+            title: "Unauthorized",
+            description: "You don't have permission to access this page",
+            variant: "destructive",
+          });
+          navigate("/");
+          return;
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Auth check error:", error);
         navigate("/");
       }
     };
@@ -75,6 +85,7 @@ const ManageIngredients = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !isLoading, // Only fetch when auth check is complete
   });
 
   const handleDelete = async () => {
@@ -103,6 +114,10 @@ const ManageIngredients = () => {
       setDeleteIngredient(null);
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -207,3 +222,4 @@ const ManageIngredients = () => {
 };
 
 export default ManageIngredients;
+

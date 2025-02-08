@@ -14,6 +14,7 @@ import IngredientDetail from "./pages/IngredientDetail";
 import ExpertProfile from "./pages/ExpertProfile";
 import Experts from "./pages/Experts";
 import Remedies from "./pages/Remedies";
+import Ingredients from "./pages/Ingredients";
 import News from "./pages/News";
 import NewsArticle from "./pages/NewsArticle";
 import ManageNews from "./pages/ManageNews";
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="experts" element={<Experts />} />
           <Route path="experts/:id" element={<ExpertProfile />} />
           <Route path="remedies" element={<Remedies />} />
+          <Route path="ingredients" element={<Ingredients />} />
           <Route path="news" element={<News />} />
           <Route path="news/:id" element={<NewsArticle />} />
           <Route path="admin" element={<Admin />}>
