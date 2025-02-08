@@ -79,7 +79,8 @@ const EditNews = () => {
       setScheduledDate(article.scheduled_publish_date ? new Date(article.scheduled_publish_date) : undefined);
       setSelectedExperts(article.related_experts || []);
       setRelatedLinks(article.news_article_links || []);
-      setVideoLinks(article.video_links || []);
+      // Ensure video_links is an array of objects with title and url properties
+      setVideoLinks(Array.isArray(article.video_links) ? article.video_links : []);
       setVideoDescription(article.video_description || "");
     }
   }, [article]);
@@ -179,3 +180,4 @@ const EditNews = () => {
 };
 
 export default EditNews;
+
