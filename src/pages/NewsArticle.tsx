@@ -85,10 +85,10 @@ const NewsArticle = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
-      <div className="mb-8">
+      <div className="mb-12">
         <button 
           onClick={() => navigate(-1)} 
-          className="flex items-center text-text-light hover:text-primary mb-4"
+          className="flex items-center text-text-light hover:text-primary mb-8"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back
@@ -96,8 +96,8 @@ const NewsArticle = () => {
         <h1 className="text-3xl font-bold mb-6">News</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr,1fr] gap-8">
-        <article className="text-left">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr,3fr] gap-12">
+        <article className="text-left max-w-2xl">
           <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
           
           {article.main_image_url && (
@@ -138,3 +138,4 @@ const NewsArticle = () => {
 };
 
 export default NewsArticle;
+
