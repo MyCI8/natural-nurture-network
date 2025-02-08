@@ -1,3 +1,4 @@
+
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -52,17 +53,20 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
       StarterKit.configure({
         paragraph: {
           HTMLAttributes: {
-            class: 'mb-4',
+            class: 'mb-4 leading-relaxed',
           },
         },
         heading: {
           levels: [1, 2, 3],
           HTMLAttributes: {
-            class: 'font-bold',
-            level: {
-              1: 'text-4xl mb-4',
-              2: 'text-3xl mb-3',
-              3: 'text-2xl mb-2'
+            1: {
+              class: 'text-4xl font-bold mb-6 leading-tight',
+            },
+            2: {
+              class: 'text-3xl font-bold mb-5 leading-tight mt-8',
+            },
+            3: {
+              class: 'text-2xl font-bold mb-4 leading-tight mt-6',
             }
           },
         },
@@ -102,10 +106,10 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
         // Preserve line breaks, spacing, and heading structure in pasted content
         return html
           .replace(/<p><br><\/p>/g, '<p>&nbsp;</p>')
-          .replace(/<p[^>]*>/g, '<p class="mb-4">')
-          .replace(/<h1[^>]*>/g, '<h1 class="text-4xl mb-4 font-bold">')
-          .replace(/<h2[^>]*>/g, '<h2 class="text-3xl mb-3 font-bold">')
-          .replace(/<h3[^>]*>/g, '<h3 class="text-2xl mb-2 font-bold">');
+          .replace(/<p[^>]*>/g, '<p class="mb-4 leading-relaxed">')
+          .replace(/<h1[^>]*>/g, '<h1 class="text-4xl font-bold mb-6 leading-tight">')
+          .replace(/<h2[^>]*>/g, '<h2 class="text-3xl font-bold mb-5 leading-tight mt-8">')
+          .replace(/<h3[^>]*>/g, '<h3 class="text-2xl font-bold mb-4 leading-tight mt-6">');
       },
     },
   });
@@ -324,3 +328,4 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
 };
 
 export default TextEditor;
+
