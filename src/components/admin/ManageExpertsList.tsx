@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -15,6 +16,7 @@ import SuggestionsList from "./experts/SuggestionsList";
 
 const ManageExpertsList = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "remedies">("name");
   const [expertiseFilter, setExpertiseFilter] = useState<string>("all");
@@ -76,6 +78,22 @@ const ManageExpertsList = () => {
   });
 
   const handleDeleteExpert = async (expertId: string) => {
+    // First delete related records
+    const { error: remediesError } = await supabase
+      .from("expert_remedies")
+      .delete()
+      .eq("expert_id", expertId);
+
+    if (remediesError) {
+      toast({
+        title: "Error",
+        description: "Failed to delete expert's remedies",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Then delete the expert
     const { error } = await supabase
       .from("experts")
       .delete()
@@ -92,6 +110,8 @@ const ManageExpertsList = () => {
         title: "Success",
         description: "Expert deleted successfully",
       });
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["admin-experts"] });
     }
   };
 
@@ -135,6 +155,9 @@ const ManageExpertsList = () => {
       title: "Success",
       description: "Expert suggestion approved successfully",
     });
+    // Invalidate both queries to refresh the data
+    queryClient.invalidateQueries({ queryKey: ["admin-experts"] });
+    queryClient.invalidateQueries({ queryKey: ["expert-suggestions"] });
   };
 
   const handleRejectSuggestion = async (suggestionId: string) => {
@@ -154,6 +177,8 @@ const ManageExpertsList = () => {
         title: "Success",
         description: "Expert suggestion rejected successfully",
       });
+      // Invalidate the suggestions query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["expert-suggestions"] });
     }
   };
 
