@@ -59,15 +59,7 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
         heading: {
           levels: [1, 2, 3],
           HTMLAttributes: {
-            1: {
-              class: 'text-4xl font-bold mb-6 leading-tight',
-            },
-            2: {
-              class: 'text-3xl font-bold mb-5 leading-tight mt-8',
-            },
-            3: {
-              class: 'text-2xl font-bold mb-4 leading-tight mt-6',
-            }
+            class: 'font-bold',
           },
         },
       }),
@@ -99,11 +91,9 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
         class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none min-h-[200px] p-4",
       },
       handlePaste: (view, event) => {
-        // Let TipTap handle the paste event by default
         return false;
       },
       transformPastedHTML: (html) => {
-        // Preserve line breaks, spacing, and heading structure in pasted content
         return html
           .replace(/<p><br><\/p>/g, '<p>&nbsp;</p>')
           .replace(/<p[^>]*>/g, '<p class="mb-4 leading-relaxed">')
@@ -322,7 +312,18 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
           </Button>
         </div>
       </div>
-      <EditorContent editor={editor} />
+      <EditorContent 
+        editor={editor} 
+        className={`
+          [&_.is-editor-empty]:before:content-[attr(data-placeholder)]
+          [&_.is-editor-empty]:before:text-muted-foreground
+          [&_.is-editor-empty]:before:float-left
+          [&_.is-editor-empty]:before:pointer-events-none
+          [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-6 [&_h1]:leading-tight
+          [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mb-5 [&_h2]:leading-tight [&_h2]:mt-8
+          [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mb-4 [&_h3]:leading-tight [&_h3]:mt-6
+        `}
+      />
     </div>
   );
 };
