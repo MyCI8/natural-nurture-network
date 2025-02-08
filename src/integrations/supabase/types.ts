@@ -358,7 +358,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
-          image_url: string
+          image_url: string | null
           ingredients: string[] | null
           name: string
           shopping_list: Json | null
@@ -372,7 +372,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
-          image_url: string
+          image_url?: string | null
           ingredients?: string[] | null
           name: string
           shopping_list?: Json | null
@@ -386,7 +386,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
-          image_url?: string
+          image_url?: string | null
           ingredients?: string[] | null
           name?: string
           shopping_list?: Json | null

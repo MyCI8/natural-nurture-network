@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -90,44 +89,48 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
   };
 
   const handleDeleteImage = async () => {
-    if (remedy?.image_url) {
-      const oldImagePath = remedy.image_url.split("/").pop();
-      if (oldImagePath) {
-        const { error } = await supabase.storage
-          .from("remedy-images")
-          .remove([oldImagePath]);
-        
-        if (error) {
-          toast({
-            title: "Error",
-            description: "Failed to delete image",
-            variant: "destructive",
-          });
-          return;
+    try {
+      if (remedy?.image_url) {
+        const oldImagePath = remedy.image_url.split("/").pop();
+        if (oldImagePath) {
+          const { error: storageError } = await supabase.storage
+            .from("remedy-images")
+            .remove([oldImagePath]);
+          
+          if (storageError) {
+            throw storageError;
+          }
         }
       }
-    }
-    setImageFile(null);
-    setImagePreview("");
-    if (remedy) {
-      const { error } = await supabase
-        .from("remedies")
-        .update({ image_url: null })
-        .eq("id", remedy.id);
+      
+      if (remedy) {
+        const { error: updateError } = await supabase
+          .from("remedies")
+          .update({ image_url: null })
+          .eq("id", remedy.id);
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update remedy",
-          variant: "destructive",
-        });
-        return;
+        if (updateError) {
+          throw updateError;
+        }
+
+        queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
       }
+
+      setImageFile(null);
+      setImagePreview("");
+      
+      toast({
+        title: "Success",
+        description: "Image deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete image",
+        variant: "destructive",
+      });
     }
-    toast({
-      title: "Success",
-      description: "Image deleted successfully",
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
