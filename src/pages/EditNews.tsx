@@ -30,7 +30,7 @@ const EditNews = () => {
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
     queryFn: async () => {
-      if (isNewArticle) return null;
+      if (!id || isNewArticle) return null;
       
       const { data, error } = await supabase
         .from("news_articles")
@@ -49,7 +49,7 @@ const EditNews = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !isNewArticle,
+    enabled: Boolean(id) && !isNewArticle,
   });
 
   if (isLoading && !isNewArticle) {
