@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface RelatedLink {
   title: string;
@@ -19,6 +21,23 @@ export const RelatedLinksSection = ({
   relatedLinks,
   setRelatedLinks,
 }: RelatedLinksSectionProps) => {
+  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const fetchLinkPreview = async (url: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('link-preview', {
+        body: { url }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching link preview:', error);
+      return null;
+    }
+  };
+
   const addLink = () => {
     setRelatedLinks([...relatedLinks, { title: "", url: "" }]);
   };
@@ -27,10 +46,43 @@ export const RelatedLinksSection = ({
     setRelatedLinks(relatedLinks.filter((_, i) => i !== index));
   };
 
-  const updateLink = (index: number, field: keyof RelatedLink, value: string) => {
+  const updateLink = async (index: number, field: keyof RelatedLink, value: string) => {
     const newLinks = [...relatedLinks];
     newLinks[index] = { ...newLinks[index], [field]: value };
     setRelatedLinks(newLinks);
+
+    // If URL field is updated and is a valid URL, fetch preview
+    if (field === 'url' && value && isValidUrl(value)) {
+      setIsProcessing(true);
+      try {
+        const preview = await fetchLinkPreview(value);
+        if (preview) {
+          newLinks[index] = {
+            ...newLinks[index],
+            title: preview.title || newLinks[index].title,
+          };
+          setRelatedLinks(newLinks);
+        }
+      } catch (error) {
+        console.error('Error updating link preview:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch link preview",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
   };
 
   return (
@@ -59,6 +111,7 @@ export const RelatedLinksSection = ({
               value={link.url}
               onChange={(e) => updateLink(index, "url", e.target.value)}
               placeholder="https://..."
+              className={isProcessing ? "opacity-50" : ""}
             />
           </div>
           <Button
@@ -74,3 +127,4 @@ export const RelatedLinksSection = ({
     </div>
   );
 };
+
