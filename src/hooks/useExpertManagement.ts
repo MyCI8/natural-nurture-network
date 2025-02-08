@@ -3,12 +3,35 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Expert } from "@/types/expert";
+import { Json } from "@/integrations/supabase/types";
 
 interface UseExpertManagementProps {
   searchQuery: string;
   sortBy: "name" | "remedies";
   expertiseFilter: string;
 }
+
+// Helper function to transform the Supabase response to match Expert type
+const transformExpertData = (data: any): Expert => {
+  return {
+    id: data.id,
+    full_name: data.full_name,
+    title: data.title,
+    bio: data.bio || undefined,
+    image_url: data.image_url || undefined,
+    field_of_expertise: data.field_of_expertise || undefined,
+    social_media: data.social_media as Expert['social_media'] || undefined,
+    media_links: {
+      podcasts: ((data.media_links as Json)?.podcasts as string[]) || [],
+      news_articles: ((data.media_links as Json)?.news_articles as string[]) || [],
+      youtube_videos: ((data.media_links as Json)?.youtube_videos as string[]) || [],
+      research_papers: ((data.media_links as Json)?.research_papers as string[]) || [],
+    },
+    affiliations: data.affiliations || [],
+    credentials: data.credentials || [],
+    expert_remedies: data.expert_remedies || [],
+  };
+};
 
 export const useExpertManagement = ({
   searchQuery,
@@ -49,7 +72,8 @@ export const useExpertManagement = ({
         throw error;
       }
 
-      return data as Expert[];
+      // Transform each expert data to match the Expert interface
+      return data.map(transformExpertData);
     },
   });
 
