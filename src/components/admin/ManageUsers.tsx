@@ -6,7 +6,7 @@ import { UserList } from "./users/UserList";
 import { RoleSettings } from "./users/RoleSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User } from "@/types/user";
+import { User, RoleSetting } from "@/types/user";
 
 const ManageUsersComponent = () => {
   const [activeTab, setActiveTab] = useState("users");
@@ -15,30 +15,41 @@ const ManageUsersComponent = () => {
     queryKey: ["users"],
     queryFn: async () => {
       try {
-        const { data: profiles, error } = await supabase
+        // First fetch profiles
+        const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
-          .select(`
-            id,
-            full_name,
-            email,
-            avatar_url,
-            account_status,
-            user_roles (
-              id,
-              role,
-              created_at,
-              updated_at
-            )
-          `)
-          .order('created_at', { ascending: false });
+          .select("id, full_name, email, avatar_url, account_status");
 
-        if (error) {
-          console.error("Error fetching users:", error);
+        if (profilesError) {
+          console.error("Error fetching profiles:", profilesError);
           toast.error("Failed to fetch users");
-          throw error;
+          throw profilesError;
         }
 
-        return (profiles || []) as User[];
+        // Then fetch user roles for each profile
+        const profilesWithRoles = await Promise.all(
+          profiles.map(async (profile) => {
+            const { data: userRoles, error: rolesError } = await supabase
+              .from("user_roles")
+              .select("id, role, created_at, updated_at")
+              .eq("user_id", profile.id);
+
+            if (rolesError) {
+              console.error("Error fetching user roles:", rolesError);
+              return {
+                ...profile,
+                user_roles: [],
+              };
+            }
+
+            return {
+              ...profile,
+              user_roles: userRoles || [],
+            };
+          })
+        );
+
+        return profilesWithRoles as User[];
       } catch (error) {
         console.error("Error in query function:", error);
         toast.error("Failed to fetch users");
@@ -61,7 +72,11 @@ const ManageUsersComponent = () => {
         throw error;
       }
 
-      return data || [];
+      // Convert JSON permissions to proper type
+      return (data || []).map(setting => ({
+        ...setting,
+        permissions: setting.permissions as unknown as Permission
+      })) as RoleSetting[];
     },
   });
 
