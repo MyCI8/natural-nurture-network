@@ -24,7 +24,7 @@ export const RelatedNewsLinks = ({ links }: RelatedNewsLinksProps) => {
           >
             <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded overflow-hidden">
               <img
-                src={`https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d`}
+                src={link.thumbnail_url || "/placeholder.svg"}
                 alt=""
                 className="w-full h-full object-cover"
                 onError={(e) => {

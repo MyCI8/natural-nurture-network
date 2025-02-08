@@ -280,6 +280,7 @@ export type Database = {
           article_id: string | null
           created_at: string | null
           id: string
+          thumbnail_url: string | null
           title: string
           url: string
         }
@@ -287,6 +288,7 @@ export type Database = {
           article_id?: string | null
           created_at?: string | null
           id?: string
+          thumbnail_url?: string | null
           title: string
           url: string
         }
@@ -294,6 +296,7 @@ export type Database = {
           article_id?: string | null
           created_at?: string | null
           id?: string
+          thumbnail_url?: string | null
           title?: string
           url?: string
         }
