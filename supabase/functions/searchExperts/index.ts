@@ -34,24 +34,12 @@ Deno.serve(async (req) => {
   try {
     const { searchQuery } = await req.json()
     
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
-
-    // Get the API key from the database
-    const { data: keyData, error: keyError } = await supabaseClient
-      .from('api_keys')
-      .select('key_value')
-      .eq('name', 'Firecrawl API key')
-      .maybeSingle()
-
-    if (keyError || !keyData?.key_value) {
-      throw new Error('Firecrawl API key not found in database')
+    // Get the API key directly from environment variables
+    const apiKey = Deno.env.get('Firecrawl API key')
+    if (!apiKey) {
+      throw new Error('Firecrawl API key not found in environment variables')
     }
 
-    const apiKey = keyData.key_value
     console.log('Searching for expert:', searchQuery)
 
     // Make request to Firecrawl API
@@ -79,6 +67,11 @@ Deno.serve(async (req) => {
     }
 
     // Store the search result in Supabase
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    )
+
     const { error: insertError } = await supabaseClient
       .from('expert_searches')
       .insert({
