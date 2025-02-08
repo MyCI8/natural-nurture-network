@@ -47,7 +47,7 @@ export const ImageManagementSection = ({
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('news-images-draft')
         .upload(fileName, file);
 
@@ -61,9 +61,19 @@ export const ImageManagementSection = ({
         return;
       }
 
+      // Get the public URL directly after successful upload
       const { data: { publicUrl } } = supabase.storage
         .from('news-images-draft')
         .getPublicUrl(fileName);
+
+      if (!publicUrl) {
+        toast({
+          title: "Error",
+          description: "Failed to get image URL. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       setImageUrl(publicUrl);
       toast({
