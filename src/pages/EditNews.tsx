@@ -13,6 +13,11 @@ import { ExpertsSection } from "@/components/admin/news/ExpertsSection";
 import { ArticleActionButtons } from "@/components/admin/news/ArticleActionButtons";
 import { useArticleOperations } from "@/hooks/useArticleOperations";
 
+interface VideoLink {
+  title: string;
+  url: string;
+}
+
 const EditNews = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -29,7 +34,7 @@ const EditNews = () => {
   const [scheduledDate, setScheduledDate] = useState<Date>();
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
   const [relatedLinks, setRelatedLinks] = useState<{ title: string; url: string }[]>([]);
-  const [videoLinks, setVideoLinks] = useState<{ title: string; url: string }[]>([]);
+  const [videoLinks, setVideoLinks] = useState<VideoLink[]>([]);
   const [videoDescription, setVideoDescription] = useState("");
 
   const { handleSave, isNewArticle } = useArticleOperations(id);
@@ -79,8 +84,15 @@ const EditNews = () => {
       setScheduledDate(article.scheduled_publish_date ? new Date(article.scheduled_publish_date) : undefined);
       setSelectedExperts(article.related_experts || []);
       setRelatedLinks(article.news_article_links || []);
-      // Ensure video_links is an array of objects with title and url properties
-      setVideoLinks(Array.isArray(article.video_links) ? article.video_links : []);
+      
+      // Properly transform and validate video links data
+      const transformedVideoLinks = Array.isArray(article.video_links) 
+        ? article.video_links.map((link: any) => ({
+            title: typeof link.title === 'string' ? link.title : '',
+            url: typeof link.url === 'string' ? link.url : ''
+          }))
+        : [];
+      setVideoLinks(transformedVideoLinks);
       setVideoDescription(article.video_description || "");
     }
   }, [article]);
@@ -180,4 +192,3 @@ const EditNews = () => {
 };
 
 export default EditNews;
-
