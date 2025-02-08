@@ -96,7 +96,7 @@ const NewsArticle = () => {
         <h1 className="text-3xl font-bold mb-6">News</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr,3fr] gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-12">
         <article className="text-left max-w-2xl">
           <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
           
@@ -138,4 +138,3 @@ const NewsArticle = () => {
 };
 
 export default NewsArticle;
-
