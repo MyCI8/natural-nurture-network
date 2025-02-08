@@ -23,7 +23,10 @@ const ManageUsersComponent = () => {
             avatar_url,
             account_status,
             user_roles (
-              role
+              id,
+              role,
+              created_at,
+              updated_at
             )
           `)
           .order('created_at', { ascending: false });
@@ -34,11 +37,7 @@ const ManageUsersComponent = () => {
           throw error;
         }
 
-        // Transform the data to match the expected type
-        return (profiles || []).map(profile => ({
-          ...profile,
-          user_roles: profile.user_roles?.[0] || { role: 'user' }
-        }));
+        return profiles || [];
       } catch (error) {
         console.error("Error in query function:", error);
         toast.error("Failed to fetch users");
@@ -52,7 +51,8 @@ const ManageUsersComponent = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("role_settings")
-        .select("*");
+        .select("*")
+        .order('role');
 
       if (error) {
         console.error("Error fetching role settings:", error);
@@ -60,16 +60,7 @@ const ManageUsersComponent = () => {
         throw error;
       }
 
-      return data.map((setting) => ({
-        id: setting.id,
-        role: setting.role,
-        permissions: setting.permissions as {
-          can_manage_roles?: boolean;
-          can_manage_users?: boolean;
-          can_manage_content?: boolean;
-          can_manage_settings?: boolean;
-        },
-      }));
+      return data || [];
     },
   });
 

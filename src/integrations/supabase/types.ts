@@ -350,15 +350,7 @@ export type Database = {
           settings?: Json | null
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "user_roles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       remedies: {
         Row: {
@@ -407,25 +399,25 @@ export type Database = {
       }
       role_settings: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
-          permissions: Json | null
+          permissions: Json
           role: Database["public"]["Enums"]["user_role"]
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          permissions?: Json | null
+          permissions?: Json
           role: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
-          permissions?: Json | null
+          permissions?: Json
           role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -490,18 +482,21 @@ export type Database = {
           created_at: string
           id: string
           role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -536,12 +531,6 @@ export type Database = {
       has_role: {
         Args: {
           role: Database["public"]["Enums"]["user_role"]
-        }
-        Returns: boolean
-      }
-      is_super_admin: {
-        Args: {
-          user_id: string
         }
         Returns: boolean
       }

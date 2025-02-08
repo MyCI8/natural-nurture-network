@@ -6,17 +6,21 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type RolePermissions = {
+type Permission = {
   can_manage_roles?: boolean;
   can_manage_users?: boolean;
   can_manage_content?: boolean;
   can_manage_settings?: boolean;
+  can_comment?: boolean;
+  can_view_content?: boolean;
 };
 
 interface RoleSetting {
   id: string;
   role: "user" | "admin" | "super_admin";
-  permissions: RolePermissions;
+  permissions: Permission;
+  created_at: string;
+  updated_at: string;
 }
 
 interface RoleSettingsProps {
@@ -33,7 +37,7 @@ export const RoleSettings = ({ settings, isLoading }: RoleSettingsProps) => {
       permissions,
     }: {
       roleId: string;
-      permissions: RolePermissions;
+      permissions: Permission;
     }) => {
       const { error } = await supabase
         .from("role_settings")
@@ -65,15 +69,23 @@ export const RoleSettings = ({ settings, isLoading }: RoleSettingsProps) => {
     );
   }
 
+  const permissionLabels = {
+    can_manage_roles: "Manage Roles",
+    can_manage_users: "Manage Users",
+    can_manage_content: "Manage Content",
+    can_manage_settings: "Manage Settings",
+    can_comment: "Comment",
+    can_view_content: "View Content"
+  };
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Role</TableHead>
-          <TableHead>Manage Roles</TableHead>
-          <TableHead>Manage Users</TableHead>
-          <TableHead>Manage Content</TableHead>
-          <TableHead>Manage Settings</TableHead>
+          {Object.entries(permissionLabels).map(([key]) => (
+            <TableHead key={key}>{permissionLabels[key as keyof typeof permissionLabels]}</TableHead>
+          ))}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -82,66 +94,23 @@ export const RoleSettings = ({ settings, isLoading }: RoleSettingsProps) => {
             <TableCell className="font-medium capitalize">
               {setting.role.replace("_", " ")}
             </TableCell>
-            <TableCell>
-              <Switch
-                checked={setting.permissions.can_manage_roles || false}
-                onCheckedChange={(checked) => {
-                  updatePermissionMutation.mutate({
-                    roleId: setting.id,
-                    permissions: {
-                      ...setting.permissions,
-                      can_manage_roles: checked,
-                    },
-                  });
-                }}
-                disabled={setting.role === "super_admin"}
-              />
-            </TableCell>
-            <TableCell>
-              <Switch
-                checked={setting.permissions.can_manage_users || false}
-                onCheckedChange={(checked) => {
-                  updatePermissionMutation.mutate({
-                    roleId: setting.id,
-                    permissions: {
-                      ...setting.permissions,
-                      can_manage_users: checked,
-                    },
-                  });
-                }}
-                disabled={setting.role === "super_admin"}
-              />
-            </TableCell>
-            <TableCell>
-              <Switch
-                checked={setting.permissions.can_manage_content || false}
-                onCheckedChange={(checked) => {
-                  updatePermissionMutation.mutate({
-                    roleId: setting.id,
-                    permissions: {
-                      ...setting.permissions,
-                      can_manage_content: checked,
-                    },
-                  });
-                }}
-                disabled={setting.role === "super_admin"}
-              />
-            </TableCell>
-            <TableCell>
-              <Switch
-                checked={setting.permissions.can_manage_settings || false}
-                onCheckedChange={(checked) => {
-                  updatePermissionMutation.mutate({
-                    roleId: setting.id,
-                    permissions: {
-                      ...setting.permissions,
-                      can_manage_settings: checked,
-                    },
-                  });
-                }}
-                disabled={setting.role === "super_admin"}
-              />
-            </TableCell>
+            {Object.entries(permissionLabels).map(([key]) => (
+              <TableCell key={key}>
+                <Switch
+                  checked={setting.permissions[key as keyof Permission] || false}
+                  onCheckedChange={(checked) => {
+                    updatePermissionMutation.mutate({
+                      roleId: setting.id,
+                      permissions: {
+                        ...setting.permissions,
+                        [key]: checked,
+                      },
+                    });
+                  }}
+                  disabled={setting.role === "super_admin"}
+                />
+              </TableCell>
+            ))}
           </TableRow>
         ))}
       </TableBody>

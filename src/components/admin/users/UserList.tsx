@@ -26,8 +26,11 @@ type User = {
   avatar_url: string | null;
   account_status: string;
   user_roles: {
+    id: string;
     role: UserRole;
-  };
+    created_at: string;
+    updated_at: string;
+  }[];
 };
 
 interface UserListProps {
@@ -40,30 +43,13 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
   const queryClient = useQueryClient();
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
-      // First, check if a role exists for this user
-      const { data: existingRole } = await supabase
+    mutationFn: async ({ userId, roleId, role }: { userId: string; roleId: string; role: UserRole }) => {
+      const { error } = await supabase
         .from("user_roles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+        .update({ role })
+        .eq("id", roleId);
 
-      if (existingRole) {
-        // Update existing role
-        const { error } = await supabase
-          .from("user_roles")
-          .update({ role })
-          .eq("user_id", userId);
-
-        if (error) throw error;
-      } else {
-        // Insert new role
-        const { error } = await supabase
-          .from("user_roles")
-          .insert([{ user_id: userId, role }]);
-
-        if (error) throw error;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -180,9 +166,15 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
               </TableCell>
               <TableCell>
                 <Select
-                  defaultValue={user.user_roles.role}
+                  defaultValue={user.user_roles[0]?.role}
                   onValueChange={(value: UserRole) => {
-                    updateRoleMutation.mutate({ userId: user.id, role: value });
+                    if (user.user_roles[0]) {
+                      updateRoleMutation.mutate({
+                        userId: user.id,
+                        roleId: user.user_roles[0].id,
+                        role: value
+                      });
+                    }
                   }}
                 >
                   <SelectTrigger className="w-32">
