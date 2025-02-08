@@ -30,6 +30,8 @@ export const useArticleOperations = (id: string | undefined) => {
     shouldPublish = false
   ) => {
     try {
+      console.log('Saving article with related links:', relatedLinks);
+      
       let finalThumbnailUrl = articleData.image_url;
       let finalMainImageUrl = articleData.main_image_url;
 
@@ -69,6 +71,7 @@ export const useArticleOperations = (id: string | undefined) => {
         if (error) throw error;
 
         if (relatedLinks.length > 0) {
+          console.log('Inserting related links for new article:', relatedLinks);
           const { error: linksError } = await supabase
             .from("news_article_links")
             .insert(
@@ -94,13 +97,18 @@ export const useArticleOperations = (id: string | undefined) => {
 
         if (error) throw error;
 
-        await supabase
+        // Delete existing links
+        const { error: deleteError } = await supabase
           .from("news_article_links")
           .delete()
           .eq("article_id", id);
 
+        if (deleteError) throw deleteError;
+
+        // Insert new links if any
         if (relatedLinks.length > 0) {
-          await supabase
+          console.log('Updating related links for existing article:', relatedLinks);
+          const { error: linksError } = await supabase
             .from("news_article_links")
             .insert(
               relatedLinks.map(link => ({
@@ -109,6 +117,8 @@ export const useArticleOperations = (id: string | undefined) => {
                 url: link.url
               }))
             );
+
+          if (linksError) throw linksError;
         }
 
         toast({

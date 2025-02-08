@@ -59,7 +59,15 @@ const EditNews = () => {
       
       const { data, error } = await supabase
         .from("news_articles")
-        .select("*, news_article_links(*)")
+        .select(`
+          *,
+          news_article_links (
+            id,
+            title,
+            url,
+            thumbnail_url
+          )
+        `)
         .eq("id", id)
         .single();
 
@@ -72,7 +80,7 @@ const EditNews = () => {
   // Set initial form data when article is loaded
   useEffect(() => {
     if (article) {
-      setHeading(article.title);
+      setHeading(article.title || "");
       setSlug(article.slug || "");
       setSummary(article.summary || "");
       setContent(article.content || "");
@@ -83,9 +91,16 @@ const EditNews = () => {
       setStatus(article.status as "draft" | "published");
       setScheduledDate(article.scheduled_publish_date ? new Date(article.scheduled_publish_date) : undefined);
       setSelectedExperts(article.related_experts || []);
-      setRelatedLinks(article.news_article_links || []);
       
-      // Properly transform and validate video links data
+      // Set related links from the joined news_article_links table
+      if (article.news_article_links) {
+        setRelatedLinks(article.news_article_links.map((link: any) => ({
+          title: link.title,
+          url: link.url
+        })));
+      }
+      
+      // Handle video links
       const transformedVideoLinks = Array.isArray(article.video_links) 
         ? article.video_links.map((link: any) => ({
             title: typeof link.title === 'string' ? link.title : '',
