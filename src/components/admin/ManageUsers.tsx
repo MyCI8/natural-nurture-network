@@ -6,6 +6,7 @@ import { UserList } from "./users/UserList";
 import { RoleSettings } from "./users/RoleSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { User } from "@/types/user";
 
 const ManageUsersComponent = () => {
   const [activeTab, setActiveTab] = useState("users");
@@ -37,7 +38,7 @@ const ManageUsersComponent = () => {
           throw error;
         }
 
-        return profiles || [];
+        return (profiles || []) as User[];
       } catch (error) {
         console.error("Error in query function:", error);
         toast.error("Failed to fetch users");

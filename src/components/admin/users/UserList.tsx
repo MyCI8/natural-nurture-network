@@ -1,37 +1,15 @@
 
 import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
-
-type UserRole = "user" | "admin" | "super_admin";
-
-type User = {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  avatar_url: string | null;
-  account_status: string;
-  user_roles: {
-    id: string;
-    role: UserRole;
-    created_at: string;
-    updated_at: string;
-  }[];
-};
+import { User, UserRole } from "@/types/user";
+import { UserSearch } from "./UserSearch";
+import { UserAvatar } from "./UserAvatar";
+import { UserStatusSelect } from "./UserStatusSelect";
+import { UserRoleSelect } from "./UserRoleSelect";
 
 interface UserListProps {
   users: User[];
@@ -106,15 +84,7 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search users by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-8"
-        />
-      </div>
+      <UserSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       <Table>
         <TableHeader>
@@ -129,63 +99,31 @@ export const UserList = ({ users, isLoading }: UserListProps) => {
           {filteredUsers.map((user) => (
             <TableRow key={user.id}>
               <TableCell className="flex items-center space-x-4">
-                <Avatar className="h-10 w-10">
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name || ""} />
-                  ) : (
-                    <div className="bg-primary/10 w-full h-full flex items-center justify-center text-primary font-semibold">
-                      {(user.full_name || "U")[0]}
-                    </div>
-                  )}
-                </Avatar>
+                <UserAvatar avatarUrl={user.avatar_url} fullName={user.full_name} />
                 <span>{user.full_name || "Unnamed User"}</span>
               </TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>
-                <Select
-                  defaultValue={user.account_status}
-                  onValueChange={(value) => {
+                <UserStatusSelect
+                  status={user.account_status}
+                  onStatusChange={(value) => {
                     updateStatusMutation.mutate({ userId: user.id, status: value });
                   }}
-                >
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">
-                      <Badge variant="default">Active</Badge>
-                    </SelectItem>
-                    <SelectItem value="suspended">
-                      <Badge variant="secondary">Suspended</Badge>
-                    </SelectItem>
-                    <SelectItem value="pending">
-                      <Badge variant="outline">Pending</Badge>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </TableCell>
               <TableCell>
-                <Select
-                  defaultValue={user.user_roles[0]?.role}
-                  onValueChange={(value: UserRole) => {
-                    if (user.user_roles[0]) {
+                {user.user_roles[0] && (
+                  <UserRoleSelect
+                    role={user.user_roles[0].role}
+                    onRoleChange={(value) => {
                       updateRoleMutation.mutate({
                         userId: user.id,
                         roleId: user.user_roles[0].id,
                         role: value
                       });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
-                  </SelectContent>
-                </Select>
+                    }}
+                  />
+                )}
               </TableCell>
             </TableRow>
           ))}
