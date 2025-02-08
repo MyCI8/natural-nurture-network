@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 interface RelatedLink {
   title: string;
   url: string;
+  thumbnail_url?: string;
 }
 
 interface RelatedLinksSectionProps {
@@ -60,6 +61,7 @@ export const RelatedLinksSection = ({
           newLinks[index] = {
             ...newLinks[index],
             title: preview.title || newLinks[index].title,
+            thumbnail_url: preview.thumbnailUrl
           };
           setRelatedLinks(newLinks);
         }
@@ -97,6 +99,28 @@ export const RelatedLinksSection = ({
       
       {relatedLinks.map((link, index) => (
         <div key={index} className="flex gap-4 items-start">
+          <div className="flex-shrink-0 w-24 h-24 bg-primary/10 rounded overflow-hidden">
+            {link.thumbnail_url ? (
+              <img
+                src={link.thumbnail_url}
+                alt=""
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`w-full h-full flex items-center justify-center ${link.thumbnail_url ? 'hidden' : ''}`}>
+              <img
+                src="/placeholder.svg"
+                alt=""
+                className="w-12 h-12 opacity-50"
+              />
+            </div>
+          </div>
           <div className="flex-1 space-y-2">
             <Label>Title</Label>
             <Input
@@ -127,4 +151,3 @@ export const RelatedLinksSection = ({
     </div>
   );
 };
-

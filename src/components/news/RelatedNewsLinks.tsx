@@ -32,18 +32,18 @@ export const RelatedNewsLinks = ({ links }: RelatedNewsLinksProps) => {
                   onError={(e) => {
                     console.log('Image load error:', e);
                     const target = e.target as HTMLImageElement;
-                    target.src = "/placeholder.svg";
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
                   }}
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                  <img
-                    src="/placeholder.svg"
-                    alt=""
-                    className="w-12 h-12 opacity-50"
-                  />
-                </div>
-              )}
+              ) : null}
+              <div className={`w-full h-full flex items-center justify-center ${link.thumbnail_url ? 'hidden' : ''}`}>
+                <img
+                  src="/placeholder.svg"
+                  alt=""
+                  className="w-12 h-12 opacity-50"
+                />
+              </div>
             </div>
             <div className="flex-grow min-w-0">
               <h3 className="font-medium text-lg text-text truncate">{link.title}</h3>
