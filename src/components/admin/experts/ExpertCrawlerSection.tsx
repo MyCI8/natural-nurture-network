@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 interface CrawlResult {
@@ -70,7 +71,7 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
           name: 'firecrawl', 
           key_value: key 
         }, { 
-          onConflict: 'name' // Specify the column name, not the constraint name
+          onConflict: 'name'
         });
 
       if (error) {
@@ -109,19 +110,16 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
 
     setIsLoading(true);
     try {
-      // Initialize Firecrawl with the API key
-      const firecrawl = new (window as any).FirecrawlApp({ apiKey });
-      
-      const response = await firecrawl.searchExperts(searchQuery, {
-        sources: ['wikipedia', 'linkedin', 'professional_websites'],
-        includeImages: true,
-        includeSocialLinks: true
+      const { data, error } = await supabase.functions.invoke('searchExperts', {
+        body: { searchQuery }
       });
 
-      if (response.success) {
+      if (error) throw error;
+
+      if (data.success) {
         setCrawlResult({
           success: true,
-          data: response.data
+          data: data.data
         });
         toast({
           title: "Success",
@@ -130,11 +128,11 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
       } else {
         setCrawlResult({
           success: false,
-          error: response.error || "Failed to find expert information"
+          error: data.error || "Failed to find expert information"
         });
         toast({
           title: "Error",
-          description: response.error || "Failed to find expert information",
+          description: data.error || "Failed to find expert information",
           variant: "destructive",
         });
       }
@@ -200,6 +198,9 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Firecrawl API Key</DialogTitle>
+            <DialogDescription>
+              Enter your Firecrawl API key to enable expert search functionality.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <Input
