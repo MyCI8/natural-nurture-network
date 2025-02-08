@@ -13,6 +13,8 @@ interface UseExpertManagementProps {
 
 // Helper function to transform the Supabase response to match Expert type
 const transformExpertData = (data: any): Expert => {
+  const mediaLinksJson = data.media_links as Record<string, any> || {};
+  
   return {
     id: data.id,
     full_name: data.full_name,
@@ -22,10 +24,8 @@ const transformExpertData = (data: any): Expert => {
     field_of_expertise: data.field_of_expertise || undefined,
     social_media: data.social_media as Expert['social_media'] || undefined,
     media_links: {
-      podcasts: ((data.media_links as Json)?.podcasts as string[]) || [],
-      news_articles: ((data.media_links as Json)?.news_articles as string[]) || [],
-      youtube_videos: ((data.media_links as Json)?.youtube_videos as string[]) || [],
-      research_papers: ((data.media_links as Json)?.research_papers as string[]) || [],
+      videos: [...(mediaLinksJson.youtube_videos || []), ...(mediaLinksJson.videos || [])],
+      news_articles: mediaLinksJson.news_articles || [],
     },
     affiliations: data.affiliations || [],
     credentials: data.credentials || [],
@@ -72,7 +72,6 @@ export const useExpertManagement = ({
         throw error;
       }
 
-      // Transform each expert data to match the Expert interface
       return data.map(transformExpertData);
     },
   });

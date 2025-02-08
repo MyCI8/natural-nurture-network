@@ -15,10 +15,8 @@ export interface Expert {
     wikipedia?: string;
   };
   media_links?: {
-    podcasts: string[];
+    videos: string[];
     news_articles: string[];
-    youtube_videos: string[];
-    research_papers: string[];
   };
   affiliations?: string[];
   credentials?: string[];
