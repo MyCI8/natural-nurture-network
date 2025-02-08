@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -64,7 +65,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
       defaultSocialMedia
   );
 
-  useQuery({
+  const { isLoading } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
@@ -75,8 +76,17 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
         .eq("id", expertId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching expert:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch expert data",
+          variant: "destructive",
+        });
+        throw error;
+      }
 
+      // Set all the state values with the fetched data
       setImageUrl(data.image_url || "");
       setFullName(data.full_name || "");
       setTitle(data.title || "");
@@ -114,7 +124,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
       social_media: socialMedia as unknown as Json,
     };
 
-    const { error } = expertId
+    const { error } = expertId && expertId !== "new"
       ? await supabase
           .from("experts")
           .update(expertData)
@@ -124,6 +134,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
           .insert([expertData]);
 
     if (error) {
+      console.error("Error saving expert:", error);
       toast({
         title: "Error",
         description: "Failed to save expert",
@@ -154,6 +165,10 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
     }
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="grid gap-8 md:grid-cols-2">
@@ -179,6 +194,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
               value={fieldOfExpertise}
               onChange={(e) => setFieldOfExpertise(e.target.value)}
               placeholder="e.g. Herbal Medicine, Nutrition"
+              className="bg-background"
             />
           </div>
         </div>
@@ -205,6 +221,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
                     }))
                   }
                   placeholder={`${platform} URL`}
+                  className="bg-background"
                 />
               </div>
             ))}
@@ -221,7 +238,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
           Cancel
         </Button>
         <Button type="submit">
-          {expertId ? "Update Expert" : "Create Expert"}
+          {expertId && expertId !== "new" ? "Update Expert" : "Create Expert"}
         </Button>
       </div>
     </form>
