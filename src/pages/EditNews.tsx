@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,7 +62,7 @@ const EditNews = () => {
   });
 
   // Set initial form data when article is loaded
-  useState(() => {
+  useEffect(() => {
     if (article) {
       setHeading(article.title);
       setSlug(article.slug || "");
