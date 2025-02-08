@@ -156,6 +156,12 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
     }
   };
 
+  const handleApiKeyClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowApiKeyDialog(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -163,7 +169,7 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerSectionProps
         <Button
           variant="outline"
           size="icon"
-          onClick={() => setShowApiKeyDialog(true)}
+          onClick={handleApiKeyClick}
           className="h-8 w-8"
         >
           <Key className="h-4 w-4" />
