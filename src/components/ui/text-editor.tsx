@@ -59,6 +59,11 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
           levels: [1, 2, 3],
           HTMLAttributes: {
             class: 'font-bold',
+            level: {
+              1: 'text-4xl mb-4',
+              2: 'text-3xl mb-3',
+              3: 'text-2xl mb-2'
+            }
           },
         },
       }),
@@ -123,7 +128,6 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
   return (
     <div className="border rounded-lg">
       <div className="border-b p-4 flex flex-wrap gap-2">
-        {/* Undo/Redo */}
         <div className="flex gap-1 mr-2 border-r pr-2">
           <Button
             variant="outline"
@@ -143,7 +147,6 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
           </Button>
         </div>
 
-        {/* Font Controls */}
         <div className="flex gap-2 border-r pr-2">
           <Select
             value={editor.getAttributes('textStyle').fontFamily}
@@ -201,7 +204,6 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
           </Button>
         </div>
 
-        {/* Alignment */}
         <div className="flex gap-1 border-r pr-2">
           <Button
             variant="outline"
@@ -237,7 +239,6 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
           </Button>
         </div>
 
-        {/* Lists */}
         <div className="flex gap-1 border-r pr-2">
           <Button
             variant="outline"
@@ -257,7 +258,6 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
           </Button>
         </div>
 
-        {/* Headings */}
         <div className="flex gap-1 border-r pr-2">
           <Button
             variant="outline"
@@ -285,7 +285,6 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
           </Button>
         </div>
 
-        {/* Other Formatting */}
         <div className="flex gap-1">
           <Button
             variant="outline"
