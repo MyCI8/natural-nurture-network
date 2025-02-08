@@ -74,7 +74,7 @@ const Navbar = () => {
                 onClick={() => navigate("/admin/manage-experts")}
               >
                 <Shield className="h-4 w-4" />
-                <span>Admin Dashboard</span>
+                <span className="hidden sm:inline">Admin Dashboard</span>
               </Button>
             )}
             
@@ -130,3 +130,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
