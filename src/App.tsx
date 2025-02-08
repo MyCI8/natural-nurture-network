@@ -40,12 +40,18 @@ const App = () => {
               <Route path="new" element={<EditExpert />} />
               <Route path=":id" element={<EditExpert />} />
             </Route>
-            <Route path="remedies" element={<ManageRemedies />} />
-            <Route path="remedies/:id" element={<EditRemedy />} />
-            <Route path="ingredients" element={<ManageIngredients />} />
-            <Route path="ingredients/:id" element={<IngredientDetail />} />
-            <Route path="news" element={<ManageNews />} />
-            <Route path="news/:id" element={<EditNews />} />
+            <Route path="remedies">
+              <Route index element={<ManageRemedies />} />
+              <Route path=":id" element={<EditRemedy />} />
+            </Route>
+            <Route path="ingredients">
+              <Route index element={<ManageIngredients />} />
+              <Route path=":id" element={<IngredientDetail />} />
+            </Route>
+            <Route path="news">
+              <Route index element={<ManageNews />} />
+              <Route path=":id" element={<EditNews />} />
+            </Route>
           </Route>
           <Route path="auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
