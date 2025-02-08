@@ -59,9 +59,12 @@ const Ingredients = () => {
                 <CardTitle>{ingredient.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground line-clamp-3">
-                  {ingredient.description || ingredient.summary}
-                </p>
+                <div 
+                  className="text-muted-foreground line-clamp-3"
+                  dangerouslySetInnerHTML={{ 
+                    __html: ingredient.description || ingredient.summary || "" 
+                  }}
+                />
               </CardContent>
             </Card>
           ))}
@@ -72,4 +75,3 @@ const Ingredients = () => {
 };
 
 export default Ingredients;
-
