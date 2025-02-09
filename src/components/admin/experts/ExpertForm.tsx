@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
   );
 
   // Fetch expert data when expertId is available
-  const { isLoading: isFetching } = useQuery({
+  const { data: expertData, isLoading: isFetching } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
@@ -105,19 +105,23 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
         throw error;
       }
 
-      // Update all state values with the fetched data
-      setImageUrl(data.image_url || "");
-      setFullName(data.full_name || "");
-      setTitle(data.title || "");
-      setBio(data.bio || "");
-      setFieldOfExpertise(data.field_of_expertise || "");
-      setAffiliations(data.affiliations || []);
-      setSocialMedia(convertToSocialMediaLinks(data.social_media));
-
       return data;
     },
     enabled: !!expertId && expertId !== "new",
   });
+
+  // Update state when expert data is fetched
+  useEffect(() => {
+    if (expertData) {
+      setImageUrl(expertData.image_url || "");
+      setFullName(expertData.full_name || "");
+      setTitle(expertData.title || "");
+      setBio(expertData.bio || "");
+      setFieldOfExpertise(expertData.field_of_expertise || "");
+      setAffiliations(expertData.affiliations || []);
+      setSocialMedia(convertToSocialMediaLinks(expertData.social_media));
+    }
+  }, [expertData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
