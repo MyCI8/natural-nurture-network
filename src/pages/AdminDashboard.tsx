@@ -9,6 +9,7 @@ import {
   Apple,
   MessageSquare,
   ChevronRight,
+  Stethoscope,
 } from "lucide-react";
 import {
   Card,
@@ -19,6 +20,8 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import RecentNews from "@/components/admin/dashboard/RecentNews";
+import RecentSymptoms from "@/components/admin/dashboard/RecentSymptoms";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -31,11 +34,13 @@ const AdminDashboard = () => {
         remediesCount,
         expertsCount,
         commentsCount,
+        symptoms,
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
         supabase.from("experts").select("*", { count: "exact" }),
         supabase.from("comments").select("*", { count: "exact" }),
+        supabase.rpc('get_top_symptoms', { limit_count: 5 }),
       ]);
 
       return {
@@ -43,6 +48,7 @@ const AdminDashboard = () => {
         remedies: remediesCount.count || 0,
         experts: expertsCount.count || 0,
         comments: commentsCount.count || 0,
+        symptoms: symptoms.data || [],
       };
     },
   });
@@ -65,7 +71,7 @@ const AdminDashboard = () => {
       title: "Manage Experts",
       description: "Add, edit, or remove expert profiles",
       icon: UserCog,
-      path: "/admin/manage-experts", // Updated this path
+      path: "/admin/manage-experts",
     },
     {
       title: "Manage Remedies",
@@ -84,6 +90,12 @@ const AdminDashboard = () => {
       description: "Add and update remedy ingredients",
       icon: Apple,
       path: "/admin/ingredients",
+    },
+    {
+      title: "Manage Symptoms",
+      description: "View and analyze symptom statistics",
+      icon: Stethoscope,
+      path: "/admin/symptoms",
     },
   ];
 
@@ -115,7 +127,7 @@ const AdminDashboard = () => {
 
         {/* Quick Links */}
         <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {quickLinks.map((link) => (
             <Card
               key={link.title}
@@ -134,6 +146,12 @@ const AdminDashboard = () => {
               </CardHeader>
             </Card>
           ))}
+        </div>
+
+        {/* Dashboard Cards */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <RecentNews news={stats?.recentNews || []} isLoading={isLoading} />
+          <RecentSymptoms symptoms={stats?.symptoms || []} isLoading={isLoading} />
         </div>
       </div>
     </div>
