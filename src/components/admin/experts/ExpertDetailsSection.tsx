@@ -47,7 +47,6 @@ export const ExpertDetailsSection = ({
         <TextEditor 
           content={bio} 
           onChange={setBio}
-          placeholder="Enter the expert's biography..."
         />
       </div>
     </div>
