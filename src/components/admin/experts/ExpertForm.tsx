@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import TextEditor from "@/components/ui/text-editor";
 import { ImageManagementSection } from "./ImageManagementSection";
 import { ExpertDetailsSection } from "./ExpertDetailsSection";
 import { ExpertCredentialsSection } from "./ExpertCredentialsSection";
@@ -71,14 +72,16 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Initialize state with default values
-  const [imageUrl, setImageUrl] = useState("");
-  const [fullName, setFullName] = useState("");
+  // Initialize state with initialData if available, otherwise use default values
+  const [imageUrl, setImageUrl] = useState(initialData?.image_url || "");
+  const [fullName, setFullName] = useState(initialData?.full_name || "");
   const [title, setTitle] = useState("");
-  const [bio, setBio] = useState("");
+  const [bio, setBio] = useState(initialData?.bio || "");
   const [fieldOfExpertise, setFieldOfExpertise] = useState("");
   const [affiliations, setAffiliations] = useState<string[]>([]);
-  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(defaultSocialMedia);
+  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(
+    initialData?.social_media ? convertToSocialMediaLinks(initialData.social_media as Json) : defaultSocialMedia
+  );
 
   // Fetch expert data when expertId is available
   const { isLoading: isFetching } = useQuery({

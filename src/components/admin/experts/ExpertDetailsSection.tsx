@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import TextEditor from "@/components/ui/text-editor";
 
 interface ExpertDetailsSectionProps {
   fullName: string;
@@ -44,12 +44,9 @@ export const ExpertDetailsSection = ({
       </div>
       <div>
         <Label htmlFor="bio">Biography</Label>
-        <Textarea
-          id="bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          className="h-48 bg-background"
-          placeholder="Expert's biography and credentials"
+        <TextEditor 
+          content={bio} 
+          onChange={setBio}
         />
       </div>
     </div>
