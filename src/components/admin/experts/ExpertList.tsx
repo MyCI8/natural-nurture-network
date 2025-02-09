@@ -37,6 +37,10 @@ const ExpertList = ({ experts, isLoading, onDelete }: ExpertListProps) => {
     navigate(`/experts/${expertId}`);
   };
 
+  const handleEditClick = (expertId: string) => {
+    navigate(`/admin/manage-experts/${expertId}`);
+  };
+
   if (isLoading) {
     return (
       <div className="rounded-md border mt-6">
@@ -124,7 +128,7 @@ const ExpertList = ({ experts, isLoading, onDelete }: ExpertListProps) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate(`/admin/manage-experts/${expert.id}`)}
+                  onClick={() => handleEditClick(expert.id)}
                 >
                   <Edit2 className="h-4 w-4" />
                 </Button>
