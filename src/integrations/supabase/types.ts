@@ -255,6 +255,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          status: string | null
           summary: string | null
           videos: Json | null
         }
@@ -264,6 +265,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          status?: string | null
           summary?: string | null
           videos?: Json | null
         }
@@ -273,6 +275,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          status?: string | null
           summary?: string | null
           videos?: Json | null
         }
