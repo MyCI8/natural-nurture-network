@@ -43,7 +43,8 @@ const SymptomDetail = () => {
           name,
           summary,
           image_url,
-          ingredients
+          ingredients,
+          expert_recommendations
         `)
         .contains('symptoms', [currentSymptom]);
       

@@ -62,7 +62,7 @@ const Ingredients = () => {
                 <div 
                   className="text-muted-foreground line-clamp-3"
                   dangerouslySetInnerHTML={{ 
-                    __html: ingredient.description || ingredient.summary || "" 
+                    __html: ingredient.full_description || ingredient.brief_description || ingredient.summary || "" 
                   }}
                 />
               </CardContent>
