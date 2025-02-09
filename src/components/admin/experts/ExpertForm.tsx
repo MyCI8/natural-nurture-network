@@ -53,19 +53,19 @@ const defaultSocialMedia: SocialMediaLinks = {
 export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [imageUrl, setImageUrl] = useState(initialData?.image_url || "");
-  const [fullName, setFullName] = useState(initialData?.full_name || "");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Initialize state with default values
+  const [imageUrl, setImageUrl] = useState("");
+  const [fullName, setFullName] = useState("");
   const [title, setTitle] = useState("");
-  const [bio, setBio] = useState(initialData?.bio || "");
+  const [bio, setBio] = useState("");
   const [fieldOfExpertise, setFieldOfExpertise] = useState("");
   const [affiliations, setAffiliations] = useState<string[]>([]);
-  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(
-    initialData?.social_media ? 
-      { ...defaultSocialMedia, ...initialData.social_media } : 
-      defaultSocialMedia
-  );
+  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(defaultSocialMedia);
 
-  const { isLoading } = useQuery({
+  // Fetch expert data when expertId is available
+  const { isLoading: isFetching } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
@@ -86,7 +86,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
         throw error;
       }
 
-      // Set all the state values with the fetched data
+      // Update all state values with the fetched data
       setImageUrl(data.image_url || "");
       setFullName(data.full_name || "");
       setTitle(data.title || "");
@@ -94,15 +94,10 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
       setFieldOfExpertise(data.field_of_expertise || "");
       setAffiliations(data.affiliations || []);
       
-      const socialMediaData = data.social_media as Json;
-      if (socialMediaData && typeof socialMediaData === 'object') {
+      if (data.social_media) {
         setSocialMedia({
-          youtube: (socialMediaData as any).youtube || "",
-          linkedin: (socialMediaData as any).linkedin || "",
-          twitter: (socialMediaData as any).twitter || "",
-          instagram: (socialMediaData as any).instagram || "",
-          website: (socialMediaData as any).website || "",
-          wikipedia: (socialMediaData as any).wikipedia || "",
+          ...defaultSocialMedia,
+          ...(data.social_media as SocialMediaLinks),
         });
       }
 
@@ -113,43 +108,51 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    const expertData = {
-      full_name: fullName,
-      title,
-      bio,
-      image_url: imageUrl,
-      field_of_expertise: fieldOfExpertise,
-      affiliations,
-      social_media: socialMedia as unknown as Json,
-    };
+    try {
+      const expertData = {
+        full_name: fullName,
+        title,
+        bio,
+        image_url: imageUrl,
+        field_of_expertise: fieldOfExpertise,
+        affiliations,
+        social_media: socialMedia as unknown as Json,
+      };
 
-    const { error } = expertId && expertId !== "new"
-      ? await supabase
-          .from("experts")
-          .update(expertData)
-          .eq("id", expertId)
-      : await supabase
-          .from("experts")
-          .insert([expertData]);
+      const { error } = expertId && expertId !== "new"
+        ? await supabase
+            .from("experts")
+            .update(expertData)
+            .eq("id", expertId)
+        : await supabase
+            .from("experts")
+            .insert([expertData]);
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Expert saved successfully",
+      });
+      
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate("/admin/manage-experts");
+      }
+    } catch (error) {
       console.error("Error saving expert:", error);
       toast({
         title: "Error",
         description: "Failed to save expert",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Expert saved successfully",
-      });
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        navigate("/admin/manage-experts");
-      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -165,7 +168,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
     }
   };
 
-  if (isLoading) {
+  if (isFetching) {
     return <div>Loading...</div>;
   }
 
@@ -237,10 +240,11 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
         >
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={isLoading}>
           {expertId && expertId !== "new" ? "Update Expert" : "Create Expert"}
         </Button>
       </div>
     </form>
   );
 };
+
