@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,8 @@ import { EditNewsForm } from "@/components/admin/news/edit/EditNewsForm";
 import { useArticleOperations } from "@/hooks/useArticleOperations";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const EditNews = () => {
   const { id } = useParams();
@@ -63,6 +64,15 @@ const EditNews = () => {
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        
         <ArticleActionButtons
           onBack={() => navigate("/admin/news")}
           onSave={handleSave}
