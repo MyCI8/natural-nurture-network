@@ -85,6 +85,7 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
 
   useEffect(() => {
     if (expertData) {
+      console.log("Setting form data from expert:", expertData); // Debug log
       setFormData({
         imageUrl: expertData.image_url || "",
         fullName: expertData.full_name || "",
