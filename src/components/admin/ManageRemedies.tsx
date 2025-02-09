@@ -130,7 +130,7 @@ const ManageRemedies = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Manage Remedies</h2>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={() => navigate(`/admin/remedies/edit/new`)}>
           <Plus className="mr-2 h-4 w-4" /> Add New Remedy
         </Button>
       </div>
@@ -142,12 +142,15 @@ const ManageRemedies = () => {
             placeholder="Search remedies..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
+            className="pl-8 bg-background"
           />
         </div>
 
-        <Select value={symptomFilter} onValueChange={setSymptomFilter}>
-          <SelectTrigger>
+        <Select 
+          value={symptomFilter} 
+          onValueChange={setSymptomFilter}
+        >
+          <SelectTrigger className="bg-background">
             <SelectValue placeholder="Filter by symptom" />
           </SelectTrigger>
           <SelectContent>
@@ -164,7 +167,7 @@ const ManageRemedies = () => {
           value={sortBy}
           onValueChange={(value: "popularity" | "recent") => setSortBy(value)}
         >
-          <SelectTrigger>
+          <SelectTrigger className="bg-background">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -203,7 +206,7 @@ const ManageRemedies = () => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => handleEdit(remedy)}
+                      onClick={() => navigate(`/admin/remedies/edit/${remedy.id}`)}
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>

@@ -426,42 +426,60 @@ export type Database = {
           click_count: number | null
           created_at: string | null
           description: string | null
+          expert_recommendations: string[] | null
           id: string
           image_url: string | null
           ingredients: string[] | null
+          main_image_description: string | null
+          main_image_url: string | null
           name: string
+          related_links: Json | null
           shopping_list: Json | null
           status: string | null
           summary: string
           symptoms: Database["public"]["Enums"]["symptom_type"][] | null
+          thumbnail_description: string | null
+          video_description: string | null
           video_url: string | null
         }
         Insert: {
           click_count?: number | null
           created_at?: string | null
           description?: string | null
+          expert_recommendations?: string[] | null
           id?: string
           image_url?: string | null
           ingredients?: string[] | null
+          main_image_description?: string | null
+          main_image_url?: string | null
           name: string
+          related_links?: Json | null
           shopping_list?: Json | null
           status?: string | null
           summary: string
           symptoms?: Database["public"]["Enums"]["symptom_type"][] | null
+          thumbnail_description?: string | null
+          video_description?: string | null
           video_url?: string | null
         }
         Update: {
           click_count?: number | null
           created_at?: string | null
           description?: string | null
+          expert_recommendations?: string[] | null
           id?: string
           image_url?: string | null
           ingredients?: string[] | null
+          main_image_description?: string | null
+          main_image_url?: string | null
           name?: string
+          related_links?: Json | null
           shopping_list?: Json | null
           status?: string | null
           summary?: string
           symptoms?: Database["public"]["Enums"]["symptom_type"][] | null
+          thumbnail_description?: string | null
+          video_description?: string | null
           video_url?: string | null
         }
         Relationships: []
