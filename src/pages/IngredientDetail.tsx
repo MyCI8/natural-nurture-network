@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,7 +61,6 @@ const IngredientDetail = () => {
 
       if (error) throw error;
 
-      // Extract unique experts from the nested data
       const experts = new Set<Expert>();
       data?.forEach(remedy => {
         remedy.experts?.forEach(er => {
@@ -134,7 +134,7 @@ const IngredientDetail = () => {
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">{ingredient.name}</TableCell>
-                <TableCell>{ingredient.summary || 'No summary available'}</TableCell>
+                <TableCell>{ingredient.brief_description || 'No summary available'}</TableCell>
                 <TableCell>{expertsData?.remedyCount || 0} remedies</TableCell>
                 <TableCell>
                   <div className="flex -space-x-2">
@@ -166,10 +166,10 @@ const IngredientDetail = () => {
             </div>
           )}
 
-          {ingredient.description && (
+          {ingredient.full_description && (
             <div className="prose max-w-none">
               <h2 className="text-xl font-semibold mb-2">Description</h2>
-              <div dangerouslySetInnerHTML={{ __html: ingredient.description }} />
+              <div dangerouslySetInnerHTML={{ __html: ingredient.full_description }} />
             </div>
           )}
 

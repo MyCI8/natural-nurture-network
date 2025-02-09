@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +34,6 @@ const ManageIngredients = () => {
   const [deleteIngredient, setDeleteIngredient] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is authenticated and has admin role
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -147,7 +147,7 @@ const ManageIngredients = () => {
               <TableRow>
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead>Brief Description</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -170,7 +170,7 @@ const ManageIngredients = () => {
                     )}
                   </TableCell>
                   <TableCell className="font-medium">{ingredient.name}</TableCell>
-                  <TableCell>{ingredient.description}</TableCell>
+                  <TableCell>{ingredient.brief_description}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       <Button

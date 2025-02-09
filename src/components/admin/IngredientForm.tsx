@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -13,6 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import TextEditor from "@/components/ui/text-editor";
+import { Textarea } from "@/components/ui/textarea";
 
 interface IngredientFormProps {
   onClose: () => void;
@@ -25,7 +27,8 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
+    brief_description: "",
+    full_description: "",
     image_url: "",
   });
 
@@ -33,7 +36,8 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
     if (ingredient) {
       setFormData({
         name: ingredient.name || "",
-        description: ingredient.description || "",
+        brief_description: ingredient.brief_description || "",
+        full_description: ingredient.full_description || "",
         image_url: ingredient.image_url || "",
       });
     }
@@ -46,7 +50,6 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
 
       setUploading(true);
       
-      // First check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
@@ -60,7 +63,6 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       
-      // Upload file to the remedy-images bucket
       const { error: uploadError, data } = await supabase.storage
         .from('remedy-images')
         .upload(`ingredients/${fileName}`, file, {
@@ -107,7 +109,8 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
           .from("ingredients")
           .update({
             name: formData.name,
-            description: formData.description,
+            brief_description: formData.brief_description,
+            full_description: formData.full_description,
             image_url: formData.image_url,
           })
           .eq("id", ingredient.id);
@@ -123,7 +126,8 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
           .from("ingredients")
           .insert([{
             name: formData.name,
-            description: formData.description,
+            brief_description: formData.brief_description,
+            full_description: formData.full_description,
             image_url: formData.image_url,
           }]);
 
@@ -175,11 +179,24 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="brief_description">Brief Description</Label>
+            <Textarea
+              id="brief_description"
+              value={formData.brief_description}
+              onChange={(e) =>
+                setFormData({ ...formData, brief_description: e.target.value })
+              }
+              placeholder="Enter a brief summary of the ingredient..."
+              className="h-20"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="full_description">Full Description</Label>
             <TextEditor
-              content={formData.description}
+              content={formData.full_description}
               onChange={(content) =>
-                setFormData({ ...formData, description: content })
+                setFormData({ ...formData, full_description: content })
               }
             />
           </div>

@@ -250,8 +250,9 @@ export type Database = {
       }
       ingredients: {
         Row: {
+          brief_description: string | null
           created_at: string | null
-          description: string | null
+          full_description: string | null
           id: string
           image_url: string | null
           name: string
@@ -260,8 +261,9 @@ export type Database = {
           videos: Json | null
         }
         Insert: {
+          brief_description?: string | null
           created_at?: string | null
-          description?: string | null
+          full_description?: string | null
           id?: string
           image_url?: string | null
           name: string
@@ -270,8 +272,9 @@ export type Database = {
           videos?: Json | null
         }
         Update: {
+          brief_description?: string | null
           created_at?: string | null
-          description?: string | null
+          full_description?: string | null
           id?: string
           image_url?: string | null
           name?: string
