@@ -17,9 +17,10 @@ import { useEffect } from 'react';
 interface TextEditorProps {
   content: string;
   onChange: (content: string) => void;
+  className?: string;  // Add className as optional prop
 }
 
-const TextEditor = ({ content, onChange }: TextEditorProps) => {
+const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -60,7 +61,7 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
     },
     editorProps: {
       attributes: {
-        class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none min-h-[200px] p-4",
+        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
       },
     },
   });
@@ -99,3 +100,4 @@ const TextEditor = ({ content, onChange }: TextEditorProps) => {
 };
 
 export default TextEditor;
+
