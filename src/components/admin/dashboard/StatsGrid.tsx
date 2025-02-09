@@ -8,7 +8,7 @@ interface StatsGridProps {
     users: number;
     remedies: number;
     experts: number;
-    pendingComments: number;
+    comments: number;
   } | undefined;
   isLoading: boolean;
 }
@@ -18,7 +18,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
     { title: "Total Users", value: stats?.users || 0, icon: Users },
     { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf },
     { title: "Total Experts", value: stats?.experts || 0, icon: UserCog },
-    { title: "Pending Comments", value: stats?.pendingComments || 0, icon: MessageSquare },
+    { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
   ];
 
   return (
