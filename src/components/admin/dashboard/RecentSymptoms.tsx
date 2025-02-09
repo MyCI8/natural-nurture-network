@@ -4,9 +4,12 @@ import { Stethoscope, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database["public"]["Enums"]["symptom_type"];
 
 interface RecentSymptomsProps {
-  symptoms: { symptom: string; click_count: number }[];
+  symptoms: { symptom: SymptomType; click_count: number }[];
   isLoading: boolean;
 }
 
@@ -38,12 +41,12 @@ const RecentSymptoms = ({ symptoms, isLoading }: RecentSymptomsProps) => {
               <div
                 key={item.symptom}
                 className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
-                onClick={() => navigate(`/symptoms/${item.symptom.toLowerCase().replace(/\s+/g, '-')}`)}
+                onClick={() => navigate(`/admin/symptoms`)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    navigate(`/symptoms/${item.symptom.toLowerCase().replace(/\s+/g, '-')}`);
+                    navigate(`/admin/symptoms`);
                   }
                 }}
               >
