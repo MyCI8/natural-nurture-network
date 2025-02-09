@@ -1,5 +1,5 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExpertsSection } from "@/components/admin/news/ExpertsSection";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,6 +12,7 @@ export const RemedyExpertsSection = ({
   selectedExperts,
   setSelectedExperts,
 }: RemedyExpertsSectionProps) => {
+  const queryClient = useQueryClient();
   const { data: experts = [] } = useQuery({
     queryKey: ["experts"],
     queryFn: async () => {
@@ -24,7 +25,6 @@ export const RemedyExpertsSection = ({
   });
 
   const handleExpertAdded = () => {
-    // Refetch experts list
     queryClient.invalidateQueries({ queryKey: ["experts"] });
   };
 

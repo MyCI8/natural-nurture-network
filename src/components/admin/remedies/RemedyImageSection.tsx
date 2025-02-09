@@ -35,9 +35,11 @@ export const RemedyImageSection = ({
           placeholder="Add thumbnail image"
         />
         <ImageDescriptionInput
-          description={thumbnailDescription}
+          id="thumbnailDescription"
+          value={thumbnailDescription}
           onChange={setThumbnailDescription}
           label="Thumbnail Description"
+          placeholder="Enter thumbnail description"
         />
       </div>
 
@@ -49,9 +51,11 @@ export const RemedyImageSection = ({
           placeholder="Add main image"
         />
         <ImageDescriptionInput
-          description={mainImageDescription}
+          id="mainImageDescription"
+          value={mainImageDescription}
           onChange={setMainImageDescription}
           label="Main Image Description"
+          placeholder="Enter main image description"
         />
       </div>
     </div>

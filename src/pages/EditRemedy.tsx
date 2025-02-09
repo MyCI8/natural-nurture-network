@@ -58,7 +58,7 @@ const EditRemedy = () => {
       setIngredients(remedy.ingredients || []);
       setSelectedExperts(remedy.expert_recommendations || []);
       setVideoDescription(remedy.video_description || "");
-      setStatus(remedy.status || "draft");
+      setStatus(remedy.status as "draft" | "published" || "draft");
     }
   }, [remedy]);
 
@@ -75,7 +75,7 @@ const EditRemedy = () => {
         ingredients,
         expert_recommendations: selectedExperts,
         video_description: videoDescription,
-        status: shouldPublish ? "published" : status,
+        status: shouldPublish ? "published" as const : status,
       };
 
       if (id && id !== "new") {
