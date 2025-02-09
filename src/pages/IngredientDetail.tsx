@@ -21,7 +21,7 @@ interface Expert {
 }
 
 const IngredientDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
   const { data: ingredient, isLoading: isLoadingIngredient } = useQuery({
     queryKey: ["ingredient", id],
@@ -32,7 +32,7 @@ const IngredientDetail = () => {
         .from("ingredients")
         .select("*")
         .eq("id", id)
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       return data;
