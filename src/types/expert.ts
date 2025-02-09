@@ -14,6 +14,7 @@ export interface Expert {
   credentials?: string[];
   created_at?: string;
   updated_at?: string;
+  expert_remedies?: { count: number }[];
 }
 
 export interface ExpertFormData {

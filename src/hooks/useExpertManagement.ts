@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +12,6 @@ interface UseExpertManagementProps {
 
 // Helper function to transform the Supabase response to match Expert type
 const transformExpertData = (data: any): Expert => {
-  const mediaLinksJson = data.media_links as Record<string, any> || {};
-  
   return {
     id: data.id,
     full_name: data.full_name,
@@ -23,13 +20,12 @@ const transformExpertData = (data: any): Expert => {
     image_url: data.image_url || undefined,
     field_of_expertise: data.field_of_expertise || undefined,
     social_media: data.social_media as Expert['social_media'] || undefined,
-    media_links: {
-      videos: [...(mediaLinksJson.youtube_videos || []), ...(mediaLinksJson.videos || [])],
-      news_articles: mediaLinksJson.news_articles || [],
-    },
+    media_links: data.media_links as Expert['media_links'] || undefined,
     affiliations: data.affiliations || [],
     credentials: data.credentials || [],
-    expert_remedies: data.expert_remedies || [],
+    expert_remedies: data.expert_remedies ? [{ count: data.expert_remedies[0]?.count || 0 }] : [],
+    created_at: data.created_at,
+    updated_at: data.updated_at
   };
 };
 

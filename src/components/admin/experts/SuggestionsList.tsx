@@ -63,8 +63,6 @@ const SuggestionsList = ({ suggestions, onApprove, onReject }: SuggestionsListPr
     return defaultLinks;
   };
 
-  // ... keep existing code (JSX for the table)
-
   return (
     <>
       <div className="rounded-md border">
@@ -165,11 +163,13 @@ const SuggestionsList = ({ suggestions, onApprove, onReject }: SuggestionsListPr
           {selectedSuggestion && (
             <ExpertForm 
               initialData={{
-                full_name: selectedSuggestion.full_name,
-                image_url: selectedSuggestion.image_url || undefined,
-                bio: selectedSuggestion.comment || undefined,
-                social_media: transformSocialLinks(selectedSuggestion.social_links),
-                website: selectedSuggestion.website || undefined,
+                fullName: selectedSuggestion.full_name,
+                imageUrl: selectedSuggestion.image_url || "",
+                bio: selectedSuggestion.comment || "",
+                socialMedia: transformSocialLinks(selectedSuggestion.social_links),
+                title: "",
+                fieldOfExpertise: "",
+                affiliations: []
               }}
               onSuccess={() => {
                 setIsEditModalOpen(false);

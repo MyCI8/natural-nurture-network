@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useExpertForm } from "@/hooks/useExpertForm";
 import { ExpertFormData } from "@/types/expert";
+import { Json } from "@/integrations/supabase/types";
 
 interface ExpertFormProps {
   expertId?: string;
