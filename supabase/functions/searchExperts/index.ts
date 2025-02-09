@@ -40,14 +40,16 @@ Deno.serve(async (req) => {
       throw new Error('Firecrawl API key not found in environment variables')
     }
 
-    console.log('Searching for expert:', searchQuery)
+    console.log('Starting expert search with query:', searchQuery)
+    console.log('API endpoint:', `${FIRECRAWL_API_ENDPOINT}/experts/search`)
 
-    // Make request to Firecrawl API
+    // Make request to Firecrawl API with additional error handling
     const response = await fetch(`${FIRECRAWL_API_ENDPOINT}/experts/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
         query: searchQuery,
@@ -57,14 +59,19 @@ Deno.serve(async (req) => {
           includeSocialLinks: true,
         },
       }),
+    }).catch(error => {
+      console.error('Fetch error:', error)
+      throw new Error(`Failed to connect to Firecrawl API: ${error.message}`)
     })
 
-    const result = await response.json()
-    console.log('Firecrawl API response:', result)
-
     if (!response.ok) {
-      throw new Error(result.error || 'Failed to search for expert')
+      const errorText = await response.text()
+      console.error('Firecrawl API error response:', errorText)
+      throw new Error(`Firecrawl API responded with status ${response.status}: ${errorText}`)
     }
+
+    const result = await response.json()
+    console.log('Firecrawl API response:', JSON.stringify(result, null, 2))
 
     // Store the search result in Supabase
     const supabaseClient = createClient(
@@ -72,18 +79,20 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const { error: insertError } = await supabaseClient
-      .from('expert_searches')
-      .insert({
-        name: result.data?.name,
-        biography: result.data?.biography,
-        image_url: result.data?.image,
-        social_links: result.data?.socialLinks,
-        credentials: result.data?.credentials,
-      })
+    if (result.data) {
+      const { error: insertError } = await supabaseClient
+        .from('expert_searches')
+        .insert({
+          name: result.data?.name,
+          biography: result.data?.biography,
+          image_url: result.data?.image,
+          social_links: result.data?.socialLinks,
+          credentials: result.data?.credentials,
+        })
 
-    if (insertError) {
-      console.error('Error storing search result:', insertError)
+      if (insertError) {
+        console.error('Error storing search result:', insertError)
+      }
     }
 
     return new Response(
@@ -93,7 +102,11 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in searchExperts function:', error)
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: error.stack 
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
