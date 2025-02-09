@@ -50,6 +50,22 @@ const defaultSocialMedia: SocialMediaLinks = {
   wikipedia: "",
 };
 
+// Helper function to validate and convert social media data
+const convertToSocialMediaLinks = (data: Json | null): SocialMediaLinks => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return defaultSocialMedia;
+  }
+
+  return {
+    youtube: typeof data.youtube === 'string' ? data.youtube : '',
+    linkedin: typeof data.linkedin === 'string' ? data.linkedin : '',
+    twitter: typeof data.twitter === 'string' ? data.twitter : '',
+    instagram: typeof data.instagram === 'string' ? data.instagram : '',
+    website: typeof data.website === 'string' ? data.website : '',
+    wikipedia: typeof data.wikipedia === 'string' ? data.wikipedia : '',
+  };
+};
+
 export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -93,13 +109,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
       setBio(data.bio || "");
       setFieldOfExpertise(data.field_of_expertise || "");
       setAffiliations(data.affiliations || []);
-      
-      if (data.social_media) {
-        setSocialMedia({
-          ...defaultSocialMedia,
-          ...(data.social_media as SocialMediaLinks),
-        });
-      }
+      setSocialMedia(convertToSocialMediaLinks(data.social_media));
 
       return data;
     },
@@ -247,4 +257,3 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
     </form>
   );
 };
-
