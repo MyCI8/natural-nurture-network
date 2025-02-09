@@ -20,6 +20,8 @@ export const ExpertDetailsSection = ({
   bio,
   setBio,
 }: ExpertDetailsSectionProps) => {
+  console.log("ExpertDetailsSection rendering with:", { fullName, title, bio });
+  
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Expert Details</h3>
@@ -45,7 +47,7 @@ export const ExpertDetailsSection = ({
       <div>
         <Label htmlFor="bio">Biography</Label>
         <TextEditor 
-          content={bio || ''} 
+          content={bio} 
           onChange={(value) => setBio(value)}
           className="min-h-[200px]"
         />

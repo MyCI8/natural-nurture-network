@@ -56,6 +56,7 @@ export const useExpertForm = (expertId?: string) => {
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
       
+      console.log("Fetching expert data for ID:", expertId);
       const { data, error } = await supabase
         .from("experts")
         .select("*")
@@ -72,6 +73,7 @@ export const useExpertForm = (expertId?: string) => {
         throw error;
       }
 
+      console.log("Received expert data:", data);
       return data;
     },
     enabled: !!expertId && expertId !== "new",
