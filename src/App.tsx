@@ -40,7 +40,7 @@ const App = () => {
             <Route path="manage-experts/*" element={<ManageExperts />} />
             <Route path="remedies">
               <Route index element={<ManageRemedies />} />
-              <Route path=":id" element={<EditRemedy />} />
+              <Route path="edit/:id" element={<EditRemedy />} />
             </Route>
             <Route path="ingredients">
               <Route index element={<ManageIngredients />} />
