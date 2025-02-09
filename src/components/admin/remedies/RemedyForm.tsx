@@ -9,16 +9,15 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { X, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { RemedyBasicInfoSection } from "./form/RemedyBasicInfoSection";
 import { RemedySymptomSection } from "./form/RemedySymptomSection";
 import { RemedyStatusSection } from "./form/RemedyStatusSection";
 import { RemedyImageInput } from "./form/RemedyImageInput";
+import { RemedyIngredientsSection } from "./form/RemedyIngredientsSection";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
@@ -237,27 +236,11 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             onSymptomsChange={(symptoms) => setFormData({ ...formData, symptoms })}
           />
 
-          <div>
-            <Label>Ingredients</Label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {formData.ingredients.map((ingredient, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="flex items-center gap-1"
-                >
-                  {ingredient}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => setFormData({
-                      ...formData,
-                      ingredients: formData.ingredients.filter((_, i) => i !== index)
-                    })}
-                  />
-                </Badge>
-              ))}
-            </div>
-          </div>
+          <RemedyIngredientsSection
+            ingredients={formData.ingredients}
+            availableIngredients={ingredients || []}
+            onIngredientsChange={(ingredients) => setFormData({ ...formData, ingredients })}
+          />
 
           <RemedyStatusSection
             status={formData.status}
