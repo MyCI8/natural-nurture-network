@@ -15,9 +15,9 @@ export interface Expert {
     wikipedia?: string;
   };
   media_links?: {
-    videos: string[];
-    news_articles: string[];
-  };
+    videos?: string[];
+    news_articles?: string[];
+  } | null;
   affiliations?: string[];
   credentials?: string[];
   expert_remedies?: { count: number }[];

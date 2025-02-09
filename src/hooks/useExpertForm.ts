@@ -88,8 +88,22 @@ export const useExpertForm = (expertId?: string) => {
         return null;
       }
 
-      console.log("Received expert data:", data);
-      return data as Expert;
+      // Convert the Supabase data to match our Expert type
+      const expertData: Expert = {
+        id: data.id,
+        full_name: data.full_name,
+        title: data.title,
+        bio: data.bio || undefined,
+        image_url: data.image_url || undefined,
+        field_of_expertise: data.field_of_expertise || undefined,
+        social_media: data.social_media as Expert['social_media'],
+        media_links: data.media_links as Expert['media_links'],
+        affiliations: data.affiliations || [],
+        credentials: data.credentials || [],
+      };
+
+      console.log("Received expert data:", expertData);
+      return expertData;
     },
     enabled: !!expertId && expertId !== "new",
     retry: false,
@@ -105,7 +119,7 @@ export const useExpertForm = (expertId?: string) => {
         bio: expertData.bio || "",
         fieldOfExpertise: expertData.field_of_expertise || "",
         affiliations: expertData.affiliations || [],
-        socialMedia: convertToSocialMediaLinks(expertData.social_media),
+        socialMedia: convertToSocialMediaLinks(expertData.social_media as Json),
       });
     }
   }, [expertData]);
