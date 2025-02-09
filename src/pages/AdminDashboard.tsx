@@ -20,7 +20,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import StatsGrid from "@/components/admin/dashboard/StatsGrid";
-import RecentEntries from "@/components/admin/dashboard/RecentEntries";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -32,19 +31,19 @@ const AdminDashboard = () => {
         usersCount,
         remediesCount,
         expertsCount,
-        commentsCount,
+        pendingCommentsCount,
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
         supabase.from("experts").select("*", { count: "exact" }),
-        supabase.from("comments").select("*", { count: "exact" }),
+        supabase.from("comments").select("*", { count: "exact" }).eq("status", "pending"),
       ]);
 
       return {
         users: usersCount.count || 0,
         remedies: remediesCount.count || 0,
         experts: expertsCount.count || 0,
-        comments: commentsCount.count || 0,
+        pendingComments: pendingCommentsCount.count || 0,
       };
     },
   });
@@ -91,7 +90,7 @@ const AdminDashboard = () => {
 
         {/* Quick Links */}
         <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {quickLinks.map((link) => (
             <Card
               key={link.title}
@@ -111,9 +110,6 @@ const AdminDashboard = () => {
             </Card>
           ))}
         </div>
-
-        {/* Recent Entries Section */}
-        <RecentEntries />
       </div>
     </div>
   );
