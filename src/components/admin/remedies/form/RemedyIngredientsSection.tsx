@@ -35,10 +35,10 @@ export const RemedyIngredientsSection = ({
           }
         }}
       >
-        <SelectTrigger>
+        <SelectTrigger className="bg-background">
           <SelectValue placeholder="Select ingredients" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           <SelectItem value="select-ingredient">Select an ingredient</SelectItem>
           {availableIngredients?.map((ingredient) => (
             <SelectItem key={ingredient.id} value={ingredient.id}>

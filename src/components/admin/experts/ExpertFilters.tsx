@@ -1,3 +1,4 @@
+
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,10 +44,10 @@ const ExpertFilters = ({
         value={expertiseFilter}
         onValueChange={(value) => setExpertiseFilter(value)}
       >
-        <SelectTrigger>
+        <SelectTrigger className="bg-background">
           <SelectValue placeholder="Filter by expertise" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           <SelectItem value="all">All Expertise</SelectItem>
           {expertiseFields.map((field) => (
             <SelectItem key={field} value={field || "unknown"}>
@@ -60,10 +61,10 @@ const ExpertFilters = ({
         value={sortBy}
         onValueChange={(value: "name" | "remedies") => setSortBy(value)}
       >
-        <SelectTrigger>
+        <SelectTrigger className="bg-background">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           <SelectItem value="name">Name (A-Z)</SelectItem>
           <SelectItem value="remedies">Most Remedies</SelectItem>
         </SelectContent>

@@ -24,10 +24,10 @@ export const RemedyStatusSection = ({
         value={status}
         onValueChange={(value: "draft" | "published") => onStatusChange(value)}
       >
-        <SelectTrigger>
+        <SelectTrigger className="bg-background">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           <SelectItem value="draft">Draft</SelectItem>
           <SelectItem value="published">Published</SelectItem>
         </SelectContent>

@@ -50,7 +50,7 @@ const RemedyFilters = ({
         <SelectTrigger className="bg-background">
           <SelectValue placeholder="Filter by symptom" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           <SelectItem value="all">All Symptoms</SelectItem>
           {defaultSymptoms.map((symptom) => (
             <SelectItem key={symptom} value={symptom}>
@@ -67,7 +67,7 @@ const RemedyFilters = ({
         <SelectTrigger className="bg-background">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           <SelectItem value="recent">Most Recent</SelectItem>
           <SelectItem value="popularity">Most Popular</SelectItem>
         </SelectContent>

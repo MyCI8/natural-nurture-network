@@ -40,10 +40,10 @@ export const RemedySymptomSection = ({
           }
         }}
       >
-        <SelectTrigger>
+        <SelectTrigger className="bg-background">
           <SelectValue placeholder="Select symptoms" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           <SelectItem value="select-symptom">Select a symptom</SelectItem>
           {defaultSymptoms.map((symptom) => (
             <SelectItem key={symptom} value={symptom}>
