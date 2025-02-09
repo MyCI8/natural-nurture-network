@@ -29,25 +29,19 @@ const AdminDashboard = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => {
-      const [
-        usersCount,
-        remediesCount,
-        expertsCount,
-        commentsCount,
-        symptoms,
-        news,
-      ] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact" }),
-        supabase.from("remedies").select("*", { count: "exact" }),
-        supabase.from("experts").select("*", { count: "exact" }),
-        supabase.from("comments").select("*", { count: "exact" }),
-        supabase.rpc('get_top_symptoms', { limit_count: 5 }),
-        supabase
-          .from("news_articles")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(5),
-      ]);
+      const [usersCount, remediesCount, expertsCount, commentsCount, symptoms, news] =
+        await Promise.all([
+          supabase.from("profiles").select("*", { count: "exact" }),
+          supabase.from("remedies").select("*", { count: "exact" }),
+          supabase.from("experts").select("*", { count: "exact" }),
+          supabase.from("comments").select("*", { count: "exact" }),
+          supabase.rpc('get_top_symptoms', { limit_count: 5 }),
+          supabase
+            .from("news_articles")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(5),
+        ]);
 
       return {
         users: usersCount.count || 0,
