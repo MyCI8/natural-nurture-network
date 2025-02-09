@@ -38,6 +38,7 @@ export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
   const {
     formData,
     isLoading,
+    fetchError,
     setIsLoading,
     handleChange,
     handleSocialMediaChange,
@@ -94,6 +95,21 @@ export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
     }
   };
 
+  if (fetchError) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-red-500">Failed to load expert data. Please try again.</p>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/admin/manage-experts")}
+          className="mt-4"
+        >
+          Go Back
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="grid gap-8 md:grid-cols-2">
@@ -110,6 +126,7 @@ export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
             setTitle={(value) => handleChange("title", value)}
             bio={formData.bio}
             setBio={(value) => handleChange("bio", value)}
+            isLoading={isLoading}
           />
 
           <div className="space-y-4">
@@ -145,7 +162,10 @@ export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
           Cancel
         </Button>
         <Button type="submit" disabled={isLoading}>
-          {expertId && expertId !== "new" ? "Update Expert" : "Create Expert"}
+          {isLoading ? 
+            "Saving..." : 
+            (expertId && expertId !== "new" ? "Update Expert" : "Create Expert")
+          }
         </Button>
       </div>
     </form>

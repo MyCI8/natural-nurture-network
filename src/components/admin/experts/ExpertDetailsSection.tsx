@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import TextEditor from "@/components/ui/text-editor";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExpertDetailsSectionProps {
   fullName: string;
@@ -10,6 +11,7 @@ interface ExpertDetailsSectionProps {
   setTitle: (value: string) => void;
   bio: string;
   setBio: (value: string) => void;
+  isLoading?: boolean;
 }
 
 export const ExpertDetailsSection = ({
@@ -19,8 +21,29 @@ export const ExpertDetailsSection = ({
   setTitle,
   bio,
   setBio,
+  isLoading = false,
 }: ExpertDetailsSectionProps) => {
-  console.log("ExpertDetailsSection rendering with:", { fullName, title, bio });
+  console.log("ExpertDetailsSection rendering with:", { fullName, title, bio, isLoading });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Expert Details</h3>
+        <div>
+          <Label>Full Name</Label>
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div>
+          <Label>Title</Label>
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div>
+          <Label>Biography</Label>
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-4">

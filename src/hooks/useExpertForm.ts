@@ -4,6 +4,7 @@ import { Json } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Expert } from "@/types/expert";
 
 interface SocialMediaLinks {
   youtube: string;
@@ -51,17 +52,21 @@ export const useExpertForm = (expertId?: string) => {
     socialMedia: defaultSocialMedia,
   });
 
-  const { data: expertData, isLoading: isFetching } = useQuery({
+  const {
+    data: expertData,
+    isLoading: isFetching,
+    error: fetchError,
+  } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
-      
+
       console.log("Fetching expert data for ID:", expertId);
       const { data, error } = await supabase
         .from("experts")
         .select("*")
         .eq("id", expertId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching expert:", error);
@@ -73,10 +78,21 @@ export const useExpertForm = (expertId?: string) => {
         throw error;
       }
 
+      if (!data) {
+        console.log("No expert found with ID:", expertId);
+        toast({
+          title: "Not Found",
+          description: "Expert not found",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       console.log("Received expert data:", data);
-      return data;
+      return data as Expert;
     },
     enabled: !!expertId && expertId !== "new",
+    retry: false,
   });
 
   useEffect(() => {
@@ -131,6 +147,7 @@ export const useExpertForm = (expertId?: string) => {
   return {
     formData,
     isLoading: isLoading || isFetching,
+    fetchError,
     setIsLoading,
     handleChange,
     handleSocialMediaChange,
