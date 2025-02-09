@@ -8,7 +8,6 @@ import {
   UserCog,
   Apple,
   MessageSquare,
-  ChevronRight,
 } from "lucide-react";
 import {
   Card,
@@ -32,11 +31,15 @@ const AdminDashboard = () => {
         remediesCount,
         expertsCount,
         pendingCommentsCount,
+        ingredientsCount,
+        newsCount,
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
-        supabase.from("remedies").select("*", { count: "exact" }),
+        supabase.from("remedies").select("*", { count: "exact" }).eq("status", "published"),
         supabase.from("experts").select("*", { count: "exact" }),
         supabase.from("comments").select("*", { count: "exact" }).eq("status", "pending"),
+        supabase.from("ingredients").select("*", { count: "exact" }),
+        supabase.from("news_articles").select("*", { count: "exact" }).eq("status", "published"),
       ]);
 
       return {
@@ -44,40 +47,42 @@ const AdminDashboard = () => {
         remedies: remediesCount.count || 0,
         experts: expertsCount.count || 0,
         pendingComments: pendingCommentsCount.count || 0,
+        ingredients: ingredientsCount.count || 0,
+        news: newsCount.count || 0,
       };
     },
   });
 
   const quickLinks = [
     {
-      title: "Manage Users",
-      description: "Manage user roles and permissions",
-      icon: Users,
-      path: "/admin/users",
-    },
-    {
-      title: "Manage Experts",
-      description: "Add, edit, or remove expert profiles",
-      icon: UserCog,
-      path: "/admin/manage-experts",
-    },
-    {
-      title: "Manage Remedies",
-      description: "Create and update natural remedies",
+      title: "Remedies",
+      description: `${stats?.remedies || 0} Active remedies`,
       icon: Leaf,
       path: "/admin/remedies",
     },
     {
-      title: "Manage News",
-      description: "Publish and edit news articles",
+      title: "Ingredients",
+      description: `${stats?.ingredients || 0} Available ingredients`,
+      icon: Apple,
+      path: "/admin/ingredients",
+    },
+    {
+      title: "Pending Comments",
+      description: `${stats?.pendingComments || 0} Awaiting moderation`,
+      icon: MessageSquare,
+      path: "/admin/comments",
+    },
+    {
+      title: "Recent News",
+      description: `${stats?.news || 0} Articles published`,
       icon: Newspaper,
       path: "/admin/news",
     },
     {
-      title: "Manage Ingredients",
-      description: "Add and update remedy ingredients",
-      icon: Apple,
-      path: "/admin/ingredients",
+      title: "Experts",
+      description: `${stats?.experts || 0} Medical experts`,
+      icon: UserCog,
+      path: "/admin/manage-experts",
     },
   ];
 
@@ -105,7 +110,6 @@ const AdminDashboard = () => {
                     <CardDescription>{link.description}</CardDescription>
                   </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
             </Card>
           ))}

@@ -9,6 +9,8 @@ interface StatsGridProps {
     remedies: number;
     experts: number;
     pendingComments: number;
+    ingredients?: number;
+    news?: number;
   } | undefined;
   isLoading: boolean;
 }
