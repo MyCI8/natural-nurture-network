@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,21 +126,23 @@ export const ExpertsSection = ({
         </Dialog>
       </div>
 
-      <Select
-        value={selectedExperts[0]}
-        onValueChange={(value) => setSelectedExperts([value])}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select an expert" />
-        </SelectTrigger>
-        <SelectContent>
-          {experts.map((expert) => (
-            <SelectItem key={expert.id} value={expert.id}>
-              {expert.full_name} - {expert.title}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="relative">
+        <Select
+          value={selectedExperts[0]}
+          onValueChange={(value) => setSelectedExperts([value])}
+        >
+          <SelectTrigger className="bg-background">
+            <SelectValue placeholder="Select an expert" />
+          </SelectTrigger>
+          <SelectContent className="bg-background z-50">
+            {experts.map((expert) => (
+              <SelectItem key={expert.id} value={expert.id}>
+                {expert.full_name} - {expert.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 };
