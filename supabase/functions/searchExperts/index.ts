@@ -34,8 +34,8 @@ Deno.serve(async (req) => {
   try {
     const { searchQuery } = await req.json()
     
-    // Get the API key directly from environment variables
-    const apiKey = Deno.env.get('Firecrawl API key')
+    // Get the API key from the environment variables
+    const apiKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!apiKey) {
       throw new Error('Firecrawl API key not found in environment variables')
     }
