@@ -11,24 +11,9 @@ import { SocialMediaSection } from "./SocialMediaSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useExpertForm } from "@/hooks/useExpertForm";
-import { Json } from "@/integrations/supabase/types";
 
 interface ExpertFormProps {
   expertId?: string;
-  initialData?: {
-    full_name?: string;
-    image_url?: string;
-    bio?: string;
-    social_media?: {
-      youtube?: string;
-      linkedin?: string;
-      twitter?: string;
-      instagram?: string;
-      website?: string;
-      wikipedia?: string;
-    };
-    website?: string;
-  };
   onSuccess?: () => void;
 }
 
@@ -57,21 +42,22 @@ export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
         image_url: formData.imageUrl,
         field_of_expertise: formData.fieldOfExpertise,
         affiliations: formData.affiliations,
-        social_media: formData.socialMedia as unknown as Json,
+        social_media: formData.socialMedia,
       };
 
-      const { error } = expertId && expertId !== "new"
-        ? await supabase
-            .from("experts")
-            .update(expertData)
-            .eq("id", expertId)
-        : await supabase
-            .from("experts")
-            .insert([expertData]);
-
-      if (error) {
-        throw error;
+      let error;
+      if (expertId && expertId !== "new") {
+        ({ error } = await supabase
+          .from("experts")
+          .update(expertData)
+          .eq("id", expertId));
+      } else {
+        ({ error } = await supabase
+          .from("experts")
+          .insert([expertData]));
       }
+
+      if (error) throw error;
 
       toast({
         title: "Success",

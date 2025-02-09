@@ -29,13 +29,14 @@ const convertToSocialMediaLinks = (data: Json | null): SocialMediaLinks => {
     return defaultSocialMedia;
   }
 
+  const socialMedia = data as Record<string, unknown>;
   return {
-    youtube: typeof data.youtube === 'string' ? data.youtube : '',
-    linkedin: typeof data.linkedin === 'string' ? data.linkedin : '',
-    twitter: typeof data.twitter === 'string' ? data.twitter : '',
-    instagram: typeof data.instagram === 'string' ? data.instagram : '',
-    website: typeof data.website === 'string' ? data.website : '',
-    wikipedia: typeof data.wikipedia === 'string' ? data.wikipedia : '',
+    youtube: typeof socialMedia.youtube === 'string' ? socialMedia.youtube : '',
+    linkedin: typeof socialMedia.linkedin === 'string' ? socialMedia.linkedin : '',
+    twitter: typeof socialMedia.twitter === 'string' ? socialMedia.twitter : '',
+    instagram: typeof socialMedia.instagram === 'string' ? socialMedia.instagram : '',
+    website: typeof socialMedia.website === 'string' ? socialMedia.website : '',
+    wikipedia: typeof socialMedia.wikipedia === 'string' ? socialMedia.wikipedia : '',
   };
 };
 
@@ -61,12 +62,11 @@ export const useExpertForm = (expertId?: string) => {
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
 
-      console.log("Fetching expert data for ID:", expertId);
       const { data, error } = await supabase
         .from("experts")
         .select("*")
         .eq("id", expertId)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error("Error fetching expert:", error);
@@ -78,40 +78,13 @@ export const useExpertForm = (expertId?: string) => {
         throw error;
       }
 
-      if (!data) {
-        console.log("No expert found with ID:", expertId);
-        toast({
-          title: "Not Found",
-          description: "Expert not found",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      // Convert the Supabase data to match our Expert type
-      const expertData: Expert = {
-        id: data.id,
-        full_name: data.full_name,
-        title: data.title,
-        bio: data.bio || "",
-        image_url: data.image_url || "",
-        field_of_expertise: data.field_of_expertise || "",
-        social_media: data.social_media as Expert['social_media'],
-        media_links: data.media_links as Expert['media_links'],
-        affiliations: data.affiliations || [],
-        credentials: data.credentials || [],
-      };
-
-      console.log("Received expert data:", expertData);
-      return expertData;
+      return data as Expert;
     },
     enabled: !!expertId && expertId !== "new",
-    retry: false,
   });
 
   useEffect(() => {
     if (expertData) {
-      console.log("Setting form data from expert data:", expertData);
       setFormData({
         imageUrl: expertData.image_url || "",
         fullName: expertData.full_name || "",
@@ -119,7 +92,7 @@ export const useExpertForm = (expertId?: string) => {
         bio: expertData.bio || "",
         fieldOfExpertise: expertData.field_of_expertise || "",
         affiliations: expertData.affiliations || [],
-        socialMedia: convertToSocialMediaLinks(expertData.social_media as Json),
+        socialMedia: convertToSocialMediaLinks(expertData.social_media),
       });
     }
   }, [expertData]);
@@ -138,7 +111,6 @@ export const useExpertForm = (expertId?: string) => {
     field: K,
     value: typeof formData[K]
   ) => {
-    console.log(`Updating ${field} with value:`, value);
     setFormData(prev => ({
       ...prev,
       [field]: value,
