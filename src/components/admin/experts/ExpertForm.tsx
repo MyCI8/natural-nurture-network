@@ -11,13 +11,15 @@ import { SocialMediaSection } from "./SocialMediaSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useExpertForm } from "@/hooks/useExpertForm";
+import { ExpertFormData } from "@/types/expert";
 
 interface ExpertFormProps {
   expertId?: string;
   onSuccess?: () => void;
+  initialData?: Partial<ExpertFormData>;
 }
 
-export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
+export const ExpertForm = ({ expertId, onSuccess, initialData }: ExpertFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const {
@@ -28,7 +30,7 @@ export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
     handleChange,
     handleSocialMediaChange,
     handleCrawlerData,
-  } = useExpertForm(expertId);
+  } = useExpertForm(expertId, initialData);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +44,7 @@ export const ExpertForm = ({ expertId, onSuccess }: ExpertFormProps) => {
         image_url: formData.imageUrl,
         field_of_expertise: formData.fieldOfExpertise,
         affiliations: formData.affiliations,
-        social_media: formData.socialMedia,
+        social_media: formData.socialMedia as unknown as Json,
       };
 
       let error;

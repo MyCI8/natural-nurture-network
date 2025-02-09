@@ -4,7 +4,7 @@ import { Json } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Expert } from "@/types/expert";
+import { Expert, ExpertFormData } from "@/types/expert";
 
 interface SocialMediaLinks {
   youtube: string;
@@ -40,17 +40,17 @@ const convertToSocialMediaLinks = (data: Json | null): SocialMediaLinks => {
   };
 };
 
-export const useExpertForm = (expertId?: string) => {
+export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFormData>) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    imageUrl: "",
-    fullName: "",
-    title: "",
-    bio: "",
-    fieldOfExpertise: "",
-    affiliations: [] as string[],
-    socialMedia: defaultSocialMedia,
+  const [formData, setFormData] = useState<ExpertFormData>({
+    imageUrl: initialData?.imageUrl || "",
+    fullName: initialData?.fullName || "",
+    title: initialData?.title || "",
+    bio: initialData?.bio || "",
+    fieldOfExpertise: initialData?.fieldOfExpertise || "",
+    affiliations: initialData?.affiliations || [],
+    socialMedia: initialData?.socialMedia || defaultSocialMedia,
   });
 
   const {
@@ -107,9 +107,9 @@ export const useExpertForm = (expertId?: string) => {
     }));
   };
 
-  const handleChange = <K extends keyof typeof formData>(
+  const handleChange = <K extends keyof ExpertFormData>(
     field: K,
-    value: typeof formData[K]
+    value: ExpertFormData[K]
   ) => {
     setFormData(prev => ({
       ...prev,
