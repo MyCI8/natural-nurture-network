@@ -52,16 +52,17 @@ export const ExpertDetailsSection = ({
         <Label htmlFor="fullName">Full Name</Label>
         <Input
           id="fullName"
-          value={fullName}
+          value={fullName || ""}
           onChange={(e) => setFullName(e.target.value)}
           className="text-lg bg-background"
+          placeholder="Enter full name"
         />
       </div>
       <div>
         <Label htmlFor="title">Title</Label>
         <Input
           id="title"
-          value={title}
+          value={title || ""}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Medical Doctor, Herbalist"
           className="bg-background"
@@ -70,7 +71,7 @@ export const ExpertDetailsSection = ({
       <div>
         <Label htmlFor="bio">Biography</Label>
         <TextEditor 
-          content={bio} 
+          content={bio || ""} 
           onChange={(value) => setBio(value)}
           className="min-h-[200px]"
         />
