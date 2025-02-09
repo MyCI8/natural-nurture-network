@@ -51,7 +51,6 @@ const defaultSocialMedia: SocialMediaLinks = {
   wikipedia: "",
 };
 
-// Helper function to validate and convert social media data
 const convertToSocialMediaLinks = (data: Json | null): SocialMediaLinks => {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return defaultSocialMedia;
@@ -72,19 +71,19 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Initialize state with initialData if available, otherwise use default values
-  const [imageUrl, setImageUrl] = useState(initialData?.image_url || "");
-  const [fullName, setFullName] = useState(initialData?.full_name || "");
-  const [title, setTitle] = useState("");
-  const [bio, setBio] = useState(initialData?.bio || "");
-  const [fieldOfExpertise, setFieldOfExpertise] = useState("");
-  const [affiliations, setAffiliations] = useState<string[]>([]);
-  const [socialMedia, setSocialMedia] = useState<SocialMediaLinks>(
-    initialData?.social_media ? convertToSocialMediaLinks(initialData.social_media as Json) : defaultSocialMedia
-  );
+  // Initialize form state
+  const [formData, setFormData] = useState({
+    imageUrl: "",
+    fullName: "",
+    title: "",
+    bio: "",
+    fieldOfExpertise: "",
+    affiliations: [] as string[],
+    socialMedia: defaultSocialMedia,
+  });
 
   // Fetch expert data when expertId is available
-  const { data: expertData, isLoading: isFetching } = useQuery({
+  const { data: expertData } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
@@ -110,16 +109,18 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
     enabled: !!expertId && expertId !== "new",
   });
 
-  // Update state when expert data is fetched
+  // Update form state when expert data is fetched
   useEffect(() => {
     if (expertData) {
-      setImageUrl(expertData.image_url || "");
-      setFullName(expertData.full_name || "");
-      setTitle(expertData.title || "");
-      setBio(expertData.bio || "");
-      setFieldOfExpertise(expertData.field_of_expertise || "");
-      setAffiliations(expertData.affiliations || []);
-      setSocialMedia(convertToSocialMediaLinks(expertData.social_media));
+      setFormData({
+        imageUrl: expertData.image_url || "",
+        fullName: expertData.full_name || "",
+        title: expertData.title || "",
+        bio: expertData.bio || "",
+        fieldOfExpertise: expertData.field_of_expertise || "",
+        affiliations: expertData.affiliations || [],
+        socialMedia: convertToSocialMediaLinks(expertData.social_media),
+      });
     }
   }, [expertData]);
 
@@ -129,13 +130,13 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
 
     try {
       const expertData = {
-        full_name: fullName,
-        title,
-        bio,
-        image_url: imageUrl,
-        field_of_expertise: fieldOfExpertise,
-        affiliations,
-        social_media: socialMedia as unknown as Json,
+        full_name: formData.fullName,
+        title: formData.title,
+        bio: formData.bio,
+        image_url: formData.imageUrl,
+        field_of_expertise: formData.fieldOfExpertise,
+        affiliations: formData.affiliations,
+        social_media: formData.socialMedia as unknown as Json,
       };
 
       const { error } = expertId && expertId !== "new"
@@ -174,45 +175,42 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
   };
 
   const handleCrawlerData = (data: any) => {
-    if (data.name) setFullName(data.name);
-    if (data.biography) setBio(data.biography);
-    if (data.image) setImageUrl(data.image);
-    if (data.socialLinks) {
-      setSocialMedia(prev => ({
-        ...prev,
-        ...data.socialLinks
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      fullName: data.name || prev.fullName,
+      bio: data.biography || prev.bio,
+      imageUrl: data.image || prev.imageUrl,
+      socialMedia: {
+        ...prev.socialMedia,
+        ...(data.socialLinks || {}),
+      },
+    }));
   };
-
-  if (isFetching) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-8">
           <ImageManagementSection
-            imageUrl={imageUrl}
-            setImageUrl={setImageUrl}
+            imageUrl={formData.imageUrl}
+            setImageUrl={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
           />
           
           <ExpertDetailsSection
-            fullName={fullName}
-            setFullName={setFullName}
-            title={title}
-            setTitle={setTitle}
-            bio={bio}
-            setBio={setBio}
+            fullName={formData.fullName}
+            setFullName={(value) => setFormData(prev => ({ ...prev, fullName: value }))}
+            title={formData.title}
+            setTitle={(value) => setFormData(prev => ({ ...prev, title: value }))}
+            bio={formData.bio}
+            setBio={(value) => setFormData(prev => ({ ...prev, bio: value }))}
           />
 
           <div className="space-y-4">
             <Label htmlFor="fieldOfExpertise">Field of Expertise</Label>
             <Input
               id="fieldOfExpertise"
-              value={fieldOfExpertise}
-              onChange={(e) => setFieldOfExpertise(e.target.value)}
+              value={formData.fieldOfExpertise}
+              onChange={(e) => setFormData(prev => ({ ...prev, fieldOfExpertise: e.target.value }))}
               placeholder="e.g. Herbal Medicine, Nutrition"
               className="bg-background"
             />
@@ -226,7 +224,7 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
 
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Social Media Links</h3>
-            {Object.entries(socialMedia).map(([platform, url]) => (
+            {Object.entries(formData.socialMedia).map(([platform, url]) => (
               <div key={platform}>
                 <Label htmlFor={platform} className="capitalize">
                   {platform}
@@ -235,9 +233,12 @@ export const ExpertForm = ({ expertId, initialData, onSuccess }: ExpertFormProps
                   id={platform}
                   value={url}
                   onChange={(e) =>
-                    setSocialMedia((prev) => ({
+                    setFormData(prev => ({
                       ...prev,
-                      [platform]: e.target.value,
+                      socialMedia: {
+                        ...prev.socialMedia,
+                        [platform]: e.target.value,
+                      },
                     }))
                   }
                   placeholder={`${platform} URL`}
