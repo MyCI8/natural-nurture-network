@@ -1,3 +1,4 @@
+
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ const EditExpert = () => {
             Back to Experts
           </Button>
           <h1 className="text-3xl font-bold">
-            {id ? "Edit Expert" : "Add New Expert"}
+            {id === "new" ? "Add New Expert" : "Edit Expert"}
           </h1>
         </div>
         <ExpertForm expertId={id} />

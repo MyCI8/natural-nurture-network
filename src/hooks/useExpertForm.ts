@@ -25,7 +25,6 @@ const defaultSocialMedia: SocialMediaLinks = {
 };
 
 const convertToSocialMediaLinks = (data: Json | null): SocialMediaLinks => {
-  console.log("Converting social media data:", data); // Debug log
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return defaultSocialMedia;
   }
@@ -44,17 +43,19 @@ const convertToSocialMediaLinks = (data: Json | null): SocialMediaLinks => {
 export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFormData>) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<ExpertFormData>({
-    imageUrl: initialData?.imageUrl || "",
-    fullName: initialData?.fullName || "",
-    title: initialData?.title || "",
-    bio: initialData?.bio || "",
-    fieldOfExpertise: initialData?.fieldOfExpertise || "",
-    affiliations: initialData?.affiliations || [],
-    socialMedia: initialData?.socialMedia || defaultSocialMedia,
-  });
 
-  console.log("Expert ID:", expertId); // Debug log
+  // Initialize form data with default values
+  const defaultFormData: ExpertFormData = {
+    imageUrl: "",
+    fullName: "",
+    title: "",
+    bio: "",
+    fieldOfExpertise: "",
+    affiliations: [],
+    socialMedia: defaultSocialMedia,
+  };
+
+  const [formData, setFormData] = useState<ExpertFormData>(defaultFormData);
 
   const {
     data: expertData,
@@ -65,7 +66,6 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
 
-      console.log("Fetching expert data for ID:", expertId); // Debug log
       const { data, error } = await supabase
         .from("experts")
         .select("*")
@@ -82,16 +82,19 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
         throw error;
       }
 
-      console.log("Raw expert data from Supabase:", data); // Debug log
       return data as Expert;
     },
     enabled: !!expertId && expertId !== "new",
   });
 
   useEffect(() => {
-    if (expertData) {
-      console.log("Setting form data from expert:", expertData); // Debug log
-      const newFormData = {
+    // When initialData is provided, use it
+    if (initialData) {
+      setFormData({ ...defaultFormData, ...initialData });
+    }
+    // When expertData is loaded, use it
+    else if (expertData) {
+      setFormData({
         imageUrl: expertData.image_url || "",
         fullName: expertData.full_name || "",
         title: expertData.title || "",
@@ -99,11 +102,9 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
         fieldOfExpertise: expertData.field_of_expertise || "",
         affiliations: expertData.affiliations || [],
         socialMedia: convertToSocialMediaLinks(expertData.social_media),
-      };
-      console.log("New form data being set:", newFormData); // Debug log
-      setFormData(newFormData);
+      });
     }
-  }, [expertData]);
+  }, [expertData, initialData]);
 
   const handleSocialMediaChange = (platform: keyof SocialMediaLinks, value: string) => {
     setFormData(prev => ({
