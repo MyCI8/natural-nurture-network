@@ -45,8 +45,9 @@ export const ExpertDetailsSection = ({
       <div>
         <Label htmlFor="bio">Biography</Label>
         <TextEditor 
-          content={bio} 
-          onChange={setBio}
+          content={bio || ''} 
+          onChange={(value) => setBio(value)}
+          className="min-h-[200px]"
         />
       </div>
     </div>

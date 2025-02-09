@@ -51,7 +51,7 @@ export const useExpertForm = (expertId?: string) => {
     socialMedia: defaultSocialMedia,
   });
 
-  const { data: expertData } = useQuery({
+  const { data: expertData, isLoading: isFetching } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
       if (!expertId || expertId === "new") return null;
@@ -79,6 +79,7 @@ export const useExpertForm = (expertId?: string) => {
 
   useEffect(() => {
     if (expertData) {
+      console.log("Setting form data from expert data:", expertData);
       setFormData({
         imageUrl: expertData.image_url || "",
         fullName: expertData.full_name || "",
@@ -105,6 +106,7 @@ export const useExpertForm = (expertId?: string) => {
     field: K,
     value: typeof formData[K]
   ) => {
+    console.log(`Updating ${field} with value:`, value);
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -126,7 +128,7 @@ export const useExpertForm = (expertId?: string) => {
 
   return {
     formData,
-    isLoading,
+    isLoading: isLoading || isFetching,
     setIsLoading,
     handleChange,
     handleSocialMediaChange,
