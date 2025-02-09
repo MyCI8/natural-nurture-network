@@ -1,17 +1,8 @@
+
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { Plus, Search, Trash2, Edit2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +13,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import RemedyListHeader from "./remedies/RemedyListHeader";
+import RemedyFilters from "./remedies/RemedyFilters";
+import RemedyGrid from "./remedies/RemedyGrid";
 import RemedyForm from "./RemedyForm";
 import { Database } from "@/integrations/supabase/types";
 
@@ -37,7 +29,6 @@ const defaultSymptoms: SymptomType[] = [
 ];
 
 const ManageRemedies = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -91,7 +82,6 @@ const ManageRemedies = () => {
 
       if (error) throw error;
 
-      // Remove image from storage if it exists
       if (remedyToDelete.image_url) {
         const imagePath = remedyToDelete.image_url.split("/").pop();
         if (imagePath) {
@@ -121,123 +111,25 @@ const ManageRemedies = () => {
     setSelectedRemedy(null);
   };
 
-  const handleEdit = (remedy: any) => {
-    setSelectedRemedy(remedy);
-    setShowForm(true);
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Manage Remedies</h2>
-        <Button onClick={() => navigate(`/admin/remedies/edit/new`)}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Remedy
-        </Button>
-      </div>
+      <RemedyListHeader />
+      
+      <RemedyFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        symptomFilter={symptomFilter}
+        setSymptomFilter={setSymptomFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        defaultSymptoms={defaultSymptoms}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="relative">
-          <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search remedies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 bg-background"
-          />
-        </div>
-
-        <Select 
-          value={symptomFilter} 
-          onValueChange={setSymptomFilter}
-        >
-          <SelectTrigger className="bg-background">
-            <SelectValue placeholder="Filter by symptom" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Symptoms</SelectItem>
-            {defaultSymptoms.map((symptom) => (
-              <SelectItem key={symptom} value={symptom}>
-                {symptom}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={sortBy}
-          onValueChange={(value: "popularity" | "recent") => setSortBy(value)}
-        >
-          <SelectTrigger className="bg-background">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recent">Most Recent</SelectItem>
-            <SelectItem value="popularity">Most Popular</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="animate-pulse space-y-4">
-                  <div className="aspect-video bg-gray-200 rounded" />
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {remedies.map((remedy) => (
-            <Card key={remedy.id} className="group">
-              <CardContent className="p-4">
-                <div className="aspect-video mb-4 relative group-hover:opacity-75 transition-opacity">
-                  <img
-                    src={remedy.image_url}
-                    alt={remedy.name}
-                    className="w-full h-full object-cover rounded"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => navigate(`/admin/remedies/edit/${remedy.id}`)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setRemedyToDelete(remedy)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <h3 className="font-semibold mb-2">{remedy.name}</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {remedy.summary}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {remedy.symptoms?.map((symptom: string, index: number) => (
-                    <span
-                      key={index}
-                      className="text-xs bg-secondary px-2 py-1 rounded-full"
-                    >
-                      {symptom}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <RemedyGrid 
+        remedies={remedies}
+        isLoading={isLoading}
+        onDelete={setRemedyToDelete}
+      />
 
       {showForm && (
         <RemedyForm 
