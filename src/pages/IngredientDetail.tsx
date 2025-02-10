@@ -7,6 +7,7 @@ import { IngredientHeader } from "@/components/ingredients/IngredientHeader";
 import { IngredientDescription } from "@/components/ingredients/IngredientDescription";
 import { IngredientVideos } from "@/components/ingredients/IngredientVideos";
 import { parseVideos } from "@/components/ingredients/types";
+import { Expert } from "@/types/expert";
 
 const IngredientDetail = () => {
   const { id } = useParams<{ id: string }>();

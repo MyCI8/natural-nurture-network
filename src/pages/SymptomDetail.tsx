@@ -44,6 +44,13 @@ interface SymptomContent {
   related_links: RelatedLink[];
 }
 
+interface RPCResponse {
+  related_remedies: RelatedRemedy[];
+  related_experts: RelatedExpert[];
+  related_articles: RelatedArticle[];
+  related_links: RelatedLink[];
+}
+
 const SymptomDetail = () => {
   const { symptom } = useParams();
   const navigate = useNavigate();
@@ -81,13 +88,12 @@ const SymptomDetail = () => {
       
       if (error) throw error;
       
-      // Ensure we're returning properly typed data
-      const content = data[0];
+      const content = data[0] as RPCResponse;
       return {
-        related_remedies: content.related_remedies as RelatedRemedy[] || [],
-        related_experts: content.related_experts as RelatedExpert[] || [],
-        related_articles: content.related_articles as RelatedArticle[] || [],
-        related_links: content.related_links as RelatedLink[] || []
+        related_remedies: content.related_remedies || [],
+        related_experts: content.related_experts || [],
+        related_articles: content.related_articles || [],
+        related_links: content.related_links || []
       };
     },
     enabled: !!currentSymptom
@@ -244,4 +250,3 @@ const SymptomDetail = () => {
 };
 
 export default SymptomDetail;
-
