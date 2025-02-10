@@ -429,6 +429,7 @@ export type Database = {
       }
       remedies: {
         Row: {
+          brief_description: string | null
           click_count: number | null
           created_at: string | null
           description: string | null
@@ -449,6 +450,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          brief_description?: string | null
           click_count?: number | null
           created_at?: string | null
           description?: string | null
@@ -469,6 +471,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          brief_description?: string | null
           click_count?: number | null
           created_at?: string | null
           description?: string | null
@@ -570,6 +573,110 @@ export type Database = {
         }
         Relationships: []
       }
+      symptom_details: {
+        Row: {
+          brief_description: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          symptom: Database["public"]["Enums"]["symptom_type"]
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          brief_description?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          symptom: Database["public"]["Enums"]["symptom_type"]
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          brief_description?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          symptom?: Database["public"]["Enums"]["symptom_type"]
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      symptom_related_articles: {
+        Row: {
+          article_id: string | null
+          created_at: string | null
+          id: string
+          symptom_id: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          created_at?: string | null
+          id?: string
+          symptom_id?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          created_at?: string | null
+          id?: string
+          symptom_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symptom_related_articles_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "symptom_related_articles_symptom_id_fkey"
+            columns: ["symptom_id"]
+            isOneToOne: false
+            referencedRelation: "symptom_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      symptom_related_links: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          symptom_id: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          symptom_id?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          symptom_id?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symptom_related_links_symptom_id_fkey"
+            columns: ["symptom_id"]
+            isOneToOne: false
+            referencedRelation: "symptom_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -615,6 +722,18 @@ export type Database = {
           title: string
         }
         Returns: string
+      }
+      get_symptom_related_content: {
+        Args: {
+          p_symptom: Database["public"]["Enums"]["symptom_type"]
+        }
+        Returns: {
+          related_remedies: Json
+          related_ingredients: Json
+          related_experts: Json
+          related_articles: Json
+          related_links: Json
+        }[]
       }
       get_top_symptoms: {
         Args: {

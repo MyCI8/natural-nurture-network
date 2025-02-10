@@ -32,21 +32,13 @@ const SymptomDetail = () => {
     }
   }, [symptom]);
 
-  const { data: remedies } = useQuery({
-    queryKey: ['remedies', currentSymptom],
+  const { data: relatedContent } = useQuery({
+    queryKey: ['symptom-content', currentSymptom],
     queryFn: async () => {
-      if (!currentSymptom) return [];
+      if (!currentSymptom) return null;
+      
       const { data, error } = await supabase
-        .from('remedies')
-        .select(`
-          id,
-          name,
-          summary,
-          image_url,
-          ingredients,
-          expert_recommendations
-        `)
-        .contains('symptoms', [currentSymptom]);
+        .rpc('get_symptom_related_content', { p_symptom: currentSymptom });
       
       if (error) throw error;
       return data;
@@ -54,22 +46,21 @@ const SymptomDetail = () => {
     enabled: !!currentSymptom
   });
 
-  const { data: experts } = useQuery({
-    queryKey: ['experts', remedies],
+  const { data: symptomDetails } = useQuery({
+    queryKey: ['symptom-details', currentSymptom],
     queryFn: async () => {
-      if (!remedies?.length) return [];
-      const expertIds = remedies.flatMap(r => r.expert_recommendations || []);
-      if (!expertIds.length) return [];
+      if (!currentSymptom) return null;
       
       const { data, error } = await supabase
-        .from('experts')
-        .select('id, full_name, title, image_url')
-        .in('id', expertIds);
+        .from('symptom_details')
+        .select('*')
+        .eq('symptom', currentSymptom)
+        .single();
       
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error;
       return data;
     },
-    enabled: !!remedies?.length
+    enabled: !!currentSymptom
   });
 
   if (!currentSymptom) {
@@ -102,11 +93,12 @@ const SymptomDetail = () => {
             </p>
           </div>
 
-          {remedies && remedies.length > 0 && (
+          {/* Related Remedies */}
+          {relatedContent?.related_remedies && (
             <section>
-              <h2 className="text-2xl font-semibold mb-6">Related Remedies</h2>
+              <h2 className="text-2xl font-semibold mb-6">Natural Remedies</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {remedies.map((remedy) => (
+                {relatedContent.related_remedies.map((remedy: any) => (
                   <Card key={remedy.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
                     {remedy.image_url && (
                       <img
@@ -123,11 +115,12 @@ const SymptomDetail = () => {
             </section>
           )}
 
-          {experts && experts.length > 0 && (
+          {/* Related Experts */}
+          {relatedContent?.related_experts && (
             <section>
               <h2 className="text-2xl font-semibold mb-6">Expert Recommendations</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {experts.map((expert) => (
+                {relatedContent.related_experts.map((expert: any) => (
                   <Card key={expert.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="flex items-center gap-4">
                       {expert.image_url ? (
@@ -149,6 +142,50 @@ const SymptomDetail = () => {
                       </div>
                     </div>
                   </Card>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Related Articles */}
+          {relatedContent?.related_articles && relatedContent.related_articles.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-6">Related Articles</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {relatedContent.related_articles.map((article: any) => (
+                  <Card key={article.id} className="p-4">
+                    {article.image_url && (
+                      <img
+                        src={article.image_url}
+                        alt={article.title}
+                        className="w-full h-32 object-cover rounded mb-4"
+                      />
+                    )}
+                    <h3 className="font-medium line-clamp-2">{article.title}</h3>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Related Links */}
+          {relatedContent?.related_links && relatedContent.related_links.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
+              <div className="grid gap-4">
+                {relatedContent.related_links.map((link: any) => (
+                  <a
+                    key={link.id}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 bg-accent rounded-lg hover:bg-accent/80 transition-colors"
+                  >
+                    <h3 className="font-medium">{link.title}</h3>
+                    {link.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{link.description}</p>
+                    )}
+                  </a>
                 ))}
               </div>
             </section>
