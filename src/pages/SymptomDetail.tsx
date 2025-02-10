@@ -41,7 +41,7 @@ const SymptomDetail = () => {
         .rpc('get_symptom_related_content', { p_symptom: currentSymptom });
       
       if (error) throw error;
-      return data;
+      return data[0]; // Get first row since it returns an array with a single object
     },
     enabled: !!currentSymptom
   });
