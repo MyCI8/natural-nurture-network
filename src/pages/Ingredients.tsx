@@ -3,6 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Database } from "@/integrations/supabase/types";
+
+type Ingredient = Database['public']['Tables']['ingredients']['Row'];
 
 const Ingredients = () => {
   const { data: ingredients, isLoading } = useQuery({
