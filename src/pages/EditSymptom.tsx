@@ -41,7 +41,7 @@ const EditSymptom = () => {
     },
   });
 
-  const { data: symptom, isLoading } = useQuery({
+  const { data: symptom } = useQuery({
     queryKey: ["symptom", id],
     queryFn: async () => {
       if (isNewSymptom) return null;
@@ -56,17 +56,19 @@ const EditSymptom = () => {
       return data;
     },
     enabled: !isNewSymptom,
-    onSuccess: (data) => {
-      if (data) {
-        // Capitalize the symptom name
-        const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
-        form.reset({
-          ...data,
-          symptom: capitalizedSymptom,
-          video_links: data.video_links || [],
-        });
+    meta: {
+      onSuccess: (data: any) => {
+        if (data) {
+          // Capitalize the symptom name
+          const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
+          form.reset({
+            ...data,
+            symptom: capitalizedSymptom,
+            video_links: data.video_links || [],
+          });
+        }
       }
-    },
+    }
   });
 
   const { data: experts = [] } = useQuery({
@@ -235,3 +237,4 @@ const EditSymptom = () => {
 };
 
 export default EditSymptom;
+
