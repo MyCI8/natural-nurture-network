@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Expert } from "./types";
+import { Expert } from "@/types/expert";
 
 interface IngredientHeaderProps {
   name: string;

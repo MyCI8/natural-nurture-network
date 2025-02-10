@@ -6,7 +6,7 @@ export interface Expert {
   full_name: string;
   title: string;
   bio?: string;
-  image_url?: string;
+  image_url: string | null;
   field_of_expertise?: string;
   social_media?: Json;
   media_links?: Json;

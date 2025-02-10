@@ -44,11 +44,12 @@ interface SymptomContent {
   related_links: RelatedLink[];
 }
 
-interface RPCResponse {
+interface GetSymptomRelatedContentResponse {
   related_remedies: RelatedRemedy[];
   related_experts: RelatedExpert[];
   related_articles: RelatedArticle[];
   related_links: RelatedLink[];
+  related_ingredients: any[]; // Added this to match the RPC function's response
 }
 
 const SymptomDetail = () => {
@@ -88,7 +89,7 @@ const SymptomDetail = () => {
       
       if (error) throw error;
       
-      const content = data[0] as RPCResponse;
+      const content = data[0] as GetSymptomRelatedContentResponse;
       return {
         related_remedies: content.related_remedies || [],
         related_experts: content.related_experts || [],
