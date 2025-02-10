@@ -59,12 +59,13 @@ const EditSymptom = () => {
     meta: {
       onSuccess: (data: any) => {
         if (data) {
-          // Capitalize the symptom name
           const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
           form.reset({
             ...data,
             symptom: capitalizedSymptom,
             video_links: data.video_links || [],
+            related_experts: data.related_experts || [],
+            related_ingredients: data.related_ingredients || [],
           });
         }
       }
@@ -132,7 +133,7 @@ const EditSymptom = () => {
         </Button>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
         <Card>
           <CardContent className="pt-6">
             <Form {...form}>
@@ -144,7 +145,7 @@ const EditSymptom = () => {
                     <FormItem>
                       <FormLabel>Symptom Name</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} className="max-w-xl" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -158,7 +159,7 @@ const EditSymptom = () => {
                     <FormItem>
                       <FormLabel>Brief Description</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} className="max-w-xl" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -237,4 +238,3 @@ const EditSymptom = () => {
 };
 
 export default EditSymptom;
-
