@@ -1,5 +1,5 @@
 
-import { Users, BookOpen, MessageSquare, Newspaper, Apple, GraduationCap } from "lucide-react";
+import { Users, BookOpen, MessageSquare, Newspaper, Apple, GraduationCap, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +11,7 @@ type DashboardStats = {
   pendingComments: number;
   recentNews: any[];
   experts: number;
+  symptoms: number;
 };
 
 interface StatsGridProps {
@@ -68,14 +69,21 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.experts || 0,
       icon: GraduationCap,
       description: "Medical experts",
-      path: "/admin/manage-experts", // Fixed the path here
+      path: "/admin/manage-experts",
+    },
+    {
+      title: "Total Symptoms",
+      value: stats?.symptoms || 0,
+      icon: Activity,
+      description: "Active Symp/Cond",
+      path: "/admin/symptoms",
     },
   ];
 
   return (
     <>
       <h2 className="text-2xl font-bold mb-6">Stats Cards</h2>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 mb-8">
         {statCards.map((stat) => (
           <Card 
             key={stat.title}
