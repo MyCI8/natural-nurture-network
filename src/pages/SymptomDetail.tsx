@@ -10,6 +10,40 @@ import { Database } from "@/integrations/supabase/types";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
+interface RelatedRemedy {
+  id: string;
+  name: string;
+  summary: string;
+  image_url: string | null;
+}
+
+interface RelatedExpert {
+  id: string;
+  full_name: string;
+  title: string;
+  image_url: string | null;
+}
+
+interface RelatedArticle {
+  id: string;
+  title: string;
+  image_url: string | null;
+}
+
+interface RelatedLink {
+  id: string;
+  title: string;
+  url: string;
+  description: string | null;
+}
+
+interface SymptomContent {
+  related_remedies: RelatedRemedy[] | null;
+  related_experts: RelatedExpert[] | null;
+  related_articles: RelatedArticle[] | null;
+  related_links: RelatedLink[] | null;
+}
+
 const SymptomDetail = () => {
   const { symptom } = useParams();
   const navigate = useNavigate();
@@ -32,7 +66,7 @@ const SymptomDetail = () => {
     }
   }, [symptom]);
 
-  const { data: relatedContent } = useQuery({
+  const { data: relatedContent } = useQuery<SymptomContent>({
     queryKey: ['symptom-content', currentSymptom],
     queryFn: async () => {
       if (!currentSymptom) return null;
@@ -98,7 +132,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-6">Natural Remedies</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {relatedContent.related_remedies.map((remedy: any) => (
+                {relatedContent.related_remedies.map((remedy) => (
                   <Card key={remedy.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
                     {remedy.image_url && (
                       <img
@@ -120,7 +154,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-6">Expert Recommendations</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {relatedContent.related_experts.map((expert: any) => (
+                {relatedContent.related_experts.map((expert) => (
                   <Card key={expert.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="flex items-center gap-4">
                       {expert.image_url ? (
@@ -152,7 +186,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-6">Related Articles</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedContent.related_articles.map((article: any) => (
+                {relatedContent.related_articles.map((article) => (
                   <Card key={article.id} className="p-4">
                     {article.image_url && (
                       <img
@@ -173,7 +207,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
               <div className="grid gap-4">
-                {relatedContent.related_links.map((link: any) => (
+                {relatedContent.related_links.map((link) => (
                   <a
                     key={link.id}
                     href={link.url}
