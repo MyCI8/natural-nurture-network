@@ -580,8 +580,13 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          related_experts: string[] | null
+          related_ingredients: string[] | null
           symptom: Database["public"]["Enums"]["symptom_type"]
+          thumbnail_description: string | null
           updated_at: string | null
+          video_description: string | null
+          video_links: Json | null
           video_url: string | null
         }
         Insert: {
@@ -590,8 +595,13 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          related_experts?: string[] | null
+          related_ingredients?: string[] | null
           symptom: Database["public"]["Enums"]["symptom_type"]
+          thumbnail_description?: string | null
           updated_at?: string | null
+          video_description?: string | null
+          video_links?: Json | null
           video_url?: string | null
         }
         Update: {
@@ -600,8 +610,13 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          related_experts?: string[] | null
+          related_ingredients?: string[] | null
           symptom?: Database["public"]["Enums"]["symptom_type"]
+          thumbnail_description?: string | null
           updated_at?: string | null
+          video_description?: string | null
+          video_links?: Json | null
           video_url?: string | null
         }
         Relationships: []
