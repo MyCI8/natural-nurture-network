@@ -38,10 +38,10 @@ interface RelatedLink {
 }
 
 interface SymptomContent {
-  related_remedies: RelatedRemedy[] | null;
-  related_experts: RelatedExpert[] | null;
-  related_articles: RelatedArticle[] | null;
-  related_links: RelatedLink[] | null;
+  related_remedies: RelatedRemedy[];
+  related_experts: RelatedExpert[];
+  related_articles: RelatedArticle[];
+  related_links: RelatedLink[];
 }
 
 const SymptomDetail = () => {
@@ -69,13 +69,26 @@ const SymptomDetail = () => {
   const { data: relatedContent } = useQuery<SymptomContent>({
     queryKey: ['symptom-content', currentSymptom],
     queryFn: async () => {
-      if (!currentSymptom) return null;
+      if (!currentSymptom) return {
+        related_remedies: [],
+        related_experts: [],
+        related_articles: [],
+        related_links: []
+      };
       
       const { data, error } = await supabase
         .rpc('get_symptom_related_content', { p_symptom: currentSymptom });
       
       if (error) throw error;
-      return data[0]; // Get first row since it returns an array with a single object
+      
+      // Ensure we're returning properly typed data
+      const content = data[0];
+      return {
+        related_remedies: content.related_remedies as RelatedRemedy[] || [],
+        related_experts: content.related_experts as RelatedExpert[] || [],
+        related_articles: content.related_articles as RelatedArticle[] || [],
+        related_links: content.related_links as RelatedLink[] || []
+      };
     },
     enabled: !!currentSymptom
   });
@@ -89,9 +102,9 @@ const SymptomDetail = () => {
         .from('symptom_details')
         .select('*')
         .eq('symptom', currentSymptom)
-        .single();
+        .maybeSingle();
       
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       return data;
     },
     enabled: !!currentSymptom
@@ -128,7 +141,7 @@ const SymptomDetail = () => {
           </div>
 
           {/* Related Remedies */}
-          {relatedContent?.related_remedies && (
+          {relatedContent?.related_remedies && relatedContent.related_remedies.length > 0 && (
             <section>
               <h2 className="text-2xl font-semibold mb-6">Natural Remedies</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -150,7 +163,7 @@ const SymptomDetail = () => {
           )}
 
           {/* Related Experts */}
-          {relatedContent?.related_experts && (
+          {relatedContent?.related_experts && relatedContent.related_experts.length > 0 && (
             <section>
               <h2 className="text-2xl font-semibold mb-6">Expert Recommendations</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -231,3 +244,4 @@ const SymptomDetail = () => {
 };
 
 export default SymptomDetail;
+
