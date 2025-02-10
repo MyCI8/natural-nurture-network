@@ -11,10 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import TextEditor from "@/components/ui/text-editor";
-import { Textarea } from "@/components/ui/textarea";
+import ImageUploadSection from "./ingredients/form/ImageUploadSection";
+import DescriptionSection from "./ingredients/form/DescriptionSection";
 
 interface IngredientFormProps {
   onClose: () => void;
@@ -24,7 +23,6 @@ interface IngredientFormProps {
 
 const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) => {
   const { toast } = useToast();
-  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     brief_description: "",
@@ -42,64 +40,6 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
       });
     }
   }, [ingredient]);
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      setUploading(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to upload images",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      
-      const { error: uploadError, data } = await supabase.storage
-        .from('remedy-images')
-        .upload(`ingredients/${fileName}`, file, {
-          upsert: false,
-          contentType: file.type,
-        });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        toast({
-          title: "Error",
-          description: "Failed to upload image. Please ensure you have admin permissions.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('remedy-images')
-        .getPublicUrl(`ingredients/${fileName}`);
-
-      setFormData(prev => ({ ...prev, image_url: publicUrl }));
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,72 +118,29 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
             />
           </div>
 
-          <div>
-            <Label htmlFor="brief_description">Brief Description</Label>
-            <Textarea
-              id="brief_description"
-              value={formData.brief_description}
-              onChange={(e) =>
-                setFormData({ ...formData, brief_description: e.target.value })
-              }
-              placeholder="Enter a brief summary of the ingredient..."
-              className="h-20"
-            />
-          </div>
+          <DescriptionSection
+            briefDescription={formData.brief_description}
+            fullDescription={formData.full_description}
+            onBriefDescriptionChange={(value) =>
+              setFormData({ ...formData, brief_description: value })
+            }
+            onFullDescriptionChange={(value) =>
+              setFormData({ ...formData, full_description: value })
+            }
+          />
 
-          <div>
-            <Label htmlFor="full_description">Full Description</Label>
-            <TextEditor
-              content={formData.full_description}
-              onChange={(content) =>
-                setFormData({ ...formData, full_description: content })
-              }
-            />
-          </div>
-
-          <div>
-            <Label>Image</Label>
-            <div className="mt-2 flex items-center gap-4">
-              {formData.image_url && (
-                <div className="relative">
-                  <img
-                    src={formData.image_url}
-                    alt="Ingredient"
-                    className="w-32 h-32 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2"
-                    onClick={() => setFormData({ ...formData, image_url: "" })}
-                    type="button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              <Label
-                htmlFor="image"
-                className="cursor-pointer flex items-center justify-center w-32 h-32 border-2 border-dashed rounded-lg hover:border-primary"
-              >
-                <input
-                  type="file"
-                  id="image"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                />
-                <Plus className="h-6 w-6 text-gray-400" />
-              </Label>
-            </div>
-          </div>
+          <ImageUploadSection
+            imageUrl={formData.image_url}
+            onImageChange={(url) =>
+              setFormData({ ...formData, image_url: url })
+            }
+          />
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={uploading}>
+            <Button type="submit">
               {ingredient ? "Update" : "Create"}
             </Button>
           </div>
