@@ -29,19 +29,27 @@ const AdminDashboard = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["adminStats"],
     queryFn: async () => {
-      const [usersCount, remediesCount, expertsCount, commentsCount, symptoms, news] =
-        await Promise.all([
-          supabase.from("profiles").select("*", { count: "exact" }),
-          supabase.from("remedies").select("*", { count: "exact" }),
-          supabase.from("experts").select("*", { count: "exact" }),
-          supabase.from("comments").select("*", { count: "exact" }),
-          supabase.rpc('get_top_symptoms', { limit_count: 5 }),
-          supabase
-            .from("news_articles")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(5),
-        ]);
+      const [
+        usersCount, 
+        remediesCount, 
+        expertsCount, 
+        commentsCount, 
+        symptoms, 
+        news,
+        symptomsCount
+      ] = await Promise.all([
+        supabase.from("profiles").select("*", { count: "exact" }),
+        supabase.from("remedies").select("*", { count: "exact" }),
+        supabase.from("experts").select("*", { count: "exact" }),
+        supabase.from("comments").select("*", { count: "exact" }),
+        supabase.rpc('get_top_symptoms', { limit_count: 5 }),
+        supabase
+          .from("news_articles")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase.from("symptom_clicks").select("*", { count: "exact" }),
+      ]);
 
       return {
         users: usersCount.count || 0,
@@ -50,6 +58,7 @@ const AdminDashboard = () => {
         comments: commentsCount.count || 0,
         symptoms: symptoms.data || [],
         recentNews: news.data || [],
+        symptomsCount: symptomsCount.count || 0,
       };
     },
   });
@@ -58,6 +67,7 @@ const AdminDashboard = () => {
     { title: "Total Users", value: stats?.users || 0, icon: Users },
     { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf },
     { title: "Total Experts", value: stats?.experts || 0, icon: UserCog },
+    { title: "Symptoms Activity", value: stats?.symptomsCount || 0, icon: Stethoscope },
     { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
   ];
 
@@ -106,7 +116,7 @@ const AdminDashboard = () => {
         <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {statsCards.map((stat) => (
             <Card key={stat.title}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
