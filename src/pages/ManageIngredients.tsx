@@ -2,29 +2,13 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { Plus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import IngredientForm from "@/components/admin/IngredientForm";
+import IngredientsTable from "@/components/admin/ingredients/IngredientsTable";
+import DeleteIngredientDialog from "@/components/admin/ingredients/DeleteIngredientDialog";
 
 const ManageIngredients = () => {
   const navigate = useNavigate();
@@ -142,64 +126,14 @@ const ManageIngredients = () => {
             </Button>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Brief Description</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {ingredients.map((ingredient) => (
-                <TableRow 
-                  key={ingredient.id}
-                  className="cursor-pointer hover:bg-accent/50"
-                  onClick={() => navigate(`/admin/ingredients/${ingredient.id}`)}
-                >
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    {ingredient.image_url ? (
-                      <img
-                        src={ingredient.image_url}
-                        alt={ingredient.name}
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded" />
-                    )}
-                  </TableCell>
-                  <TableCell className="font-medium">{ingredient.name}</TableCell>
-                  <TableCell>{ingredient.brief_description}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedIngredient(ingredient);
-                          setIsFormOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeleteIngredient(ingredient);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <IngredientsTable 
+            ingredients={ingredients}
+            onEdit={(ingredient) => {
+              setSelectedIngredient(ingredient);
+              setIsFormOpen(true);
+            }}
+            onDelete={setDeleteIngredient}
+          />
 
           {isFormOpen && (
             <IngredientForm
@@ -212,21 +146,11 @@ const ManageIngredients = () => {
             />
           )}
 
-          <AlertDialog open={!!deleteIngredient} onOpenChange={() => setDeleteIngredient(null)}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the ingredient
-                  and remove it from our records.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <DeleteIngredientDialog
+            isOpen={!!deleteIngredient}
+            onClose={() => setDeleteIngredient(null)}
+            onConfirm={handleDelete}
+          />
         </div>
       </div>
     </div>
