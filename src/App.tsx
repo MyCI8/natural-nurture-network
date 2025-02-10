@@ -8,6 +8,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManageExperts from "./pages/ManageExperts";
 import ManageRemedies from "./pages/ManageRemedies";
 import ManageIngredients from "./pages/ManageIngredients";
+import ManageSymptoms from "./pages/ManageSymptoms";
 import EditExpert from "./pages/EditExpert";
 import EditRemedy from "./pages/EditRemedy";
 import IngredientDetail from "./pages/IngredientDetail";
@@ -50,6 +51,7 @@ const App = () => {
               <Route index element={<ManageNews />} />
               <Route path=":id" element={<EditNews />} />
             </Route>
+            <Route path="symptoms" element={<ManageSymptoms />} />
           </Route>
           <Route path="auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
