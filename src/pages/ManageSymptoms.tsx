@@ -1,61 +1,30 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate, Routes, Route } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import ManageSymptomsList from "@/components/admin/ManageSymptomsList";
+import EditSymptom from "./EditSymptom";
 
 const ManageSymptoms = () => {
-  const { data: symptoms, isLoading } = useQuery({
-    queryKey: ["symptoms"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("symptom_details")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-  });
+  const navigate = useNavigate();
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen bg-background pt-16">
+      <div className="container mx-auto p-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <h1 className="text-3xl font-bold">Manage Symptoms</h1>
+        <Routes>
+          <Route index element={<ManageSymptomsList />} />
+          <Route path=":id" element={<EditSymptom />} />
+        </Routes>
       </div>
-
-      {isLoading ? (
-        <div>Loading symptoms...</div>
-      ) : symptoms?.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              No Symptoms Available
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              No symptoms have been added yet. Start by adding your first symptom.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {symptoms?.map((symptom) => (
-            <Card key={symptom.id}>
-              <CardHeader>
-                <CardTitle>{symptom.symptom}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {symptom.brief_description || "No description available"}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

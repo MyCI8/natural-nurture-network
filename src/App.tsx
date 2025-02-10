@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -22,6 +21,7 @@ import ManageNews from "./pages/ManageNews";
 import EditNews from "./pages/EditNews";
 import Auth from "./pages/Auth";
 import ManageUsers from "./pages/ManageUsers";
+import EditSymptom from "./pages/EditSymptom";
 
 const App = () => {
   return (
@@ -51,7 +51,10 @@ const App = () => {
               <Route index element={<ManageNews />} />
               <Route path=":id" element={<EditNews />} />
             </Route>
-            <Route path="symptoms" element={<ManageSymptoms />} />
+            <Route path="symptoms">
+              <Route index element={<ManageSymptoms />} />
+              <Route path=":id" element={<EditSymptom />} />
+            </Route>
           </Route>
           <Route path="auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
