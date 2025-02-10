@@ -5,22 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
-import TextEditor from "@/components/ui/text-editor";
-import { ImageManagementSection } from "@/components/admin/news/ImageManagementSection";
-import { ExpertsSection } from "@/components/admin/news/ExpertsSection";
-import { VideoLinksSection } from "@/components/admin/news/VideoLinksSection";
-import { RelatedIngredientsSection } from "@/components/admin/symptoms/RelatedIngredientsSection";
+import { SymptomFormLayout } from "@/components/admin/symptoms/form/SymptomFormLayout";
 
 const EditSymptom = () => {
   const { id } = useParams();
@@ -86,7 +72,6 @@ const EditSymptom = () => {
 
   const handleSave = async (values: any) => {
     try {
-      // Ensure symptom name starts with capital letter
       values.symptom = values.symptom.charAt(0).toUpperCase() + values.symptom.slice(1);
 
       if (isNewSymptom) {
@@ -133,106 +118,7 @@ const EditSymptom = () => {
         </Button>
       </div>
 
-      <div className="space-y-6 max-w-4xl mx-auto">
-        <Card>
-          <CardContent className="pt-6">
-            <Form {...form}>
-              <form className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="symptom"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Symptom Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} className="max-w-xl" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="brief_description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Brief Description</FormLabel>
-                      <FormControl>
-                        <Input {...field} className="max-w-xl" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Description</FormLabel>
-                      <FormControl>
-                        <TextEditor
-                          content={field.value || ""}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <ImageManagementSection
-              thumbnailUrl={form.watch("image_url") || ""}
-              setThumbnailUrl={(url) => form.setValue("image_url", url)}
-              thumbnailDescription={form.watch("thumbnail_description") || ""}
-              setThumbnailDescription={(desc) => form.setValue("thumbnail_description", desc)}
-              mainImageUrl=""
-              setMainImageUrl={() => {}}
-              mainImageDescription=""
-              setMainImageDescription={() => {}}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <ExpertsSection
-              experts={experts}
-              selectedExperts={form.watch("related_experts") || []}
-              setSelectedExperts={(experts) => form.setValue("related_experts", experts)}
-              onExpertAdded={() => {}}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <RelatedIngredientsSection
-              selectedIngredients={form.watch("related_ingredients") || []}
-              setSelectedIngredients={(ingredients) => form.setValue("related_ingredients", ingredients)}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <VideoLinksSection
-              videoLinks={form.watch("video_links") || []}
-              setVideoLinks={(links) => form.setValue("video_links", links)}
-              videoDescription={form.watch("video_description") || ""}
-              setVideoDescription={(desc) => form.setValue("video_description", desc)}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <SymptomFormLayout form={form} experts={experts} />
     </div>
   );
 };
