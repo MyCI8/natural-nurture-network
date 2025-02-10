@@ -89,12 +89,13 @@ const SymptomDetail = () => {
       
       if (error) throw error;
       
-      const content = data[0] as GetSymptomRelatedContentResponse;
+      // Properly cast the response data using type assertion
+      const rawContent = data[0] as unknown as GetSymptomRelatedContentResponse;
       return {
-        related_remedies: content.related_remedies || [],
-        related_experts: content.related_experts || [],
-        related_articles: content.related_articles || [],
-        related_links: content.related_links || []
+        related_remedies: (rawContent.related_remedies || []) as RelatedRemedy[],
+        related_experts: (rawContent.related_experts || []) as RelatedExpert[],
+        related_articles: (rawContent.related_articles || []) as RelatedArticle[],
+        related_links: (rawContent.related_links || []) as RelatedLink[]
       };
     },
     enabled: !!currentSymptom
