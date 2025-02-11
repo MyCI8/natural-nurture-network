@@ -29,8 +29,7 @@ const ManageUsers = () => {
           avatar_url,
           account_status,
           last_login_at,
-          user_id,
-          user_roles (
+          user_roles:user_roles (
             role
           )
         `);
