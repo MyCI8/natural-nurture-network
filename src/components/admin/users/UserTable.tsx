@@ -11,7 +11,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserCog, UserMinus, CheckCircle, XCircle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format } from "date-fns";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface UserTableProps {
   users: User[];
@@ -20,6 +30,67 @@ interface UserTableProps {
 }
 
 export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProps) => {
+  const { toast } = useToast();
+
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    try {
+      const { error } = await supabase
+        .from("user_roles")
+        .upsert({ 
+          user_id: userId, 
+          role: newRole 
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "User role updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update user role",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStatusChange = async (userId: string, newStatus: "active" | "inactive") => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ account_status: newStatus })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "User status updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatLastLogin = (lastLoginAt: string | null | undefined) => {
+    if (!lastLoginAt) return "Never";
+    try {
+      return format(new Date(lastLoginAt), "PPp");
+    } catch (error) {
+      return "Invalid date";
+    }
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -39,23 +110,44 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
               <TableCell>{user.full_name || "N/A"}</TableCell>
               <TableCell>{user.email || "N/A"}</TableCell>
               <TableCell>
-                <Badge variant="outline">
-                  {user.role || "user"}
-                </Badge>
+                <Select
+                  defaultValue={user.role || "user"}
+                  onValueChange={(value: UserRole) => handleRoleChange(user.id, value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </TableCell>
-              <TableCell>{user.last_login_at || "Never"}</TableCell>
+              <TableCell>{formatLastLogin(user.last_login_at)}</TableCell>
               <TableCell>
-                {user.account_status === "active" ? (
-                  <Badge className="bg-green-500">
-                    <CheckCircle className="mr-1 h-3 w-3" />
-                    Active
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive">
-                    <XCircle className="mr-1 h-3 w-3" />
-                    Inactive
-                  </Badge>
-                )}
+                <Select
+                  defaultValue={user.account_status || "active"}
+                  onValueChange={(value: "active" | "inactive") => handleStatusChange(user.id, value)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        Active
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="inactive">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4 text-red-500" />
+                        Inactive
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
