@@ -48,19 +48,8 @@ const ManageUsers = () => {
         if (rolesError) throw rolesError;
 
         // Create a map of user_id to role for easier lookup
-        const userRoleMap = new Map(userRoles?.map(ur => [ur.user_id, ur.role]));
-
-        // Get users with email from auth.users
-        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-        
-        if (authError) {
-          console.error("Error fetching auth users:", authError);
-          throw authError;
-        }
-
-        // Create a map of user IDs to their auth emails
-        const authEmailMap = new Map(
-          authUsers?.users.map(user => [user.id, user.email]) || []
+        const userRoleMap = new Map(
+          (userRoles || []).map(ur => [ur.user_id, ur.role as UserRole])
         );
         
         let query = supabase
@@ -111,21 +100,15 @@ const ManageUsers = () => {
 
         console.log("Raw data from Supabase:", data);
 
-        const mappedUsers: User[] = data.map(user => {
-          console.log("Processing user:", user);
-          // Use email from auth.users if available, fallback to profiles email
-          const email = authEmailMap.get(user.id) || user.email || 'N/A';
-          
-          return {
-            id: user.id,
-            full_name: user.full_name || 'N/A',
-            email: email,
-            avatar_url: user.avatar_url,
-            role: userRoleMap.get(user.id) || 'user',
-            account_status: user.account_status === "active" ? "active" : "inactive",
-            last_login_at: user.last_login_at
-          };
-        });
+        const mappedUsers: User[] = data.map(user => ({
+          id: user.id,
+          full_name: user.full_name || 'N/A',
+          email: user.email || 'N/A',
+          avatar_url: user.avatar_url,
+          role: userRoleMap.get(user.id) || 'user',
+          account_status: user.account_status === "active" ? "active" : "inactive",
+          last_login_at: user.last_login_at
+        }));
 
         console.log("Mapped users:", mappedUsers);
         return mappedUsers;
