@@ -20,6 +20,7 @@ const ManageUsers = () => {
   const { data: users, isLoading } = useQuery({
     queryKey: ["users", searchQuery, roleFilter, statusFilter],
     queryFn: async () => {
+      console.log("Fetching users...");
       let query = supabase
         .from("profiles")
         .select(`
@@ -29,7 +30,7 @@ const ManageUsers = () => {
           avatar_url,
           account_status,
           last_login_at,
-          user_roles:user_roles (
+          user_roles (
             role
           )
         `);
@@ -52,6 +53,8 @@ const ManageUsers = () => {
         console.error("Error fetching users:", error);
         throw error;
       }
+
+      console.log("Fetched users data:", data);
 
       return data.map(user => ({
         ...user,
