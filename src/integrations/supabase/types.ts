@@ -423,9 +423,9 @@ export type Database = {
           account_status: string
           avatar_url: string | null
           created_at: string
-          email: string | null
+          email: string
           failed_login_attempts: number | null
-          full_name: string | null
+          full_name: string
           id: string
           last_failed_login_at: string | null
           last_login_at: string | null
@@ -437,9 +437,9 @@ export type Database = {
           account_status?: string
           avatar_url?: string | null
           created_at?: string
-          email?: string | null
+          email: string
           failed_login_attempts?: number | null
-          full_name?: string | null
+          full_name: string
           id: string
           last_failed_login_at?: string | null
           last_login_at?: string | null
@@ -451,9 +451,9 @@ export type Database = {
           account_status?: string
           avatar_url?: string | null
           created_at?: string
-          email?: string | null
+          email?: string
           failed_login_attempts?: number | null
-          full_name?: string | null
+          full_name?: string
           id?: string
           last_failed_login_at?: string | null
           last_login_at?: string | null
