@@ -55,7 +55,6 @@ const ManageUsers = () => {
 
       return data.map(user => ({
         ...user,
-        email: user.email || "No email provided",
         role: user.user_roles?.[0]?.role as UserRole | undefined,
         account_status: user.account_status as "active" | "inactive"
       }));
