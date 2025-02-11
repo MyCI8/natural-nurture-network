@@ -20,7 +20,8 @@ const ManageUsers = () => {
   const { data: users, isLoading } = useQuery({
     queryKey: ["users", searchQuery, roleFilter, statusFilter],
     queryFn: async () => {
-      console.log("Fetching users...");
+      console.log("Starting user fetch with filters:", { searchQuery, roleFilter, statusFilter });
+      
       let query = supabase
         .from("profiles")
         .select(`
@@ -30,7 +31,7 @@ const ManageUsers = () => {
           avatar_url,
           account_status,
           last_login_at,
-          user_roles (
+          user_roles!inner (
             role
           )
         `);
@@ -54,13 +55,19 @@ const ManageUsers = () => {
         throw error;
       }
 
-      console.log("Fetched users data:", data);
+      console.log("Raw data from Supabase:", data);
 
-      return data.map(user => ({
-        ...user,
-        role: user.user_roles?.[0]?.role as UserRole | undefined,
-        account_status: user.account_status as "active" | "inactive"
-      }));
+      const mappedUsers = data.map(user => {
+        console.log("Processing user:", user);
+        return {
+          ...user,
+          role: user.user_roles?.[0]?.role as UserRole | undefined,
+          account_status: user.account_status as "active" | "inactive"
+        };
+      });
+
+      console.log("Mapped users:", mappedUsers);
+      return mappedUsers;
     },
   });
 
@@ -139,3 +146,4 @@ const ManageUsers = () => {
 };
 
 export default ManageUsers;
+
