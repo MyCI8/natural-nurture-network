@@ -1,4 +1,3 @@
-
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -62,11 +61,7 @@ const ManageUsers = () => {
   });
 
   const handleEditUser = (userId: string) => {
-    // TODO: Implement edit user functionality
-    toast({
-      title: "Edit user",
-      description: "This functionality will be implemented soon.",
-    });
+    navigate(`/admin/users/${userId}`);
   };
 
   const handleDeactivateUser = async (userId: string) => {

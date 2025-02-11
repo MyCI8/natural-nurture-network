@@ -22,6 +22,7 @@ import ManageNews from "./pages/ManageNews";
 import EditNews from "./pages/EditNews";
 import Auth from "./pages/Auth";
 import ManageUsers from "./pages/ManageUsers";
+import EditUser from "./pages/EditUser";
 import EditSymptom from "./pages/EditSymptom";
 
 const App = () => {
@@ -40,7 +41,7 @@ const App = () => {
             <Route index element={<AdminDashboard />} />
             <Route path="users">
               <Route index element={<ManageUsers />} />
-              <Route path="new" element={<ManageUsers />} />
+              <Route path=":id" element={<EditUser />} />
             </Route>
             <Route path="manage-experts/*" element={<ManageExperts />} />
             <Route path="remedies">
