@@ -40,56 +40,37 @@ const ManageUsers = () => {
       try {
         console.log("Starting user fetch with filters:", { searchQuery, roleFilter, statusFilter });
         
-        // First get all user roles
-        const { data: userRoles, error: rolesError } = await supabase
-          .from("user_roles")
-          .select("user_id, role");
-
-        if (rolesError) throw rolesError;
-
-        // Create a map of user_id to role for easier lookup
-        const userRoleMap = new Map(
-          (userRoles || []).map(ur => [ur.user_id, ur.role as UserRole])
-        );
-        
+        // First get profiles with basic user information
         let query = supabase
-          .from("profiles")
+          .from('profiles')
           .select(`
             id,
             full_name,
             email,
             avatar_url,
             account_status,
-            last_login_at
+            last_login_at,
+            user_roles (
+              role
+            )
           `);
 
+        // Apply filters
         if (searchQuery) {
           query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
-        }
-
-        if (roleFilter !== "all") {
-          const userIdsWithRole = userRoles
-            ?.filter(ur => ur.role === roleFilter)
-            .map(ur => ur.user_id);
-          query = query.in('id', userIdsWithRole || []);
         }
 
         if (statusFilter !== "all") {
           query = query.eq("account_status", statusFilter);
         }
 
+        if (roleFilter !== "all") {
+          query = query.eq("user_roles.role", roleFilter);
+        }
+
         const { data, error } = await query;
 
         if (error) {
-          if (error.message?.includes('JWT expired') || error.message?.includes('invalid token')) {
-            toast({
-              title: "Session Expired",
-              description: "Please sign in again to continue.",
-              variant: "destructive",
-            });
-            navigate("/auth");
-            throw error;
-          }
           console.error("Error fetching users:", error);
           throw error;
         }
@@ -100,13 +81,14 @@ const ManageUsers = () => {
 
         console.log("Raw data from Supabase:", data);
 
+        // Map the data to our User type
         const mappedUsers: User[] = data.map(user => ({
           id: user.id,
           full_name: user.full_name || 'N/A',
           email: user.email || 'N/A',
           avatar_url: user.avatar_url,
-          role: userRoleMap.get(user.id) || 'user',
-          account_status: user.account_status === "active" ? "active" : "inactive",
+          role: user.user_roles?.[0]?.role || 'user',
+          account_status: user.account_status || "inactive",
           last_login_at: user.last_login_at
         }));
 
