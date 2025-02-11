@@ -49,6 +49,19 @@ const ManageUsers = () => {
 
         // Create a map of user_id to role for easier lookup
         const userRoleMap = new Map(userRoles?.map(ur => [ur.user_id, ur.role]));
+
+        // Get users with email from auth.users
+        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+        
+        if (authError) {
+          console.error("Error fetching auth users:", authError);
+          throw authError;
+        }
+
+        // Create a map of user IDs to their auth emails
+        const authEmailMap = new Map(
+          authUsers?.users.map(user => [user.id, user.email]) || []
+        );
         
         let query = supabase
           .from("profiles")
@@ -79,7 +92,6 @@ const ManageUsers = () => {
         const { data, error } = await query;
 
         if (error) {
-          // Check if it's an authentication error
           if (error.message?.includes('JWT expired') || error.message?.includes('invalid token')) {
             toast({
               title: "Session Expired",
@@ -101,10 +113,13 @@ const ManageUsers = () => {
 
         const mappedUsers: User[] = data.map(user => {
           console.log("Processing user:", user);
+          // Use email from auth.users if available, fallback to profiles email
+          const email = authEmailMap.get(user.id) || user.email || 'N/A';
+          
           return {
             id: user.id,
             full_name: user.full_name || 'N/A',
-            email: user.email || 'N/A',
+            email: email,
             avatar_url: user.avatar_url,
             role: userRoleMap.get(user.id) || 'user',
             account_status: user.account_status === "active" ? "active" : "inactive",
@@ -119,7 +134,7 @@ const ManageUsers = () => {
         throw error;
       }
     },
-    retry: false, // Don't retry on authentication errors
+    retry: false
   });
 
   const handleEditUser = (userId: string) => {
