@@ -31,7 +31,8 @@ const EditUser = () => {
 
       return {
         ...profile,
-        role: profile.user_roles?.[0]?.role
+        role: profile.user_roles?.[0]?.role,
+        account_status: profile.account_status as "active" | "inactive"
       };
     },
     enabled: !isNewUser,
