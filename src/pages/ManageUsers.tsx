@@ -40,6 +40,16 @@ const ManageUsers = () => {
       try {
         console.log("Starting user fetch with filters:", { searchQuery, roleFilter, statusFilter });
         
+        // First get all user roles
+        const { data: userRoles, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("user_id, role");
+
+        if (rolesError) throw rolesError;
+
+        // Create a map of user_id to role for easier lookup
+        const userRoleMap = new Map(userRoles?.map(ur => [ur.user_id, ur.role]));
+        
         let query = supabase
           .from("profiles")
           .select(`
@@ -48,10 +58,7 @@ const ManageUsers = () => {
             email,
             avatar_url,
             account_status,
-            last_login_at,
-            user_roles (
-              role
-            )
+            last_login_at
           `);
 
         if (searchQuery) {
@@ -59,7 +66,10 @@ const ManageUsers = () => {
         }
 
         if (roleFilter !== "all") {
-          query = query.eq("user_roles.role", roleFilter);
+          const userIdsWithRole = userRoles
+            ?.filter(ur => ur.role === roleFilter)
+            .map(ur => ur.user_id);
+          query = query.in('id', userIdsWithRole || []);
         }
 
         if (statusFilter !== "all") {
@@ -91,16 +101,13 @@ const ManageUsers = () => {
 
         const mappedUsers: User[] = data.map(user => {
           console.log("Processing user:", user);
-          const userRole = user.user_roles?.[0]?.role as UserRole | undefined;
-          const accountStatus = user.account_status === "active" ? "active" : "inactive";
-          
           return {
             id: user.id,
-            full_name: user.full_name,
+            full_name: user.full_name || 'N/A',
             email: user.email || 'N/A',
             avatar_url: user.avatar_url,
-            role: userRole || 'user',
-            account_status: accountStatus,
+            role: userRoleMap.get(user.id) || 'user',
+            account_status: user.account_status === "active" ? "active" : "inactive",
             last_login_at: user.last_login_at
           };
         });
