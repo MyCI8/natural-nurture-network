@@ -1,14 +1,15 @@
 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserRole } from "@/types/user";
 
 interface UserFiltersProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  roleFilter: string;
-  onRoleFilterChange: (value: string) => void;
-  statusFilter: string;
-  onStatusFilterChange: (value: string) => void;
+  roleFilter: "all" | UserRole;
+  onRoleFilterChange: (value: "all" | UserRole) => void;
+  statusFilter: "all" | "active" | "inactive";
+  onStatusFilterChange: (value: "all" | "active" | "inactive") => void;
 }
 
 export const UserFilters = ({

@@ -8,13 +8,14 @@ import { UserFilters } from "@/components/admin/users/UserFilters";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { UserRole } from "@/types/user";
 
 const ManageUsers = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | UserRole>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["users", searchQuery, roleFilter, statusFilter],
@@ -28,9 +29,7 @@ const ManageUsers = () => {
           avatar_url,
           account_status,
           last_login_at,
-          user_roles!inner (
-            role
-          )
+          role:user_roles!inner(role)
         `);
 
       if (searchQuery) {
@@ -54,7 +53,8 @@ const ManageUsers = () => {
 
       return data.map(user => ({
         ...user,
-        role: user.user_roles?.[0]?.role
+        role: user.role?.role as UserRole | undefined,
+        account_status: user.account_status as "active" | "inactive"
       }));
     },
   });
