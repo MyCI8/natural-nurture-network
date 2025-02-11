@@ -432,6 +432,7 @@ export type Database = {
           role_id: string | null
           settings: Json | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           account_status?: string
@@ -446,6 +447,7 @@ export type Database = {
           role_id?: string | null
           settings?: Json | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           account_status?: string
@@ -460,6 +462,7 @@ export type Database = {
           role_id?: string | null
           settings?: Json | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
