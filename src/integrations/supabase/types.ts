@@ -284,6 +284,33 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          attempted_at: string | null
+          id: string
+          ip_address: string | null
+          success: boolean
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attempted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          success: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attempted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       news_article_links: {
         Row: {
           article_id: string | null
@@ -397,8 +424,11 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string | null
+          failed_login_attempts: number | null
           full_name: string | null
           id: string
+          last_failed_login_at: string | null
+          last_login_at: string | null
           role_id: string | null
           settings: Json | null
           updated_at: string
@@ -408,8 +438,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
+          failed_login_attempts?: number | null
           full_name?: string | null
           id: string
+          last_failed_login_at?: string | null
+          last_login_at?: string | null
           role_id?: string | null
           settings?: Json | null
           updated_at?: string
@@ -419,8 +452,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string | null
+          failed_login_attempts?: number | null
           full_name?: string | null
           id?: string
+          last_failed_login_at?: string | null
+          last_login_at?: string | null
           role_id?: string | null
           settings?: Json | null
           updated_at?: string
@@ -692,6 +728,30 @@ export type Database = {
           },
         ]
       }
+      user_activity_logs: {
+        Row: {
+          activity_details: Json | null
+          activity_type: string
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_details?: Json | null
+          activity_type: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_details?: Json | null
+          activity_type?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -764,6 +824,14 @@ export type Database = {
           action: string
           entity_type: string
           entity_id: string
+        }
+        Returns: string
+      }
+      log_user_activity: {
+        Args: {
+          user_id: string
+          activity_type: string
+          activity_details?: Json
         }
         Returns: string
       }
