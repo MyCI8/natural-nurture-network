@@ -29,7 +29,9 @@ const ManageUsers = () => {
           avatar_url,
           account_status,
           last_login_at,
-          role:user_roles!inner(role)
+          user_roles (
+            role
+          )
         `);
 
       if (searchQuery) {
@@ -53,7 +55,7 @@ const ManageUsers = () => {
 
       return data.map(user => ({
         ...user,
-        role: user.role?.role as UserRole | undefined,
+        role: user.user_roles?.[0]?.role as UserRole | undefined,
         account_status: user.account_status as "active" | "inactive"
       }));
     },
