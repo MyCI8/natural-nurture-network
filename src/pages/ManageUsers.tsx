@@ -31,7 +31,7 @@ const ManageUsers = () => {
           avatar_url,
           account_status,
           last_login_at,
-          user_roles!inner (
+          user_roles (
             role
           )
         `);
@@ -61,8 +61,9 @@ const ManageUsers = () => {
         console.log("Processing user:", user);
         return {
           ...user,
-          role: user.user_roles?.[0]?.role as UserRole | undefined,
-          account_status: user.account_status as "active" | "inactive"
+          email: user.email || 'N/A', // Add fallback for empty emails
+          role: user.user_roles?.[0]?.role || 'user',
+          account_status: user.account_status || 'inactive'
         };
       });
 
@@ -146,4 +147,3 @@ const ManageUsers = () => {
 };
 
 export default ManageUsers;
-
