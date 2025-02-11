@@ -2,7 +2,7 @@
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserTable } from "@/components/admin/users/UserTable";
 import { UserFilters } from "@/components/admin/users/UserFilters";
 import { useQuery } from "@tanstack/react-query";
@@ -17,65 +17,102 @@ const ManageUsers = () => {
   const [roleFilter, setRoleFilter] = useState<"all" | UserRole>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Session Expired",
+          description: "Please sign in again to continue.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
+
   const { data: users, isLoading } = useQuery({
     queryKey: ["users", searchQuery, roleFilter, statusFilter],
     queryFn: async () => {
-      console.log("Starting user fetch with filters:", { searchQuery, roleFilter, statusFilter });
-      
-      let query = supabase
-        .from("profiles")
-        .select(`
-          id,
-          full_name,
-          email,
-          avatar_url,
-          account_status,
-          last_login_at,
-          user_roles (
-            role
-          )
-        `);
+      try {
+        console.log("Starting user fetch with filters:", { searchQuery, roleFilter, statusFilter });
+        
+        let query = supabase
+          .from("profiles")
+          .select(`
+            id,
+            full_name,
+            email,
+            avatar_url,
+            account_status,
+            last_login_at,
+            user_roles (
+              role
+            )
+          `);
 
-      if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
-      }
+        if (searchQuery) {
+          query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
+        }
 
-      if (roleFilter !== "all") {
-        query = query.eq("user_roles.role", roleFilter);
-      }
+        if (roleFilter !== "all") {
+          query = query.eq("user_roles.role", roleFilter);
+        }
 
-      if (statusFilter !== "all") {
-        query = query.eq("account_status", statusFilter);
-      }
+        if (statusFilter !== "all") {
+          query = query.eq("account_status", statusFilter);
+        }
 
-      const { data, error } = await query;
+        const { data, error } = await query;
 
-      if (error) {
-        console.error("Error fetching users:", error);
+        if (error) {
+          // Check if it's an authentication error
+          if (error.message?.includes('JWT expired') || error.message?.includes('invalid token')) {
+            toast({
+              title: "Session Expired",
+              description: "Please sign in again to continue.",
+              variant: "destructive",
+            });
+            navigate("/auth");
+            throw error;
+          }
+          console.error("Error fetching users:", error);
+          throw error;
+        }
+
+        if (!data) {
+          return [];
+        }
+
+        console.log("Raw data from Supabase:", data);
+
+        const mappedUsers: User[] = data.map(user => {
+          console.log("Processing user:", user);
+          const userRole = user.user_roles?.[0]?.role as UserRole | undefined;
+          const accountStatus = user.account_status === "active" ? "active" : "inactive";
+          
+          return {
+            id: user.id,
+            full_name: user.full_name,
+            email: user.email || 'N/A',
+            avatar_url: user.avatar_url,
+            role: userRole || 'user',
+            account_status: accountStatus,
+            last_login_at: user.last_login_at
+          };
+        });
+
+        console.log("Mapped users:", mappedUsers);
+        return mappedUsers;
+      } catch (error) {
+        console.error("Error in queryFn:", error);
         throw error;
       }
-
-      console.log("Raw data from Supabase:", data);
-
-      const mappedUsers: User[] = data.map(user => {
-        console.log("Processing user:", user);
-        const userRole = user.user_roles?.[0]?.role as UserRole | undefined;
-        const accountStatus = user.account_status === "active" ? "active" : "inactive";
-        
-        return {
-          id: user.id,
-          full_name: user.full_name,
-          email: user.email || 'N/A',
-          avatar_url: user.avatar_url,
-          role: userRole || 'user',
-          account_status: accountStatus,
-          last_login_at: user.last_login_at
-        };
-      });
-
-      console.log("Mapped users:", mappedUsers);
-      return mappedUsers;
     },
+    retry: false, // Don't retry on authentication errors
   });
 
   const handleEditUser = (userId: string) => {
