@@ -8,7 +8,7 @@ import { UserFilters } from "@/components/admin/users/UserFilters";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { UserRole } from "@/types/user";
+import { UserRole, User } from "@/types/user";
 
 const ManageUsers = () => {
   const navigate = useNavigate();
@@ -57,13 +57,19 @@ const ManageUsers = () => {
 
       console.log("Raw data from Supabase:", data);
 
-      const mappedUsers = data.map(user => {
+      const mappedUsers: User[] = data.map(user => {
         console.log("Processing user:", user);
+        const userRole = user.user_roles?.[0]?.role as UserRole | undefined;
+        const accountStatus = user.account_status === "active" ? "active" : "inactive";
+        
         return {
-          ...user,
-          email: user.email || 'N/A', // Add fallback for empty emails
-          role: user.user_roles?.[0]?.role || 'user',
-          account_status: user.account_status || 'inactive'
+          id: user.id,
+          full_name: user.full_name,
+          email: user.email || 'N/A',
+          avatar_url: user.avatar_url,
+          role: userRole || 'user',
+          account_status: accountStatus,
+          last_login_at: user.last_login_at
         };
       });
 
