@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -37,7 +38,10 @@ const App = () => {
           <Route path="news/:id" element={<NewsArticle />} />
           <Route path="admin" element={<Admin />}>
             <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<ManageUsers />} />
+            <Route path="users">
+              <Route index element={<ManageUsers />} />
+              <Route path="new" element={<ManageUsers />} />
+            </Route>
             <Route path="manage-experts/*" element={<ManageExperts />} />
             <Route path="remedies">
               <Route index element={<ManageRemedies />} />
