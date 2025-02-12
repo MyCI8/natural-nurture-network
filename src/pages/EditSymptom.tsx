@@ -45,17 +45,19 @@ const EditSymptom = () => {
       return data;
     },
     enabled: !isNewSymptom,
-    onSuccess: (data) => {
-      if (data) {
-        console.log("Setting form data:", data);
-        const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
-        form.reset({
-          ...data,
-          symptom: capitalizedSymptom,
-          video_links: data.video_links || [],
-          related_experts: data.related_experts || [],
-          related_ingredients: data.related_ingredients || [],
-        });
+    meta: {
+      onSuccess: (data: any) => {
+        if (data) {
+          console.log("Setting form data:", data);
+          const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
+          form.reset({
+            ...data,
+            symptom: capitalizedSymptom,
+            video_links: data.video_links || [],
+            related_experts: data.related_experts || [],
+            related_ingredients: data.related_ingredients || [],
+          });
+        }
       }
     }
   });
