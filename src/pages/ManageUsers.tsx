@@ -40,7 +40,6 @@ const ManageUsers = () => {
       try {
         console.log("Starting user fetch with filters:", { searchQuery, roleFilter, statusFilter });
         
-        // First get profiles with basic user information
         let query = supabase
           .from('profiles')
           .select(`
@@ -55,7 +54,6 @@ const ManageUsers = () => {
             )
           `);
 
-        // Apply filters
         if (searchQuery) {
           query = query.or(`full_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
         }
@@ -81,16 +79,29 @@ const ManageUsers = () => {
 
         console.log("Raw data from Supabase:", data);
 
-        // Map the data to our User type
-        const mappedUsers: User[] = data.map(user => ({
-          id: user.id,
-          full_name: user.full_name || 'N/A',
-          email: user.email || 'N/A',
-          avatar_url: user.avatar_url,
-          role: user.user_roles?.[0]?.role || 'user',
-          account_status: user.account_status || "inactive",
-          last_login_at: user.last_login_at
-        }));
+        const mappedUsers: User[] = data.map(user => {
+          // Ensure account_status is either "active" or "inactive"
+          let accountStatus: "active" | "inactive" = "inactive";
+          if (user.account_status === "active") {
+            accountStatus = "active";
+          }
+
+          // Ensure role is of type UserRole
+          let userRole: UserRole = "user";
+          if (user.user_roles?.[0]?.role && ["user", "admin", "super_admin"].includes(user.user_roles[0].role)) {
+            userRole = user.user_roles[0].role as UserRole;
+          }
+
+          return {
+            id: user.id,
+            full_name: user.full_name || 'N/A',
+            email: user.email || 'N/A',
+            avatar_url: user.avatar_url,
+            role: userRole,
+            account_status: accountStatus,
+            last_login_at: user.last_login_at
+          };
+        });
 
         console.log("Mapped users:", mappedUsers);
         return mappedUsers;
