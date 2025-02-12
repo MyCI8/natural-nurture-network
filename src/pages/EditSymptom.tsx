@@ -27,7 +27,7 @@ const EditSymptom = () => {
     },
   });
 
-  const { data: symptom } = useQuery({
+  const { data: symptom, isLoading } = useQuery({
     queryKey: ["symptom", id],
     queryFn: async () => {
       if (isNewSymptom) return null;
@@ -38,22 +38,24 @@ const EditSymptom = () => {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Failed to load symptom details");
+        throw error;
+      }
       return data;
     },
     enabled: !isNewSymptom,
-    meta: {
-      onSuccess: (data: any) => {
-        if (data) {
-          const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
-          form.reset({
-            ...data,
-            symptom: capitalizedSymptom,
-            video_links: data.video_links || [],
-            related_experts: data.related_experts || [],
-            related_ingredients: data.related_ingredients || [],
-          });
-        }
+    onSuccess: (data) => {
+      if (data) {
+        console.log("Setting form data:", data);
+        const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
+        form.reset({
+          ...data,
+          symptom: capitalizedSymptom,
+          video_links: data.video_links || [],
+          related_experts: data.related_experts || [],
+          related_ingredients: data.related_ingredients || [],
+        });
       }
     }
   });
@@ -65,7 +67,10 @@ const EditSymptom = () => {
         .from("experts")
         .select("id, full_name, title")
         .order("full_name");
-      if (error) throw error;
+      if (error) {
+        toast.error("Failed to load experts");
+        throw error;
+      }
       return data;
     },
   });
@@ -97,6 +102,10 @@ const EditSymptom = () => {
       toast.error("Failed to save symptom");
     }
   };
+
+  if (isLoading) {
+    return <div className="container mx-auto p-6">Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto p-6">
