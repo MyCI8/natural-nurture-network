@@ -17,7 +17,7 @@ const EditSymptom = () => {
 
   const form = useForm({
     defaultValues: {
-      symptom: "",
+      symptom: "Cough", // Set a valid default enum value
       brief_description: "",
       description: "",
       image_url: "",
@@ -38,12 +38,25 @@ const EditSymptom = () => {
         .from("symptom_details")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         toast.error("Failed to load symptom details");
         throw error;
       }
+
+      // If no data found, throw an error
+      if (!data) {
+        toast.error("Symptom not found");
+        throw new Error("Symptom not found");
+      }
+
+      // Validate that symptom is not empty
+      if (!data.symptom) {
+        toast.error("Invalid symptom data");
+        throw new Error("Invalid symptom data");
+      }
+
       return data;
     },
     enabled: !isNewSymptom,
@@ -51,7 +64,11 @@ const EditSymptom = () => {
       onSuccess: (data: any) => {
         if (data) {
           console.log("Setting form data:", data);
-          const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
+          // Ensure symptom is a valid string before capitalizing
+          const capitalizedSymptom = data.symptom ? 
+            data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1) :
+            "Cough"; // Fallback to a valid enum value
+
           const formData = {
             ...data,
             symptom: capitalizedSymptom,
@@ -89,6 +106,12 @@ const EditSymptom = () => {
 
   const handleSave = async (values: any) => {
     try {
+      // Ensure the symptom value is valid before saving
+      if (!values.symptom) {
+        toast.error("Symptom name is required");
+        return;
+      }
+
       values.symptom = values.symptom.charAt(0).toUpperCase() + values.symptom.slice(1);
 
       if (isNewSymptom) {
