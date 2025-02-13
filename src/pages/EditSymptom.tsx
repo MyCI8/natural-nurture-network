@@ -139,19 +139,33 @@ const EditSymptom = () => {
   };
 
   if (isLoading) {
-    return <div className="container mx-auto p-6">Loading...</div>;
+    return (
+      <div className="container mx-auto p-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div>Loading...</div>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto p-6">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => navigate(-1)}
-        className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="hover:bg-accent/50 transition-all gap-2"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          Back
+        </Button>
+      </div>
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">
