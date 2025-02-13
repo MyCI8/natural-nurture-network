@@ -1,4 +1,3 @@
-
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,27 +50,23 @@ const EditSymptom = () => {
         throw new Error("Symptom not found");
       }
 
+      console.log("Fetched symptom data:", data);
+      // Set the form data as soon as we get it
+      form.reset({
+        symptom: data.symptom || "",
+        description: data.description || "",
+        brief_description: data.brief_description || "",
+        image_url: data.image_url || "",
+        thumbnail_description: data.thumbnail_description || "",
+        video_description: data.video_description || "",
+        video_links: data.video_links || [],
+        related_experts: data.related_experts || [],
+        related_ingredients: data.related_ingredients || [],
+      });
+
       return data;
     },
-    enabled: !isNewSymptom,
-    meta: {
-      onSuccess: (data: any) => {
-        if (data) {
-          console.log("Setting form data:", data);
-          form.reset({
-            symptom: data.symptom || "",
-            description: data.description || "",
-            brief_description: data.brief_description || "",
-            image_url: data.image_url || "",
-            thumbnail_description: data.thumbnail_description || "",
-            video_description: data.video_description || "",
-            video_links: data.video_links || [],
-            related_experts: data.related_experts || [],
-            related_ingredients: data.related_ingredients || [],
-          });
-        }
-      }
-    }
+    enabled: !isNewSymptom
   });
 
   const { data: experts = [] } = useQuery({
