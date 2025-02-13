@@ -54,22 +54,39 @@ const EditSymptom = () => {
       return data;
     },
     enabled: !isNewSymptom,
-    onSuccess: (data) => {
-      if (data) {
-        console.log("Setting form data:", data);
-        form.reset({
-          symptom: data.symptom || "",
-          description: data.description || "",
-          brief_description: data.brief_description || "",
-          image_url: data.image_url || "",
-          thumbnail_description: data.thumbnail_description || "",
-          video_description: data.video_description || "",
-          video_links: data.video_links || [],
-          related_experts: data.related_experts || [],
-          related_ingredients: data.related_ingredients || [],
-        });
+    meta: {
+      onSuccess: (data: any) => {
+        if (data) {
+          console.log("Setting form data:", data);
+          form.reset({
+            symptom: data.symptom || "",
+            description: data.description || "",
+            brief_description: data.brief_description || "",
+            image_url: data.image_url || "",
+            thumbnail_description: data.thumbnail_description || "",
+            video_description: data.video_description || "",
+            video_links: data.video_links || [],
+            related_experts: data.related_experts || [],
+            related_ingredients: data.related_ingredients || [],
+          });
+        }
       }
     }
+  });
+
+  const { data: experts = [] } = useQuery({
+    queryKey: ["experts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("experts")
+        .select("id, full_name, title")
+        .order("full_name");
+      if (error) {
+        toast.error("Failed to load experts");
+        throw error;
+      }
+      return data;
+    },
   });
 
   const handleSave = async (values: any) => {
