@@ -1,3 +1,4 @@
+
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +17,7 @@ const EditSymptom = () => {
 
   const form = useForm({
     defaultValues: {
-      symptom: "Cough", // Set a valid default enum value
+      symptom: "",
       brief_description: "",
       description: "",
       image_url: "",
@@ -50,68 +51,33 @@ const EditSymptom = () => {
         throw new Error("Symptom not found");
       }
 
-      // Validate that symptom is not empty
-      if (!data.symptom) {
-        toast.error("Invalid symptom data");
-        throw new Error("Invalid symptom data");
-      }
-
       return data;
     },
     enabled: !isNewSymptom,
-    meta: {
-      onSuccess: (data: any) => {
-        if (data) {
-          console.log("Setting form data:", data);
-          // Ensure symptom is a valid string before capitalizing
-          const capitalizedSymptom = data.symptom ? 
-            data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1) :
-            "Cough"; // Fallback to a valid enum value
-
-          const formData = {
-            ...data,
-            symptom: capitalizedSymptom,
-            description: data.description || '',
-            brief_description: data.symptom?.toLowerCase() === 'cough' 
-              ? DEFAULT_COUGH_DESCRIPTION 
-              : (data.brief_description || ''),
-            video_description: data.video_description || '',
-            thumbnail_description: data.thumbnail_description || '',
-            video_links: data.video_links || [],
-            related_experts: data.related_experts || [],
-            related_ingredients: data.related_ingredients || [],
-          };
-          console.log("Formatted form data:", formData);
-          form.reset(formData);
-        }
+    onSuccess: (data) => {
+      if (data) {
+        console.log("Setting form data:", data);
+        form.reset({
+          symptom: data.symptom || "",
+          description: data.description || "",
+          brief_description: data.brief_description || "",
+          image_url: data.image_url || "",
+          thumbnail_description: data.thumbnail_description || "",
+          video_description: data.video_description || "",
+          video_links: data.video_links || [],
+          related_experts: data.related_experts || [],
+          related_ingredients: data.related_ingredients || [],
+        });
       }
     }
   });
 
-  const { data: experts = [] } = useQuery({
-    queryKey: ["experts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("experts")
-        .select("id, full_name, title")
-        .order("full_name");
-      if (error) {
-        toast.error("Failed to load experts");
-        throw error;
-      }
-      return data;
-    },
-  });
-
   const handleSave = async (values: any) => {
     try {
-      // Ensure the symptom value is valid before saving
       if (!values.symptom) {
         toast.error("Symptom name is required");
         return;
       }
-
-      values.symptom = values.symptom.charAt(0).toUpperCase() + values.symptom.slice(1);
 
       if (isNewSymptom) {
         const { error } = await supabase
