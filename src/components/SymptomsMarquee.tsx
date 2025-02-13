@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Carousel,
@@ -22,16 +23,23 @@ const defaultSymptoms: SymptomType[] = [
 const SymptomsMarquee = () => {
   const isMobile = useIsMobile();
 
-  const { data: topSymptoms } = useQuery({
+  const { data: topSymptoms = defaultSymptoms } = useQuery({
     queryKey: ['topSymptoms'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_top_symptoms', { limit_count: 20 });
-      if (error) {
-        console.error('Error fetching top symptoms:', error);
+      try {
+        const { data, error } = await supabase.rpc('get_top_symptoms', { limit_count: 20 });
+        if (error) {
+          console.error('Error fetching top symptoms:', error);
+          return defaultSymptoms;
+        }
+        return data.length > 0 ? data.map(item => item.symptom) : defaultSymptoms;
+      } catch (error) {
+        console.error('Error in symptom query:', error);
         return defaultSymptoms;
       }
-      return data.length > 0 ? data.map(item => item.symptom) : defaultSymptoms;
-    }
+    },
+    initialData: defaultSymptoms,
+    retry: 1
   });
 
   const handleSymptomClick = async (symptom: SymptomType) => {
@@ -48,12 +56,10 @@ const SymptomsMarquee = () => {
     }
   };
 
-  const symptoms = topSymptoms || defaultSymptoms;
-
   return (
     <section className="py-8 bg-accent overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="group">
+        <div className="group relative">
           <Carousel
             opts={{
               align: "start",
@@ -67,9 +73,9 @@ const SymptomsMarquee = () => {
               "group-hover:[animation-play-state:paused]",
               isMobile ? "animate-marquee-fast" : "animate-marquee"
             )}>
-              {[...symptoms, ...symptoms].map((symptom, index) => (
+              {[...topSymptoms, ...topSymptoms].map((symptom, index) => (
                 <CarouselItem
-                  key={index}
+                  key={`${symptom}-${index}`}
                   className="basis-auto pl-8 cursor-pointer"
                   onClick={() => handleSymptomClick(symptom)}
                 >
