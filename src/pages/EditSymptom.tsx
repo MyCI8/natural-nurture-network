@@ -1,3 +1,4 @@
+
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +7,6 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { SymptomFormLayout } from "@/components/admin/symptoms/form/SymptomFormLayout";
-
-const DEFAULT_COUGH_DESCRIPTION = "A cough is a reflex action that helps clear the throat and airways of mucus, irritants, or infections. It can be acute, lasting a few weeks, or chronic if it persists for longer.";
 
 const EditSymptom = () => {
   const { id } = useParams();
@@ -51,6 +50,12 @@ const EditSymptom = () => {
       }
 
       console.log("Fetched symptom data:", data);
+      
+      // Ensure arrays are properly handled
+      const videoLinks = Array.isArray(data.video_links) ? data.video_links : [];
+      const relatedExperts = Array.isArray(data.related_experts) ? data.related_experts : [];
+      const relatedIngredients = Array.isArray(data.related_ingredients) ? data.related_ingredients : [];
+
       // Set the form data as soon as we get it
       form.reset({
         symptom: data.symptom || "",
@@ -59,9 +64,9 @@ const EditSymptom = () => {
         image_url: data.image_url || "",
         thumbnail_description: data.thumbnail_description || "",
         video_description: data.video_description || "",
-        video_links: data.video_links || [],
-        related_experts: data.related_experts || [],
-        related_ingredients: data.related_ingredients || [],
+        video_links: videoLinks,
+        related_experts: relatedExperts,
+        related_ingredients: relatedIngredients,
       });
 
       return data;
