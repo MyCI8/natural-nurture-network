@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { SymptomFormLayout } from "@/components/admin/symptoms/form/SymptomFormLayout";
 
+const DEFAULT_COUGH_DESCRIPTION = "A cough is a reflex action that helps clear the throat and airways of mucus, irritants, or infections. It can be acute, lasting a few weeks, or chronic if it persists for longer.";
+
 const EditSymptom = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -54,7 +56,9 @@ const EditSymptom = () => {
             ...data,
             symptom: capitalizedSymptom,
             description: data.description || '',
-            brief_description: data.brief_description || '',
+            brief_description: data.symptom?.toLowerCase() === 'cough' 
+              ? DEFAULT_COUGH_DESCRIPTION 
+              : (data.brief_description || ''),
             video_description: data.video_description || '',
             thumbnail_description: data.thumbnail_description || '',
             video_links: data.video_links || [],
