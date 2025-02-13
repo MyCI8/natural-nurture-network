@@ -18,7 +18,7 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
           <FormItem>
             <FormLabel>Symptom Name</FormLabel>
             <FormControl>
-              <Input {...field} className="max-w-xl" />
+              <Input {...field} value={field.value || ''} className="max-w-xl" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -32,7 +32,7 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
           <FormItem>
             <FormLabel>Brief Description</FormLabel>
             <FormControl>
-              <Input {...field} className="max-w-xl" />
+              <Input {...field} value={field.value || ''} className="max-w-xl" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -47,7 +47,7 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
             <FormLabel>Full Description</FormLabel>
             <FormControl>
               <TextEditor
-                content={field.value || ""}
+                content={field.value || ''}
                 onChange={field.onChange}
               />
             </FormControl>

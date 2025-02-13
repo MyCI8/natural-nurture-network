@@ -50,13 +50,19 @@ const EditSymptom = () => {
         if (data) {
           console.log("Setting form data:", data);
           const capitalizedSymptom = data.symptom.charAt(0).toUpperCase() + data.symptom.slice(1);
-          form.reset({
+          const formData = {
             ...data,
             symptom: capitalizedSymptom,
+            description: data.description || '',
+            brief_description: data.brief_description || '',
+            video_description: data.video_description || '',
+            thumbnail_description: data.thumbnail_description || '',
             video_links: data.video_links || [],
             related_experts: data.related_experts || [],
             related_ingredients: data.related_ingredients || [],
-          });
+          };
+          console.log("Formatted form data:", formData);
+          form.reset(formData);
         }
       }
     }
