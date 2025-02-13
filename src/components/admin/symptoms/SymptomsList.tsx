@@ -42,8 +42,8 @@ const SymptomsList = ({ symptoms, isLoading, onDelete }: SymptomsListProps) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Symptom</TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Brief Description</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -83,8 +83,8 @@ const SymptomsList = ({ symptoms, isLoading, onDelete }: SymptomsListProps) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Symptom</TableHead>
-            <TableHead>Description</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Brief Description</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
