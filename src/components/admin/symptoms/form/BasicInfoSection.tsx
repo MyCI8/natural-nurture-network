@@ -9,6 +9,9 @@ interface BasicInfoSectionProps {
 }
 
 export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
+  const symptomValue = form.watch('symptom');
+  console.log('Current symptom value:', symptomValue);
+  
   return (
     <div className="space-y-6">
       <FormField
@@ -18,7 +21,12 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
           <FormItem>
             <FormLabel>Symptom Name</FormLabel>
             <FormControl>
-              <Input {...field} value={field.value || ''} className="max-w-xl" />
+              <Input 
+                {...field} 
+                value={field.value || ''} 
+                className="max-w-xl" 
+                placeholder="Enter symptom name"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -32,7 +40,12 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
           <FormItem>
             <FormLabel>Brief Description</FormLabel>
             <FormControl>
-              <Input {...field} value={field.value || ''} className="max-w-xl" />
+              <Input 
+                {...field} 
+                value={field.value || ''} 
+                className="max-w-xl" 
+                placeholder="Enter a brief description"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
