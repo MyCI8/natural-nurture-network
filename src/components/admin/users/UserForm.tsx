@@ -48,12 +48,30 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
     mutationFn: async (data: UserFormData) => {
       if (userId) {
         // Update existing user
+        const avatarPath = imageUrl ? `${userId}/${crypto.randomUUID()}` : null;
+        
+        if (imageUrl && imageUrl.startsWith('data:')) {
+          // Upload new avatar
+          const { data: file, error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(avatarPath!, await (await fetch(imageUrl)).blob());
+
+          if (uploadError) throw uploadError;
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(avatarPath!);
+
+          data.avatar_url = publicUrl;
+        }
+
         const { error: profileError } = await supabase
           .from("profiles")
           .update({
             full_name: data.full_name,
             username: data.username,
-            avatar_url: imageUrl,
+            avatar_url: data.avatar_url || imageUrl, // Use existing URL if no new upload
             account_status: data.account_status,
           })
           .eq("id", userId);
@@ -84,12 +102,29 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
         const newUserId = authData.user?.id;
         if (!newUserId) throw new Error("Failed to create user");
 
+        // Upload avatar if provided
+        let avatarUrl = null;
+        if (imageUrl) {
+          const avatarPath = `${newUserId}/${crypto.randomUUID()}`;
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(avatarPath, await (await fetch(imageUrl)).blob());
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(avatarPath);
+
+          avatarUrl = publicUrl;
+        }
+
         const { error: profileError } = await supabase
           .from("profiles")
           .update({
             full_name: data.full_name,
             username: data.username,
-            avatar_url: imageUrl,
+            avatar_url: avatarUrl,
             account_status: data.account_status,
           })
           .eq("id", newUserId);
@@ -173,7 +208,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
             <div>
               <Label htmlFor="role">Role</Label>
               <Select
-                onValueChange={(value) => register("role").onChange({ target: { value } })}
+                onValueChange={(value: UserRole) => register("role").onChange({ target: { value } })}
                 defaultValue={initialData?.role}
               >
                 <SelectTrigger>
@@ -190,7 +225,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
             <div>
               <Label htmlFor="account_status">Account Status</Label>
               <Select
-                onValueChange={(value) => register("account_status").onChange({ target: { value } })}
+                onValueChange={(value: "active" | "inactive") => register("account_status").onChange({ target: { value } })}
                 defaultValue={initialData?.account_status || "active"}
               >
                 <SelectTrigger>
