@@ -826,6 +826,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      check_user_role: {
+        Args: {
+          user_id: string
+          required_roles: Database["public"]["Enums"]["user_role"][]
+        }
+        Returns: boolean
+      }
       delete_user_data: {
         Args: {
           user_id: string
