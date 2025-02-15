@@ -49,7 +49,7 @@ const ManageUsers = () => {
             avatar_url,
             account_status,
             last_login_at,
-            user_roles!inner (
+            user_roles (
               role
             )
           `);
@@ -80,13 +80,25 @@ const ManageUsers = () => {
         console.log("Raw data from Supabase:", data);
 
         const mappedUsers: User[] = data.map(user => {
+          // Ensure account_status is either "active" or "inactive"
+          let accountStatus: "active" | "inactive" = "inactive";
+          if (user.account_status === "active") {
+            accountStatus = "active";
+          }
+
+          // Ensure role is of type UserRole
+          let userRole: UserRole = "user";
+          if (user.user_roles?.[0]?.role && ["user", "admin", "super_admin"].includes(user.user_roles[0].role)) {
+            userRole = user.user_roles[0].role as UserRole;
+          }
+
           return {
             id: user.id,
             full_name: user.full_name || 'N/A',
             email: user.email || 'N/A',
             avatar_url: user.avatar_url,
-            role: user.user_roles?.role || 'user',
-            account_status: user.account_status || 'inactive',
+            role: userRole,
+            account_status: accountStatus,
             last_login_at: user.last_login_at
           };
         });
