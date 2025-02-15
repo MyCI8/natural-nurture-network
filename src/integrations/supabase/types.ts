@@ -817,6 +817,97 @@ export type Database = {
           },
         ]
       }
+      video_product_links: {
+        Row: {
+          created_at: string | null
+          id: string
+          position_x: number | null
+          position_y: number | null
+          price: number | null
+          title: string
+          url: string
+          video_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          price?: number | null
+          title: string
+          url: string
+          video_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          price?: number | null
+          title?: string
+          url?: string
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_product_links_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      videos: {
+        Row: {
+          created_at: string | null
+          creator_id: string | null
+          description: string | null
+          id: string
+          likes_count: number | null
+          status: Database["public"]["Enums"]["video_status"] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          video_url: string
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          status?: Database["public"]["Enums"]["video_status"] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          video_url: string
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string | null
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          status?: Database["public"]["Enums"]["video_status"] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          video_url?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "videos_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -867,6 +958,12 @@ export type Database = {
           click_count: number
         }[]
       }
+      increment_video_views: {
+        Args: {
+          video_id: string
+        }
+        Returns: undefined
+      }
       log_admin_action: {
         Args: {
           action: string
@@ -907,6 +1004,7 @@ export type Database = {
         | "Hair Loss"
         | "Eye Strain"
       user_role: "user" | "admin" | "super_admin"
+      video_status: "draft" | "published" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -1,4 +1,3 @@
-
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -79,17 +78,15 @@ const ManageUsers = () => {
 
         console.log("Raw data from Supabase:", data);
 
-        const mappedUsers: User[] = data.map(user => {
-          return {
-            id: user.id,
-            full_name: user.full_name || 'N/A',
-            email: user.email || 'N/A',
-            avatar_url: user.avatar_url,
-            role: user.user_roles?.role || 'user',
-            account_status: user.account_status || 'inactive',
-            last_login_at: user.last_login_at
-          };
-        });
+        const mappedUsers: User[] = data.map(user => ({
+          id: user.id,
+          full_name: user.full_name || 'N/A',
+          email: user.email || 'N/A',
+          avatar_url: user.avatar_url,
+          role: user.user_roles?.[0]?.role as UserRole || "user",
+          account_status: user.account_status === "active" ? "active" : "inactive",
+          last_login_at: user.last_login_at
+        }));
 
         console.log("Mapped users:", mappedUsers);
         return mappedUsers;
