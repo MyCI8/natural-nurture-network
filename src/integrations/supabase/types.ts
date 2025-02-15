@@ -828,7 +828,7 @@ export type Database = {
       }
       check_user_role: {
         Args: {
-          user_id: string
+          _checking_user_id: string
           required_roles: Database["public"]["Enums"]["user_role"][]
         }
         Returns: boolean
