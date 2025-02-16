@@ -31,8 +31,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, productLinks = [], aut
       });
       setIsPlaying(true);
       
-      // Increment view count
-      supabase.rpc('increment_video_views', { video_id: video.id }).catch(console.error);
+      // Increment view count - using await with then/catch
+      const { error } = await supabase.rpc('increment_video_views', { video_id: video.id });
+      if (error) console.error('Error incrementing views:', error);
     } else {
       videoRef.current.pause();
       setIsPlaying(false);
