@@ -24,6 +24,9 @@ import Auth from "./pages/Auth";
 import ManageUsers from "./pages/ManageUsers";
 import EditUser from "./pages/EditUser";
 import EditSymptom from "./pages/EditSymptom";
+import VideoFeed from "./pages/VideoFeed";
+import ManageVideos from "./pages/ManageVideos";
+import EditVideo from "./pages/EditVideo";
 
 const App = () => {
   return (
@@ -37,6 +40,7 @@ const App = () => {
           <Route path="ingredients" element={<Ingredients />} />
           <Route path="news" element={<News />} />
           <Route path="news/:id" element={<NewsArticle />} />
+          <Route path="videos" element={<VideoFeed />} />
           <Route path="admin" element={<Admin />}>
             <Route index element={<AdminDashboard />} />
             <Route path="users">
@@ -55,6 +59,10 @@ const App = () => {
             <Route path="news">
               <Route index element={<ManageNews />} />
               <Route path=":id" element={<EditNews />} />
+            </Route>
+            <Route path="videos">
+              <Route index element={<ManageVideos />} />
+              <Route path=":id" element={<EditVideo />} />
             </Route>
             <Route path="symptoms">
               <Route index element={<ManageSymptoms />} />

@@ -1,5 +1,4 @@
-
-import { Users, BookOpen, MessageSquare, Newspaper, Apple, GraduationCap, Activity } from "lucide-react";
+import { Users, BookOpen, MessageSquare, Newspaper, Apple, GraduationCap, Activity, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +11,7 @@ type DashboardStats = {
   recentNews: any[];
   experts: number;
   symptoms: number;
+  videos: number;
 };
 
 interface StatsGridProps {
@@ -35,6 +35,13 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       icon: Users,
       description: "Registered users",
       path: "/admin/users",
+    },
+    {
+      title: "Published Videos",
+      value: stats?.videos || 0,
+      icon: Video,
+      description: "Active videos",
+      path: "/admin/videos",
     },
     {
       title: "Published Remedies",
