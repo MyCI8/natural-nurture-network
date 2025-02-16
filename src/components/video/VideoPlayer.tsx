@@ -22,22 +22,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, productLinks = [], aut
 
   // Handle video visibility
   useEffect(() => {
-    if (!videoRef.current) return;
+    const handleVideoVisibility = async () => {
+      if (!videoRef.current) return;
 
-    if (inView && autoPlay) {
-      videoRef.current.play().catch(() => {
-        // Autoplay might be blocked by browser
-        console.log('Autoplay blocked');
-      });
-      setIsPlaying(true);
-      
-      // Increment view count - using await with then/catch
-      const { error } = await supabase.rpc('increment_video_views', { video_id: video.id });
-      if (error) console.error('Error incrementing views:', error);
-    } else {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
+      if (inView && autoPlay) {
+        videoRef.current.play().catch(() => {
+          // Autoplay might be blocked by browser
+          console.log('Autoplay blocked');
+        });
+        setIsPlaying(true);
+        
+        // Increment view count
+        const { error } = await supabase.rpc('increment_video_views', { video_id: video.id });
+        if (error) console.error('Error incrementing views:', error);
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+    };
+
+    handleVideoVisibility();
   }, [inView, autoPlay, video.id]);
 
   const togglePlay = () => {
