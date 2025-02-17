@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video } from '@/types/video';
-import { Heart, MessageCircle, Bookmark, Share2, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Avatar } from '@/components/ui/avatar';
 
@@ -39,15 +38,6 @@ const VideoFeed = () => {
     navigate(`/videos/${videoId}`);
   }, [navigate]);
 
-  const handleUploadClick = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate('/auth');
-      return;
-    }
-    navigate('/admin/videos/new');
-  }, [navigate]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen pt-16">
@@ -67,20 +57,11 @@ const VideoFeed = () => {
 
   return (
     <div className="min-h-screen bg-background pt-16">
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="sticky top-16 z-10 py-4 bg-background/80 backdrop-blur-sm border-b">
-          <Button onClick={handleUploadClick} className="w-full">
-            <Plus className="mr-2 h-4 w-4" /> Upload Video
-          </Button>
-        </div>
-
+      <div className="max-w-[600px] mx-auto px-4">
         <div className="space-y-6 py-6">
           {!videos?.length ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">No videos available</p>
-              <Button onClick={handleUploadClick}>
-                <Plus className="mr-2 h-4 w-4" /> Upload a Video
-              </Button>
             </div>
           ) : (
             videos.map((video) => (
@@ -90,7 +71,7 @@ const VideoFeed = () => {
               >
                 {/* Video Container */}
                 <div 
-                  className="aspect-[9/16] relative cursor-pointer" 
+                  className="w-full relative cursor-pointer" 
                   onClick={() => handleVideoClick(video.id)}
                 >
                   <VideoPlayer
@@ -112,9 +93,6 @@ const VideoFeed = () => {
                       }}
                     >
                       <MessageCircle className="h-7 w-7" />
-                    </button>
-                    <button className="text-white hover:text-primary transition-transform hover:scale-110">
-                      <Share2 className="h-7 w-7" />
                     </button>
                     <button className="text-white hover:text-primary transition-transform hover:scale-110">
                       <Bookmark className="h-7 w-7" />

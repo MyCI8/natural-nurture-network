@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Leaf, LogOut, Shield } from "lucide-react";
+import { Menu, X, Leaf, LogOut, Shield, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -43,6 +43,15 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const handleUploadClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/auth');
+      return;
+    }
+    navigate('/admin/videos/new');
+  };
+
   const menuItems = [
     { name: "Home", path: "/" },
     { name: "Remedies", path: "/remedies", protected: true },
@@ -67,6 +76,16 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center text-text-light hover:text-primary"
+              onClick={handleUploadClick}
+            >
+              <Plus className="h-5 w-5" />
+              <span className="ml-1 hidden sm:inline">Upload</span>
+            </Button>
+
             {isAdmin && (
               <Button
                 variant="ghost"
