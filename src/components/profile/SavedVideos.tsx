@@ -15,15 +15,20 @@ export const SavedVideos = ({ userId }: SavedVideosProps) => {
   const { data: savedVideos, isLoading } = useQuery({
     queryKey: ['savedVideos', userId],
     queryFn: async () => {
-      // First, get all the videos for this user
-      const { data: videos, error } = await supabase
-        .from('videos')
-        .select('*, saved_posts!inner(*)')
-        .eq('saved_posts.user_id', userId)
-        .eq('status', 'published');
+      const { data, error } = await supabase
+        .from('saved_posts')
+        .select('video:videos(*)')
+        .eq('user_id', userId);
 
       if (error) throw error;
-      return videos as Video[];
+
+      // Extract video objects from the query result
+      const videos = data?.map((item) => item.video) as Video[];
+      
+      // Filter out any null values and only return published videos
+      return videos.filter((video): video is Video => 
+        video !== null && video.status === 'published'
+      );
     },
   });
 
