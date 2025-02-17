@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
-import { Video, ProductLink } from '@/types/video';
+import { Video } from '@/types/video';
 import { Heart, MessageCircle, Bookmark, Share2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -14,7 +14,6 @@ const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Fetch videos
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
     queryFn: async () => {
@@ -36,18 +35,18 @@ const VideoFeed = () => {
     }
   });
 
-  const handleVideoClick = (videoId: string) => {
+  const handleVideoClick = useCallback((videoId: string) => {
     navigate(`/videos/${videoId}`);
-  };
+  }, [navigate]);
 
-  const handleUploadClick = async () => {
+  const handleUploadClick = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate('/auth');
       return;
     }
     navigate('/admin/videos/new');
-  };
+  }, [navigate]);
 
   if (isLoading) {
     return (
@@ -87,15 +86,40 @@ const VideoFeed = () => {
             videos.map((video) => (
               <div 
                 key={video.id} 
-                className="bg-card rounded-lg overflow-hidden shadow-sm"
+                className="bg-card rounded-xl overflow-hidden shadow-sm"
               >
-                {/* Video Player */}
-                <div className="aspect-[9/16] bg-black relative" onClick={() => handleVideoClick(video.id)}>
+                {/* Video Container */}
+                <div 
+                  className="aspect-[9/16] relative cursor-pointer" 
+                  onClick={() => handleVideoClick(video.id)}
+                >
                   <VideoPlayer
                     video={video}
                     autoPlay
                     showControls={false}
                   />
+
+                  {/* Video Interaction Overlay */}
+                  <div className="absolute right-4 bottom-20 flex flex-col items-center space-y-6 z-20">
+                    <button className="text-white hover:text-primary transition-transform hover:scale-110">
+                      <Heart className="h-7 w-7" />
+                    </button>
+                    <button 
+                      className="text-white hover:text-primary transition-transform hover:scale-110"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVideoClick(video.id);
+                      }}
+                    >
+                      <MessageCircle className="h-7 w-7" />
+                    </button>
+                    <button className="text-white hover:text-primary transition-transform hover:scale-110">
+                      <Share2 className="h-7 w-7" />
+                    </button>
+                    <button className="text-white hover:text-primary transition-transform hover:scale-110">
+                      <Bookmark className="h-7 w-7" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Video Info */}
@@ -113,27 +137,10 @@ const VideoFeed = () => {
                     <span className="font-medium">{video.profiles.full_name}</span>
                   </div>
                   
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-sm text-muted-foreground">
                     {video.description?.substring(0, 100)}
                     {video.description?.length > 100 && '...'}
                   </p>
-                  
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <div className="flex items-center space-x-4">
-                      <button className="hover:text-primary transition-colors">
-                        <Heart className="h-6 w-6" />
-                      </button>
-                      <button className="hover:text-primary transition-colors" onClick={() => handleVideoClick(video.id)}>
-                        <MessageCircle className="h-6 w-6" />
-                      </button>
-                      <button className="hover:text-primary transition-colors">
-                        <Share2 className="h-6 w-6" />
-                      </button>
-                    </div>
-                    <button className="hover:text-primary transition-colors">
-                      <Bookmark className="h-6 w-6" />
-                    </button>
-                  </div>
                   
                   <div className="mt-3 text-sm text-muted-foreground">
                     <span className="mr-4">{video.likes_count || 0} likes</span>

@@ -22,7 +22,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
   const { ref: inViewRef, inView } = useInView({
-    threshold: 0.5,
+    threshold: 0.6, // Increased threshold for better auto-play timing
   });
 
   // Handle video visibility
@@ -33,9 +33,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       if (inView && autoPlay) {
         try {
           await videoRef.current.play();
-          // Increment view count
-          const { error } = await supabase.rpc('increment_video_views', { video_id: video.id });
-          if (error) console.error('Error incrementing views:', error);
+          // Only increment view count once per session
+          const viewSessionKey = `video_${video.id}_viewed`;
+          if (!sessionStorage.getItem(viewSessionKey)) {
+            const { error } = await supabase.rpc('increment_video_views', { 
+              video_id: video.id 
+            });
+            if (error) console.error('Error incrementing views:', error);
+            sessionStorage.setItem(viewSessionKey, 'true');
+          }
         } catch (error) {
           console.log('Autoplay prevented:', error);
         }
@@ -57,17 +63,22 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div 
       ref={inViewRef} 
-      className="relative w-full h-full bg-black"
+      className="relative w-full h-full overflow-hidden bg-black/5"
     >
+      {/* Video Element */}
       <video
         ref={videoRef}
         src={video.video_url}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-cover"
         loop
         muted={isMuted}
         playsInline
         poster={video.thumbnail_url || undefined}
+        preload="metadata"
       />
+      
+      {/* Gradient Overlay for Better Text Visibility */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/60 pointer-events-none" />
       
       {/* Mute Toggle */}
       <Button
