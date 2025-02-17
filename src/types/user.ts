@@ -13,6 +13,10 @@ export type User = {
   role?: UserRole;
   account_status?: "active" | "inactive";
   last_login_at?: string;
+  bio?: string;
+  followers_count?: number;
+  following_count?: number;
+  posts_count?: number;
 };
 
 export type UserWithProfile = User & {

@@ -12,6 +12,10 @@ import { UserVideoGrid } from '@/components/profile/UserVideoGrid';
 import { SavedVideos } from '@/components/profile/SavedVideos';
 import type { User } from '@/types/user';
 
+interface ProfileWithCounts extends User {
+  posts_count: number;
+}
+
 const UserProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -29,17 +33,28 @@ const UserProfile = () => {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          videos!creator_id (count)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
-      if (error) throw error;
-      return data as User & { videos: { count: number }[] };
+      if (profileError) throw profileError;
+
+      // Then get the post count
+      const { count: postsCount, error: countError } = await supabase
+        .from('videos')
+        .select('*', { count: 'exact', head: true })
+        .eq('creator_id', id)
+        .eq('status', 'published');
+
+      if (countError) throw countError;
+
+      return {
+        ...profileData,
+        posts_count: postsCount || 0,
+      } as ProfileWithCounts;
     },
   });
 
@@ -90,7 +105,7 @@ const UserProfile = () => {
           {/* Stats */}
           <div className="flex justify-center space-x-8 mb-6">
             <div className="text-center">
-              <div className="font-semibold">{profile.videos[0]?.count || 0}</div>
+              <div className="font-semibold">{profile.posts_count}</div>
               <div className="text-sm text-muted-foreground">posts</div>
             </div>
             <div className="text-center">

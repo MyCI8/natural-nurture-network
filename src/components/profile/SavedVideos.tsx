@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Video } from '@/types/video';
+import type { Video } from '@/types/video';
 
 interface SavedVideosProps {
   userId: string;
@@ -15,17 +15,25 @@ export const SavedVideos = ({ userId }: SavedVideosProps) => {
   const { data: savedVideos, isLoading } = useQuery({
     queryKey: ['savedVideos', userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: saved, error: savedError } = await supabase
         .from('saved_posts')
-        .select(`
-          video_id,
-          videos (*)
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .select('video_id')
+        .eq('user_id', userId);
 
-      if (error) throw error;
-      return data.map(item => item.videos) as Video[];
+      if (savedError) throw savedError;
+
+      if (!saved.length) return [];
+
+      const videoIds = saved.map(s => s.video_id);
+      
+      const { data: videos, error: videosError } = await supabase
+        .from('videos')
+        .select('*')
+        .in('id', videoIds)
+        .eq('status', 'published');
+
+      if (videosError) throw videosError;
+      return videos as Video[];
     },
   });
 
