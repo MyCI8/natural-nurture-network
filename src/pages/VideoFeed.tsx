@@ -115,7 +115,7 @@ const VideoFeed = () => {
                   
                   <p className="text-sm text-muted-foreground mb-4">
                     {video.description?.substring(0, 100)}
-                    {video.description?.length > 100 ? '...' ' : ''}
+                    {video.description?.length > 100 ? '...' : ''}
                   </p>
                   
                   <div className="flex items-center justify-between text-muted-foreground">
