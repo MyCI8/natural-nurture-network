@@ -1,6 +1,6 @@
 
 import React, { useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
@@ -96,8 +97,9 @@ const VideoFeed = () => {
           .from('video_likes')
           .insert({ user_id: currentUser.id, video_id: videoId });
       }
-      // Trigger a refetch of the userLikes query
-      await supabase.query.invalidate(['userLikes', currentUser.id]);
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['userLikes', currentUser.id] });
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
     } catch (error) {
       toast({
         title: "Error",
@@ -127,8 +129,8 @@ const VideoFeed = () => {
           .from('saved_posts')
           .insert({ user_id: currentUser.id, video_id: videoId });
       }
-      // Trigger a refetch of the userSaves query
-      await supabase.query.invalidate(['userSaves', currentUser.id]);
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['userSaves', currentUser.id] });
     } catch (error) {
       toast({
         title: "Error",
