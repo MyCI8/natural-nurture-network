@@ -5,6 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { Video } from '@/types/video';
 
+interface SavedPost {
+  id: string;
+  user_id: string;
+  video_id: string;
+  created_at: string;
+  video: Video;
+}
+
 interface SavedVideosProps {
   userId: string;
 }
@@ -17,18 +25,22 @@ export const SavedVideos = ({ userId }: SavedVideosProps) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('saved_posts')
-        .select('video:videos(*)')
+        .select(`
+          *,
+          video:videos(*)
+        `)
         .eq('user_id', userId);
 
       if (error) throw error;
 
-      // Extract video objects from the query result
-      const videos = data?.map((item) => item.video) as Video[];
+      // Extract video objects from the query result and ensure proper typing
+      const videos = (data as SavedPost[])
+        .map(post => post.video)
+        .filter((video): video is Video => 
+          video !== null && video.status === 'published'
+        );
       
-      // Filter out any null values and only return published videos
-      return videos.filter((video): video is Video => 
-        video !== null && video.status === 'published'
-      );
+      return videos;
     },
   });
 
