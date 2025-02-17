@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -33,9 +34,109 @@ const VideoFeed = () => {
     }
   });
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.user || null;
+    },
+  });
+
+  const { data: userLikes } = useQuery({
+    queryKey: ['userLikes', currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      const { data, error } = await supabase
+        .from('video_likes')
+        .select('video_id')
+        .eq('user_id', currentUser.id);
+
+      if (error) throw error;
+      return data.map(like => like.video_id);
+    },
+    enabled: !!currentUser,
+  });
+
+  const { data: userSaves } = useQuery({
+    queryKey: ['userSaves', currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      const { data, error } = await supabase
+        .from('saved_posts')
+        .select('video_id')
+        .eq('user_id', currentUser.id);
+
+      if (error) throw error;
+      return data.map(save => save.video_id);
+    },
+    enabled: !!currentUser,
+  });
+
   const handleVideoClick = useCallback((videoId: string) => {
     navigate(`/videos/${videoId}`);
   }, [navigate]);
+
+  const handleLike = async (videoId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentUser) {
+      navigate('/auth');
+      return;
+    }
+
+    const isLiked = userLikes?.includes(videoId);
+    try {
+      if (isLiked) {
+        await supabase
+          .from('video_likes')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('video_id', videoId);
+      } else {
+        await supabase
+          .from('video_likes')
+          .insert({ user_id: currentUser.id, video_id: videoId });
+      }
+      // Trigger a refetch of the userLikes query
+      await supabase.query.invalidate(['userLikes', currentUser.id]);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update like. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSave = async (videoId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!currentUser) {
+      navigate('/auth');
+      return;
+    }
+
+    const isSaved = userSaves?.includes(videoId);
+    try {
+      if (isSaved) {
+        await supabase
+          .from('saved_posts')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('video_id', videoId);
+      } else {
+        await supabase
+          .from('saved_posts')
+          .insert({ user_id: currentUser.id, video_id: videoId });
+      }
+      // Trigger a refetch of the userSaves query
+      await supabase.query.invalidate(['userSaves', currentUser.id]);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save video. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -81,8 +182,15 @@ const VideoFeed = () => {
 
                   {/* Video Interaction Overlay */}
                   <div className="absolute right-4 bottom-20 flex flex-col items-center space-y-6 z-20">
-                    <button className="text-white hover:text-primary transition-transform hover:scale-110">
-                      <Heart className="h-7 w-7" />
+                    <button 
+                      className={`transition-transform hover:scale-110 ${
+                        userLikes?.includes(video.id) 
+                          ? 'text-red-500' 
+                          : 'text-white hover:text-primary'
+                      }`}
+                      onClick={(e) => handleLike(video.id, e)}
+                    >
+                      <Heart className="h-7 w-7" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
                     </button>
                     <button 
                       className="text-white hover:text-primary transition-transform hover:scale-110"
@@ -93,8 +201,18 @@ const VideoFeed = () => {
                     >
                       <MessageCircle className="h-7 w-7" />
                     </button>
-                    <button className="text-white hover:text-primary transition-transform hover:scale-110">
-                      <Bookmark className="h-7 w-7" />
+                    <button 
+                      className={`transition-transform hover:scale-110 ${
+                        userSaves?.includes(video.id) 
+                          ? 'text-primary' 
+                          : 'text-white hover:text-primary'
+                      }`}
+                      onClick={(e) => handleSave(video.id, e)}
+                    >
+                      <Bookmark 
+                        className="h-7 w-7" 
+                        fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
+                      />
                     </button>
                   </div>
                 </div>
