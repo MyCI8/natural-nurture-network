@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Video } from "lucide-react";
+import { Plus, Search, Video as VideoIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -107,7 +107,7 @@ const ManageVideos = () => {
   );
 };
 
-const VideoGrid = ({ videos, navigate }) => {
+const VideoGrid = ({ videos, navigate }: { videos: Video[], navigate: (path: string) => void }) => {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {videos.map((video) => (
@@ -122,7 +122,7 @@ const VideoGrid = ({ videos, navigate }) => {
                 />
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center rounded-lg">
-                  <Video className="h-8 w-8 text-gray-400" />
+                  <VideoIcon className="h-8 w-8 text-gray-400" />
                 </div>
               )}
             </div>
