@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -27,6 +26,7 @@ import EditSymptom from "./pages/EditSymptom";
 import VideoFeed from "./pages/VideoFeed";
 import ManageVideos from "./pages/ManageVideos";
 import EditVideo from "./pages/EditVideo";
+import UserProfile from "./pages/UserProfile";
 
 const App = () => {
   return (
@@ -41,6 +41,7 @@ const App = () => {
           <Route path="news" element={<News />} />
           <Route path="news/:id" element={<NewsArticle />} />
           <Route path="videos" element={<VideoFeed />} />
+          <Route path="users/:id" element={<UserProfile />} />
           <Route path="admin" element={<Admin />}>
             <Route index element={<AdminDashboard />} />
             <Route path="users">

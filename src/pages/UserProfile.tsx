@@ -1,26 +1,24 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { Edit, Grid, Bookmark } from 'lucide-react';
 import { UserVideoGrid } from '@/components/profile/UserVideoGrid';
 import { SavedVideos } from '@/components/profile/SavedVideos';
 import type { User } from '@/types/user';
-
-interface ProfileWithCounts extends User {
-  posts_count: number;
-}
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const UserProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('posts');
+  const [activeTab, setActiveTab] = React.useState('posts');
+  const isMobile = useIsMobile();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -33,28 +31,14 @@ const UserProfile = () => {
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', id],
     queryFn: async () => {
-      // First get the profile data
-      const { data: profileData, error: profileError } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (profileError) throw profileError;
-
-      // Then get the post count
-      const { count: postsCount, error: countError } = await supabase
-        .from('videos')
-        .select('*', { count: 'exact', head: true })
-        .eq('creator_id', id)
-        .eq('status', 'published');
-
-      if (countError) throw countError;
-
-      return {
-        ...profileData,
-        posts_count: postsCount || 0,
-      } as ProfileWithCounts;
+      if (error) throw error;
+      return data as User;
     },
   });
 
@@ -83,15 +67,14 @@ const UserProfile = () => {
         <div className="py-8 text-center">
           <Avatar className="w-24 h-24 mx-auto mb-4">
             {profile.avatar_url ? (
-              <img 
+              <AvatarImage 
                 src={profile.avatar_url} 
                 alt={profile.full_name || 'Profile'} 
-                className="object-cover w-full h-full"
               />
             ) : (
-              <div className="bg-primary/10 w-full h-full flex items-center justify-center text-primary text-2xl font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl">
                 {profile.full_name?.[0] || '?'}
-              </div>
+              </AvatarFallback>
             )}
           </Avatar>
           
@@ -105,7 +88,7 @@ const UserProfile = () => {
           {/* Stats */}
           <div className="flex justify-center space-x-8 mb-6">
             <div className="text-center">
-              <div className="font-semibold">{profile.posts_count}</div>
+              <div className="font-semibold">{profile.posts_count || 0}</div>
               <div className="text-sm text-muted-foreground">posts</div>
             </div>
             <div className="text-center">

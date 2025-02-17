@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Video } from '@/types/video';
+import type { Video } from '@/types/video';
 
 interface UserVideoGridProps {
   userId: string;
@@ -34,7 +34,7 @@ export const UserVideoGrid = ({ userId }: UserVideoGridProps) => {
   if (!videos?.length) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No videos yet</p>
+        <p className="text-muted-foreground">No videos uploaded yet</p>
       </div>
     );
   }

@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +6,7 @@ import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video } from '@/types/video';
 import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
@@ -102,17 +101,25 @@ const VideoFeed = () => {
 
                 {/* Video Info */}
                 <div className="p-4">
-                  <div className="flex items-center space-x-3 mb-3">
+                  <div 
+                    className="flex items-center space-x-3 mb-3 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/users/${video.profiles.id}`);
+                    }}
+                  >
                     <Avatar className="h-8 w-8">
                       {video.profiles.avatar_url ? (
-                        <img src={video.profiles.avatar_url} alt={video.profiles.full_name} />
+                        <AvatarImage src={video.profiles.avatar_url} alt={video.profiles.full_name} />
                       ) : (
-                        <div className="bg-primary/10 w-full h-full flex items-center justify-center text-primary font-semibold">
+                        <AvatarFallback className="bg-primary/10 text-primary">
                           {video.profiles.full_name.charAt(0)}
-                        </div>
+                        </AvatarFallback>
                       )}
                     </Avatar>
-                    <span className="font-medium">{video.profiles.full_name}</span>
+                    <span className="font-medium hover:text-primary transition-colors">
+                      {video.profiles.full_name}
+                    </span>
                   </div>
                   
                   <p className="text-sm text-muted-foreground">
