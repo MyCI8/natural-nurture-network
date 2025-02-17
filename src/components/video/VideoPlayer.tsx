@@ -3,18 +3,23 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, PauseCircle, Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface VideoPlayerProps {
   video: Video;
   productLinks?: ProductLink[];
   autoPlay?: boolean;
+  showControls?: boolean;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, productLinks = [], autoPlay = true }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
+  video, 
+  productLinks = [], 
+  autoPlay = true,
+  showControls = true
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.5,
@@ -26,36 +31,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, productLinks = [], aut
       if (!videoRef.current) return;
 
       if (inView && autoPlay) {
-        videoRef.current.play().catch(() => {
-          // Autoplay might be blocked by browser
-          console.log('Autoplay blocked');
-        });
-        setIsPlaying(true);
-        
-        // Increment view count
-        const { error } = await supabase.rpc('increment_video_views', { video_id: video.id });
-        if (error) console.error('Error incrementing views:', error);
+        try {
+          await videoRef.current.play();
+          // Increment view count
+          const { error } = await supabase.rpc('increment_video_views', { video_id: video.id });
+          if (error) console.error('Error incrementing views:', error);
+        } catch (error) {
+          console.log('Autoplay prevented:', error);
+        }
       } else {
         videoRef.current.pause();
-        setIsPlaying(false);
       }
     };
 
     handleVideoVisibility();
   }, [inView, autoPlay, video.id]);
 
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play().catch(console.error);
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleMute = () => {
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent video click event from triggering
     if (!videoRef.current) return;
     videoRef.current.muted = !videoRef.current.muted;
     setIsMuted(!isMuted);
@@ -64,7 +57,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, productLinks = [], aut
   return (
     <div 
       ref={inViewRef} 
-      className="relative w-full h-screen max-h-[100vh] bg-black"
+      className="relative w-full h-full bg-black"
     >
       <video
         ref={videoRef}
@@ -76,59 +69,45 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, productLinks = [], aut
         poster={video.thumbnail_url || undefined}
       />
       
-      {/* Video Controls */}
-      <div className="absolute bottom-6 left-4 right-4 flex justify-between items-center text-white z-10">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={togglePlay}
-            className="hover:bg-black/20"
-          >
-            {isPlaying ? (
-              <PauseCircle className="h-8 w-8" />
-            ) : (
-              <PlayCircle className="h-8 w-8" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleMute}
-            className="hover:bg-black/20"
-          >
-            {isMuted ? (
-              <VolumeX className="h-6 w-6" />
-            ) : (
-              <Volume2 className="h-6 w-6" />
-            )}
-          </Button>
-        </div>
-      </div>
+      {/* Mute Toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleMute}
+        className="absolute bottom-4 right-4 text-white hover:bg-black/20 z-10"
+      >
+        {isMuted ? (
+          <VolumeX className="h-6 w-6" />
+        ) : (
+          <Volume2 className="h-6 w-6" />
+        )}
+      </Button>
 
       {/* Product Links Overlay */}
-      <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none">
-        {productLinks.map((link) => (
-          <div
-            key={link.id}
-            className="absolute pointer-events-auto"
-            style={{
-              left: `${link.position_x || 50}%`,
-              top: `${link.position_y || 50}%`,
-              transform: 'translate(-50%, -50%)'
-            }}
-          >
-            <Button
-              variant="secondary"
-              className="bg-white/80 hover:bg-white shadow-lg backdrop-blur-sm"
-              onClick={() => window.open(link.url, '_blank')}
+      {productLinks.length > 0 && (
+        <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none">
+          {productLinks.map((link) => (
+            <div
+              key={link.id}
+              className="absolute pointer-events-auto"
+              style={{
+                left: `${link.position_x || 50}%`,
+                top: `${link.position_y || 50}%`,
+                transform: 'translate(-50%, -50%)'
+              }}
             >
-              {link.title}
-              {link.price && ` - $${link.price}`}
-            </Button>
-          </div>
-        ))}
-      </div>
+              <Button
+                variant="secondary"
+                className="bg-white/80 hover:bg-white shadow-lg backdrop-blur-sm"
+                onClick={() => window.open(link.url, '_blank')}
+              >
+                {link.title}
+                {link.price && ` - $${link.price}`}
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
