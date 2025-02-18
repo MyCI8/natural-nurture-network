@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -128,7 +129,7 @@ const News = () => {
             </div>
             
             {/* Article Brief (Outside Image Container) */}
-            <div className="px-8 mt-6 max-w-3xl">
+            <div className="px-8 mt-6">
               <p className="text-lg text-text-light">
                 {featuredArticle.summary}
               </p>
