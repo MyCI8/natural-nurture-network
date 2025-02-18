@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -113,14 +112,7 @@ const News = () => {
                 style={{ maxHeight: '600px' }}
               />
               <div 
-                className="absolute inset-0" 
-                style={{
-                  background: `linear-gradient(180deg,
-                    rgba(255, 255, 255, 0) 0%,
-                    rgba(255, 255, 255, 0) 70%,
-                    rgba(255, 255, 255, 1) 100%
-                  )`
-                }}
+                className="absolute inset-0 bg-gradient-to-b from-transparent from-60% via-background/95 via-80% to-background"
               />
               {/* Overlapping Title */}
               <h2 
@@ -136,8 +128,8 @@ const News = () => {
             </div>
             
             {/* Article Brief (Outside Image Container) */}
-            <div className="px-8 mt-6">
-              <p className="text-lg text-text-light max-w-2xl">
+            <div className="px-8 mt-6 max-w-3xl">
+              <p className="text-lg text-text-light">
                 {featuredArticle.summary}
               </p>
             </div>
