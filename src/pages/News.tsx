@@ -110,9 +110,20 @@ const News = () => {
                 alt={featuredArticle.thumbnail_description || featuredArticle.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90" />
+              <div 
+                className="absolute inset-0" 
+                style={{
+                  background: `linear-gradient(to bottom, 
+                    transparent 0%, 
+                    transparent 50%, 
+                    rgba(255, 255, 255, 0.7) 70%, 
+                    rgba(255, 255, 255, 0.9) 85%,
+                    rgba(255, 255, 255, 1) 100%
+                  )`
+                }}
+              />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-8">
+            <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-1/4">
               <h2 className="text-3xl font-bold mb-4 text-text">
                 {featuredArticle.title}
               </h2>
@@ -123,25 +134,29 @@ const News = () => {
           </div>
         </Link>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-8">
           {otherArticles.map((article) => (
             <Link to={`/news/${article.id}`} key={article.id}>
-              <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow duration-200">
+              <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <CardContent className="p-0">
-                  <div className="aspect-video">
-                    <img
-                      src={article.image_url || "/placeholder.svg"}
-                      alt={article.thumbnail_description || article.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-text mb-2 line-clamp-2">
-                      {article.title}
-                    </h3>
-                    <p className="text-text-light line-clamp-3">
-                      {article.summary}
-                    </p>
+                  <div className="flex flex-col md:flex-row">
+                    <div className="w-full md:w-1/3">
+                      <div className="aspect-video md:h-full">
+                        <img
+                          src={article.image_url || "/placeholder.svg"}
+                          alt={article.thumbnail_description || article.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                    <div className="p-6 md:w-2/3">
+                      <h3 className="text-xl font-semibold text-text mb-2 line-clamp-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-text-light line-clamp-3">
+                        {article.summary}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
