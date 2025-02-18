@@ -113,17 +113,22 @@ const News = () => {
               <div 
                 className="absolute inset-0" 
                 style={{
-                  background: `linear-gradient(to bottom, 
-                    transparent 0%, 
-                    transparent 50%, 
-                    rgba(255, 255, 255, 0.7) 70%, 
-                    rgba(255, 255, 255, 0.9) 85%,
+                  background: `linear-gradient(180deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0) 70%,
+                    rgba(255, 255, 255, 0.8) 85%,
                     rgba(255, 255, 255, 1) 100%
                   )`
                 }}
               />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-8 transform translate-y-1/4">
+            <div 
+              className="absolute left-0 right-0 px-8"
+              style={{
+                bottom: '15%',
+                transform: 'translateY(50%)'
+              }}
+            >
               <h2 className="text-3xl font-bold mb-4 text-text">
                 {featuredArticle.title}
               </h2>
