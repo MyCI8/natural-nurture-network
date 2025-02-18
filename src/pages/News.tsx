@@ -103,12 +103,14 @@ const News = () => {
         </div>
 
         <Link to={`/news/${featuredArticle.id}`} className="block mb-16">
-          <div className="relative rounded-xl overflow-hidden">
-            <div className="aspect-[21/9] relative">
+          <div className="relative">
+            {/* Image Container */}
+            <div className="relative rounded-xl overflow-hidden">
               <img
                 src={featuredArticle.image_url || "/placeholder.svg"}
                 alt={featuredArticle.thumbnail_description || featuredArticle.title}
-                className="w-full h-full object-cover"
+                className="w-full object-cover"
+                style={{ maxHeight: '600px' }}
               />
               <div 
                 className="absolute inset-0" 
@@ -116,22 +118,25 @@ const News = () => {
                   background: `linear-gradient(180deg,
                     rgba(255, 255, 255, 0) 0%,
                     rgba(255, 255, 255, 0) 70%,
-                    rgba(255, 255, 255, 0.8) 85%,
                     rgba(255, 255, 255, 1) 100%
                   )`
                 }}
               />
-            </div>
-            <div 
-              className="absolute left-0 right-0 px-8"
-              style={{
-                bottom: '15%',
-                transform: 'translateY(50%)'
-              }}
-            >
-              <h2 className="text-3xl font-bold mb-4 text-text">
+              {/* Overlapping Title */}
+              <h2 
+                className="absolute text-3xl font-bold text-text px-8"
+                style={{
+                  bottom: '10%',
+                  left: 0,
+                  right: 0
+                }}
+              >
                 {featuredArticle.title}
               </h2>
+            </div>
+            
+            {/* Article Brief (Outside Image Container) */}
+            <div className="px-8 mt-6">
               <p className="text-lg text-text-light max-w-2xl">
                 {featuredArticle.summary}
               </p>
