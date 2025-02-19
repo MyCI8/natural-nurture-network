@@ -1,25 +1,38 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import SymptomsMarquee from "@/components/SymptomsMarquee";
+import { Search } from "lucide-react";
 
 const Symptoms = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const { data: symptoms, isLoading } = useQuery({
     queryKey: ["symptoms"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("symptom_details")
-        .select("*")
+        .select(`
+          *,
+          remedies:remedies!symptoms(*),
+          related_experts:experts!symptom_details_related_experts(*)
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data;
     },
   });
+
+  const filteredSymptoms = symptoms?.filter((symptom) =>
+    symptom.symptom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    symptom.brief_description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (isLoading) {
     return (
@@ -29,17 +42,8 @@ const Symptoms = () => {
             <Skeleton className="h-12 w-48 mb-4" />
             <Skeleton className="h-6 w-96" />
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <Skeleton className="h-48 w-full mb-4" />
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Skeleton className="h-12 w-full mb-8" />
+          <Skeleton className="h-96 w-full" />
         </div>
       </div>
     );
@@ -47,8 +51,6 @@ const Symptoms = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
-      <SymptomsMarquee />
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-12">
           <h1 className="text-4xl font-bold mb-2">Symptoms</h1>
@@ -57,30 +59,70 @@ const Symptoms = () => {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {symptoms?.map((symptom) => (
-            <Link to={`/symptoms/${symptom.id}`} key={symptom.id}>
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <CardContent className="p-6">
-                  {symptom.image_url && (
-                    <div className="relative aspect-video mb-4 rounded-lg overflow-hidden">
-                      <img
-                        src={symptom.image_url}
-                        alt={symptom.symptom}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                  )}
-                  <h3 className="text-xl font-semibold mb-2">{symptom.symptom}</h3>
-                  {symptom.brief_description && (
-                    <p className="text-text-light line-clamp-2">
+        <SymptomsMarquee />
+
+        <div className="my-8 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-light h-5 w-5" />
+          <Input
+            type="search"
+            placeholder="Search symptoms..."
+            className="pl-10 w-full max-w-md"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Brief Description</TableHead>
+                <TableHead className="text-center">Remedies</TableHead>
+                <TableHead className="text-center">Experts</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredSymptoms?.map((symptom) => (
+                <TableRow key={symptom.id} className="hover:bg-muted/50">
+                  <TableCell className="font-medium">
+                    <Link 
+                      to={`/symptoms/${symptom.id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {symptom.symptom}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="max-w-md">
+                    <p className="line-clamp-2 text-text-light">
                       {symptom.brief_description}
                     </p>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {symptom.remedies?.length || 0}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-center -space-x-2">
+                      {symptom.related_experts?.slice(0, 3).map((expert) => (
+                        <img
+                          key={expert.id}
+                          src={expert.image_url || "/placeholder.svg"}
+                          alt={expert.full_name}
+                          className="w-8 h-8 rounded-full border-2 border-white"
+                          title={expert.full_name}
+                        />
+                      ))}
+                      {symptom.related_experts?.length > 3 && (
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-white">
+                          +{symptom.related_experts.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
