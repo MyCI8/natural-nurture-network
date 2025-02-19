@@ -171,6 +171,28 @@ const VideoFeed = () => {
                 key={video.id} 
                 className="bg-card rounded-xl overflow-hidden shadow-sm"
               >
+                {/* User Info */}
+                <div 
+                  className="flex items-center space-x-3 p-4 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/users/${video.profiles.id}`);
+                  }}
+                >
+                  <Avatar className="h-8 w-8">
+                    {video.profiles.avatar_url ? (
+                      <AvatarImage src={video.profiles.avatar_url} alt={video.profiles.full_name} />
+                    ) : (
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {video.profiles.full_name.charAt(0)}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="font-medium hover:text-primary transition-colors">
+                    {video.profiles.full_name}
+                  </span>
+                </div>
+
                 {/* Video Container */}
                 <div 
                   className="w-full relative cursor-pointer" 
@@ -181,21 +203,23 @@ const VideoFeed = () => {
                     autoPlay
                     showControls={false}
                   />
+                </div>
 
-                  {/* Video Interaction Overlay */}
-                  <div className="absolute right-4 bottom-20 flex flex-col items-center space-y-6 z-20">
+                {/* Interaction Buttons */}
+                <div className="p-4">
+                  <div className="flex items-center space-x-4 mb-3">
                     <button 
                       className={`transition-transform hover:scale-110 ${
                         userLikes?.includes(video.id) 
                           ? 'text-red-500' 
-                          : 'text-white hover:text-primary'
+                          : 'text-foreground hover:text-primary'
                       }`}
                       onClick={(e) => handleLike(video.id, e)}
                     >
                       <Heart className="h-7 w-7" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
                     </button>
                     <button 
-                      className="text-white hover:text-primary transition-transform hover:scale-110"
+                      className="text-foreground hover:text-primary transition-transform hover:scale-110"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleVideoClick(video.id);
@@ -207,7 +231,7 @@ const VideoFeed = () => {
                       className={`transition-transform hover:scale-110 ${
                         userSaves?.includes(video.id) 
                           ? 'text-primary' 
-                          : 'text-white hover:text-primary'
+                          : 'text-foreground hover:text-primary'
                       }`}
                       onClick={(e) => handleSave(video.id, e)}
                     >
@@ -216,30 +240,6 @@ const VideoFeed = () => {
                         fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
                       />
                     </button>
-                  </div>
-                </div>
-
-                {/* Video Info */}
-                <div className="p-4">
-                  <div 
-                    className="flex items-center space-x-3 mb-3 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/users/${video.profiles.id}`);
-                    }}
-                  >
-                    <Avatar className="h-8 w-8">
-                      {video.profiles.avatar_url ? (
-                        <AvatarImage src={video.profiles.avatar_url} alt={video.profiles.full_name} />
-                      ) : (
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {video.profiles.full_name.charAt(0)}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <span className="font-medium hover:text-primary transition-colors">
-                      {video.profiles.full_name}
-                    </span>
                   </div>
                   
                   <p className="text-sm text-muted-foreground">
