@@ -18,7 +18,6 @@ interface Expert {
 interface Remedy {
   id: string;
   name: string;
-  // ... add other remedy fields if needed
 }
 
 interface Symptom {
@@ -32,20 +31,24 @@ interface Symptom {
 const Symptoms = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: symptoms, isLoading } = useQuery({
+  const { data: symptoms, isLoading, error } = useQuery({
     queryKey: ["symptoms"],
     queryFn: async () => {
+      console.log("Fetching symptoms...");
       const { data, error } = await supabase
         .from("symptom_details")
         .select(`
           id,
           symptom,
           brief_description,
-          symptom_remedies:symptom_remedies(
-            remedy:remedies(*)
+          symptom_remedies(
+            remedy(
+              id,
+              name
+            )
           ),
-          symptom_experts:symptom_experts(
-            expert:experts(
+          symptom_experts(
+            expert(
               id,
               full_name,
               image_url
@@ -54,8 +57,13 @@ const Symptoms = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data as unknown as Symptom[];
+      if (error) {
+        console.error("Supabase query error:", error);
+        throw error;
+      }
+
+      console.log("Fetched symptoms data:", data);
+      return data as Symptom[];
     },
   });
 
@@ -63,6 +71,20 @@ const Symptoms = () => {
     symptom.symptom.toLowerCase().includes(searchQuery.toLowerCase()) ||
     symptom.brief_description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (error) {
+    console.error("Query error:", error);
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600">Error loading symptoms</h1>
+            <p className="mt-2 text-gray-600">Please try again later</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -78,6 +100,8 @@ const Symptoms = () => {
       </div>
     );
   }
+
+  console.log("Filtered symptoms:", filteredSymptoms);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
