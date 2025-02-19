@@ -15,12 +15,18 @@ interface Expert {
   image_url: string | null;
 }
 
+interface Remedy {
+  id: string;
+  name: string;
+  // ... add other remedy fields if needed
+}
+
 interface Symptom {
   id: string;
   symptom: string;
   brief_description: string | null;
-  remedies: any[];
-  related_experts: Expert[];
+  symptom_remedies: { remedy: Remedy }[];
+  symptom_experts: { expert: Expert }[];
 }
 
 const Symptoms = () => {
@@ -32,14 +38,24 @@ const Symptoms = () => {
       const { data, error } = await supabase
         .from("symptom_details")
         .select(`
-          *,
-          remedies:remedies!symptoms(*),
-          related_experts:experts!symptom_details_related_experts(*)
+          id,
+          symptom,
+          brief_description,
+          symptom_remedies:symptom_remedies(
+            remedy:remedies(*)
+          ),
+          symptom_experts:symptom_experts(
+            expert:experts(
+              id,
+              full_name,
+              image_url
+            )
+          )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as Symptom[];
+      return data as unknown as Symptom[];
     },
   });
 
@@ -113,11 +129,11 @@ const Symptoms = () => {
                     </p>
                   </TableCell>
                   <TableCell className="text-center">
-                    {symptom.remedies?.length || 0}
+                    {symptom.symptom_remedies?.length || 0}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-center -space-x-2">
-                      {symptom.related_experts?.slice(0, 3).map((expert) => (
+                      {symptom.symptom_experts?.slice(0, 3).map(({ expert }) => (
                         <img
                           key={expert.id}
                           src={expert.image_url || "/placeholder.svg"}
@@ -126,9 +142,9 @@ const Symptoms = () => {
                           title={expert.full_name}
                         />
                       ))}
-                      {symptom.related_experts?.length > 3 && (
+                      {symptom.symptom_experts?.length > 3 && (
                         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-white">
-                          +{symptom.related_experts.length - 3}
+                          +{symptom.symptom_experts.length - 3}
                         </div>
                       )}
                     </div>
