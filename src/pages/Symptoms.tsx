@@ -1,159 +1,88 @@
 
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Database } from "@/integrations/supabase/types";
-import { cn } from "@/lib/utils";
-
-type SymptomType = Database['public']['Enums']['symptom_type'];
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import SymptomsMarquee from "@/components/SymptomsMarquee";
 
 const Symptoms = () => {
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [symptoms, setSymptoms] = useState<SymptomType[]>([]);
-  const [topSymptoms, setTopSymptoms] = useState<{symptom: SymptomType, click_count: number}[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typedText, setTypedText] = useState("");
+  const { data: symptoms, isLoading } = useQuery({
+    queryKey: ["symptoms"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("symptom_details")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  useEffect(() => {
-    const text = "Let's get you better.";
-    let index = 0;
-    setIsTyping(true);
+      if (error) throw error;
+      return data;
+    },
+  });
 
-    const interval = setInterval(() => {
-      if (index <= text.length) {
-        setTypedText(text.slice(0, index));
-        index++;
-      } else {
-        setIsTyping(false);
-        clearInterval(interval);
-      }
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const fetchTopSymptoms = async () => {
-      const { data, error } = await supabase.rpc('get_top_symptoms', { limit_count: 10 });
-      if (error) {
-        console.error('Error fetching top symptoms:', error);
-        return;
-      }
-      setTopSymptoms(data || []);
-    };
-
-    fetchTopSymptoms();
-  }, []);
-
-  useEffect(() => {
-    const allSymptoms: SymptomType[] = [
-      'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
-      'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
-      'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
-      'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
-    ];
-    
-    setSymptoms(
-      searchTerm
-        ? allSymptoms.filter(s => 
-            s.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        : allSymptoms
-    );
-  }, [searchTerm]);
-
-  const handleSymptomClick = async (symptom: SymptomType) => {
-    try {
-      await supabase
-        .from('symptom_clicks')
-        .insert([{ symptom, user_id: (await supabase.auth.getUser()).data.user?.id }]);
-    } catch (error) {
-      console.error('Error logging symptom click:', error);
-    }
-    navigate(`/symptoms/${symptom.toLowerCase().replace(/\s+/g, '-')}`);
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative h-[50vh] bg-primary/10 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background"
-          style={{ top: '65%' }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center text-center">
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold text-primary">
-              Symptoms / Conditions
-            </h1>
-            <p className="text-xl md:text-2xl text-primary/80 min-h-[2em]">
-              {typedText}
-              {isTyping && <span className="animate-pulse">|</span>}
-            </p>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12">
+            <Skeleton className="h-12 w-48 mb-4" />
+            <Skeleton className="h-6 w-96" />
           </div>
-        </div>
-      </div>
-
-      {/* Quick Select Grid */}
-      <section className="py-12 px-4 md:px-8">
-        <h2 className="text-2xl font-bold mb-6">Most Common</h2>
-        <div className="overflow-x-auto -mx-4 px-4 pb-4 md:overflow-x-visible">
-          <div className="grid grid-flow-col md:grid-flow-row md:grid-cols-5 md:grid-rows-2 gap-4 md:gap-6 w-max md:w-auto">
-            {topSymptoms.map(({ symptom }) => (
-              <button
-                key={symptom}
-                onClick={() => handleSymptomClick(symptom)}
-                className={cn(
-                  "px-6 py-4 rounded-lg bg-accent hover:bg-accent/80",
-                  "transition-colors duration-200 min-w-[160px] md:min-w-0",
-                  "flex flex-col items-center justify-center gap-2"
-                )}
-              >
-                <span className="text-lg font-medium">{symptom}</span>
-              </button>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-48 w-full mb-4" />
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
-      </section>
+      </div>
+    );
+  }
 
-      {/* Search and Table */}
-      <section className="py-12 px-4 md:px-8">
-        <div className="relative max-w-md mx-auto mb-8">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            type="search"
-            placeholder="Search symptoms..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
+      <SymptomsMarquee />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold mb-2">Symptoms</h1>
+          <p className="text-xl text-text-light">
+            Explore common health symptoms and their natural remedies
+          </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Symptom / Condition</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {symptoms.map((symptom) => (
-                <TableRow
-                  key={symptom}
-                  className="cursor-pointer hover:bg-accent/50"
-                  onClick={() => handleSymptomClick(symptom)}
-                >
-                  <TableCell className="font-medium">{symptom}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {symptoms?.map((symptom) => (
+            <Link to={`/symptoms/${symptom.id}`} key={symptom.id}>
+              <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                <CardContent className="p-6">
+                  {symptom.image_url && (
+                    <div className="relative aspect-video mb-4 rounded-lg overflow-hidden">
+                      <img
+                        src={symptom.image_url}
+                        alt={symptom.symptom}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  )}
+                  <h3 className="text-xl font-semibold mb-2">{symptom.symptom}</h3>
+                  {symptom.brief_description && (
+                    <p className="text-text-light line-clamp-2">
+                      {symptom.brief_description}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
-      </section>
+      </div>
     </div>
   );
 };
