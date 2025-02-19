@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import SymptomsMarquee from "@/components/SymptomsMarquee";
 import { Search } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database["public"]["Enums"]["symptom_type"];
 
 interface Expert {
   id: string;
@@ -22,10 +25,14 @@ interface Remedy {
 
 interface Symptom {
   id: string;
-  symptom: string;
+  symptom: SymptomType;
   brief_description: string | null;
-  symptom_remedies: { remedy: Remedy }[];
-  symptom_experts: { expert: Expert }[];
+  symptom_remedies: {
+    remedy: Remedy;
+  }[];
+  symptom_experts: {
+    expert: Expert;
+  }[];
 }
 
 const Symptoms = () => {
@@ -41,21 +48,20 @@ const Symptoms = () => {
           id,
           symptom,
           brief_description,
-          symptom_remedies(
-            remedy(
+          symptom_remedies!inner (
+            remedy!inner (
               id,
               name
             )
           ),
-          symptom_experts(
-            expert(
+          symptom_experts!inner (
+            expert!inner (
               id,
               full_name,
               image_url
             )
           )
-        `)
-        .order("created_at", { ascending: false });
+        `);
 
       if (error) {
         console.error("Supabase query error:", error);
@@ -63,7 +69,7 @@ const Symptoms = () => {
       }
 
       console.log("Fetched symptoms data:", data);
-      return data as Symptom[];
+      return data as unknown as Symptom[];
     },
   });
 
