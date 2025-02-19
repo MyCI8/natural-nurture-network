@@ -696,6 +696,39 @@ export type Database = {
         }
         Relationships: []
       }
+      symptom_experts: {
+        Row: {
+          created_at: string | null
+          expert_id: string
+          symptom_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expert_id: string
+          symptom_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expert_id?: string
+          symptom_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symptom_experts_expert_id_fkey"
+            columns: ["expert_id"]
+            isOneToOne: false
+            referencedRelation: "experts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "symptom_experts_symptom_id_fkey"
+            columns: ["symptom_id"]
+            isOneToOne: false
+            referencedRelation: "symptom_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       symptom_related_articles: {
         Row: {
           article_id: string | null
@@ -760,6 +793,39 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "symptom_related_links_symptom_id_fkey"
+            columns: ["symptom_id"]
+            isOneToOne: false
+            referencedRelation: "symptom_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      symptom_remedies: {
+        Row: {
+          created_at: string | null
+          remedy_id: string
+          symptom_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          remedy_id: string
+          symptom_id: string
+        }
+        Update: {
+          created_at?: string | null
+          remedy_id?: string
+          symptom_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "symptom_remedies_remedy_id_fkey"
+            columns: ["remedy_id"]
+            isOneToOne: false
+            referencedRelation: "remedies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "symptom_remedies_symptom_id_fkey"
             columns: ["symptom_id"]
             isOneToOne: false
             referencedRelation: "symptom_details"
