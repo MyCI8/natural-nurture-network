@@ -9,6 +9,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SymptomsMarquee from "@/components/SymptomsMarquee";
 import { Search } from "lucide-react";
 
+interface Expert {
+  id: string;
+  full_name: string;
+  image_url: string | null;
+}
+
+interface Symptom {
+  id: string;
+  symptom: string;
+  brief_description: string | null;
+  remedies: any[];
+  related_experts: Expert[];
+}
+
 const Symptoms = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -25,7 +39,7 @@ const Symptoms = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as Symptom[];
     },
   });
 
