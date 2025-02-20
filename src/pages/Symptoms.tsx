@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -29,7 +30,7 @@ interface Symptom {
   symptom: SymptomType;
   brief_description: string | null;
   symptom_remedies: {
-    remedy: Remedy;
+    remedies: Remedy;
   }[] | null;
   symptom_experts: {
     expert: Expert;
@@ -57,7 +58,7 @@ const Symptoms = () => {
             symptom,
             brief_description,
             symptom_remedies (
-              remedy (
+              remedies (
                 id,
                 name
               )
@@ -85,14 +86,7 @@ const Symptoms = () => {
       }
     },
     retry: 2,
-    retryDelay: 1000,
-    onError: () => {
-      toast({
-        title: "Error loading symptoms",
-        description: "There was a problem loading the symptoms. Please try again.",
-        variant: "destructive",
-      });
-    }
+    retryDelay: 1000
   });
 
   const filteredSymptoms = symptoms?.filter((symptom) =>
