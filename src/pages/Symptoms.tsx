@@ -6,9 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import SymptomsMarquee from "@/components/SymptomsMarquee";
-import { Search } from "lucide-react";
+import { Search, RefreshCw } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
+import { useToast } from "@/components/ui/use-toast";
 
 type SymptomType = Database["public"]["Enums"]["symptom_type"];
 
@@ -29,47 +31,69 @@ interface Symptom {
   brief_description: string | null;
   symptom_remedies: {
     remedy: Remedy;
-  }[];
+  }[] | null;
   symptom_experts: {
     expert: Expert;
-  }[];
+  }[] | null;
 }
 
 const Symptoms = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
 
-  const { data: symptoms, isLoading, error } = useQuery({
+  const { 
+    data: symptoms, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
     queryKey: ["symptoms"],
     queryFn: async () => {
       console.log("Fetching symptoms...");
-      const { data, error } = await supabase
-        .from("symptom_details")
-        .select(`
-          id,
-          symptom,
-          brief_description,
-          symptom_remedies!inner (
-            remedy!inner (
-              id,
-              name
+      try {
+        const { data, error } = await supabase
+          .from("symptom_details")
+          .select(`
+            id,
+            symptom,
+            brief_description,
+            symptom_remedies (
+              remedy (
+                id,
+                name
+              )
+            ),
+            symptom_experts (
+              expert (
+                id,
+                full_name,
+                image_url
+              )
             )
-          ),
-          symptom_experts!inner (
-            expert!inner (
-              id,
-              full_name,
-              image_url
-            )
-          )
-        `);
+          `)
+          .order('symptom');
 
-      if (error) {
-        console.error("Supabase query error:", error);
-        throw error;
+        if (error) {
+          console.error("Supabase query error:", error);
+          throw error;
+        }
+
+        console.log("Fetched symptoms data:", data);
+        return data as unknown as Symptom[];
+      } catch (err) {
+        console.error("Error fetching symptoms:", err);
+        throw err;
       }
-
-      console.log("Fetched symptoms data:", data);
-      return data as unknown as Symptom[];
+    },
+    retry: 2,
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error("Query error:", error);
+      toast({
+        title: "Error loading symptoms",
+        description: "There was a problem loading the symptoms. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -79,13 +103,22 @@ const Symptoms = () => {
   );
 
   if (error) {
-    console.error("Query error:", error);
     return (
       <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600">Error loading symptoms</h1>
-            <p className="mt-2 text-gray-600">Please try again later</p>
+            <h1 className="text-2xl font-bold text-destructive mb-4">Unable to load symptoms</h1>
+            <p className="text-muted-foreground mb-8">
+              There was a problem loading the symptoms. Please try again.
+            </p>
+            <Button 
+              onClick={() => refetch()} 
+              variant="outline"
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
           </div>
         </div>
       </div>
@@ -100,21 +133,22 @@ const Symptoms = () => {
             <Skeleton className="h-12 w-48 mb-4" />
             <Skeleton className="h-6 w-96" />
           </div>
-          <Skeleton className="h-12 w-full mb-8" />
-          <Skeleton className="h-96 w-full" />
+          <div className="grid grid-cols-1 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))}
+          </div>
         </div>
       </div>
     );
   }
-
-  console.log("Filtered symptoms:", filteredSymptoms);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-12">
           <h1 className="text-4xl font-bold mb-2">Symptoms</h1>
-          <p className="text-xl text-text-light">
+          <p className="text-xl text-muted-foreground">
             Explore common health symptoms and their natural remedies
           </p>
         </div>
@@ -122,7 +156,7 @@ const Symptoms = () => {
         <SymptomsMarquee />
 
         <div className="my-8 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-light h-5 w-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
           <Input
             type="search"
             placeholder="Search symptoms..."
@@ -132,7 +166,7 @@ const Symptoms = () => {
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-card rounded-lg shadow overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -154,8 +188,8 @@ const Symptoms = () => {
                     </Link>
                   </TableCell>
                   <TableCell className="max-w-md">
-                    <p className="line-clamp-2 text-text-light">
-                      {symptom.brief_description}
+                    <p className="line-clamp-2 text-muted-foreground">
+                      {symptom.brief_description || 'No description available'}
                     </p>
                   </TableCell>
                   <TableCell className="text-center">
@@ -172,15 +206,22 @@ const Symptoms = () => {
                           title={expert.full_name}
                         />
                       ))}
-                      {symptom.symptom_experts?.length > 3 && (
+                      {(symptom.symptom_experts?.length || 0) > 3 && (
                         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-white">
-                          +{symptom.symptom_experts.length - 3}
+                          +{(symptom.symptom_experts?.length || 0) - 3}
                         </div>
                       )}
                     </div>
                   </TableCell>
                 </TableRow>
               ))}
+              {(filteredSymptoms?.length || 0) === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    <p className="text-muted-foreground">No symptoms found</p>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
