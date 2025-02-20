@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -87,17 +86,12 @@ const Symptoms = () => {
     },
     retry: 2,
     retryDelay: 1000,
-    meta: {
-      errorMessage: "Failed to load symptoms"
-    },
-    onSettled: (data, error) => {
-      if (error) {
-        toast({
-          title: "Error loading symptoms",
-          description: "There was a problem loading the symptoms. Please try again.",
-          variant: "destructive",
-        });
-      }
+    onError: () => {
+      toast({
+        title: "Error loading symptoms",
+        description: "There was a problem loading the symptoms. Please try again.",
+        variant: "destructive",
+      });
     }
   });
 
