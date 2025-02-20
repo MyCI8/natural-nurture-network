@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -30,10 +29,12 @@ interface Symptom {
   symptom: SymptomType;
   brief_description: string | null;
   symptom_remedies: {
-    remedies: Remedy;
+    remedy_id: string;
+    remedy: Remedy;
   }[] | null;
   symptom_experts: {
-    expert: Expert;
+    expert_id: string;
+    experts: Expert;
   }[] | null;
 }
 
@@ -57,14 +58,16 @@ const Symptoms = () => {
             id,
             symptom,
             brief_description,
-            symptom_remedies (
-              remedies (
+            symptom_remedies!inner (
+              remedy_id,
+              remedies!inner (
                 id,
                 name
               )
             ),
-            symptom_experts (
-              expert (
+            symptom_experts!inner (
+              expert_id,
+              experts!inner (
                 id,
                 full_name,
                 image_url
@@ -189,13 +192,13 @@ const Symptoms = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-center -space-x-2">
-                      {symptom.symptom_experts?.slice(0, 3).map(({ expert }) => (
+                      {symptom.symptom_experts?.slice(0, 3).map(({ experts }) => (
                         <img
-                          key={expert.id}
-                          src={expert.image_url || "/placeholder.svg"}
-                          alt={expert.full_name}
+                          key={experts.id}
+                          src={experts.image_url || "/placeholder.svg"}
+                          alt={experts.full_name}
                           className="w-8 h-8 rounded-full border-2 border-white"
-                          title={expert.full_name}
+                          title={experts.full_name}
                         />
                       ))}
                       {(symptom.symptom_experts?.length || 0) > 3 && (
