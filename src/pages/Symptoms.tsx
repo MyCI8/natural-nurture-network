@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -58,16 +59,16 @@ const Symptoms = () => {
             id,
             symptom,
             brief_description,
-            symptom_remedies!inner (
+            symptom_remedies (
               remedy_id,
-              remedies!inner (
+              remedies (
                 id,
                 name
               )
             ),
-            symptom_experts!inner (
+            symptom_experts (
               expert_id,
-              experts!inner (
+              experts (
                 id,
                 full_name,
                 image_url
