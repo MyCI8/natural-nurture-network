@@ -87,14 +87,18 @@ const Symptoms = () => {
     },
     retry: 2,
     retryDelay: 1000,
-    onError: (error) => {
-      console.error("Query error:", error);
-      toast({
-        title: "Error loading symptoms",
-        description: "There was a problem loading the symptoms. Please try again.",
-        variant: "destructive",
-      });
+    meta: {
+      errorMessage: "Failed to load symptoms"
     },
+    onSettled: (data, error) => {
+      if (error) {
+        toast({
+          title: "Error loading symptoms",
+          description: "There was a problem loading the symptoms. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
   });
 
   const filteredSymptoms = symptoms?.filter((symptom) =>
