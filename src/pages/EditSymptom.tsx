@@ -7,15 +7,30 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { SymptomFormLayout } from "@/components/admin/symptoms/form/SymptomFormLayout";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database["public"]["Enums"]["symptom_type"];
+
+interface SymptomFormValues {
+  symptom: SymptomType;
+  brief_description: string;
+  description: string;
+  image_url: string;
+  thumbnail_description: string;
+  video_description: string;
+  related_experts: string[];
+  related_ingredients: string[];
+  video_links: { url: string; title: string }[];
+}
 
 const EditSymptom = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNewSymptom = id === "new";
 
-  const form = useForm({
+  const form = useForm<SymptomFormValues>({
     defaultValues: {
-      symptom: "",
+      symptom: "" as SymptomType,
       brief_description: "",
       description: "",
       image_url: "",
@@ -43,7 +58,6 @@ const EditSymptom = () => {
         throw error;
       }
 
-      // If no data found, throw an error
       if (!data) {
         toast.error("Symptom not found");
         throw new Error("Symptom not found");
@@ -56,7 +70,7 @@ const EditSymptom = () => {
       const relatedExperts = Array.isArray(data.related_experts) ? data.related_experts : [];
       const relatedIngredients = Array.isArray(data.related_ingredients) ? data.related_ingredients : [];
 
-      // Set the form data as soon as we get it
+      // Set the form data
       form.reset({
         symptom: data.symptom || "",
         description: data.description || "",
@@ -89,7 +103,7 @@ const EditSymptom = () => {
     },
   });
 
-  const handleSave = async (values: any) => {
+  const handleSave = async (values: SymptomFormValues) => {
     try {
       if (!values.symptom) {
         toast.error("Symptom name is required");
