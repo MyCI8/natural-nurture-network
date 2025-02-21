@@ -30,7 +30,7 @@ const EditSymptom = () => {
 
   const form = useForm<SymptomFormValues>({
     defaultValues: {
-      symptom: "" as SymptomType,
+      symptom: "Cough" as SymptomType, // Set a default valid symptom type
       brief_description: "",
       description: "",
       image_url: "",
@@ -65,14 +65,19 @@ const EditSymptom = () => {
 
       console.log("Fetched symptom data:", data);
       
-      // Ensure arrays are properly handled
-      const videoLinks = Array.isArray(data.video_links) ? data.video_links : [];
+      // Ensure arrays are properly handled and transformed
+      const videoLinks = Array.isArray(data.video_links) 
+        ? data.video_links.map((link: any) => ({
+            url: typeof link === 'object' ? link.url || '' : '',
+            title: typeof link === 'object' ? link.title || '' : ''
+          }))
+        : [];
       const relatedExperts = Array.isArray(data.related_experts) ? data.related_experts : [];
       const relatedIngredients = Array.isArray(data.related_ingredients) ? data.related_ingredients : [];
 
       // Set the form data
       form.reset({
-        symptom: data.symptom || "",
+        symptom: data.symptom,
         description: data.description || "",
         brief_description: data.brief_description || "",
         image_url: data.image_url || "",
