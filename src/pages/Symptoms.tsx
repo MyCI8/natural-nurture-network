@@ -1,14 +1,14 @@
 
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import SymptomsMarquee from "@/components/SymptomsMarquee";
-import { Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, ArrowLeft } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -40,6 +40,7 @@ interface Symptom {
 }
 
 const Symptoms = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
@@ -100,8 +101,16 @@ const Symptoms = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
+      <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-destructive mb-4">Unable to load symptoms</h1>
             <p className="text-muted-foreground mb-8">
@@ -123,8 +132,16 @@ const Symptoms = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
+      <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="mb-12">
             <Skeleton className="h-12 w-48 mb-4" />
             <Skeleton className="h-6 w-96" />
@@ -142,6 +159,15 @@ const Symptoms = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+
         <div className="mb-12">
           <h1 className="text-4xl font-bold mb-2">Symptoms</h1>
           <p className="text-xl text-muted-foreground">
