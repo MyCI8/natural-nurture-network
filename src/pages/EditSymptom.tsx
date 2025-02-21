@@ -110,29 +110,48 @@ const EditSymptom = () => {
 
   const handleSave = async (values: SymptomFormValues) => {
     try {
+      console.log("Saving values:", values);
+
       if (!values.symptom) {
         toast.error("Symptom name is required");
         return;
       }
 
-      if (isNewSymptom) {
-        const { error } = await supabase
-          .from("symptom_details")
-          .insert([values]);
+      const dataToSave = {
+        ...values,
+        video_links: values.video_links || [],
+        related_experts: values.related_experts || [],
+        related_ingredients: values.related_ingredients || [],
+      };
 
-        if (error) throw error;
+      if (isNewSymptom) {
+        const { data, error } = await supabase
+          .from("symptom_details")
+          .insert([dataToSave])
+          .select()
+          .single();
+
+        if (error) {
+          console.error("Insert error:", error);
+          throw error;
+        }
+        
         toast.success("Symptom created successfully");
+        navigate("/admin/symptoms");
       } else {
         const { error } = await supabase
           .from("symptom_details")
-          .update(values)
+          .update(dataToSave)
           .eq("id", id);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Update error:", error);
+          throw error;
+        }
+        
         toast.success("Symptom updated successfully");
+        navigate("/admin/symptoms");
       }
-
-      navigate("/admin/symptoms");
     } catch (error) {
       console.error("Error saving symptom:", error);
       toast.error("Failed to save symptom");
