@@ -1,17 +1,27 @@
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TextEditor from "@/components/ui/text-editor";
 import { UseFormReturn } from "react-hook-form";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database["public"]["Enums"]["symptom_type"];
+
+const SYMPTOM_TYPES: SymptomType[] = [
+  "Cough", "Cold", "Sore Throat", "Cancer", "Stress", 
+  "Anxiety", "Depression", "Insomnia", "Headache", 
+  "Joint Pain", "Digestive Issues", "Fatigue", 
+  "Skin Irritation", "High Blood Pressure", "Allergies",
+  "Weak Immunity", "Back Pain", "Poor Circulation",
+  "Hair Loss", "Eye Strain"
+];
 
 interface BasicInfoSectionProps {
   form: UseFormReturn<any>;
 }
 
 export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
-  const symptomValue = form.watch('symptom');
-  console.log('Current symptom value:', symptomValue);
-  
   return (
     <div className="space-y-6">
       <FormField
@@ -19,15 +29,24 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
         name="symptom"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Symptom Name</FormLabel>
-            <FormControl>
-              <Input 
-                {...field} 
-                value={field.value || ''} 
-                className="max-w-xl" 
-                placeholder="Enter symptom name"
-              />
-            </FormControl>
+            <FormLabel>Symptom Type</FormLabel>
+            <Select 
+              onValueChange={field.onChange} 
+              value={field.value}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a symptom type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {SYMPTOM_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}
