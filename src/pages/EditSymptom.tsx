@@ -117,8 +117,10 @@ const EditSymptom = () => {
         return;
       }
 
+      // Clean up values before saving
       const dataToSave = {
         ...values,
+        symptom: values.symptom.trim() as SymptomType, // Remove any extra spaces
         video_links: values.video_links || [],
         related_experts: values.related_experts || [],
         related_ingredients: values.related_ingredients || [],
