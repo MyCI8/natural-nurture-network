@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -8,11 +7,14 @@ import { Video } from '@/types/video';
 import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Comments } from '@/components/video/Comments';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedVideoId, setSelectedVideoId] = React.useState<string | null>(null);
 
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
@@ -76,6 +78,11 @@ const VideoFeed = () => {
   const handleVideoClick = useCallback((videoId: string) => {
     navigate(`/videos/${videoId}`);
   }, [navigate]);
+
+  const handleCommentClick = (e: React.MouseEvent, videoId: string) => {
+    e.stopPropagation();
+    setSelectedVideoId(videoId === selectedVideoId ? null : videoId);
+  };
 
   const handleLike = async (videoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -208,7 +215,9 @@ const VideoFeed = () => {
                 {/* Interaction Buttons */}
                 <div className="p-4">
                   <div className="flex items-center space-x-4 mb-3">
-                    <button 
+                    <Button 
+                      variant="ghost"
+                      size="icon"
                       className={`transition-transform hover:scale-110 ${
                         userLikes?.includes(video.id) 
                           ? 'text-red-500' 
@@ -217,17 +226,18 @@ const VideoFeed = () => {
                       onClick={(e) => handleLike(video.id, e)}
                     >
                       <Heart className="h-7 w-7" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
-                    </button>
-                    <button 
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      size="icon"
                       className="text-foreground hover:text-primary transition-transform hover:scale-110"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleVideoClick(video.id);
-                      }}
+                      onClick={(e) => handleCommentClick(e, video.id)}
                     >
                       <MessageCircle className="h-7 w-7" />
-                    </button>
-                    <button 
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      size="icon"
                       className={`transition-transform hover:scale-110 ${
                         userSaves?.includes(video.id) 
                           ? 'text-primary' 
@@ -239,7 +249,7 @@ const VideoFeed = () => {
                         className="h-7 w-7" 
                         fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
                       />
-                    </button>
+                    </Button>
                   </div>
                   
                   <p className="text-sm text-muted-foreground">
@@ -251,6 +261,16 @@ const VideoFeed = () => {
                     <span className="mr-4">{video.likes_count || 0} likes</span>
                     <span>{video.views_count || 0} views</span>
                   </div>
+
+                  {/* Comments Section */}
+                  {selectedVideoId === video.id && (
+                    <div className="mt-4 border-t pt-4">
+                      <Comments 
+                        videoId={video.id} 
+                        onClose={() => setSelectedVideoId(null)}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ))
