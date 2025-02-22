@@ -35,13 +35,17 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
               value={field.value}
             >
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Select a symptom type" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
+              <SelectContent className="bg-popover/100 border shadow-lg">
                 {SYMPTOM_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
+                  <SelectItem 
+                    key={type} 
+                    value={type}
+                    className="hover:bg-accent focus:bg-accent"
+                  >
                     {type}
                   </SelectItem>
                 ))}
