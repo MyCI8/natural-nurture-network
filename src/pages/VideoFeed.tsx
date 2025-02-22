@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -183,20 +184,22 @@ const VideoFeed = () => {
                   className="flex items-center space-x-3 p-4 cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(`/users/${video.profiles.id}`);
+                    if (video.profiles?.id) {
+                      navigate(`/users/${video.profiles.id}`);
+                    }
                   }}
                 >
                   <Avatar className="h-8 w-8">
-                    {video.profiles.avatar_url ? (
-                      <AvatarImage src={video.profiles.avatar_url} alt={video.profiles.full_name} />
+                    {video.profiles?.avatar_url ? (
+                      <AvatarImage src={video.profiles.avatar_url} alt={video.profiles?.full_name || 'User'} />
                     ) : (
                       <AvatarFallback className="bg-primary/10 text-primary">
-                        {video.profiles.full_name.charAt(0)}
+                        {video.profiles?.full_name?.charAt(0) || '?'}
                       </AvatarFallback>
                     )}
                   </Avatar>
                   <span className="font-medium hover:text-primary transition-colors">
-                    {video.profiles.full_name}
+                    {video.profiles?.full_name || 'Anonymous User'}
                   </span>
                 </div>
 
