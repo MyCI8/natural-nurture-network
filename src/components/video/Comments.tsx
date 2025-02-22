@@ -29,6 +29,7 @@ interface CommentsProps {
 
 export const Comments = ({ videoId, onClose }: CommentsProps) => {
   const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -107,6 +108,7 @@ export const Comments = ({ videoId, onClose }: CommentsProps) => {
       if (error) throw error;
 
       setNewComment('');
+      setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ['comments', videoId] });
       
       toast({
@@ -117,6 +119,33 @@ export const Comments = ({ videoId, onClose }: CommentsProps) => {
       toast({
         title: "Error",
         description: "Failed to post comment. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    if (!currentUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('video_comments')
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', currentUser.id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['comments', videoId] });
+      
+      toast({
+        title: "Comment deleted",
+        description: "Your comment has been deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete comment. Please try again.",
         variant: "destructive",
       });
     }
@@ -141,7 +170,55 @@ export const Comments = ({ videoId, onClose }: CommentsProps) => {
             <span className="text-xs text-muted-foreground">
               {new Date(comment.created_at).toLocaleDateString()}
             </span>
+            {currentUser && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => setReplyingTo(comment.id)}
+                >
+                  Reply
+                </Button>
+                {currentUser.id === comment.user_id && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs text-destructive"
+                    onClick={() => handleDelete(comment.id)}
+                  >
+                    Delete
+                  </Button>
+                )}
+              </>
+            )}
           </div>
+          {replyingTo === comment.id && (
+            <form onSubmit={(e) => handleSubmit(e, comment.id)} className="mt-3 space-y-2">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a reply..."
+                className="min-h-[60px]"
+              />
+              <div className="flex space-x-2">
+                <Button type="submit" size="sm" disabled={!newComment.trim()}>
+                  Reply
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setReplyingTo(null);
+                    setNewComment('');
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
       
@@ -170,7 +247,7 @@ export const Comments = ({ videoId, onClose }: CommentsProps) => {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={(e) => handleSubmit(e)} className="space-y-4">
         <Textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
