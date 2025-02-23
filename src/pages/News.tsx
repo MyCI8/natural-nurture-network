@@ -26,36 +26,16 @@ const News = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="flex items-center text-text-light hover:text-primary mb-8"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back
-          </button>
-          
-          <div className="mb-12">
-            <Skeleton className="h-12 w-32 mb-4" />
-            <Skeleton className="h-6 w-64" />
-          </div>
-
-          <div className="mb-16">
-            <Skeleton className="w-full aspect-[21/9] rounded-xl mb-8" />
-            <Skeleton className="h-8 w-2/3 mb-4" />
-            <Skeleton className="h-4 w-full max-w-2xl" />
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="min-h-screen pt-24">
+        <div className="max-w-[600px] mx-auto px-4">
+          <div className="space-y-8">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="overflow-hidden">
-                <CardContent className="p-0">
-                  <Skeleton className="w-full aspect-video" />
-                  <div className="p-6">
-                    <Skeleton className="h-6 w-3/4 mb-3" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
+              <Card key={i} className="overflow-hidden border-0 border-b">
+                <CardContent className="p-4">
+                  <Skeleton className="w-full aspect-[16/9] rounded-xl mb-4" />
+                  <Skeleton className="h-6 w-3/4 mb-3" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full" />
                 </CardContent>
               </Card>
             ))}
@@ -67,15 +47,8 @@ const News = () => {
 
   if (!newsItems?.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="flex items-center text-text-light hover:text-primary mb-8"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back
-          </button>
+      <div className="min-h-screen pt-24">
+        <div className="max-w-[600px] mx-auto px-4">
           <h1 className="text-4xl font-bold mb-2">News</h1>
           <p className="text-xl text-text-light mb-8">Latest Health News Articles</p>
           <p className="text-center text-text-light py-12">No news articles available.</p>
@@ -84,83 +57,34 @@ const News = () => {
     );
   }
 
-  const [featuredArticle, ...otherArticles] = newsItems;
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary to-background pt-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="flex items-center text-text-light hover:text-primary mb-8"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          Back
-        </button>
-
-        <div className="mb-12">
+    <div className="min-h-screen pt-24">
+      <div className="max-w-[600px] mx-auto px-4">
+        <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">News</h1>
           <p className="text-xl text-text-light">Latest Health News Articles</p>
         </div>
 
-        <Link to={`/news/${featuredArticle.id}`} className="block mb-16">
-          <div className="relative">
-            {/* Image Container */}
-            <div className="relative rounded-xl overflow-hidden">
-              <img
-                src={featuredArticle.image_url || "/placeholder.svg"}
-                alt={featuredArticle.thumbnail_description || featuredArticle.title}
-                className="w-full object-cover"
-                style={{ maxHeight: '600px' }}
-              />
-              <div 
-                className="absolute inset-0 bg-gradient-to-b from-transparent from-60% via-background/95 via-80% to-background"
-              />
-              {/* Overlapping Title */}
-              <h2 
-                className="absolute text-3xl font-bold text-text px-8"
-                style={{
-                  bottom: '10%',
-                  left: 0,
-                  right: 0
-                }}
-              >
-                {featuredArticle.title}
-              </h2>
-            </div>
-            
-            {/* Article Brief (Outside Image Container) */}
-            <div className="px-8 mt-6">
-              <p className="text-lg text-text-light">
-                {featuredArticle.summary}
-              </p>
-            </div>
-          </div>
-        </Link>
-
-        <div className="space-y-8">
-          {otherArticles.map((article) => (
+        <div className="space-y-6">
+          {newsItems.map((article) => (
             <Link to={`/news/${article.id}`} key={article.id}>
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
-                <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row">
-                    <div className="w-full md:w-1/3">
-                      <div className="aspect-video md:h-full">
-                        <img
-                          src={article.image_url || "/placeholder.svg"}
-                          alt={article.thumbnail_description || article.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+              <Card className="overflow-hidden border-0 border-b hover:bg-accent/50 transition-colors duration-200">
+                <CardContent className="p-4">
+                  {article.image_url && (
+                    <div className="relative rounded-xl overflow-hidden mb-4">
+                      <img
+                        src={article.image_url}
+                        alt={article.thumbnail_description || article.title}
+                        className="w-full object-cover aspect-[16/9]"
+                      />
                     </div>
-                    <div className="p-6 md:w-2/3">
-                      <h3 className="text-xl font-semibold text-text mb-2 line-clamp-2">
-                        {article.title}
-                      </h3>
-                      <p className="text-text-light line-clamp-3">
-                        {article.summary}
-                      </p>
-                    </div>
-                  </div>
+                  )}
+                  <h3 className="text-xl font-semibold mb-2">
+                    {article.title}
+                  </h3>
+                  <p className="text-text-light">
+                    {article.summary}
+                  </p>
                 </CardContent>
               </Card>
             </Link>
