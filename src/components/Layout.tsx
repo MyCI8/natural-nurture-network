@@ -23,13 +23,13 @@ const Layout = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-background overflow-x-hidden w-full">
       {/* Left Sidebar */}
       <MainSidebar />
       
       {/* Main Content */}
-      <main className={`flex-1 ${isMobile ? 'ml-[72px]' : 'ml-[240px]'} min-h-screen`}>
-        <div className={`w-full mx-auto ${isMobile ? 'px-2 max-w-full' : 'max-w-[800px] px-4'}`}>
+      <main className={`flex-1 ${isMobile ? 'ml-[72px]' : 'ml-[240px]'} min-h-screen w-full`}>
+        <div className={`w-full mx-auto ${isMobile ? 'px-2 max-w-full' : 'max-w-[800px] px-4'} overflow-x-hidden`}>
           <Outlet />
         </div>
       </main>
