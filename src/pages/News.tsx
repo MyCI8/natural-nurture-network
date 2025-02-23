@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -26,20 +25,18 @@ const News = () => {
 
   if (isLoading) {
     return (
-      <div className="pt-12">
-        <div className="max-w-[800px] mx-auto px-2">
-          <div className="space-y-8">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="overflow-hidden border-0 border-b">
-                <CardContent className="p-4">
-                  <Skeleton className="w-full aspect-[16/9] rounded-xl mb-4" />
-                  <Skeleton className="h-6 w-3/4 mb-3" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="pt-6 sm:pt-12">
+        <div className="space-y-4 sm:space-y-8">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="overflow-hidden border-0 border-b">
+              <CardContent className="p-3 sm:p-4">
+                <Skeleton className="w-full aspect-[16/9] rounded-lg sm:rounded-xl mb-3 sm:mb-4" />
+                <Skeleton className="h-5 sm:h-6 w-3/4 mb-2 sm:mb-3" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
@@ -47,49 +44,45 @@ const News = () => {
 
   if (!newsItems?.length) {
     return (
-      <div className="pt-12">
-        <div className="max-w-[800px] mx-auto px-2">
-          <h1 className="text-4xl font-bold mb-2">News</h1>
-          <p className="text-xl text-text-light mb-8">Latest Health News Articles</p>
-          <p className="text-center text-text-light py-12">No news articles available.</p>
-        </div>
+      <div className="pt-6 sm:pt-12">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">News</h1>
+        <p className="text-lg sm:text-xl text-text-light mb-6 sm:mb-8">Latest Health News Articles</p>
+        <p className="text-center text-text-light py-8 sm:py-12">No news articles available.</p>
       </div>
     );
   }
 
   return (
-    <div className="pt-12">
-      <div className="max-w-[800px] mx-auto px-2">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">News</h1>
-          <p className="text-xl text-text-light">Latest Health News Articles</p>
-        </div>
+    <div className="pt-6 sm:pt-12">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">News</h1>
+        <p className="text-lg sm:text-xl text-text-light">Latest Health News Articles</p>
+      </div>
 
-        <div className="space-y-6">
-          {newsItems.map((article) => (
-            <Link to={`/news/${article.id}`} key={article.id}>
-              <Card className="overflow-hidden border-0 border-b hover:bg-accent/50 transition-colors duration-200">
-                <CardContent className="p-4">
-                  {article.image_url && (
-                    <div className="relative rounded-xl overflow-hidden mb-4">
-                      <img
-                        src={article.image_url}
-                        alt={article.thumbnail_description || article.title}
-                        className="w-full object-cover aspect-[16/9]"
-                      />
-                    </div>
-                  )}
-                  <h3 className="text-xl font-semibold mb-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-text-light">
-                    {article.summary}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+      <div className="space-y-4 sm:space-y-6">
+        {newsItems.map((article) => (
+          <Link to={`/news/${article.id}`} key={article.id}>
+            <Card className="overflow-hidden border-0 border-b hover:bg-accent/50 transition-colors duration-200">
+              <CardContent className="p-3 sm:p-4">
+                {article.image_url && (
+                  <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
+                    <img
+                      src={article.image_url}
+                      alt={article.thumbnail_description || article.title}
+                      className="w-full object-cover aspect-[16/9]"
+                    />
+                  </div>
+                )}
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">
+                  {article.title}
+                </h3>
+                <p className="text-sm sm:text-base text-text-light">
+                  {article.summary}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
     </div>
   );

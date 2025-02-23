@@ -2,9 +2,11 @@
 import { useLocation, Outlet } from "react-router-dom";
 import MainSidebar from "./layout/MainSidebar";
 import { useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Layout = () => {
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const preventUnwantedRedirect = (e: BeforeUnloadEvent) => {
@@ -26,8 +28,8 @@ const Layout = () => {
       <MainSidebar />
       
       {/* Main Content */}
-      <main className="flex-1 ml-[240px] min-h-screen border-l">
-        <div className="max-w-[800px] mx-auto px-2">
+      <main className={`flex-1 ${isMobile ? 'ml-[72px]' : 'ml-[240px]'} min-h-screen`}>
+        <div className={`w-full mx-auto ${isMobile ? 'px-2 max-w-full' : 'max-w-[800px] px-4'}`}>
           <Outlet />
         </div>
       </main>
