@@ -1,7 +1,6 @@
 
 import { useLocation, Outlet } from "react-router-dom";
 import MainSidebar from "./layout/MainSidebar";
-import RightSidebar from "./layout/RightSidebar";
 import { useEffect } from "react";
 
 const Layout = () => {
@@ -27,14 +26,11 @@ const Layout = () => {
       <MainSidebar />
       
       {/* Main Content */}
-      <main className="flex-1 ml-[280px] mr-[350px] min-h-screen border-l border-r">
+      <main className="flex-1 ml-[280px] min-h-screen border-l">
         <div className="max-w-[600px] mx-auto">
           <Outlet />
         </div>
       </main>
-      
-      {/* Right Sidebar */}
-      <RightSidebar />
     </div>
   );
 };
