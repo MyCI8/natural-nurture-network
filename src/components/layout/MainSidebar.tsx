@@ -52,7 +52,7 @@ const MainSidebar = () => {
   };
 
   return (
-    <div className="fixed h-screen w-[280px] border-r flex flex-col p-4">
+    <div className="fixed h-screen w-[240px] border-r flex flex-col p-4">
       <Link to="/" className="flex items-center space-x-2 px-4 mb-8">
         <Leaf className="h-8 w-8 text-primary" />
         <span className="text-xl font-semibold">BetterTogether</span>
@@ -74,11 +74,11 @@ const MainSidebar = () => {
       </nav>
 
       <Button
-        className="w-full rounded-full mt-4 mb-8"
-        size="lg"
+        className="w-full rounded-full mt-4 mb-6"
+        size="default"
         onClick={handlePost}
       >
-        <Upload className="mr-2 h-5 w-5" />
+        <Upload className="mr-2 h-4 w-4" />
         Post
       </Button>
 
