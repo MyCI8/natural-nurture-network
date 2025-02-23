@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -46,23 +45,27 @@ const UserProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Loading profile...</p>
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
+          <p>Loading profile...</p>
+        </div>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Profile not found</p>
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
+          <p>Profile not found</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pt-16">
-      <div className="max-w-[600px] mx-auto px-4">
+    <div className="pt-12">
+      <div className="max-w-[800px] mx-auto px-2">
         {/* Profile Header */}
         <div className="py-8 text-center">
           <Avatar className="w-24 h-24 mx-auto mb-4">

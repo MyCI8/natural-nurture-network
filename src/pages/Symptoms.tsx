@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
@@ -101,8 +100,8 @@ const Symptoms = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
           <Button
             variant="ghost"
             size="icon"
@@ -132,8 +131,8 @@ const Symptoms = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
           <Button
             variant="ghost"
             size="icon"
@@ -157,8 +156,8 @@ const Symptoms = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="pt-12">
+      <div className="max-w-[800px] mx-auto px-2">
         <Button
           variant="ghost"
           size="icon"
@@ -168,7 +167,7 @@ const Symptoms = () => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
-        <div className="mb-12">
+        <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Symptoms</h1>
           <p className="text-xl text-muted-foreground">
             Explore common health symptoms and their natural remedies

@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,13 +54,15 @@ const NewsArticle = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
-        <Skeleton className="h-8 w-3/4 mb-4" />
-        <Skeleton className="h-64 w-full mb-6" />
-        <div className="space-y-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
+          <Skeleton className="h-8 w-3/4 mb-4" />
+          <Skeleton className="h-64 w-full mb-6" />
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
         </div>
       </div>
     );
@@ -69,13 +70,14 @@ const NewsArticle = () => {
 
   if (!article) {
     return (
-      <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
-        <h1 className="text-2xl font-bold mb-4">Article not found</h1>
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
+          <h1 className="text-2xl font-bold mb-4">Article not found</h1>
+        </div>
       </div>
     );
   }
 
-  // Safely transform video_links to the correct type
   const videoLinks: VideoLink[] = Array.isArray(article.video_links) 
     ? article.video_links.map((link: any) => ({
         title: typeof link.title === 'string' ? link.title : '',
@@ -84,54 +86,56 @@ const NewsArticle = () => {
     : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-1 sm:px-2 py-20">
-      <div className="mb-12">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="flex items-center text-text-light hover:text-primary mb-8"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          Back
-        </button>
-        <h1 className="text-3xl font-bold mb-6">News</h1>
-      </div>
+    <div className="pt-12">
+      <div className="max-w-[800px] mx-auto px-2">
+        <div className="mb-8">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="flex items-center text-text-light hover:text-primary mb-4"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back
+          </button>
+          <h1 className="text-3xl font-bold mb-6">News</h1>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-12">
-        <article className="text-left max-w-2xl">
-          <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
-          
-          {article.main_image_url && (
-            <figure className="mb-8">
-              <img
-                src={article.main_image_url}
-                alt={article.main_image_description || ""}
-                className="w-full rounded-lg"
-              />
-              {article.main_image_description && (
-                <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
-                  {article.main_image_description}
-                </figcaption>
-              )}
-            </figure>
-          )}
-          
-          <div 
-            className="prose prose-lg max-w-none mb-12"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-12">
+          <article className="text-left max-w-2xl">
+            <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
+            
+            {article.main_image_url && (
+              <figure className="mb-8">
+                <img
+                  src={article.main_image_url}
+                  alt={article.main_image_description || ""}
+                  className="w-full rounded-lg"
+                />
+                {article.main_image_description && (
+                  <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
+                    {article.main_image_description}
+                  </figcaption>
+                )}
+              </figure>
+            )}
+            
+            <div 
+              className="prose prose-lg max-w-none mb-12"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
+
+            {/* Related Experts Section */}
+            {article.experts && <RelatedNewsExperts experts={article.experts} />}
+
+            {/* Related Links Section */}
+            {article.news_article_links && <RelatedNewsLinks links={article.news_article_links} />}
+          </article>
+
+          {/* Videos Section */}
+          <NewsVideos 
+            videoLinks={videoLinks}
+            videoDescription={article.video_description} 
           />
-
-          {/* Related Experts Section */}
-          {article.experts && <RelatedNewsExperts experts={article.experts} />}
-
-          {/* Related Links Section */}
-          {article.news_article_links && <RelatedNewsLinks links={article.news_article_links} />}
-        </article>
-
-        {/* Videos Section */}
-        <NewsVideos 
-          videoLinks={videoLinks}
-          videoDescription={article.video_description} 
-        />
+        </div>
       </div>
     </div>
   );

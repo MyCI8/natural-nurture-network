@@ -25,8 +25,8 @@ const Remedies = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-secondary to-white pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
           <div className="mb-8">
             <button 
               onClick={() => navigate(-1)} 
@@ -56,8 +56,8 @@ const Remedies = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary to-white pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="pt-12">
+      <div className="max-w-[800px] mx-auto px-2">
         <div className="mb-8">
           <button 
             onClick={() => navigate(-1)} 

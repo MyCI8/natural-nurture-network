@@ -26,8 +26,8 @@ const News = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen pt-24">
-        <div className="max-w-[600px] mx-auto px-4">
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
           <div className="space-y-8">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="overflow-hidden border-0 border-b">
@@ -47,8 +47,8 @@ const News = () => {
 
   if (!newsItems?.length) {
     return (
-      <div className="min-h-screen pt-24">
-        <div className="max-w-[600px] mx-auto px-4">
+      <div className="pt-12">
+        <div className="max-w-[800px] mx-auto px-2">
           <h1 className="text-4xl font-bold mb-2">News</h1>
           <p className="text-xl text-text-light mb-8">Latest Health News Articles</p>
           <p className="text-center text-text-light py-12">No news articles available.</p>
@@ -58,8 +58,8 @@ const News = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24">
-      <div className="max-w-[600px] mx-auto px-4">
+    <div className="pt-12">
+      <div className="max-w-[800px] mx-auto px-2">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">News</h1>
           <p className="text-xl text-text-light">Latest Health News Articles</p>
