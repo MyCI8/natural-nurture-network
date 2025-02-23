@@ -2,10 +2,11 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Home, TrendingUp, Newspaper, Play, Upload, User, Settings } from 'lucide-react';
+import { Leaf, Home, Play, Newspaper, Activity, Search, Upload } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 
 const MainSidebar = () => {
   const location = useLocation();
@@ -37,9 +38,9 @@ const MainSidebar = () => {
 
   const navigationItems = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/explore', label: 'Explore', icon: TrendingUp },
+    { path: '/videos', label: 'Explore', icon: Play },
     { path: '/news', label: 'News', icon: Newspaper },
-    { path: '/videos', label: 'Videos', icon: Play },
+    { path: '/symptoms', label: 'Symptoms', icon: Activity },
   ];
 
   const handlePost = () => {
@@ -81,8 +82,19 @@ const MainSidebar = () => {
         Post
       </Button>
 
+      {/* Search bar at the bottom of nav items */}
+      <div className="mt-auto mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search"
+            className="pl-9 rounded-full bg-accent"
+          />
+        </div>
+      </div>
+
       {currentUser ? (
-        <div className="mt-auto">
+        <div>
           <Button
             variant="ghost"
             className="w-full justify-start rounded-full p-4"
@@ -103,7 +115,7 @@ const MainSidebar = () => {
         </div>
       ) : (
         <Button
-          className="mt-auto w-full"
+          className="w-full"
           onClick={() => navigate('/auth')}
         >
           Sign in
