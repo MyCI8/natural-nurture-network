@@ -12,12 +12,14 @@ import { Button } from '@/components/ui/button';
 const RightSidebar = () => {
   const navigate = useNavigate();
 
-  const { data: trendingTopics } = useQuery({
-    queryKey: ['trendingTopics'],
+  // Instead of trending_topics, we'll use popular remedies as trending items
+  const { data: trendingItems } = useQuery({
+    queryKey: ['trendingRemedies'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('trending_topics')
-        .select('*')
+        .from('remedies')
+        .select('id, name, click_count')
+        .order('click_count', { ascending: false })
         .limit(5);
       
       if (error) throw error;
@@ -25,17 +27,22 @@ const RightSidebar = () => {
     },
   });
 
+  // Query experts from profiles table with role filter
   const { data: suggestedExperts } = useQuery({
     queryKey: ['suggestedExperts'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('role', 'expert')
+        .select(`
+          id,
+          full_name,
+          username,
+          avatar_url
+        `)
         .limit(3);
       
       if (error) throw error;
-      return data || [];
+      return profiles || [];
     },
   });
 
@@ -57,14 +64,14 @@ const RightSidebar = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {trendingTopics?.map((topic: any) => (
+          {trendingItems?.map((item) => (
             <div
-              key={topic.id}
+              key={item.id}
               className="cursor-pointer hover:bg-accent rounded-lg p-3"
-              onClick={() => navigate(`/topic/${topic.id}`)}
+              onClick={() => navigate(`/remedies/${item.id}`)}
             >
-              <p className="font-semibold">{topic.title}</p>
-              <p className="text-sm text-muted-foreground">{topic.posts_count} posts</p>
+              <p className="font-semibold">{item.name}</p>
+              <p className="text-sm text-muted-foreground">{item.click_count || 0} views</p>
             </div>
           ))}
         </CardContent>
@@ -96,7 +103,7 @@ const RightSidebar = () => {
               <Button
                 variant="outline"
                 className="rounded-full"
-                onClick={() => navigate(`/experts/${expert.id}`)}
+                onClick={() => navigate(`/users/${expert.id}`)}
               >
                 Follow
               </Button>
