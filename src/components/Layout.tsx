@@ -26,8 +26,8 @@ const Layout = () => {
       <MainSidebar />
       
       {/* Main Content */}
-      <main className="flex-1 ml-[280px] min-h-screen border-l">
-        <div className="max-w-[600px] mx-auto">
+      <main className="flex-1 ml-[140px] min-h-screen border-l">
+        <div className="max-w-[800px] mx-auto px-2">
           <Outlet />
         </div>
       </main>
