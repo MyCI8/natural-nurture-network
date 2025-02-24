@@ -91,7 +91,7 @@ const MainSidebar = () => {
     <nav 
       role="navigation" 
       aria-label="Main navigation"
-      className="fixed h-screen w-60 bg-gray-100 py-4 hidden md:flex flex-col border-r border-gray-200 z-50"
+      className="w-60 bg-gray-100 py-4 flex flex-col border-r border-gray-200"
     >
       <div className="px-4 space-y-2">
         {/* Logo */}
