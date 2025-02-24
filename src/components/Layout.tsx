@@ -33,7 +33,7 @@ const Layout = () => {
         
         {/* Main Content */}
         <main className="flex-1 min-h-screen w-full">
-          <div className={`w-full mx-auto ${isMobile ? 'px-2 pb-20' : 'max-w-[600px] px-4'}`}>
+          <div className={`w-full mx-auto ${isMobile ? 'px-2 pb-20 pt-4' : 'max-w-[600px] px-4'}`}>
             <Outlet />
           </div>
         </main>
