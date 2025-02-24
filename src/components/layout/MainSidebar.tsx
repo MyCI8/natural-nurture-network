@@ -57,18 +57,20 @@ const MainSidebar = () => {
       <nav 
         role="navigation" 
         aria-label="Main navigation"
-        className="fixed bottom-0 left-0 right-0 h-16 bg-background border-t z-50 md:hidden"
+        className="fixed bottom-0 left-0 right-0 h-16 bg-gray-100 border-t z-50 md:hidden"
       >
-        <div className="flex items-center justify-around h-full px-2">
+        <div className="flex items-center justify-around h-full px-4">
           {navigationItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`p-3 rounded-full transition-colors ${
-                location.pathname === item.path 
-                  ? 'bg-accent/50' 
-                  : 'hover:bg-accent/30'
-              }`}
+              className={`
+                p-3 rounded-full flex items-center justify-center w-12 h-12 transition-colors 
+                ${location.pathname === item.path 
+                  ? 'bg-gray-200 font-bold' 
+                  : 'hover:bg-gray-300'
+                }`
+              }
             >
               <item.icon className="h-6 w-6" />
             </Link>
@@ -89,13 +91,13 @@ const MainSidebar = () => {
     <nav 
       role="navigation" 
       aria-label="Main navigation"
-      className="fixed left-0 top-0 h-screen w-60 bg-background py-4 hidden md:flex flex-col"
+      className="fixed left-0 top-0 h-screen w-60 bg-gray-100 py-4 hidden md:flex flex-col border-r border-gray-200 z-50"
     >
       <div className="px-4 space-y-2">
         {/* Logo */}
         <Button 
           variant="ghost" 
-          className="h-14 px-4 justify-start hover:bg-accent/50 rounded-full w-full mb-4"
+          className="h-14 px-4 justify-start hover:bg-gray-200 rounded-full w-full mb-4"
           asChild
         >
           <Link to="/">
@@ -108,11 +110,13 @@ const MainSidebar = () => {
           <Button
             key={item.path}
             variant="ghost"
-            className={`w-full justify-start space-x-4 h-12 px-4 rounded-full ${
-              location.pathname === item.path 
-                ? 'bg-accent/50 font-bold' 
-                : 'hover:bg-accent/30'
-            }`}
+            className={`
+              w-full justify-start space-x-4 h-12 px-4 rounded-full 
+              ${location.pathname === item.path 
+                ? 'bg-gray-200 font-bold' 
+                : 'hover:bg-gray-300'
+              }`
+            }
             asChild
           >
             <Link to={item.path}>
@@ -124,7 +128,7 @@ const MainSidebar = () => {
 
         {/* Post Button */}
         <Button
-          className="w-full h-12 rounded-full mt-4"
+          className="w-full h-12 rounded-full mt-4 bg-primary text-white hover:bg-primary/90"
           onClick={handlePost}
         >
           <Upload className="h-5 w-5 mr-2" />
@@ -137,7 +141,7 @@ const MainSidebar = () => {
         {currentUser ? (
           <Button
             variant="ghost"
-            className="w-full justify-start rounded-full p-4"
+            className="w-full justify-start rounded-full p-4 hover:bg-gray-200"
             onClick={() => navigate(`/users/${currentUser.id}`)}
           >
             <Avatar className="h-8 w-8">
@@ -154,7 +158,7 @@ const MainSidebar = () => {
           </Button>
         ) : (
           <Button
-            className="w-full rounded-full"
+            className="w-full rounded-full bg-primary text-white hover:bg-primary/90"
             onClick={() => navigate('/auth')}
           >
             Sign in
