@@ -1,19 +1,24 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Home, Play, Newspaper, Activity, Search, Upload } from 'lucide-react';
+import { Home, Play, Newspaper, Activity, Upload } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+const navigationItems = [
+  { path: '/', label: 'Home', icon: Home },
+  { path: '/videos', label: 'Explore', icon: Play },
+  { path: '/news', label: 'News', icon: Newspaper },
+  { path: '/symptoms', label: 'Symptoms', icon: Activity },
+];
 
 const MainSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [isExpanded, setIsExpanded] = useState(true);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -39,27 +44,6 @@ const MainSidebar = () => {
     enabled: !!currentUser?.id,
   });
 
-  const navigationItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/videos', label: 'Explore', icon: Play },
-    { path: '/news', label: 'News', icon: Newspaper },
-    { path: '/symptoms', label: 'Symptoms', icon: Activity },
-  ];
-
-  // Auto collapse on mobile when route changes
-  useEffect(() => {
-    if (isMobile) {
-      setIsExpanded(false);
-    }
-  }, [location.pathname, isMobile]);
-
-  // Expand sidebar on desktop
-  useEffect(() => {
-    if (!isMobile) {
-      setIsExpanded(true);
-    }
-  }, [isMobile]);
-
   const handlePost = () => {
     if (!currentUser) {
       navigate('/auth');
@@ -68,110 +52,116 @@ const MainSidebar = () => {
     navigate('/admin/videos/new');
   };
 
-  return (
-    <div 
-      className={`fixed h-screen flex flex-col py-4 bg-background transition-all duration-300 z-50 ${
-        isExpanded ? 'w-[240px]' : 'w-[72px]'
-      }`}
-    >
-      <div className="px-4">
-        <Link 
-          to="/" 
-          className="flex items-center space-x-2 mb-8"
-          onClick={() => isMobile && setIsExpanded(false)}
-        >
-          <Leaf className="h-8 w-8 text-primary shrink-0" />
-          {isExpanded && <span className="text-xl font-semibold">BetterTogether</span>}
-        </Link>
-        
-        <nav className="space-y-2">
+  if (isMobile) {
+    return (
+      <nav 
+        role="navigation" 
+        aria-label="Main navigation"
+        className="fixed bottom-0 left-0 right-0 h-16 bg-background border-t z-50 md:hidden"
+      >
+        <div className="flex items-center justify-around h-full px-2">
           {navigationItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              onClick={() => isMobile && setIsExpanded(false)}
-              className={`flex items-center space-x-4 px-4 py-3 rounded-full transition-colors hover:bg-accent ${
-                location.pathname === item.path ? 'font-bold bg-accent/50' : ''
+              className={`p-3 rounded-full transition-colors ${
+                location.pathname === item.path 
+                  ? 'bg-accent/50' 
+                  : 'hover:bg-accent/30'
               }`}
             >
-              <item.icon className="h-6 w-6 shrink-0" />
-              {isExpanded && <span>{item.label}</span>}
+              <item.icon className="h-6 w-6" />
             </Link>
           ))}
-        </nav>
+          <Button
+            size="icon"
+            onClick={handlePost}
+            className="h-12 w-12 rounded-full"
+          >
+            <Upload className="h-5 w-5" />
+          </Button>
+        </div>
+      </nav>
+    );
+  }
 
+  return (
+    <nav 
+      role="navigation" 
+      aria-label="Main navigation"
+      className="fixed left-0 top-0 h-screen w-60 bg-background py-4 hidden md:flex flex-col"
+    >
+      <div className="px-4 space-y-2">
+        {/* Logo */}
+        <Button 
+          variant="ghost" 
+          className="h-14 px-4 justify-start hover:bg-accent/50 rounded-full w-full mb-4"
+          asChild
+        >
+          <Link to="/">
+            <span className="text-xl font-bold">BetterTogether</span>
+          </Link>
+        </Button>
+
+        {/* Navigation Items */}
+        {navigationItems.map((item) => (
+          <Button
+            key={item.path}
+            variant="ghost"
+            className={`w-full justify-start space-x-4 h-12 px-4 rounded-full ${
+              location.pathname === item.path 
+                ? 'bg-accent/50 font-bold' 
+                : 'hover:bg-accent/30'
+            }`}
+            asChild
+          >
+            <Link to={item.path}>
+              <item.icon className="h-6 w-6" />
+              <span>{item.label}</span>
+            </Link>
+          </Button>
+        ))}
+
+        {/* Post Button */}
         <Button
-          className={`rounded-full mt-4 mb-6 ${isExpanded ? 'w-full' : 'w-[40px] h-[40px] p-0 mx-auto'}`}
-          size={isExpanded ? "default" : "icon"}
+          className="w-full h-12 rounded-full mt-4"
           onClick={handlePost}
         >
-          <Upload className="h-4 w-4 shrink-0" />
-          {isExpanded && <span className="ml-2">Post</span>}
+          <Upload className="h-5 w-5 mr-2" />
+          <span>Post</span>
         </Button>
       </div>
 
+      {/* User Profile */}
       <div className="mt-auto px-4">
-        {/* Search bar */}
-        {isExpanded && (
-          <div className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search"
-                className="pl-9 rounded-full bg-accent"
-              />
-            </div>
-          </div>
-        )}
-
         {currentUser ? (
           <Button
             variant="ghost"
-            className={`w-full justify-start rounded-full p-4 ${!isExpanded && 'px-2'}`}
-            onClick={() => {
-              navigate(`/users/${currentUser.id}`);
-              isMobile && setIsExpanded(false);
-            }}
+            className="w-full justify-start rounded-full p-4"
+            onClick={() => navigate(`/users/${currentUser.id}`)}
           >
-            <Avatar className="h-8 w-8 shrink-0">
+            <Avatar className="h-8 w-8">
               {profile?.avatar_url ? (
                 <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
               ) : (
                 <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
               )}
             </Avatar>
-            {isExpanded && (
-              <div className="flex flex-col items-start ml-3">
-                <span className="font-semibold">{profile?.full_name}</span>
-                <span className="text-sm text-muted-foreground">@{profile?.username || 'user'}</span>
-              </div>
-            )}
+            <div className="flex flex-col items-start ml-3">
+              <span className="font-semibold">{profile?.full_name}</span>
+              <span className="text-sm text-muted-foreground">@{profile?.username || 'user'}</span>
+            </div>
           </Button>
         ) : (
           <Button
-            className={isExpanded ? "w-full" : "w-[40px] h-[40px] p-0 mx-auto"}
-            onClick={() => {
-              navigate('/auth');
-              isMobile && setIsExpanded(false);
-            }}
+            className="w-full rounded-full"
+            onClick={() => navigate('/auth')}
           >
-            {isExpanded ? "Sign in" : "→"}
-          </Button>
-        )}
-
-        {/* Mobile expand/collapse button */}
-        {isMobile && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -right-4 top-4 h-8 w-8 rounded-full bg-background border shadow-md"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? "←" : "→"}
+            Sign in
           </Button>
         )}
       </div>
-    </div>
+    </nav>
   );
 };
 
