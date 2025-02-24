@@ -59,7 +59,7 @@ const MainSidebar = () => {
         aria-label="Main navigation"
         className="fixed bottom-0 left-0 right-0 h-16 bg-gray-100 border-t z-50 md:hidden"
       >
-        <div className="flex items-center justify-around h-full px-4">
+        <div className="flex items-center justify-around h-full max-w-[1265px] mx-auto px-4">
           {navigationItems.map((item) => (
             <Link
               key={item.path}
@@ -78,7 +78,7 @@ const MainSidebar = () => {
           <Button
             size="icon"
             onClick={handlePost}
-            className="h-12 w-12 rounded-full"
+            className="h-12 w-12 rounded-full bg-primary text-white hover:bg-primary/90"
           >
             <Upload className="h-5 w-5" />
           </Button>
@@ -91,7 +91,7 @@ const MainSidebar = () => {
     <nav 
       role="navigation" 
       aria-label="Main navigation"
-      className="fixed left-0 top-0 h-screen w-60 bg-gray-100 py-4 hidden md:flex flex-col border-r border-gray-200 z-50"
+      className="fixed h-screen w-60 bg-gray-100 py-4 hidden md:flex flex-col border-r border-gray-200 z-50"
     >
       <div className="px-4 space-y-2">
         {/* Logo */}

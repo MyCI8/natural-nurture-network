@@ -23,22 +23,25 @@ const Layout = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen w-full bg-background overflow-x-hidden">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <MainSidebar />
-      </div>
-      
-      {/* Main Content */}
-      <main className={`min-h-screen w-full ${isMobile ? '' : 'md:pl-60'}`}>
-        <div className={`mx-auto ${isMobile ? 'px-2 pb-20' : 'max-w-[600px] px-4'}`}>
-          <Outlet />
+    <div className="min-h-screen flex justify-center bg-background overflow-x-hidden w-full">
+      {/* Container for max width */}
+      <div className="w-full max-w-[1265px] flex relative">
+        {/* Left Sidebar - Hidden on mobile */}
+        <div className="hidden md:block w-60 shrink-0">
+          <MainSidebar />
         </div>
-      </main>
+        
+        {/* Main Content */}
+        <main className="flex-1 min-h-screen w-full">
+          <div className={`w-full mx-auto ${isMobile ? 'px-2 pb-20' : 'max-w-[600px] px-4'}`}>
+            <Outlet />
+          </div>
+        </main>
 
-      {/* Mobile Navigation */}
-      <div className="md:hidden">
-        <MainSidebar />
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <MainSidebar />
+        </div>
       </div>
     </div>
   );
