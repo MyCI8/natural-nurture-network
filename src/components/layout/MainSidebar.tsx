@@ -1,60 +1,65 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, Play, Newspaper, Activity, Upload } from 'lucide-react';
+import { Leaf, Home, Play, Newspaper, Activity, Search, Upload } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
-const navigationItems = [{
-  path: '/',
-  label: 'Home',
-  icon: Home
-}, {
-  path: '/videos',
-  label: 'Explore',
-  icon: Play
-}, {
-  path: '/news',
-  label: 'News',
-  icon: Newspaper
-}, {
-  path: '/symptoms',
-  label: 'Symptoms',
-  icon: Activity
-}];
+
 const MainSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const {
-    data: currentUser
-  } = useQuery({
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const {
-        data: {
-          session
-        }
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       return session?.user || null;
-    }
+    },
   });
-  const {
-    data: profile
-  } = useQuery({
+
+  const { data: profile } = useQuery({
     queryKey: ['userProfile', currentUser?.id],
     queryFn: async () => {
       if (!currentUser?.id) return null;
-      const {
-        data,
-        error
-      } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single();
+      
       if (error) throw error;
       return data;
     },
-    enabled: !!currentUser?.id
+    enabled: !!currentUser?.id,
   });
+
+  const navigationItems = [
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/videos', label: 'Explore', icon: Play },
+    { path: '/news', label: 'News', icon: Newspaper },
+    { path: '/symptoms', label: 'Symptoms', icon: Activity },
+  ];
+
+  // Auto collapse on mobile when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsExpanded(false);
+    }
+  }, [location.pathname, isMobile]);
+
+  // Expand sidebar on desktop
+  useEffect(() => {
+    if (!isMobile) {
+      setIsExpanded(true);
+    }
+  }, [isMobile]);
+
   const handlePost = () => {
     if (!currentUser) {
       navigate('/auth');
@@ -62,60 +67,112 @@ const MainSidebar = () => {
     }
     navigate('/admin/videos/new');
   };
-  if (isMobile) {
-    return <nav role="navigation" aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 h-16 bg-gray-100 border-t z-50 md:hidden">
-        <div className="flex items-center justify-around h-full max-w-[1265px] mx-auto px-4">
-          {navigationItems.map(item => <Link key={item.path} to={item.path} className={`
-                p-3 rounded-full flex items-center justify-center w-12 h-12 transition-colors 
-                ${location.pathname === item.path ? 'bg-gray-200 font-bold' : 'hover:bg-gray-300'}`}>
-              <item.icon className="h-6 w-6" />
-            </Link>)}
-          <Button size="icon" onClick={handlePost} className="h-12 w-12 rounded-full bg-primary text-white hover:bg-primary/90">
-            <Upload className="h-5 w-5" />
-          </Button>
-        </div>
-      </nav>;
-  }
-  return <nav role="navigation" aria-label="Main navigation" className="w-60 py-4 flex flex-col border-r border-gray-200 bg-slate-50">
-      <div className="px-4 space-y-2">
-        {/* Logo */}
-        <Button variant="ghost" className="h-14 px-4 justify-start hover:bg-gray-200 rounded-full w-full mb-4" asChild>
-          <Link to="/">
-            <span className="text-xl font-bold">BetterTogether</span>
-          </Link>
-        </Button>
 
-        {/* Navigation Items */}
-        {navigationItems.map(item => <Button key={item.path} variant="ghost" className={`
-              w-full justify-start space-x-4 h-12 px-4 rounded-full 
-              ${location.pathname === item.path ? 'bg-gray-200 font-bold' : 'hover:bg-gray-300'}`} asChild>
-            <Link to={item.path}>
-              <item.icon className="h-6 w-6" />
-              <span>{item.label}</span>
+  return (
+    <div 
+      className={`fixed h-screen flex flex-col py-4 bg-background transition-all duration-300 z-50 ${
+        isExpanded ? 'w-[240px]' : 'w-[72px]'
+      }`}
+    >
+      <div className="px-4">
+        <Link 
+          to="/" 
+          className="flex items-center space-x-2 mb-8"
+          onClick={() => isMobile && setIsExpanded(false)}
+        >
+          <Leaf className="h-8 w-8 text-primary shrink-0" />
+          {isExpanded && <span className="text-xl font-semibold">BetterTogether</span>}
+        </Link>
+        
+        <nav className="space-y-2">
+          {navigationItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => isMobile && setIsExpanded(false)}
+              className={`flex items-center space-x-4 px-4 py-3 rounded-full transition-colors hover:bg-accent ${
+                location.pathname === item.path ? 'font-bold bg-accent/50' : ''
+              }`}
+            >
+              <item.icon className="h-6 w-6 shrink-0" />
+              {isExpanded && <span>{item.label}</span>}
             </Link>
-          </Button>)}
+          ))}
+        </nav>
 
-        {/* Post Button */}
-        <Button className="w-full h-12 rounded-full mt-4 bg-primary text-white hover:bg-primary/90" onClick={handlePost}>
-          <Upload className="h-5 w-5 mr-2" />
-          <span>Post</span>
+        <Button
+          className={`rounded-full mt-4 mb-6 ${isExpanded ? 'w-full' : 'w-[40px] h-[40px] p-0 mx-auto'}`}
+          size={isExpanded ? "default" : "icon"}
+          onClick={handlePost}
+        >
+          <Upload className="h-4 w-4 shrink-0" />
+          {isExpanded && <span className="ml-2">Post</span>}
         </Button>
       </div>
 
-      {/* User Profile */}
       <div className="mt-auto px-4">
-        {currentUser ? <Button variant="ghost" className="w-full justify-start rounded-full p-4 hover:bg-gray-200" onClick={() => navigate(`/users/${currentUser.id}`)}>
-            <Avatar className="h-8 w-8">
-              {profile?.avatar_url ? <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} /> : <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>}
-            </Avatar>
-            <div className="flex flex-col items-start ml-3">
-              <span className="font-semibold">{profile?.full_name}</span>
-              <span className="text-sm text-muted-foreground">@{profile?.username || 'user'}</span>
+        {/* Search bar */}
+        {isExpanded && (
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search"
+                className="pl-9 rounded-full bg-accent"
+              />
             </div>
-          </Button> : <Button className="w-full rounded-full bg-primary text-white hover:bg-primary/90" onClick={() => navigate('/auth')}>
-            Sign in
-          </Button>}
+          </div>
+        )}
+
+        {currentUser ? (
+          <Button
+            variant="ghost"
+            className={`w-full justify-start rounded-full p-4 ${!isExpanded && 'px-2'}`}
+            onClick={() => {
+              navigate(`/users/${currentUser.id}`);
+              isMobile && setIsExpanded(false);
+            }}
+          >
+            <Avatar className="h-8 w-8 shrink-0">
+              {profile?.avatar_url ? (
+                <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
+              ) : (
+                <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
+              )}
+            </Avatar>
+            {isExpanded && (
+              <div className="flex flex-col items-start ml-3">
+                <span className="font-semibold">{profile?.full_name}</span>
+                <span className="text-sm text-muted-foreground">@{profile?.username || 'user'}</span>
+              </div>
+            )}
+          </Button>
+        ) : (
+          <Button
+            className={isExpanded ? "w-full" : "w-[40px] h-[40px] p-0 mx-auto"}
+            onClick={() => {
+              navigate('/auth');
+              isMobile && setIsExpanded(false);
+            }}
+          >
+            {isExpanded ? "Sign in" : "→"}
+          </Button>
+        )}
+
+        {/* Mobile expand/collapse button */}
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute -right-4 top-4 h-8 w-8 rounded-full bg-background border shadow-md"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? "←" : "→"}
+          </Button>
+        )}
       </div>
-    </nav>;
+    </div>
+  );
 };
+
 export default MainSidebar;
