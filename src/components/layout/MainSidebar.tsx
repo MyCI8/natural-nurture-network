@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Leaf, Home, Play, Newspaper, Activity, Search, Upload } from 'lucide-react';
+import { Leaf, Home, Play, Newspaper, Activity, Search, Upload, Settings, Shield } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useTheme } from 'next-themes';
 
 const MainSidebar = () => {
   const location = useLocation();
@@ -16,6 +19,8 @@ const MainSidebar = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showMobileHeader, setShowMobileHeader] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -36,6 +41,16 @@ const MainSidebar = () => {
         .single();
       
       if (error) throw error;
+      return data;
+    },
+    enabled: !!currentUser?.id,
+  });
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ['isAdmin', currentUser?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('check_is_admin');
+      if (error) return false;
       return data;
     },
     enabled: !!currentUser?.id,
@@ -68,6 +83,7 @@ const MainSidebar = () => {
   useEffect(() => {
     if (isMobile) {
       setIsExpanded(false);
+      setShowSettings(false);
     }
   }, [location.pathname, isMobile]);
 
@@ -86,12 +102,56 @@ const MainSidebar = () => {
     navigate('/admin/videos/new');
   };
 
+  const SettingsPanel = () => (
+    <div className="px-4 space-y-6">
+      <h2 className="text-lg font-semibold mb-4">Settings</h2>
+      
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <Label>Dark Mode</Label>
+          <p className="text-sm text-muted-foreground">
+            Toggle dark mode appearance
+          </p>
+        </div>
+        <Switch
+          checked={theme === 'dark'}
+          onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+        />
+      </div>
+
+      <Button
+        variant="ghost"
+        className="w-full justify-start space-x-4"
+        onClick={() => navigate('/settings/profile')}
+      >
+        <Settings className="h-5 w-5" />
+        <span>Edit Profile</span>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="w-full justify-start space-x-4"
+        onClick={() => navigate('/settings/notifications')}
+      >
+        <span>Notification Preferences</span>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="w-full justify-start space-x-4"
+        onClick={() => navigate('/settings/privacy')}
+      >
+        <span>Privacy Settings</span>
+      </Button>
+    </div>
+  );
+
   if (isMobile) {
     return (
       <>
         {/* Mobile Top Header */}
         <header 
-          className={`fixed top-0 left-0 right-0 h-14 bg-gray-100 border-b z-50 transition-transform duration-300 ease-in-out ${
+          className={`fixed top-0 left-0 right-0 h-14 bg-background border-b z-50 transition-transform duration-300 ease-in-out ${
             showMobileHeader ? 'translate-y-0' : '-translate-y-full'
           }`}
         >
@@ -100,7 +160,10 @@ const MainSidebar = () => {
               variant="ghost" 
               size="icon" 
               className="rounded-full"
-              onClick={() => setIsExpanded(true)}
+              onClick={() => {
+                setIsExpanded(true);
+                setShowSettings(false);
+              }}
             >
               <Avatar className="h-8 w-8">
                 {profile?.avatar_url ? (
@@ -121,7 +184,7 @@ const MainSidebar = () => {
         <nav 
           role="navigation" 
           aria-label="Main navigation"
-          className="fixed bottom-0 left-0 right-0 h-16 bg-gray-100 border-t z-50"
+          className="fixed bottom-0 left-0 right-0 h-16 bg-background border-t z-50"
         >
           <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
             {navigationItems.map((item) => (
@@ -130,7 +193,9 @@ const MainSidebar = () => {
                 to={item.path}
                 onClick={() => isMobile && setIsExpanded(false)}
                 className={`p-3 rounded-full flex items-center justify-center w-12 h-12 transition-colors ${
-                  location.pathname === item.path ? 'bg-gray-200 font-bold' : 'hover:bg-gray-300'
+                  location.pathname === item.path 
+                    ? 'bg-accent/50 text-primary font-bold' 
+                    : 'hover:bg-accent/30'
                 }`}
               >
                 <item.icon className="h-6 w-6" />
@@ -139,7 +204,7 @@ const MainSidebar = () => {
             <Button
               size="icon"
               onClick={handlePost}
-              className="h-12 w-12 p-0 rounded-full"
+              className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Upload className="h-5 w-5" />
             </Button>
@@ -150,7 +215,7 @@ const MainSidebar = () => {
         <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${
           isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}>
-          <div className={`absolute left-0 top-0 bottom-0 w-[280px] bg-gray-100 transition-transform duration-300 ${
+          <div className={`absolute left-0 top-0 bottom-0 w-[280px] bg-background transition-transform duration-300 ${
             isExpanded ? 'translate-x-0' : '-translate-x-full'
           }`}>
             <div className="h-full flex flex-col">
@@ -159,29 +224,62 @@ const MainSidebar = () => {
                   variant="ghost" 
                   size="icon" 
                   className="rounded-full"
-                  onClick={() => setIsExpanded(false)}
+                  onClick={() => {
+                    setIsExpanded(false);
+                    setShowSettings(false);
+                  }}
                 >
                   ✕
                 </Button>
               </div>
-              <nav className="flex-1 px-4 space-y-2">
-                {navigationItems.map((item) => (
+
+              {showSettings ? (
+                <SettingsPanel />
+              ) : (
+                <nav className="flex-1 px-4 space-y-2">
+                  {navigationItems.map((item) => (
+                    <Button
+                      key={item.path}
+                      variant="ghost"
+                      className={`w-full justify-start space-x-4 rounded-full ${
+                        location.pathname === item.path 
+                          ? 'bg-accent/50 text-primary font-bold' 
+                          : 'hover:bg-accent/30'
+                      }`}
+                      onClick={() => {
+                        navigate(item.path);
+                        setIsExpanded(false);
+                      }}
+                    >
+                      <item.icon className="h-6 w-6" />
+                      <span>{item.label}</span>
+                    </Button>
+                  ))}
+
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start space-x-4 rounded-full"
+                      onClick={() => {
+                        navigate('/admin');
+                        setIsExpanded(false);
+                      }}
+                    >
+                      <Shield className="h-6 w-6" />
+                      <span>Admin Panel</span>
+                    </Button>
+                  )}
+
                   <Button
-                    key={item.path}
                     variant="ghost"
-                    className={`w-full justify-start space-x-4 rounded-full ${
-                      location.pathname === item.path ? 'bg-gray-200 font-bold' : 'hover:bg-gray-300'
-                    }`}
-                    onClick={() => {
-                      navigate(item.path);
-                      setIsExpanded(false);
-                    }}
+                    className="w-full justify-start space-x-4 rounded-full mt-4"
+                    onClick={() => setShowSettings(true)}
                   >
-                    <item.icon className="h-6 w-6" />
-                    <span>{item.label}</span>
+                    <Settings className="h-6 w-6" />
+                    <span>Settings</span>
                   </Button>
-                ))}
-              </nav>
+                </nav>
+              )}
             </div>
           </div>
         </div>
@@ -193,7 +291,7 @@ const MainSidebar = () => {
     <nav 
       role="navigation" 
       aria-label="Main navigation"
-      className="fixed h-screen flex flex-col py-4 bg-background transition-all duration-300 z-50"
+      className="fixed h-screen flex flex-col py-4 bg-background border-r border-border transition-all duration-300 z-50"
     >
       <div className="px-4">
         <Link 
@@ -211,8 +309,8 @@ const MainSidebar = () => {
               key={item.path}
               to={item.path}
               onClick={() => isMobile && setIsExpanded(false)}
-              className={`flex items-center space-x-4 px-4 py-3 rounded-full transition-colors hover:bg-accent ${
-                location.pathname === item.path ? 'font-bold bg-accent/50' : ''
+              className={`flex items-center space-x-4 px-4 py-3 rounded-full transition-colors hover:bg-accent/30 ${
+                location.pathname === item.path ? 'bg-accent/50 text-primary font-bold' : ''
               }`}
             >
               <item.icon className="h-6 w-6 shrink-0" />
@@ -222,37 +320,48 @@ const MainSidebar = () => {
         </nav>
 
         <Button
-          className={`rounded-full mt-4 mb-6 ${isExpanded ? 'w-full' : 'w-[40px] h-[40px] p-0 mx-auto'}`}
-          size={isExpanded ? "default" : "icon"}
+          className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
           onClick={handlePost}
         >
           <Upload className="h-4 w-4 shrink-0" />
-          {isExpanded && <span className="ml-2">Post</span>}
+          <span className="ml-2">Post</span>
         </Button>
+
+        {isAdmin && (
+          <Button
+            variant="ghost"
+            className="w-full justify-start space-x-4 rounded-full mb-4"
+            onClick={() => navigate('/admin')}
+          >
+            <Shield className="h-6 w-6" />
+            <span>Admin Panel</span>
+          </Button>
+        )}
       </div>
 
-      <div className="mt-auto px-4">
-        {/* Search bar */}
-        {isExpanded && (
-          <div className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search"
-                className="pl-9 rounded-full bg-accent"
-              />
-            </div>
-          </div>
-        )}
+      <div className="mt-auto px-4 space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search"
+            className="pl-9 rounded-full bg-accent"
+          />
+        </div>
+
+        <div className="flex items-center justify-between px-2">
+          <Label htmlFor="theme-toggle">Dark Mode</Label>
+          <Switch
+            id="theme-toggle"
+            checked={theme === 'dark'}
+            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+          />
+        </div>
 
         {currentUser ? (
           <Button
             variant="ghost"
-            className={`w-full justify-start rounded-full p-4 ${!isExpanded && 'px-2'}`}
-            onClick={() => {
-              navigate(`/users/${currentUser.id}`);
-              isMobile && setIsExpanded(false);
-            }}
+            className="w-full justify-start rounded-full p-4"
+            onClick={() => navigate(`/users/${currentUser.id}`)}
           >
             <Avatar className="h-8 w-8 shrink-0">
               {profile?.avatar_url ? (
@@ -261,34 +370,17 @@ const MainSidebar = () => {
                 <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
               )}
             </Avatar>
-            {isExpanded && (
-              <div className="flex flex-col items-start ml-3">
-                <span className="font-semibold">{profile?.full_name}</span>
-                <span className="text-sm text-muted-foreground">@{profile?.username || 'user'}</span>
-              </div>
-            )}
+            <div className="flex flex-col items-start ml-3">
+              <span className="font-semibold">{profile?.full_name}</span>
+              <span className="text-sm text-muted-foreground">@{profile?.username || 'user'}</span>
+            </div>
           </Button>
         ) : (
           <Button
-            className={isExpanded ? "w-full" : "w-[40px] h-[40px] p-0 mx-auto"}
-            onClick={() => {
-              navigate('/auth');
-              isMobile && setIsExpanded(false);
-            }}
+            className="w-full rounded-full"
+            onClick={() => navigate('/auth')}
           >
-            {isExpanded ? "Sign in" : "→"}
-          </Button>
-        )}
-
-        {/* Mobile expand/collapse button */}
-        {isMobile && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -right-4 top-4 h-8 w-8 rounded-full bg-background border shadow-md"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? "←" : "→"}
+            Sign in
           </Button>
         )}
       </div>
