@@ -1,13 +1,25 @@
 
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, Video } from "lucide-react";
+import { ArrowLeft, Upload, Video, X, Crop, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import ReactCrop, { Crop as CropType } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
+interface MediaFile {
+  file: File;
+  preview: string;
+  type: 'image' | 'video';
+}
 
 const EditVideo = () => {
   const navigate = useNavigate();
@@ -15,30 +27,96 @@ const EditVideo = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
+  const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
+  const [currentCrop, setCurrentCrop] = useState<CropType>({
+    unit: '%',
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100
+  });
+  const [cropImageIndex, setCropImageIndex] = useState<number | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+
+  const sliderSettings = {
+    dots: true,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    adaptiveHeight: true
+  };
 
   const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(event.target.files || []);
+    
+    const newMediaFiles = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      type: file.type.startsWith('video/') ? 'video' : 'image'
+    }));
 
-    // Only accept video files
-    if (!file.type.startsWith('video/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a video file",
-        variant: "destructive",
-      });
-      return;
+    setMediaFiles([...mediaFiles, ...newMediaFiles]);
+  };
+
+  const handleDeleteMedia = (index: number) => {
+    URL.revokeObjectURL(mediaFiles[index].preview);
+    setMediaFiles(mediaFiles.filter((_, i) => i !== index));
+  };
+
+  const handleCropClick = (index: number) => {
+    if (mediaFiles[index].type === 'image') {
+      setCropImageIndex(index);
+      setIsCropDialogOpen(true);
     }
+  };
 
-    setMediaFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+  const handleCropComplete = async () => {
+    if (cropImageIndex === null || !imageRef.current) return;
+
+    const canvas = document.createElement('canvas');
+    const scaleX = imageRef.current.naturalWidth / imageRef.current.width;
+    const scaleY = imageRef.current.naturalHeight / imageRef.current.height;
+
+    canvas.width = currentCrop.width! * scaleX;
+    canvas.height = currentCrop.height! * scaleY;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(
+      imageRef.current,
+      currentCrop.x! * scaleX,
+      currentCrop.y! * scaleY,
+      currentCrop.width! * scaleX,
+      currentCrop.height! * scaleY,
+      0,
+      0,
+      currentCrop.width! * scaleX,
+      currentCrop.height! * scaleY
+    );
+
+    canvas.toBlob(blob => {
+      if (blob) {
+        const file = new File([blob], mediaFiles[cropImageIndex].file.name, { type: 'image/jpeg' });
+        const updatedMediaFiles = [...mediaFiles];
+        updatedMediaFiles[cropImageIndex] = {
+          file,
+          preview: URL.createObjectURL(blob),
+          type: 'image'
+        };
+        setMediaFiles(updatedMediaFiles);
+      }
+    }, 'image/jpeg');
+
+    setIsCropDialogOpen(false);
+    setCropImageIndex(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !mediaFile) {
+    if (!title.trim() || mediaFiles.length === 0) {
       toast({
         title: "Missing fields",
         description: "Please fill in all required fields",
@@ -53,28 +131,28 @@ const EditVideo = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Must be logged in");
 
-      // Upload video to storage
-      const fileExt = mediaFile.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('video-media')
-        .upload(fileName, mediaFile);
+      const uploadedFiles = await Promise.all(mediaFiles.map(async (mediaFile) => {
+        const fileExt = mediaFile.file.name.split('.').pop();
+        const fileName = `${crypto.randomUUID()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('video-media')
+          .upload(fileName, mediaFile.file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('video-media')
-        .getPublicUrl(fileName);
+        return supabase.storage
+          .from('video-media')
+          .getPublicUrl(fileName).data.publicUrl;
+      }));
 
-      // Create video record
       const { error: insertError } = await supabase
         .from('videos')
         .insert({
           title,
           description: description.trim() || null,
-          video_url: publicUrl,
+          video_url: uploadedFiles[0], // First file is main video
+          thumbnail_url: uploadedFiles.length > 1 ? uploadedFiles[1] : null, // Second file as thumbnail if exists
           status: 'draft',
           creator_id: user.id,
         });
@@ -83,14 +161,14 @@ const EditVideo = () => {
 
       toast({
         title: "Success",
-        description: "Video uploaded successfully",
+        description: "Media uploaded successfully",
       });
 
       navigate('/admin/videos');
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to upload video",
+        description: error.message || "Failed to upload media",
         variant: "destructive",
       });
     } finally {
@@ -141,30 +219,76 @@ const EditVideo = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => document.getElementById('video-upload')?.click()}
+                  onClick={() => document.getElementById('media-upload')?.click()}
                   className="border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Upload Video
+                  Upload Media
                 </Button>
                 <input
                   type="file"
-                  id="video-upload"
-                  accept="video/*"
+                  id="media-upload"
+                  accept="image/*,video/*"
                   onChange={handleMediaUpload}
                   className="hidden"
+                  multiple
                 />
               </div>
 
-              {previewUrl && (
-                <div className="mt-4 rounded-lg overflow-hidden bg-gray-100">
-                  <video 
-                    src={previewUrl} 
-                    controls 
-                    className="w-full h-auto max-h-[400px]"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
+              {mediaFiles.length > 0 && (
+                <div className="mt-4">
+                  <Slider {...sliderSettings}>
+                    {mediaFiles.map((media, index) => (
+                      <div key={index} className="relative">
+                        <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                          {media.type === 'video' ? (
+                            <video 
+                              src={media.preview} 
+                              controls 
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <img 
+                              src={media.preview} 
+                              alt={`Media ${index + 1}`}
+                              className="w-full h-full object-contain"
+                            />
+                          )}
+                          <div className="absolute top-2 right-2 space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteMedia(index)}
+                              className="bg-white/80 hover:bg-white text-[#4CAF50] hover:text-[#388E3C] rounded-full"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                            {media.type === 'image' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleCropClick(index)}
+                                className="bg-white/80 hover:bg-white text-[#4CAF50] hover:text-[#388E3C] rounded-full"
+                              >
+                                <Crop className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </Slider>
+                  {mediaFiles.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setMediaFiles([])}
+                      className="mt-4 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear all media
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -173,7 +297,7 @@ const EditVideo = () => {
               <Button
                 type="submit"
                 className="bg-[#4CAF50] hover:bg-[#388E3C] text-white min-w-[120px]"
-                disabled={isUploading || !title.trim() || !mediaFile}
+                disabled={isUploading || !title.trim() || mediaFiles.length === 0}
               >
                 {isUploading ? "Uploading..." : "Create"}
               </Button>
@@ -181,6 +305,46 @@ const EditVideo = () => {
           </form>
         </div>
       </div>
+
+      <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
+        <DialogContent className="bg-white max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Crop Image</DialogTitle>
+          </DialogHeader>
+          {cropImageIndex !== null && mediaFiles[cropImageIndex]?.type === 'image' && (
+            <div className="mt-4">
+              <ReactCrop
+                crop={currentCrop}
+                onChange={(c) => setCurrentCrop(c)}
+                aspect={16 / 9}
+              >
+                <img
+                  ref={imageRef}
+                  src={mediaFiles[cropImageIndex].preview}
+                  alt="Crop preview"
+                  className="max-h-[60vh] w-auto mx-auto"
+                />
+              </ReactCrop>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsCropDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleCropComplete}
+              className="bg-[#4CAF50] hover:bg-[#388E3C] text-white"
+            >
+              Apply Crop
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
