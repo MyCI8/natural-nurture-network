@@ -54,7 +54,7 @@ const EditVideo = () => {
     const newMediaFiles = files.map(file => ({
       file,
       preview: URL.createObjectURL(file),
-      type: file.type.startsWith('video/') ? 'video' : 'image'
+      type: file.type.startsWith('video/') ? 'video' as const : 'image' as const
     }));
 
     setMediaFiles([...mediaFiles, ...newMediaFiles]);
