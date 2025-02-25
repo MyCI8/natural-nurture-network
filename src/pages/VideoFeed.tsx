@@ -15,7 +15,6 @@ const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedVideoId, setSelectedVideoId] = React.useState<string | null>(null);
 
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
@@ -80,11 +79,6 @@ const VideoFeed = () => {
     navigate(`/videos/${videoId}`);
   }, [navigate]);
 
-  const handleCommentClick = (e: React.MouseEvent, videoId: string) => {
-    e.stopPropagation();
-    setSelectedVideoId(videoId === selectedVideoId ? null : videoId);
-  };
-
   const handleLike = async (videoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!currentUser) {
@@ -105,7 +99,6 @@ const VideoFeed = () => {
           .from('video_likes')
           .insert({ user_id: currentUser.id, video_id: videoId });
       }
-      // Invalidate queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['userLikes', currentUser.id] });
       queryClient.invalidateQueries({ queryKey: ['videos'] });
     } catch (error) {
@@ -137,7 +130,6 @@ const VideoFeed = () => {
           .from('saved_posts')
           .insert({ user_id: currentUser.id, video_id: videoId });
       }
-      // Invalidate queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['userSaves', currentUser.id] });
     } catch (error) {
       toast({
@@ -151,7 +143,7 @@ const VideoFeed = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen pt-16">
-        <p>Loading videos...</p>
+        <p className="text-[#666666]">Loading videos...</p>
       </div>
     );
   }
@@ -171,13 +163,13 @@ const VideoFeed = () => {
         <div className="space-y-6 py-6">
           {!videos?.length ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">No videos available</p>
+              <p className="text-[#666666] mb-4">No videos available</p>
             </div>
           ) : (
             videos.map((video) => (
               <div 
                 key={video.id} 
-                className="bg-card rounded-xl overflow-hidden shadow-sm"
+                className="bg-white rounded-xl overflow-hidden shadow-sm"
               >
                 {/* User Info */}
                 <div 
@@ -193,12 +185,12 @@ const VideoFeed = () => {
                     {video.profiles?.avatar_url ? (
                       <AvatarImage src={video.profiles.avatar_url} alt={video.profiles?.full_name || 'User'} />
                     ) : (
-                      <AvatarFallback className="bg-primary/10 text-primary">
+                      <AvatarFallback className="bg-[#E8F5E9] text-[#4CAF50]">
                         {video.profiles?.full_name?.charAt(0) || '?'}
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <span className="font-medium hover:text-primary transition-colors">
+                  <span className="font-medium hover:text-[#4CAF50] transition-colors">
                     {video.profiles?.full_name || 'Anonymous User'}
                   </span>
                 </div>
@@ -224,7 +216,7 @@ const VideoFeed = () => {
                       className={`transition-transform hover:scale-110 ${
                         userLikes?.includes(video.id) 
                           ? 'text-red-500' 
-                          : 'text-foreground hover:text-primary'
+                          : 'text-[#666666] hover:text-[#4CAF50]'
                       }`}
                       onClick={(e) => handleLike(video.id, e)}
                     >
@@ -233,8 +225,7 @@ const VideoFeed = () => {
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className="text-foreground hover:text-primary transition-transform hover:scale-110"
-                      onClick={(e) => handleCommentClick(e, video.id)}
+                      className="text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110"
                     >
                       <MessageCircle className="h-7 w-7" />
                     </Button>
@@ -243,8 +234,8 @@ const VideoFeed = () => {
                       size="icon"
                       className={`transition-transform hover:scale-110 ${
                         userSaves?.includes(video.id) 
-                          ? 'text-primary' 
-                          : 'text-foreground hover:text-primary'
+                          ? 'text-[#4CAF50]' 
+                          : 'text-[#666666] hover:text-[#4CAF50]'
                       }`}
                       onClick={(e) => handleSave(video.id, e)}
                     >
@@ -255,25 +246,20 @@ const VideoFeed = () => {
                     </Button>
                   </div>
                   
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-[#666666]">
                     {video.description?.substring(0, 100)}
                     {video.description?.length > 100 && '...'}
                   </p>
                   
-                  <div className="mt-3 text-sm text-muted-foreground">
+                  <div className="mt-3 text-sm text-[#666666]">
                     <span className="mr-4">{video.likes_count || 0} likes</span>
                     <span>{video.views_count || 0} views</span>
                   </div>
 
-                  {/* Comments Section */}
-                  {selectedVideoId === video.id && (
-                    <div className="mt-4 border-t pt-4">
-                      <Comments 
-                        videoId={video.id} 
-                        onClose={() => setSelectedVideoId(null)}
-                      />
-                    </div>
-                  )}
+                  {/* Comments Section - Always Visible */}
+                  <div className="mt-4 border-t pt-4">
+                    <Comments videoId={video.id} />
+                  </div>
                 </div>
               </div>
             ))
