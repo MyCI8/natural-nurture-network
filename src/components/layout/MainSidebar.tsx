@@ -14,6 +14,8 @@ const MainSidebar = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [showMobileHeader, setShowMobileHeader] = useState(true);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -46,6 +48,22 @@ const MainSidebar = () => {
     { path: '/symptoms', label: 'Symptoms', icon: Activity },
   ];
 
+  // Handle mobile scroll for top header
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setShowMobileHeader(
+        currentScrollY < 50 || currentScrollY < lastScrollY
+      );
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isMobile, lastScrollY]);
+
   // Auto collapse on mobile when route changes
   useEffect(() => {
     if (isMobile) {
@@ -68,11 +86,114 @@ const MainSidebar = () => {
     navigate('/admin/videos/new');
   };
 
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile Top Header */}
+        <header 
+          className={`fixed top-0 left-0 right-0 h-14 bg-gray-100 border-b z-50 transition-transform duration-300 ease-in-out ${
+            showMobileHeader ? 'translate-y-0' : '-translate-y-full'
+          }`}
+        >
+          <div className="h-full flex items-center justify-between px-4 max-w-7xl mx-auto">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full"
+              onClick={() => setIsExpanded(true)}
+            >
+              <Avatar className="h-8 w-8">
+                {profile?.avatar_url ? (
+                  <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
+                ) : (
+                  <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
+                )}
+              </Avatar>
+            </Button>
+            <Leaf className="h-6 w-6 text-primary" />
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <Search className="h-5 w-5" />
+            </Button>
+          </div>
+        </header>
+
+        {/* Mobile Bottom Navigation */}
+        <nav 
+          role="navigation" 
+          aria-label="Main navigation"
+          className="fixed bottom-0 left-0 right-0 h-16 bg-gray-100 border-t z-50"
+        >
+          <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => isMobile && setIsExpanded(false)}
+                className={`p-3 rounded-full flex items-center justify-center w-12 h-12 transition-colors ${
+                  location.pathname === item.path ? 'bg-gray-200 font-bold' : 'hover:bg-gray-300'
+                }`}
+              >
+                <item.icon className="h-6 w-6" />
+              </Link>
+            ))}
+            <Button
+              size="icon"
+              onClick={handlePost}
+              className="h-12 w-12 p-0 rounded-full"
+            >
+              <Upload className="h-5 w-5" />
+            </Button>
+          </div>
+        </nav>
+
+        {/* Mobile Expandable Sidebar */}
+        <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${
+          isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}>
+          <div className={`absolute left-0 top-0 bottom-0 w-[280px] bg-gray-100 transition-transform duration-300 ${
+            isExpanded ? 'translate-x-0' : '-translate-x-full'
+          }`}>
+            <div className="h-full flex flex-col">
+              <div className="flex justify-end p-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full"
+                  onClick={() => setIsExpanded(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <nav className="flex-1 px-4 space-y-2">
+                {navigationItems.map((item) => (
+                  <Button
+                    key={item.path}
+                    variant="ghost"
+                    className={`w-full justify-start space-x-4 rounded-full ${
+                      location.pathname === item.path ? 'bg-gray-200 font-bold' : 'hover:bg-gray-300'
+                    }`}
+                    onClick={() => {
+                      navigate(item.path);
+                      setIsExpanded(false);
+                    }}
+                  >
+                    <item.icon className="h-6 w-6" />
+                    <span>{item.label}</span>
+                  </Button>
+                ))}
+              </nav>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <div 
-      className={`fixed h-screen flex flex-col py-4 bg-background transition-all duration-300 z-50 ${
-        isExpanded ? 'w-[240px]' : 'w-[72px]'
-      }`}
+    <nav 
+      role="navigation" 
+      aria-label="Main navigation"
+      className="fixed h-screen flex flex-col py-4 bg-background transition-all duration-300 z-50"
     >
       <div className="px-4">
         <Link 
@@ -81,7 +202,7 @@ const MainSidebar = () => {
           onClick={() => isMobile && setIsExpanded(false)}
         >
           <Leaf className="h-8 w-8 text-primary shrink-0" />
-          {isExpanded && <span className="text-xl font-semibold">BetterTogether</span>}
+          <span className="text-xl font-semibold">BetterTogether</span>
         </Link>
         
         <nav className="space-y-2">
@@ -95,7 +216,7 @@ const MainSidebar = () => {
               }`}
             >
               <item.icon className="h-6 w-6 shrink-0" />
-              {isExpanded && <span>{item.label}</span>}
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
@@ -171,7 +292,7 @@ const MainSidebar = () => {
           </Button>
         )}
       </div>
-    </div>
+    </nav>
   );
 };
 
