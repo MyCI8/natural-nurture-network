@@ -21,6 +21,8 @@ interface MediaFile {
   type: 'image' | 'video';
 }
 
+const DAILY_UPLOAD_LIMIT = 20;
+
 const EditVideo = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -46,6 +48,23 @@ const EditVideo = () => {
     slidesToShow: 1,
     slidesToScroll: 1,
     adaptiveHeight: true
+  };
+
+  const checkUploadLimit = async (userId: string): Promise<boolean> => {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const { count, error } = await supabase
+      .from('videos')
+      .select('*', { count: 'exact', head: true })
+      .eq('creator_id', userId)
+      .gte('created_at', yesterday);
+
+    if (error) {
+      console.error('Error checking upload limit:', error);
+      return false;
+    }
+
+    return (count || 0) < DAILY_UPLOAD_LIMIT;
   };
 
   const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,6 +150,18 @@ const EditVideo = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Must be logged in");
 
+      // Check upload limit
+      const canUpload = await checkUploadLimit(user.id);
+      if (!canUpload) {
+        toast({
+          title: "Upload limit reached",
+          description: `You can only upload ${DAILY_UPLOAD_LIMIT} videos per day`,
+          variant: "destructive",
+        });
+        setIsUploading(false);
+        return;
+      }
+
       const uploadedFiles = await Promise.all(mediaFiles.map(async (mediaFile) => {
         const fileExt = mediaFile.file.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
@@ -153,7 +184,7 @@ const EditVideo = () => {
           description: description.trim() || null,
           video_url: uploadedFiles[0], // First file is main video
           thumbnail_url: uploadedFiles.length > 1 ? uploadedFiles[1] : null, // Second file as thumbnail if exists
-          status: 'draft',
+          status: 'published', // Changed from 'draft' to 'published'
           creator_id: user.id,
         });
 
@@ -161,7 +192,7 @@ const EditVideo = () => {
 
       toast({
         title: "Success",
-        description: "Media uploaded successfully",
+        description: "Video published successfully",
       });
 
       navigate('/admin/videos');
