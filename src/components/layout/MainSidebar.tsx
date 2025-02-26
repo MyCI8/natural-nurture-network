@@ -1,25 +1,35 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Leaf, Home, Play, Newspaper, Activity, Search, Upload, Settings, Shield } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { useTheme } from 'next-themes';
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Leaf,
+  Home,
+  Play,
+  Newspaper,
+  Activity,
+  Search,
+  Upload,
+  Settings,
+  Shield
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useTheme } from "next-themes";
 
 const MainSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [showMobileHeader, setShowMobileHeader] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
+  const [showMobileHeader, setShowMobileHeader] = React.useState(true);
+  const [showSettings, setShowSettings] = React.useState(false);
   const { theme, setTheme } = useTheme();
 
   const { data: currentUser } = useQuery({
@@ -58,7 +68,7 @@ const MainSidebar = () => {
 
   const navigationItems = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/videos', label: 'Explore', icon: Play },
+    { path: '/videos', label: 'Videos', icon: Play },
     { path: '/news', label: 'News', icon: Newspaper },
     { path: '/symptoms', label: 'Symptoms', icon: Activity },
   ];

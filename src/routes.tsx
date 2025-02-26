@@ -44,7 +44,7 @@ const Routes = () => {
         <Route path="symptoms/:id" element={<SymptomDetail />} />
         <Route path="news" element={<News />} />
         <Route path="news/:id" element={<NewsArticle />} />
-        <Route path="explore" element={<VideoFeed />} /> {/* Changed from "videos" to "explore" */}
+        <Route path="videos" element={<VideoFeed />} />
         <Route path="users/:id" element={<UserProfile />} />
         <Route path="admin" element={<Admin />}>
           <Route index element={<AdminDashboard />} />
