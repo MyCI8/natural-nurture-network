@@ -2,20 +2,20 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Home,
-  Users,
-  Leaf,
-  HeartPulse,
+  Play,
   Newspaper,
-  Upload,
+  HeartPulse,
+  Video,
   User,
   LogOut,
-  Shield,
-  Play,
   Settings,
+  Shield,
   Sun,
-  Moon
+  Moon,
+  Plus
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,11 +81,10 @@ const MainSidebar = () => {
 
   const menuItems: MenuItem[] = [
     { path: "/", icon: <Home className="w-5 h-5" />, label: "Home" },
-    { path: "/experts", icon: <Users className="w-5 h-5" />, label: "Experts" },
-    { path: "/remedies", icon: <Leaf className="w-5 h-5" />, label: "Remedies" },
-    { path: "/symptoms", icon: <HeartPulse className="w-5 h-5" />, label: "Symptoms" },
-    { path: "/news", icon: <Newspaper className="w-5 h-5" />, label: "News" },
     { path: "/explore", icon: <Play className="w-5 h-5" />, label: "Explore" },
+    { path: "/news", icon: <Newspaper className="w-5 h-5" />, label: "News" },
+    { path: "/symptoms", icon: <HeartPulse className="w-5 h-5" />, label: "Symptoms" },
+    { path: "/videos", icon: <Video className="w-5 h-5" />, label: "Videos" },
   ];
 
   if (!user) {
@@ -94,86 +93,132 @@ const MainSidebar = () => {
 
   if (user) {
     menuItems.push(
-      { path: "/settings", icon: <Settings className="w-5 h-5" />, label: "Settings" },
-      { 
-        path: "#", 
-        icon: isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />, 
-        label: isDarkMode ? "Light Mode" : "Dark Mode",
-        onClick: toggleDarkMode 
-      }
-    );
-    
-    if (isAdmin) {
-      menuItems.push({ path: "/admin", icon: <Shield className="w-5 h-5" />, label: "Admin" });
-    }
-
-    menuItems.push(
-      { path: `/users/${user.id}`, icon: <User className="w-5 h-5" />, label: "Profile" },
-      { path: "/auth", icon: <LogOut className="w-5 h-5" />, label: "Logout", onClick: handleLogout }
-    );
-  }
-
-  if (isMobile) {
-    return (
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-50">
-        <nav className="flex justify-around p-2">
-          {menuItems.slice(0, 5).map((item) => (
-            <Link 
-              key={item.path} 
-              to={item.path}
-              onClick={item.onClick}
-              className={`p-2 rounded-lg ${
-                location.pathname === item.path 
-                  ? 'text-[#4CAF50]' 
-                  : 'text-muted-foreground'
-              }`}
-            >
-              {item.icon}
-            </Link>
-          ))}
-        </nav>
-      </div>
+      { path: `/users/${user.id}`, icon: <User className="w-5 h-5" />, label: "Profile" }
     );
   }
 
   return (
-    <div className="fixed w-[240px] h-screen p-4 border-r bg-background">
+    <div className="flex flex-col h-full bg-background border-r">
+      {/* Profile Section */}
       {user && (
-        <div className="mb-6 flex items-center space-x-4 px-2">
-          <Avatar>
-            <AvatarImage src={user.user_metadata?.avatar_url} />
-            <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {user.user_metadata?.full_name || user.email}
-            </p>
+        <div className="p-4 border-b">
+          <div className="flex items-center space-x-3">
+            <Avatar>
+              <AvatarImage src={user.user_metadata?.avatar_url} />
+              <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate text-foreground">
+                {user.user_metadata?.full_name || user.email}
+              </p>
+            </div>
           </div>
         </div>
       )}
-      <nav className="space-y-2">
+
+      {/* Main Menu */}
+      <nav className="flex-1 p-2 space-y-1">
         {menuItems.map((item) => (
           <Button
             key={item.path}
-            variant={location.pathname === item.path ? "default" : "ghost"}
-            className="w-full justify-start"
+            variant="ghost"
+            className={`w-full justify-start ${
+              location.pathname === item.path 
+                ? 'text-[#4CAF50] hover:text-[#388E3C]' 
+                : 'text-foreground hover:text-[#4CAF50]'
+            }`}
             onClick={item.onClick}
             asChild={!item.onClick}
           >
             {item.onClick ? (
               <div className="flex items-center">
                 {item.icon}
-                <span className="ml-2">{item.label}</span>
+                <span className="ml-3">{item.label}</span>
               </div>
             ) : (
-              <Link to={item.path}>
+              <Link to={item.path} className="flex items-center">
                 {item.icon}
-                <span className="ml-2">{item.label}</span>
+                <span className="ml-3">{item.label}</span>
               </Link>
             )}
           </Button>
         ))}
       </nav>
+
+      {/* Bottom Section */}
+      <div className="p-4 border-t space-y-2">
+        {isAdmin && (
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            asChild
+          >
+            <Link to="/admin" className="flex items-center">
+              <Shield className="w-5 h-5" />
+              <span className="ml-3">Admin</span>
+            </Link>
+          </Button>
+        )}
+        
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
+          asChild
+        >
+          <Link to="/settings" className="flex items-center">
+            <Settings className="w-5 h-5" />
+            <span className="ml-3">Settings</span>
+          </Link>
+        </Button>
+
+        <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center">
+            {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            <span className="ml-3">Dark Mode</span>
+          </div>
+          <Switch
+            checked={isDarkMode}
+            onCheckedChange={toggleDarkMode}
+          />
+        </div>
+
+        {user && (
+          <>
+            {isAdmin ? (
+              <Button
+                className="w-full bg-[#4CAF50] hover:bg-[#388E3C] text-white"
+                asChild
+              >
+                <Link to="/admin/videos/new" className="flex items-center justify-center">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Post
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                className="w-full bg-[#4CAF50] hover:bg-[#388E3C] text-white"
+                asChild
+              >
+                <Link to="/posts/new" className="flex items-center justify-center">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Post
+                </Link>
+              </Button>
+            )}
+
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <div className="flex items-center">
+                <LogOut className="w-5 h-5" />
+                <span className="ml-3">Logout</span>
+              </div>
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 };
