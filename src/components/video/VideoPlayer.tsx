@@ -11,21 +11,30 @@ interface VideoPlayerProps {
   productLinks?: ProductLink[];
   autoPlay?: boolean;
   showControls?: boolean;
+  globalAudioEnabled?: boolean;
+  onAudioStateChange?: (isMuted: boolean) => void;
+  isFullscreen?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
   video, 
   productLinks = [], 
   autoPlay = true,
-  showControls = true
+  showControls = true,
+  globalAudioEnabled = false,
+  onAudioStateChange,
+  isFullscreen = false
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const { ref: inViewRef, inView } = useInView({
-    threshold: 0.6, // Increased threshold for better auto-play timing
+    threshold: 0.6,
   });
 
-  // Handle video visibility
+  useEffect(() => {
+    setIsMuted(!globalAudioEnabled);
+  }, [globalAudioEnabled]);
+
   useEffect(() => {
     const handleVideoVisibility = async () => {
       if (!videoRef.current) return;
@@ -33,7 +42,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       if (inView && autoPlay) {
         try {
           await videoRef.current.play();
-          // Only increment view count once per session
           const viewSessionKey = `video_${video.id}_viewed`;
           if (!sessionStorage.getItem(viewSessionKey)) {
             const { error } = await supabase.rpc('increment_video_views', { 
@@ -54,22 +62,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   }, [inView, autoPlay, video.id]);
 
   const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent video click event from triggering
+    e.stopPropagation();
     if (!videoRef.current) return;
-    videoRef.current.muted = !videoRef.current.muted;
-    setIsMuted(!isMuted);
+    const newMutedState = !videoRef.current.muted;
+    videoRef.current.muted = newMutedState;
+    setIsMuted(newMutedState);
+    onAudioStateChange?.(newMutedState);
   };
 
   return (
     <div 
       ref={inViewRef} 
-      className="relative w-full h-full overflow-hidden bg-black/5"
+      className={`relative w-full h-full overflow-hidden ${isFullscreen ? 'bg-black' : 'bg-black/5'}`}
     >
-      {/* Video Element */}
       <video
         ref={videoRef}
         src={video.video_url}
-        className="w-full h-full object-cover"
+        className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-cover'}`}
         loop
         muted={isMuted}
         playsInline
@@ -77,10 +86,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         preload="metadata"
       />
       
-      {/* Gradient Overlay for Better Text Visibility */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/60 pointer-events-none" />
       
-      {/* Mute Toggle */}
       <Button
         variant="ghost"
         size="icon"
@@ -94,8 +101,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         )}
       </Button>
 
-      {/* Product Links Overlay */}
-      {productLinks.length > 0 && (
+      {productLinks.length > 0 && !isFullscreen && (
         <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none">
           {productLinks.map((link) => (
             <div
