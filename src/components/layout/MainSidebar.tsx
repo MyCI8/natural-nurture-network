@@ -18,6 +18,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+interface MenuItem {
+  path: string;
+  icon: JSX.Element;
+  label: string;
+  onClick?: () => void;
+}
+
 const MainSidebar = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -38,10 +45,11 @@ const MainSidebar = () => {
       if (!user) return false;
       
       const { data, error } = await supabase
-        .from('admins')
+        .from('user_roles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .eq('role', 'admin')
+        .maybeSingle();
       
       if (error) return false;
       return !!data;
@@ -58,13 +66,13 @@ const MainSidebar = () => {
     });
   };
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { path: "/", icon: <Home className="w-5 h-5" />, label: "Home" },
     { path: "/experts", icon: <Users className="w-5 h-5" />, label: "Experts" },
     { path: "/remedies", icon: <Leaf className="w-5 h-5" />, label: "Remedies" },
     { path: "/symptoms", icon: <HeartPulse className="w-5 h-5" />, label: "Symptoms" },
     { path: "/news", icon: <Newspaper className="w-5 h-5" />, label: "News" },
-    { path: "/explore", icon: <Play className="w-5 h-5" />, label: "Explore" }, // Updated from /videos to /explore
+    { path: "/explore", icon: <Play className="w-5 h-5" />, label: "Explore" },
   ];
 
   if (!user) {
