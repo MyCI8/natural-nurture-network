@@ -1,5 +1,4 @@
-
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,11 +9,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Comments } from '@/components/video/Comments';
+import VideoDialog from '@/components/video/VideoDialog';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
@@ -75,9 +76,9 @@ const VideoFeed = () => {
     enabled: !!currentUser,
   });
 
-  const handleVideoClick = useCallback((videoId: string) => {
-    navigate(`/videos/${videoId}`);
-  }, [navigate]);
+  const handleVideoClick = useCallback((video: Video) => {
+    setSelectedVideo(video);
+  }, []);
 
   const handleLike = async (videoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -198,7 +199,7 @@ const VideoFeed = () => {
                 {/* Video Container */}
                 <div 
                   className="w-full relative cursor-pointer" 
-                  onClick={() => handleVideoClick(video.id)}
+                  onClick={() => handleVideoClick(video)}
                 >
                   <VideoPlayer
                     video={video}
@@ -266,6 +267,12 @@ const VideoFeed = () => {
           )}
         </div>
       </div>
+
+      <VideoDialog
+        video={selectedVideo}
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+      />
     </div>
   );
 };

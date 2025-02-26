@@ -1,16 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { Video } from '@/types/video';
+import VideoDialog from '@/components/video/VideoDialog';
 
 interface UserVideoGridProps {
   userId: string;
 }
 
 export const UserVideoGrid = ({ userId }: UserVideoGridProps) => {
-  const navigate = useNavigate();
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   const { data: videos, isLoading } = useQuery({
     queryKey: ['userVideos', userId],
@@ -40,20 +40,44 @@ export const UserVideoGrid = ({ userId }: UserVideoGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
-      {videos.map((video) => (
-        <div
-          key={video.id}
-          className="relative aspect-square cursor-pointer"
-          onClick={() => navigate(`/videos/${video.id}`)}
-        >
-          <img
-            src={video.thumbnail_url || '/placeholder.svg'}
-            alt={video.title}
-            className="object-cover w-full h-full"
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
+        {videos.map((video) => (
+          <div
+            key={video.id}
+            className="relative aspect-square cursor-pointer group"
+            onClick={() => setSelectedVideo(video)}
+          >
+            {video.thumbnail_url ? (
+              <img
+                src={video.thumbnail_url}
+                alt={video.title}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                <video
+                  src={video.video_url}
+                  className="object-cover w-full h-full"
+                  preload="metadata"
+                />
+              </div>
+            )}
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <p className="text-white text-sm p-2 text-center line-clamp-2">
+                {video.title}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <VideoDialog
+        video={selectedVideo}
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+      />
+    </>
   );
 };
