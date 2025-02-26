@@ -68,7 +68,7 @@ const MainSidebar = () => {
 
   const navigationItems = [
     { path: '/', label: 'Home', icon: Home },
-    { path: '/videos', label: 'Videos', icon: Play },
+    { path: '/explore', label: 'Explore', icon: Play },
     { path: '/news', label: 'News', icon: Newspaper },
     { path: '/symptoms', label: 'Symptoms', icon: Activity },
   ];
