@@ -1,4 +1,5 @@
 
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,7 +35,7 @@ const MainSidebar = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [isDarkMode, setIsDarkMode] = React.useState(
+  const [isDarkMode, setIsDarkMode] = useState(
     document.documentElement.classList.contains('dark')
   );
 
