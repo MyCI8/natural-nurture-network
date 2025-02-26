@@ -429,6 +429,7 @@ export type Database = {
           id: string
           last_failed_login_at: string | null
           last_login_at: string | null
+          name: string | null
           role_id: string | null
           settings: Json | null
           updated_at: string
@@ -444,6 +445,7 @@ export type Database = {
           id: string
           last_failed_login_at?: string | null
           last_login_at?: string | null
+          name?: string | null
           role_id?: string | null
           settings?: Json | null
           updated_at?: string
@@ -459,6 +461,7 @@ export type Database = {
           id?: string
           last_failed_login_at?: string | null
           last_login_at?: string | null
+          name?: string | null
           role_id?: string | null
           settings?: Json | null
           updated_at?: string
