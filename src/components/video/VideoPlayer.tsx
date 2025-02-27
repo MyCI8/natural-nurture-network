@@ -27,6 +27,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
+  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.6,
   });
@@ -34,6 +35,22 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   useEffect(() => {
     setIsMuted(!globalAudioEnabled);
   }, [globalAudioEnabled]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleMetadata = () => {
+      const ratio = video.videoWidth / video.videoHeight;
+      setAspectRatio(ratio);
+      if (video.clientWidth) {
+        video.style.height = `${video.clientWidth / ratio}px`;
+      }
+    };
+
+    video.addEventListener('loadedmetadata', handleMetadata);
+    return () => video.removeEventListener('loadedmetadata', handleMetadata);
+  }, []);
 
   useEffect(() => {
     const handleVideoVisibility = async () => {
@@ -73,12 +90,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div 
       ref={inViewRef} 
-      className={`relative w-full h-full overflow-hidden ${isFullscreen ? 'bg-black' : 'bg-black/5'}`}
+      className={`relative w-full overflow-hidden ${isFullscreen ? 'bg-black h-screen' : 'bg-black/5'}`}
+      style={aspectRatio ? { maxHeight: `calc(100vh - ${isFullscreen ? '0px' : '200px'})` } : undefined}
     >
       <video
         ref={videoRef}
         src={video.video_url}
-        className={`w-full h-full ${isFullscreen ? 'object-contain' : 'object-contain'}`}
+        className="w-full h-auto object-contain"
         loop
         muted={isMuted}
         playsInline

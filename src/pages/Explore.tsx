@@ -51,7 +51,6 @@ const Explore = () => {
         console.error('Error sharing:', err);
       }
     } else {
-      // Fallback to copying link
       try {
         await navigator.clipboard.writeText(window.location.href);
         toast({
@@ -69,32 +68,34 @@ const Explore = () => {
   }
 
   return (
-    <div className="max-w-[600px] mx-auto">
+    <div className="w-full max-w-full mx-auto bg-white dark:bg-gray-900">
       {videos.map((video) => (
         <div 
           key={video.id}
-          className="bg-white dark:bg-gray-900 mb-4 rounded-lg overflow-hidden"
+          className="border-b border-gray-200 dark:border-gray-800 mb-6"
         >
-          <div 
-            className="p-4 flex items-center space-x-2"
-            onClick={() => navigate(`/users/${video.creator?.id}`)}
-            role="button"
-            aria-label={`View ${video.creator?.username}'s profile`}
-          >
-            <Avatar className="h-8 w-8">
-              {video.creator?.avatar_url ? (
-                <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} />
-              ) : (
-                <AvatarFallback>{video.creator?.full_name?.[0] || '?'}</AvatarFallback>
-              )}
-            </Avatar>
-            <span className="font-medium hover:text-[#4CAF50] transition-colors">
-              {video.creator?.username || 'Anonymous'}
-            </span>
+          <div className="max-w-2xl mx-auto px-4">
+            <div 
+              className="flex items-center space-x-2 py-3"
+              onClick={() => navigate(`/users/${video.creator?.id}`)}
+              role="button"
+              aria-label={`View ${video.creator?.username}'s profile`}
+            >
+              <Avatar className="h-8 w-8">
+                {video.creator?.avatar_url ? (
+                  <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} />
+                ) : (
+                  <AvatarFallback>{video.creator?.full_name?.[0] || '?'}</AvatarFallback>
+                )}
+              </Avatar>
+              <span className="font-medium hover:text-[#4CAF50] transition-colors">
+                {video.creator?.username || 'Anonymous'}
+              </span>
+            </div>
           </div>
 
           <div 
-            className="aspect-video cursor-pointer"
+            className="w-full cursor-pointer bg-black"
             onClick={() => setSelectedVideo(video)}
           >
             <VideoPlayer 
@@ -106,67 +107,69 @@ const Explore = () => {
             />
           </div>
 
-          <div className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+          <div className="max-w-2xl mx-auto px-4">
+            <div className="py-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:text-[#4CAF50] transition-colors"
+                    aria-label="Like video"
+                  >
+                    <Heart className="h-6 w-6" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:text-[#4CAF50] transition-colors"
+                    aria-label="Comment on video"
+                    onClick={() => navigate(`/explore/${video.id}`)}
+                  >
+                    <MessageCircle className="h-6 w-6" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="hover:text-[#4CAF50] transition-colors"
+                    aria-label="Share video"
+                    onClick={() => handleShare(video)}
+                  >
+                    <Share2 className="h-6 w-6" />
+                  </Button>
+                </div>
                 <Button 
                   variant="ghost" 
                   size="icon"
                   className="hover:text-[#4CAF50] transition-colors"
-                  aria-label="Like video"
+                  aria-label="Save video"
                 >
-                  <Heart className="h-6 w-6" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="hover:text-[#4CAF50] transition-colors"
-                  aria-label="Comment on video"
-                  onClick={() => navigate(`/explore/${video.id}`)}
-                >
-                  <MessageCircle className="h-6 w-6" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="hover:text-[#4CAF50] transition-colors"
-                  aria-label="Share video"
-                  onClick={() => handleShare(video)}
-                >
-                  <Share2 className="h-6 w-6" />
+                  <Bookmark className="h-6 w-6" />
                 </Button>
               </div>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="hover:text-[#4CAF50] transition-colors"
-                aria-label="Save video"
-              >
-                <Bookmark className="h-6 w-6" />
-              </Button>
-            </div>
 
-            <div className="space-y-2">
-              <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                {video.likes_count || 0} likes
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-medium mr-2">{video.creator?.username}</span>
-                {video.description}
-              </p>
-              <button 
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                onClick={() => navigate(`/explore/${video.id}`)}
-              >
-                View all comments
-              </button>
+              <div className="space-y-2">
+                <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                  {video.likes_count || 0} likes
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <span className="font-medium mr-2">{video.creator?.username}</span>
+                  {video.description}
+                </p>
+                <button 
+                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  onClick={() => navigate(`/explore/${video.id}`)}
+                >
+                  View all comments
+                </button>
+              </div>
             </div>
           </div>
         </div>
       ))}
 
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-        <DialogContent className="max-w-4xl p-0 bg-black overflow-hidden">
+        <DialogContent className="max-w-none w-full h-full p-0 bg-black overflow-hidden">
           {selectedVideo && (
             <VideoPlayer 
               video={selectedVideo}
