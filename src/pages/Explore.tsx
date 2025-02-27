@@ -10,12 +10,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 const Explore = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedVideo, setSelectedVideo] = useState<(Video & { creator: any }) | null>(null);
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
+  const [commentText, setCommentText] = useState('');
   
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ['explore-videos'],
@@ -61,6 +63,16 @@ const Explore = () => {
         console.error('Error copying to clipboard:', err);
       }
     }
+  };
+
+  const handleComment = (videoId: string) => {
+    if (!commentText.trim()) return;
+    
+    // Navigate to the detail page for completing the comment
+    navigate(`/explore/${videoId}`);
+    
+    // You could also implement direct commenting functionality here
+    // But for now, we'll navigate to the detail page
   };
 
   if (isLoading) {
@@ -162,6 +174,32 @@ const Explore = () => {
                 >
                   View all comments
                 </button>
+                
+                {/* Add comment input field - Instagram style */}
+                <div className="flex items-center pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
+                  <Input
+                    type="text"
+                    placeholder="Add a comment..."
+                    className="text-sm border-none focus-visible:ring-0 px-0 h-auto py-1"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleComment(video.id);
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`text-[#4CAF50] font-semibold ${!commentText.trim() ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`}
+                    disabled={!commentText.trim()}
+                    onClick={() => handleComment(video.id)}
+                  >
+                    Post
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
