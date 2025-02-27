@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import type { Video } from '@/types/video';
@@ -15,9 +15,38 @@ import { Input } from '@/components/ui/input';
 const Explore = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<(Video & { creator: any }) | null>(null);
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
+  
+  // Get current user
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setCurrentUser(data.user);
+        
+        // Fetch user likes
+        const { data: likes } = await supabase
+          .from('video_likes')
+          .select('video_id')
+          .eq('user_id', data.user.id);
+          
+        if (likes) {
+          const likesMap = likes.reduce((acc: Record<string, boolean>, like) => {
+            acc[like.video_id] = true;
+            return acc;
+          }, {});
+          setUserLikes(likesMap);
+        }
+      }
+    };
+    
+    fetchUser();
+  }, []);
   
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ['explore-videos'],
@@ -39,6 +68,89 @@ const Explore = () => {
       if (error) throw error;
       return data as (Video & { creator: any })[];
     },
+  });
+
+  // Like mutation
+  const likeMutation = useMutation({
+    mutationFn: async ({ videoId, isLiked }: { videoId: string, isLiked: boolean }) => {
+      if (!currentUser) {
+        throw new Error('You must be logged in to like a video');
+      }
+      
+      if (isLiked) {
+        // Unlike
+        const { error } = await supabase
+          .from('video_likes')
+          .delete()
+          .eq('video_id', videoId)
+          .eq('user_id', currentUser.id);
+          
+        if (error) throw error;
+        return { videoId, liked: false };
+      } else {
+        // Like
+        const { error } = await supabase
+          .from('video_likes')
+          .insert([
+            { video_id: videoId, user_id: currentUser.id }
+          ]);
+          
+        if (error) throw error;
+        return { videoId, liked: true };
+      }
+    },
+    onSuccess: (data) => {
+      // Update local state
+      setUserLikes(prev => ({
+        ...prev,
+        [data.videoId]: data.liked
+      }));
+      
+      // Invalidate video query to refresh like count
+      queryClient.invalidateQueries({ queryKey: ['explore-videos'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update like",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Comment mutation
+  const commentMutation = useMutation({
+    mutationFn: async ({ videoId, comment }: { videoId: string, comment: string }) => {
+      if (!currentUser) {
+        throw new Error('You must be logged in to comment');
+      }
+      
+      const { error } = await supabase
+        .from('video_comments')
+        .insert([
+          { video_id: videoId, user_id: currentUser.id, comment }
+        ]);
+        
+      if (error) throw error;
+      return { videoId, comment };
+    },
+    onSuccess: (data) => {
+      setCommentText('');
+      toast({
+        title: "Comment added",
+        description: "Your comment has been posted successfully!"
+      });
+      
+      // Navigate to detail page
+      navigate(`/explore/${data.videoId}`);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to post comment",
+        variant: "destructive"
+      });
+    }
   });
 
   const handleShare = async (video: Video) => {
@@ -65,14 +177,33 @@ const Explore = () => {
     }
   };
 
+  const handleLike = (videoId: string) => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to like videos",
+      });
+      return;
+    }
+    
+    likeMutation.mutate({ 
+      videoId, 
+      isLiked: userLikes[videoId] || false 
+    });
+  };
+
   const handleComment = (videoId: string) => {
     if (!commentText.trim()) return;
     
-    // Navigate to the detail page for completing the comment
-    navigate(`/explore/${videoId}`);
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to comment",
+      });
+      return;
+    }
     
-    // You could also implement direct commenting functionality here
-    // But for now, we'll navigate to the detail page
+    commentMutation.mutate({ videoId, comment: commentText });
   };
 
   if (isLoading) {
@@ -126,10 +257,11 @@ const Explore = () => {
                   <Button 
                     variant="ghost" 
                     size="icon"
-                    className="hover:text-[#4CAF50] transition-colors"
-                    aria-label="Like video"
+                    className={`transition-colors ${userLikes[video.id] ? 'text-red-500 hover:text-red-600' : 'hover:text-[#4CAF50]'}`}
+                    aria-label={userLikes[video.id] ? "Unlike video" : "Like video"}
+                    onClick={() => handleLike(video.id)}
                   >
-                    <Heart className="h-6 w-6" />
+                    <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
                   </Button>
                   <Button 
                     variant="ghost" 
