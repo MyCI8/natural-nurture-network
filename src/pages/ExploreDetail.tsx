@@ -144,7 +144,7 @@ const ExploreDetail = () => {
       const { error } = await supabase
         .from('video_comments')
         .insert([
-          { video_id: id, user_id: currentUser.id, comment }
+          { video_id: id, user_id: currentUser.id, content: comment }
         ]);
         
       if (error) throw error;
@@ -328,7 +328,7 @@ const ExploreDetail = () => {
                       <div>
                         <p className="text-sm">
                           <span className="font-medium">{comment.user?.username || 'Anonymous'}</span>{' '}
-                          <span className="text-gray-600 dark:text-gray-400">{comment.comment}</span>
+                          <span className="text-gray-600 dark:text-gray-400">{comment.content}</span>
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           {new Date(comment.created_at).toLocaleDateString()}

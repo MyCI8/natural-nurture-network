@@ -128,7 +128,7 @@ const Explore = () => {
       const { error } = await supabase
         .from('video_comments')
         .insert([
-          { video_id: videoId, user_id: currentUser.id, comment }
+          { video_id: videoId, user_id: currentUser.id, content: comment }
         ]);
         
       if (error) throw error;
