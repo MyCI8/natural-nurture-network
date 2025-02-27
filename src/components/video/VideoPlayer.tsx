@@ -26,6 +26,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   isFullscreen = false
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const { ref: inViewRef, inView } = useInView({
@@ -43,13 +44,33 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const handleMetadata = () => {
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
-      if (video.clientWidth) {
-        video.style.height = `${video.clientWidth / ratio}px`;
-      }
+      
+      // Adjust video height based on its natural aspect ratio
+      adjustVideoHeight();
+    };
+
+    const adjustVideoHeight = () => {
+      if (!video || !containerRef.current) return;
+      
+      // Calculate height based on aspect ratio and current width
+      const width = containerRef.current.clientWidth;
+      const height = video.videoHeight / video.videoWidth * width;
+      
+      // Set container height to maintain aspect ratio
+      containerRef.current.style.height = `${height}px`;
+      
+      console.log(`Video dimensions: ${video.videoWidth}x${video.videoHeight}, Aspect ratio: ${video.videoWidth/video.videoHeight}, Setting container height: ${height}px`);
     };
 
     video.addEventListener('loadedmetadata', handleMetadata);
-    return () => video.removeEventListener('loadedmetadata', handleMetadata);
+    
+    // Add resize listener to adjust video height when window is resized
+    window.addEventListener('resize', adjustVideoHeight);
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleMetadata);
+      window.removeEventListener('resize', adjustVideoHeight);
+    };
   }, []);
 
   useEffect(() => {
@@ -89,17 +110,22 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   return (
     <div 
-      ref={inViewRef} 
-      className={`relative w-full overflow-hidden ${isFullscreen ? 'bg-black h-screen' : 'bg-black/5'}`}
-      style={aspectRatio ? { maxHeight: `calc(100vh - ${isFullscreen ? '0px' : '200px'})` } : undefined}
+      ref={(node) => {
+        // Combine refs
+        inViewRef(node);
+        if (node) containerRef.current = node;
+      }}
+      className={`relative w-full overflow-hidden ${isFullscreen ? 'bg-black' : 'bg-black/5'}`}
+      style={isFullscreen ? { height: '100vh' } : undefined}
     >
       <video
         ref={videoRef}
         src={video.video_url}
-        className="w-full h-auto object-contain"
+        className={`w-full ${isFullscreen ? 'h-full object-contain' : 'h-auto object-contain'}`}
         loop
         muted={isMuted}
         playsInline
+        controls={showControls}
         poster={video.thumbnail_url || undefined}
         preload="metadata"
       />
