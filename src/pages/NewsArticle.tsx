@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,8 +101,8 @@ const NewsArticle = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-12">
-          <article className="text-left max-w-2xl">
-            <h2 className="text-2xl font-bold mb-6">{article.title}</h2>
+          <article className="text-left max-w-2xl lg:max-w-2xl md:max-w-xl sm:max-w-md">
+            <h2 className="text-2xl lg:text-2xl md:text-xl sm:text-lg font-bold mb-6">{article.title}</h2>
             
             {article.main_image_url && (
               <figure className="mb-8">
@@ -119,7 +120,7 @@ const NewsArticle = () => {
             )}
             
             <div 
-              className="prose prose-lg max-w-none mb-12"
+              className="prose prose-lg lg:prose-lg md:prose-base sm:prose-sm max-w-none mb-12"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
 
@@ -129,6 +130,9 @@ const NewsArticle = () => {
             {/* Related Links Section */}
             {article.news_article_links && <RelatedNewsLinks links={article.news_article_links} />}
           </article>
+
+          {/* Vertical Separator */}
+          <div className="hidden lg:block border-l border-gray-300 h-full mx-4 lg:mx-4 md:mx-2 sm:mx-1 absolute left-[66.66%] top-0"></div>
 
           {/* Videos Section */}
           <NewsVideos 
