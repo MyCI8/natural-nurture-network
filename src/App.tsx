@@ -1,11 +1,19 @@
 
 import { useEffect } from "react";
-import { RouterProvider } from "react-router-dom";
-import { router } from "./routes";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import Routes from "./routes";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./App.css";
 import './styles/news-article.css'; // Import our new CSS for news articles
+
+// Create router from our routes
+const router = createBrowserRouter([
+  {
+    path: "*",
+    element: <Routes />
+  }
+]);
 
 function App() {
   useEffect(() => {

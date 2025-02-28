@@ -98,10 +98,14 @@ const NewsArticle = () => {
       // Filter out invalid entries and ensure correct structure
       return article.video_links
         .filter(link => link && typeof link === 'object')
-        .map(link => ({
-          title: typeof link.title === 'string' ? link.title : '',
-          url: typeof link.url === 'string' ? link.url : ''
-        }))
+        .map(link => {
+          // Handle both string and object types safely
+          const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
+          return {
+            title: typeof linkObj.title === 'string' ? linkObj.title : '',
+            url: typeof linkObj.url === 'string' ? linkObj.url : ''
+          };
+        })
         .filter(link => link.url.trim() !== ''); // Remove empty URLs
     } catch (error) {
       console.error("Error processing video links:", error);
