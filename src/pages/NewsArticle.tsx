@@ -86,6 +86,8 @@ const NewsArticle = () => {
       }))
     : [];
 
+  console.log("Video Links:", videoLinks); // Debug log to check video links data
+
   return (
     <div className="pt-12">
       <div className="mx-auto px-4">
@@ -100,7 +102,7 @@ const NewsArticle = () => {
           <h1 className="text-3xl font-bold mb-6">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-12 relative">
           <article className="text-left max-w-3xl lg:max-w-3xl md:max-w-2xl sm:max-w-xl w-full">
             <h2 className="text-3xl lg:text-3xl md:text-2xl sm:text-xl font-bold mb-6">{article.title}</h2>
             
@@ -132,13 +134,15 @@ const NewsArticle = () => {
           </article>
 
           {/* Vertical Separator - Visible on large screens */}
-          <div className="hidden lg:block border-l border-gray-300 h-full mx-6 lg:mx-6 md:mx-4 sm:mx-2"></div>
+          <div className="hidden lg:block border-l border-gray-300 h-full absolute left-[75%] top-0 -z-10"></div>
 
           {/* Videos Section */}
-          <NewsVideos 
-            videoLinks={videoLinks}
-            videoDescription={article.video_description} 
-          />
+          <div className="lg:pl-8">
+            <NewsVideos 
+              videoLinks={videoLinks}
+              videoDescription={article.video_description} 
+            />
+          </div>
         </div>
       </div>
     </div>
