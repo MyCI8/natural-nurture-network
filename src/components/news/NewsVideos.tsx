@@ -26,11 +26,11 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
 
   return (
     <aside className="lg:sticky lg:top-8 w-full">
-      <h2 className="text-2xl lg:text-2xl md:text-xl sm:text-lg font-semibold mb-4">Videos</h2>
+      <h2 className="text-xl sm:text-xl md:text-xl lg:text-2xl font-semibold mb-4">Videos</h2>
       {videoDescription && (
-        <p className="text-text-light mb-6 lg:text-base md:text-sm sm:text-xs">{videoDescription}</p>
+        <p className="text-text-light mb-6 text-xs sm:text-xs md:text-sm lg:text-base">{videoDescription}</p>
       )}
-      <div className="space-y-8">
+      <div className="space-y-6">
         {Array.isArray(videoLinks) && videoLinks.map((video: VideoLink, index: number) => {
           const videoId = getYouTubeVideoId(video.url);
           if (!videoId) {
@@ -39,9 +39,9 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
           }
           
           return (
-            <div key={index} className="space-y-4 mb-6">
+            <div key={index} className="mb-6">
               <div className="w-full">
-                <div className="relative aspect-video w-[400px] lg:w-[400px] md:w-[300px] sm:w-[250px] max-w-full overflow-hidden rounded-lg shadow-lg">
+                <div className="relative aspect-video w-full sm:w-[200px] md:w-[240px] lg:w-[320px] max-w-full overflow-hidden rounded-lg shadow-lg">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}`}
                     title={video.title}
@@ -51,7 +51,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
                   />
                 </div>
               </div>
-              <h3 className="font-medium text-xl lg:text-xl md:text-lg sm:text-base text-text line-clamp-2 mt-2">
+              <h3 className="font-medium text-base sm:text-base md:text-lg lg:text-xl text-text line-clamp-2 mt-2">
                 {video.title}
               </h3>
             </div>

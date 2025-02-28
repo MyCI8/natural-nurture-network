@@ -56,7 +56,7 @@ const NewsArticle = () => {
   if (isLoading) {
     return (
       <div className="pt-12">
-        <div className="max-w-full mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6">
           <Skeleton className="h-8 w-3/4 mb-4" />
           <Skeleton className="h-64 w-full mb-6" />
           <div className="space-y-4">
@@ -72,7 +72,7 @@ const NewsArticle = () => {
   if (!article) {
     return (
       <div className="pt-12">
-        <div className="max-w-full mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6">
           <h1 className="text-2xl font-bold mb-4">Article not found</h1>
         </div>
       </div>
@@ -86,11 +86,11 @@ const NewsArticle = () => {
       }))
     : [];
 
-  console.log("Video Links:", videoLinks); // Debug log to check video links data
+  console.log("Video Links:", videoLinks);
 
   return (
     <div className="pt-12">
-      <div className="mx-auto px-4">
+      <div className="container mx-auto px-4 sm:px-6 overflow-hidden">
         <div className="mb-8">
           <button 
             onClick={() => navigate(-1)} 
@@ -102,9 +102,9 @@ const NewsArticle = () => {
           <h1 className="text-3xl font-bold mb-6">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-12 relative">
-          <article className="text-left max-w-3xl lg:max-w-3xl md:max-w-2xl sm:max-w-xl w-full">
-            <h2 className="text-3xl lg:text-3xl md:text-2xl sm:text-xl font-bold mb-6">{article.title}</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-6 lg:gap-8 relative">
+          <article className="text-left w-full">
+            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6">{article.title}</h2>
             
             {article.main_image_url && (
               <figure className="mb-8">
@@ -122,7 +122,7 @@ const NewsArticle = () => {
             )}
             
             <div 
-              className="prose prose-xl lg:prose-xl md:prose-lg sm:prose-base max-w-none mb-12"
+              className="prose prose-sm sm:prose-base md:prose-lg lg:prose-xl max-w-none mb-12"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
 
@@ -133,11 +133,11 @@ const NewsArticle = () => {
             {article.news_article_links && <RelatedNewsLinks links={article.news_article_links} />}
           </article>
 
-          {/* Vertical Separator - Visible on large screens */}
-          <div className="hidden lg:block border-l border-gray-300 h-full absolute left-[75%] top-0 -z-10"></div>
+          {/* Vertical Separator - Visible on large screens only */}
+          <div className="hidden lg:block border-l border-gray-300 absolute h-full left-[66.66%] top-0 -z-10"></div>
 
           {/* Videos Section */}
-          <div className="lg:pl-8">
+          <div className="lg:pl-6">
             <NewsVideos 
               videoLinks={videoLinks}
               videoDescription={article.video_description} 
