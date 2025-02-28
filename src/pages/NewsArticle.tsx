@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { RelatedNewsExperts } from "@/components/news/RelatedNewsExperts";
 import { RelatedNewsLinks } from "@/components/news/RelatedNewsLinks";
 import { NewsVideos } from "@/components/news/NewsVideos";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
@@ -23,6 +24,7 @@ type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
 const NewsArticle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
@@ -88,6 +90,16 @@ const NewsArticle = () => {
 
   console.log("Video Links:", videoLinks);
 
+  // Content wrapper class based on mobile/desktop view
+  const contentWrapperClass = isMobile 
+    ? "flex flex-col"
+    : "grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-6 lg:gap-8 relative";
+
+  // Article wrapper class based on mobile/desktop view
+  const articleWrapperClass = isMobile
+    ? "w-full max-w-xl mx-auto"
+    : "text-left w-full";
+
   return (
     <div className="pt-12">
       <div className="container mx-auto px-4 sm:px-6 overflow-hidden">
@@ -99,11 +111,11 @@ const NewsArticle = () => {
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-3xl font-bold mb-6">News</h1>
+          <h1 className="text-2xl font-bold mb-6">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-6 lg:gap-8 relative">
-          <article className="text-left w-full">
+        <div className={contentWrapperClass}>
+          <article className={articleWrapperClass}>
             <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6">{article.title}</h2>
             
             {article.main_image_url && (
@@ -120,10 +132,35 @@ const NewsArticle = () => {
                 )}
               </figure>
             )}
-            
+
+            {/* First half of article content on mobile */}
+            {isMobile && (
+              <div 
+                className="prose prose-sm sm:prose-base max-w-none mb-8"
+                dangerouslySetInnerHTML={{ 
+                  __html: article.content.substring(0, Math.floor(article.content.length / 2)) 
+                }}
+              />
+            )}
+
+            {/* Videos Section - In the middle on mobile */}
+            {isMobile && videoLinks.length > 0 && (
+              <div className="my-8">
+                <NewsVideos 
+                  videoLinks={videoLinks}
+                  videoDescription={article.video_description} 
+                />
+              </div>
+            )}
+
+            {/* Full content on desktop, second half on mobile */}
             <div 
               className="prose prose-sm sm:prose-base md:prose-lg lg:prose-xl max-w-none mb-12"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ 
+                __html: isMobile 
+                  ? article.content.substring(Math.floor(article.content.length / 2)) 
+                  : article.content 
+              }}
             />
 
             {/* Related Experts Section */}
@@ -134,15 +171,19 @@ const NewsArticle = () => {
           </article>
 
           {/* Vertical Separator - Visible on large screens only */}
-          <div className="hidden lg:block border-l border-gray-300 absolute h-full left-[66.66%] top-0 -z-10"></div>
+          {!isMobile && (
+            <div className="hidden lg:block border-l border-gray-300 absolute h-full left-[66.66%] top-0 -z-10"></div>
+          )}
 
-          {/* Videos Section */}
-          <div className="lg:pl-6">
-            <NewsVideos 
-              videoLinks={videoLinks}
-              videoDescription={article.video_description} 
-            />
-          </div>
+          {/* Videos Section - On the right on desktop */}
+          {!isMobile && (
+            <div className="lg:pl-6">
+              <NewsVideos 
+                videoLinks={videoLinks}
+                videoDescription={article.video_description} 
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
