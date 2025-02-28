@@ -33,7 +33,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
           return (
             <div key={index} className="space-y-4">
               <div className="max-w-full">
-                <div className="relative aspect-video w-[300px] lg:w-[300px] md:w-[250px] sm:w-[200px] h-[200px] lg:h-[200px] md:h-[166.67px] sm:h-[133.33px]">
+                <div className="relative aspect-video w-[400px] lg:w-[400px] md:w-[300px] sm:w-[250px] max-w-full">
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}`}
                     title={video.title}
