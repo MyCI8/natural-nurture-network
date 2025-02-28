@@ -1,22 +1,22 @@
 
-import { BrowserRouter as Router } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
-import { Toaster } from "@/components/ui/toaster";
-import Routes from "./routes";
-
-const queryClient = new QueryClient();
+import { useEffect } from "react";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import "./App.css";
+import './styles/news-article.css'; // Import our new CSS for news articles
 
 function App() {
+  useEffect(() => {
+    console.log("App mounted");
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <Router>
-          <Routes />
-          <Toaster />
-        </Router>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <RouterProvider router={router} />
+      <Toaster />
+    </ThemeProvider>
   );
 }
 

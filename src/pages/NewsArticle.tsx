@@ -35,7 +35,10 @@ const NewsArticle = () => {
         .eq("id", id)
         .single();
 
-      if (articleError) throw articleError;
+      if (articleError) {
+        console.error("Error fetching article:", articleError);
+        throw articleError;
+      }
 
       if (articleData.related_experts && articleData.related_experts.length > 0) {
         const { data: expertsData, error: expertsError } = await supabase
@@ -43,7 +46,10 @@ const NewsArticle = () => {
           .select("*")
           .in("id", articleData.related_experts);
 
-        if (expertsError) throw expertsError;
+        if (expertsError) {
+          console.error("Error fetching experts:", expertsError);
+          throw expertsError;
+        }
         
         return {
           ...articleData,
@@ -81,12 +87,27 @@ const NewsArticle = () => {
     );
   }
 
-  const videoLinks: VideoLink[] = Array.isArray(article.video_links) 
-    ? article.video_links.map((link: any) => ({
-        title: typeof link.title === 'string' ? link.title : '',
-        url: typeof link.url === 'string' ? link.url : ''
-      }))
-    : [];
+  // Process video links and ensure they are valid
+  const videoLinks: VideoLink[] = (() => {
+    try {
+      if (!Array.isArray(article.video_links)) {
+        console.log("Video links is not an array:", article.video_links);
+        return [];
+      }
+      
+      // Filter out invalid entries and ensure correct structure
+      return article.video_links
+        .filter(link => link && typeof link === 'object')
+        .map(link => ({
+          title: typeof link.title === 'string' ? link.title : '',
+          url: typeof link.url === 'string' ? link.url : ''
+        }))
+        .filter(link => link.url.trim() !== ''); // Remove empty URLs
+    } catch (error) {
+      console.error("Error processing video links:", error);
+      return [];
+    }
+  })();
 
   console.log("Video Links:", videoLinks);
 
@@ -98,7 +119,7 @@ const NewsArticle = () => {
   // Article wrapper class based on mobile/desktop view
   const articleWrapperClass = isMobile
     ? "w-full max-w-xl mx-auto"
-    : "text-left w-full";
+    : "text-left w-full max-w-3xl";
 
   return (
     <div className="pt-12">
@@ -155,7 +176,7 @@ const NewsArticle = () => {
 
             {/* Full content on desktop, second half on mobile */}
             <div 
-              className="prose prose-sm sm:prose-base md:prose-lg lg:prose-xl max-w-none mb-12"
+              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-12"
               dangerouslySetInnerHTML={{ 
                 __html: isMobile 
                   ? article.content.substring(Math.floor(article.content.length / 2)) 
@@ -164,10 +185,14 @@ const NewsArticle = () => {
             />
 
             {/* Related Experts Section */}
-            {article.experts && <RelatedNewsExperts experts={article.experts} />}
+            {article.experts && article.experts.length > 0 && (
+              <RelatedNewsExperts experts={article.experts} />
+            )}
 
             {/* Related Links Section */}
-            {article.news_article_links && <RelatedNewsLinks links={article.news_article_links} />}
+            {article.news_article_links && article.news_article_links.length > 0 && (
+              <RelatedNewsLinks links={article.news_article_links} />
+            )}
           </article>
 
           {/* Vertical Separator - Visible on large screens only */}
