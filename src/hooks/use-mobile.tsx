@@ -82,7 +82,7 @@ export function useIsDesktop() {
 
 // Unified breakpoint hook that returns the current breakpoint
 export function useBreakpoint() {
-  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop' | undefined>(undefined);
+  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop' | undefined>('desktop');
 
   useEffect(() => {
     const handleResize = () => {
