@@ -157,7 +157,7 @@ const NewsArticle = () => {
             {/* First half of article content on mobile */}
             {isMobile && (
               <div 
-                className="prose prose-sm sm:prose-base max-w-none mb-6"
+                className="prose prose-sm sm:prose-base max-w-none mb-2"
                 dangerouslySetInnerHTML={{ 
                   __html: article.content.substring(0, Math.floor(article.content.length / 2)) 
                 }}
@@ -195,14 +195,9 @@ const NewsArticle = () => {
             )}
           </article>
 
-          {/* Vertical Separator - Visible on large screens only */}
-          {isDesktop && (
-            <div className="hidden lg:block border-l border-gray-300 absolute h-full left-[66.66%] top-0 -z-10"></div>
-          )}
-
           {/* Videos Section - On the right on desktop */}
           {isDesktop && (
-            <div className="lg:pl-6">
+            <div className="border-l border-gray-300 pl-6 min-h-[calc(100vh-12rem)]">
               <NewsVideos 
                 videoLinks={videoLinks}
                 videoDescription={article.video_description} 
