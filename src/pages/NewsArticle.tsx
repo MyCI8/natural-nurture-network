@@ -97,8 +97,10 @@ const NewsArticle = () => {
         return [];
       }
       
+      console.log("Raw video links:", article.video_links);
+      
       // Filter out invalid entries and ensure correct structure
-      return article.video_links
+      const links = article.video_links
         .filter(link => link && typeof link === 'object')
         .map(link => {
           // Handle both string and object types safely
@@ -109,13 +111,14 @@ const NewsArticle = () => {
           };
         })
         .filter(link => link.url.trim() !== ''); // Remove empty URLs
+      
+      console.log("Processed video links:", links);
+      return links;
     } catch (error) {
       console.error("Error processing video links:", error);
       return [];
     }
   })();
-
-  console.log("Video Links:", videoLinks);
 
   return (
     <div className="pt-6 lg:pt-12">
