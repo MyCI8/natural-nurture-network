@@ -45,6 +45,9 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   const [isLoading, setIsLoading] = useState(true);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
+  console.log("NewsVideos component rendering. Breakpoint:", breakpoint, "isMobile:", isMobile, "isDesktop:", isDesktop);
+  console.log("Received video links:", videoLinks);
+
   // Filter valid YouTube links on component mount and when videoLinks change
   useEffect(() => {
     setIsLoading(true);
@@ -150,7 +153,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
           }
           
           return (
-            <div key={index} className="mb-4 group x-card">
+            <div key={index} className="mb-4 group hover:opacity-95 transition-opacity">
               <div className="w-full">
                 <div 
                   className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer"
@@ -220,10 +223,10 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   return (
     <aside 
       ref={videoContainerRef}
-      className={`${isMobile ? '' : 'lg:sticky lg:top-8 h-fit'} w-full`}
+      className={`${isMobile ? '' : 'lg:sticky lg:top-8'} w-full`}
     >
       <h2 className="text-xl font-semibold mb-4">
-        Videos
+        Videos {validVideoLinks.length > 0 ? `(${validVideoLinks.length})` : ''}
       </h2>
       {videoDescription && (
         <p className="text-text-light mb-4 text-sm">

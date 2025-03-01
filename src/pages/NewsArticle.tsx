@@ -120,6 +120,8 @@ const NewsArticle = () => {
     }
   })();
 
+  console.log("Current breakpoint:", breakpoint, "Is Desktop:", isDesktop);
+
   return (
     <div className="pt-6 lg:pt-12">
       <div className="x-container px-4 sm:px-5 lg:px-6 overflow-hidden">
@@ -195,9 +197,14 @@ const NewsArticle = () => {
             )}
           </article>
 
-          {/* Videos Section - On the right on desktop */}
+          {/* Separate vertical divider to ensure visibility */}
           {isDesktop && (
-            <div className="border-l border-gray-300 pl-6 min-h-[calc(100vh-12rem)]">
+            <div className="hidden lg:block border-l border-gray-300 absolute h-full left-[66.66%] top-0 -z-10"></div>
+          )}
+
+          {/* Videos Section - On the right on desktop */}
+          {isDesktop && videoLinks.length > 0 && (
+            <div className="lg:pl-6">
               <NewsVideos 
                 videoLinks={videoLinks}
                 videoDescription={article.video_description} 

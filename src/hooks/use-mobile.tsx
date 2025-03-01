@@ -6,7 +6,7 @@ const MOBILE_BREAKPOINT = 768; // Mobile breakpoint (0-767px)
 const TABLET_BREAKPOINT = 1200; // Tablet breakpoint (768px-1199px)
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const checkMobile = useCallback(() => {
     return window.innerWidth < MOBILE_BREAKPOINT;
@@ -27,11 +27,11 @@ export function useIsMobile() {
     return () => window.removeEventListener("resize", handleResize);
   }, [checkMobile]);
 
-  return !!isMobile;
+  return isMobile;
 }
 
 export function useIsTablet() {
-  const [isTablet, setIsTablet] = useState<boolean | undefined>(undefined);
+  const [isTablet, setIsTablet] = useState<boolean>(false);
 
   const checkTablet = useCallback(() => {
     return window.innerWidth >= MOBILE_BREAKPOINT && window.innerWidth < TABLET_BREAKPOINT;
@@ -52,11 +52,11 @@ export function useIsTablet() {
     return () => window.removeEventListener("resize", handleResize);
   }, [checkTablet]);
 
-  return !!isTablet;
+  return isTablet;
 }
 
 export function useIsDesktop() {
-  const [isDesktop, setIsDesktop] = useState<boolean | undefined>(undefined);
+  const [isDesktop, setIsDesktop] = useState<boolean>(false);
 
   const checkDesktop = useCallback(() => {
     return window.innerWidth >= TABLET_BREAKPOINT;
@@ -77,12 +77,12 @@ export function useIsDesktop() {
     return () => window.removeEventListener("resize", handleResize);
   }, [checkDesktop]);
 
-  return !!isDesktop;
+  return isDesktop;
 }
 
 // Unified breakpoint hook that returns the current breakpoint
 export function useBreakpoint() {
-  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop' | undefined>('desktop');
+  const [breakpoint, setBreakpoint] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
 
   useEffect(() => {
     const handleResize = () => {
