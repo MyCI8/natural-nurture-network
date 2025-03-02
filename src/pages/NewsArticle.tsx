@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { RelatedNewsLinks } from "@/components/news/RelatedNewsLinks";
 import { NewsVideos } from "@/components/news/NewsVideos";
 import { useBreakpoint } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
+import "../styles/news-article.css";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
 type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
@@ -24,8 +26,8 @@ const NewsArticle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const breakpoint = useBreakpoint();
-  const isMobile = breakpoint === 'mobile';
-  const isDesktop = breakpoint === 'desktop';
+  const isMobile = breakpoint === "mobile";
+  const isDesktop = breakpoint === "desktop";
 
   console.log("NewsArticle rendering with breakpoint:", breakpoint, "isDesktop:", isDesktop);
   console.log("Window width:", window.innerWidth, "TABLET_BREAKPOINT:", 1200);
@@ -102,13 +104,10 @@ const NewsArticle = () => {
       
       const links = article.video_links
         .filter(link => link && typeof link === 'object')
-        .map(link => {
-          const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
-          return {
-            title: typeof linkObj.title === 'string' ? linkObj.title : '',
-            url: typeof linkObj.url === 'string' ? linkObj.url : ''
-          };
-        })
+        .map(link => ({
+          title: typeof link.title === 'string' ? link.title : '',
+          url: typeof link.url === 'string' ? link.url : ''
+        }))
         .filter(link => link.url.trim() !== '');
       
       console.log("Processed video links:", links);
@@ -132,12 +131,12 @@ const NewsArticle = () => {
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6">News</h1>
+          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-6 lg:gap-8 relative">
-          <article className={`${isDesktop ? 'max-w-3xl' : 'max-w-xl mx-auto'} w-full`}>
-            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6">{article.title}</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-4 lg:gap-6">
+          <article className="text-left w-full">
+            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">{article.title}</h2>
             
             {article.main_image_url && (
               <figure className="mb-8">
@@ -156,7 +155,7 @@ const NewsArticle = () => {
 
             {isMobile && (
               <div 
-                className="prose prose-sm sm:prose-base max-w-none mb-2"
+                className="prose prose-sm sm:prose-base max-w-none mb-2 text-left"
                 dangerouslySetInnerHTML={{ 
                   __html: article.content.substring(0, Math.floor(article.content.length / 2)) 
                 }}
@@ -173,7 +172,7 @@ const NewsArticle = () => {
             )}
 
             <div 
-              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10"
+              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
               dangerouslySetInnerHTML={{ 
                 __html: isMobile 
                   ? article.content.substring(Math.floor(article.content.length / 2)) 
@@ -190,12 +189,14 @@ const NewsArticle = () => {
             )}
           </article>
 
-          <div className={`${!isMobile ? 'block' : 'hidden'} border-l border-gray-300 pl-6 min-h-[50vh]`}>
-            <NewsVideos 
-              videoLinks={videoLinks}
-              videoDescription={article.video_description} 
-            />
-          </div>
+          {!isMobile && (
+            <div className="border-l border-gray-300 pl-6 min-h-[50vh] hidden lg:block">
+              <NewsVideos 
+                videoLinks={videoLinks}
+                videoDescription={article.video_description} 
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

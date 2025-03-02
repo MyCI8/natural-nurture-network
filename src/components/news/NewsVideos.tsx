@@ -82,7 +82,8 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   useEffect(() => {
     const adjustContainerHeight = () => {
       if (videoContainerRef.current) {
-        videoContainerRef.current.style.minHeight = '300px';
+        const minHeight = isDesktop ? '500px' : '300px';
+        videoContainerRef.current.style.minHeight = minHeight;
       }
     };
 
@@ -92,7 +93,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
     return () => {
       window.removeEventListener('resize', adjustContainerHeight);
     };
-  }, []);
+  }, [isDesktop]);
   
   // Generate YouTube embed URL with autoplay and mute parameters for mobile carousel
   const getEmbedUrl = (videoId: string, autoplay: boolean = false, mute: boolean = true) => {
@@ -111,7 +112,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   // Loading state
   if (isLoading) {
     return (
-      <aside className={`w-full`}>
+      <aside className="w-full text-left">
         <h2 className="text-xl font-semibold mb-4">Videos</h2>
         {videoDescription && (
           <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
@@ -126,7 +127,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   // Render "No videos available" when no valid videos exist
   if (validVideoLinks.length === 0) {
     return (
-      <aside className={`w-full`}>
+      <aside className="w-full text-left">
         <h2 className="text-xl font-semibold mb-4">Videos</h2>
         {videoDescription && (
           <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
@@ -142,7 +143,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   const renderDesktopVideos = () => {
     console.log("Rendering desktop videos with", validVideoLinks.length, "valid links");
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         {validVideoLinks.map((video: VideoLink, index: number) => {
           const videoId = getYouTubeVideoId(video.url);
           if (!videoId) {
@@ -151,12 +152,9 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
           }
           
           return (
-            <div key={index} className="mb-4 group hover:opacity-95 transition-opacity">
+            <div key={index} className="mb-6 group hover:opacity-95 transition-opacity">
               <div className="w-full">
-                <div 
-                  className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer"
-                  style={{ maxWidth: '350px' }}
-                >
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer">
                   <iframe
                     src={getEmbedUrl(videoId)}
                     title={video.title || `Video ${index + 1}`}
@@ -221,7 +219,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   return (
     <aside 
       ref={videoContainerRef}
-      className="w-full"
+      className="w-full text-left"
     >
       <h2 className="text-xl font-semibold mb-4">
         Videos {validVideoLinks.length > 0 ? `(${validVideoLinks.length})` : ''}

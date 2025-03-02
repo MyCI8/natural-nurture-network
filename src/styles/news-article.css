@@ -78,4 +78,14 @@
   #root {
     padding: 0;
   }
+  
+  /* Ensure the article column has proper max-width */
+  .grid-cols-\[3fr\,2fr\] > article {
+    max-width: calc(100% - 1.5rem);
+  }
+  
+  /* Video column takes full width of its grid cell */
+  .grid-cols-\[3fr\,2fr\] > div:last-child {
+    width: 100%;
+  }
 }
