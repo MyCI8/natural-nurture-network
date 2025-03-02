@@ -1,7 +1,5 @@
 
-import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useBreakpoint } from "@/hooks/use-mobile";
+import { useEffect, useState } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -10,14 +8,15 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-interface VideoLink {
-  title: string;
-  url: string;
+interface VideoLink { 
+  title: string; 
+  url: string 
 }
 
-interface NewsVideosProps {
-  videoLinks: VideoLink[];
+interface NewsVideosProps { 
+  videoLinks: VideoLink[]; 
   videoDescription?: string;
+  viewMode?: "mobile" | "desktop";
 }
 
 // Helper function to extract YouTube video ID
@@ -35,19 +34,11 @@ const isValidYouTubeUrl = (url: string) => {
   return !!getYouTubeVideoId(url);
 };
 
-export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) => {
-  const breakpoint = useBreakpoint();
-  const isMobile = breakpoint === 'mobile';
-  const isTablet = breakpoint === 'tablet';
-  const isDesktop = breakpoint === 'desktop';
-  
+export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" }: NewsVideosProps) => {
   const [validVideoLinks, setValidVideoLinks] = useState<VideoLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const videoContainerRef = useRef<HTMLDivElement>(null);
 
-  console.log("NewsVideos component rendering. Breakpoint:", breakpoint, "isMobile:", isMobile, "isDesktop:", isDesktop);
-  console.log("Received video links:", videoLinks);
-  console.log("Window width:", window.innerWidth, "rendering on:", breakpoint);
+  console.log("NewsVideos rendering in", viewMode, "mode with", videoLinks?.length || 0, "links");
 
   // Filter valid YouTube links on component mount and when videoLinks change
   useEffect(() => {
@@ -61,39 +52,20 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
 
     const filteredLinks = videoLinks.filter(link => {
       if (!link || !link.url || typeof link.url !== 'string') {
-        console.log("Filtered out link due to missing or invalid URL:", link);
         return false;
       }
       
       if (!isValidYouTubeUrl(link.url)) {
-        console.log("Filtered out non-YouTube URL:", link.url);
         return false;
       }
       
       return true;
     });
     
-    console.log(`Filtered ${filteredLinks.length} valid YouTube videos from ${videoLinks.length} links`);
+    console.log(`Filtered ${filteredLinks.length} valid YouTube videos from ${videoLinks.length} links for ${viewMode} view`);
     setValidVideoLinks(filteredLinks);
     setIsLoading(false);
-  }, [videoLinks]);
-
-  // Handle video container height adjustment
-  useEffect(() => {
-    const adjustContainerHeight = () => {
-      if (videoContainerRef.current) {
-        const minHeight = isDesktop ? '500px' : '300px';
-        videoContainerRef.current.style.minHeight = minHeight;
-      }
-    };
-
-    adjustContainerHeight();
-    window.addEventListener('resize', adjustContainerHeight);
-    
-    return () => {
-      window.removeEventListener('resize', adjustContainerHeight);
-    };
-  }, [isDesktop]);
+  }, [videoLinks, viewMode]);
   
   // Generate YouTube embed URL with autoplay and mute parameters for mobile carousel
   const getEmbedUrl = (videoId: string, autoplay: boolean = false, mute: boolean = true) => {
@@ -162,11 +134,10 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
                     allowFullScreen
                     className="absolute top-0 left-0 w-full h-full border-0"
                     loading="lazy"
-                    onError={() => console.error(`Failed to load video: ${video.url}`)}
                   />
                 </div>
               </div>
-              <h3 className="font-medium text-base line-clamp-2 mt-2 group-hover:text-primary transition-colors">
+              <h3 className="font-medium text-base line-clamp-2 mt-2 group-hover:text-primary transition-colors text-left">
                 {video.title || `Video ${index + 1}`}
               </h3>
             </div>
@@ -197,7 +168,6 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
                       allowFullScreen
                       className="absolute top-0 left-0 w-full h-full border-0"
                       loading="lazy"
-                      onError={() => console.error(`Failed to load video: ${video.url}`)}
                     />
                   </div>
                   <h3 className="font-medium text-sm text-center line-clamp-1 mt-2">
@@ -217,10 +187,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   };
 
   return (
-    <aside 
-      ref={videoContainerRef}
-      className="w-full text-left"
-    >
+    <aside className="w-full text-left">
       <h2 className="text-xl font-semibold mb-4">
         Videos {validVideoLinks.length > 0 ? `(${validVideoLinks.length})` : ''}
       </h2>
@@ -230,7 +197,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
         </p>
       )}
       
-      {isMobile ? renderMobileCarousel() : renderDesktopVideos()}
+      {viewMode === "mobile" ? renderMobileCarousel() : renderDesktopVideos()}
     </aside>
   );
 };

@@ -7,16 +7,12 @@ import { ArrowLeft } from "lucide-react";
 import { RelatedNewsExperts } from "@/components/news/RelatedNewsExperts";
 import { RelatedNewsLinks } from "@/components/news/RelatedNewsLinks";
 import { NewsVideos } from "@/components/news/NewsVideos";
-import { useBreakpoint } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
 import "../styles/news-article.css";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
 type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
-type VideoLink = {
-  title: string;
-  url: string;
-};
+type VideoLink = { title: string; url: string };
 type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
   experts?: Expert[];
   news_article_links?: NewsArticleLink[];
@@ -25,12 +21,6 @@ type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
 const NewsArticle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const breakpoint = useBreakpoint();
-  const isMobile = breakpoint === "mobile";
-  const isDesktop = breakpoint === "desktop";
-
-  console.log("NewsArticle rendering with breakpoint:", breakpoint, "isDesktop:", isDesktop);
-  console.log("Window width:", window.innerWidth, "TABLET_BREAKPOINT:", 1200);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
@@ -46,7 +36,7 @@ const NewsArticle = () => {
         throw articleError;
       }
 
-      if (articleData.related_experts && articleData.related_experts.length > 0) {
+      if (articleData.related_experts?.length > 0) {
         const { data: expertsData, error: expertsError } = await supabase
           .from("experts")
           .select("*")
@@ -56,11 +46,8 @@ const NewsArticle = () => {
           console.error("Error fetching experts:", expertsError);
           throw expertsError;
         }
-        
-        return {
-          ...articleData,
-          experts: expertsData
-        } as NewsArticle;
+
+        return { ...articleData, experts: expertsData } as NewsArticle;
       }
 
       return articleData as NewsArticle;
@@ -95,14 +82,9 @@ const NewsArticle = () => {
 
   const videoLinks: VideoLink[] = (() => {
     try {
-      if (!Array.isArray(article.video_links)) {
-        console.log("Video links is not an array:", article.video_links);
-        return [];
-      }
+      if (!Array.isArray(article.video_links)) return [];
       
-      console.log("Raw video links:", article.video_links);
-      
-      const links = article.video_links
+      return article.video_links
         .filter(link => link && typeof link === 'object')
         .map(link => {
           // Type assertion to handle the Json type
@@ -113,23 +95,20 @@ const NewsArticle = () => {
           };
         })
         .filter(link => link.url.trim() !== '');
-      
-      console.log("Processed video links:", links);
-      return links;
     } catch (error) {
       console.error("Error processing video links:", error);
       return [];
     }
   })();
 
-  console.log("Current breakpoint:", breakpoint, "Is Desktop:", isDesktop, "Has videos:", videoLinks.length > 0);
+  console.log("Video links processed:", videoLinks.length, "Desktop condition:", window.innerWidth >= 1200);
 
   return (
     <div className="pt-6 lg:pt-12">
       <div className="x-container px-4 sm:px-5 lg:px-6">
         <div className="mb-6 lg:mb-8">
-          <button 
-            onClick={() => navigate(-1)} 
+          <button
+            onClick={() => navigate(-1)}
             className="flex items-center text-text-light hover:text-primary mb-4"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
@@ -140,8 +119,9 @@ const NewsArticle = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-4 lg:gap-6">
           <article className="text-left w-full">
-            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">{article.title}</h2>
-            
+            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
+              {article.title}
+            </h2>
             {article.main_image_url && (
               <figure className="mb-8">
                 <img
@@ -157,50 +137,34 @@ const NewsArticle = () => {
               </figure>
             )}
 
-            {isMobile && (
-              <div 
-                className="prose prose-sm sm:prose-base max-w-none mb-2 text-left"
-                dangerouslySetInnerHTML={{ 
-                  __html: article.content.substring(0, Math.floor(article.content.length / 2)) 
-                }}
+            {/* Mobile video carousel - only visible on mobile */}
+            <div className="block lg:hidden my-2">
+              <NewsVideos 
+                videoLinks={videoLinks} 
+                videoDescription={article.video_description} 
+                viewMode="mobile"
               />
-            )}
+            </div>
 
-            {isMobile && videoLinks.length > 0 && (
-              <div className="my-2">
-                <NewsVideos 
-                  videoLinks={videoLinks}
-                  videoDescription={article.video_description} 
-                />
-              </div>
-            )}
-
-            <div 
+            <div
               className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
-              dangerouslySetInnerHTML={{ 
-                __html: isMobile 
-                  ? article.content.substring(Math.floor(article.content.length / 2)) 
-                  : article.content 
-              }}
+              dangerouslySetInnerHTML={{ __html: article.content }}
             />
 
-            {article.experts && article.experts.length > 0 && (
-              <RelatedNewsExperts experts={article.experts} />
-            )}
-
-            {article.news_article_links && article.news_article_links.length > 0 && (
+            {article.experts?.length > 0 && <RelatedNewsExperts experts={article.experts} />}
+            {article.news_article_links?.length > 0 && (
               <RelatedNewsLinks links={article.news_article_links} />
             )}
           </article>
 
-          {!isMobile && (
-            <div className="border-l border-gray-300 pl-6 min-h-[50vh] hidden lg:block">
-              <NewsVideos 
-                videoLinks={videoLinks}
-                videoDescription={article.video_description} 
-              />
-            </div>
-          )}
+          {/* Desktop video section - only visible on desktop */}
+          <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[50vh]">
+            <NewsVideos 
+              videoLinks={videoLinks} 
+              videoDescription={article.video_description} 
+              viewMode="desktop"
+            />
+          </div>
         </div>
       </div>
     </div>
