@@ -104,10 +104,14 @@ const NewsArticle = () => {
       
       const links = article.video_links
         .filter(link => link && typeof link === 'object')
-        .map(link => ({
-          title: typeof link.title === 'string' ? link.title : '',
-          url: typeof link.url === 'string' ? link.url : ''
-        }))
+        .map(link => {
+          // Type assertion to handle the Json type
+          const linkObj = link as { title?: string; url?: string };
+          return {
+            title: typeof linkObj.title === 'string' ? linkObj.title : '',
+            url: typeof linkObj.url === 'string' ? linkObj.url : ''
+          };
+        })
         .filter(link => link.url.trim() !== '');
       
       console.log("Processed video links:", links);
