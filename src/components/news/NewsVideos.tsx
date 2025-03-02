@@ -47,6 +47,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
 
   console.log("NewsVideos component rendering. Breakpoint:", breakpoint, "isMobile:", isMobile, "isDesktop:", isDesktop);
   console.log("Received video links:", videoLinks);
+  console.log("Window width:", window.innerWidth, "rendering on:", breakpoint);
 
   // Filter valid YouTube links on component mount and when videoLinks change
   useEffect(() => {
@@ -80,11 +81,8 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   // Handle video container height adjustment
   useEffect(() => {
     const adjustContainerHeight = () => {
-      if (videoContainerRef.current && !isMobile) {
-        // Set a fixed aspect ratio container for desktop
-        const width = videoContainerRef.current.clientWidth;
-        const height = width * 0.5625; // 16:9 aspect ratio
-        videoContainerRef.current.style.height = `${height}px`;
+      if (videoContainerRef.current) {
+        videoContainerRef.current.style.minHeight = '300px';
       }
     };
 
@@ -94,7 +92,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
     return () => {
       window.removeEventListener('resize', adjustContainerHeight);
     };
-  }, [isMobile]);
+  }, []);
   
   // Generate YouTube embed URL with autoplay and mute parameters for mobile carousel
   const getEmbedUrl = (videoId: string, autoplay: boolean = false, mute: boolean = true) => {
@@ -113,7 +111,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   // Loading state
   if (isLoading) {
     return (
-      <aside className={`${isMobile ? '' : 'lg:sticky lg:top-8'} w-full`}>
+      <aside className={`w-full`}>
         <h2 className="text-xl font-semibold mb-4">Videos</h2>
         {videoDescription && (
           <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
@@ -128,7 +126,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   // Render "No videos available" when no valid videos exist
   if (validVideoLinks.length === 0) {
     return (
-      <aside className={`${isMobile ? '' : 'lg:sticky lg:top-8'} w-full`}>
+      <aside className={`w-full`}>
         <h2 className="text-xl font-semibold mb-4">Videos</h2>
         {videoDescription && (
           <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
@@ -223,7 +221,7 @@ export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) =>
   return (
     <aside 
       ref={videoContainerRef}
-      className={`${isMobile ? '' : 'lg:sticky lg:top-8'} w-full`}
+      className="w-full"
     >
       <h2 className="text-xl font-semibold mb-4">
         Videos {validVideoLinks.length > 0 ? `(${validVideoLinks.length})` : ''}

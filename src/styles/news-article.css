@@ -61,19 +61,21 @@
     width: 85%;
     margin: 0 auto;
   }
-}
-
-/* Separator enhancements */
-.x-separator {
-  position: absolute;
-  height: 100%;
-  width: 1px;
-  background: rgba(0, 0, 0, 0.1);
-  left: 66.666%;
-  top: 0;
+  
+  /* Reduce padding for mobile */
+  .x-container {
+    padding: 0.5rem;
+  }
 }
 
 /* X.com style transitions */
 .x-transition {
   transition: all 0.2s ease-in-out;
+}
+
+/* Ensure root padding doesn't interfere with grid layout */
+@media (min-width: 1200px) {
+  #root {
+    padding: 0;
+  }
 }
