@@ -39,6 +39,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
   const [isLoading, setIsLoading] = useState(true);
 
   console.log("NewsVideos rendering in", viewMode, "mode with", videoLinks?.length || 0, "links");
+  console.log("Window width:", window.innerWidth, "viewMode:", viewMode);
 
   // Filter valid YouTube links on component mount and when videoLinks change
   useEffect(() => {
@@ -52,10 +53,12 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
 
     const filteredLinks = videoLinks.filter(link => {
       if (!link || !link.url || typeof link.url !== 'string') {
+        console.log("Filtered out link due to missing or invalid URL:", link);
         return false;
       }
       
       if (!isValidYouTubeUrl(link.url)) {
+        console.log("Filtered out non-YouTube URL:", link.url);
         return false;
       }
       

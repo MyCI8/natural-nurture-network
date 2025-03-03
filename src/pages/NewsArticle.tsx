@@ -21,6 +21,8 @@ type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
 const NewsArticle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  console.log("NewsArticle rendering with window width:", window.innerWidth);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
@@ -82,26 +84,30 @@ const NewsArticle = () => {
 
   const videoLinks: VideoLink[] = (() => {
     try {
-      if (!Array.isArray(article.video_links)) return [];
+      if (!Array.isArray(article.video_links)) {
+        console.log("Video links is not an array:", article.video_links);
+        return [];
+      }
       
-      return article.video_links
-        .filter(link => link && typeof link === 'object')
-        .map(link => {
-          // Type assertion to handle the Json type
-          const linkObj = link as { title?: string; url?: string };
-          return {
-            title: typeof linkObj.title === 'string' ? linkObj.title : '',
-            url: typeof linkObj.url === 'string' ? linkObj.url : ''
-          };
-        })
-        .filter(link => link.url.trim() !== '');
+      console.log("Raw video links:", article.video_links);
+      
+      const filtered = article.video_links
+        .filter((link): link is { title: string; url: string } =>
+          link && typeof link === "object" && "title" in link && "url" in link &&
+          typeof link.title === "string" && typeof link.url === "string"
+        )
+        .map(link => ({ title: link.title, url: link.url }))
+        .filter(link => link.url.trim() !== "");
+      
+      console.log("Processed video links:", filtered);
+      return filtered;
     } catch (error) {
       console.error("Error processing video links:", error);
       return [];
     }
   })();
 
-  console.log("Video links processed:", videoLinks.length, "Desktop condition:", window.innerWidth >= 1200);
+  console.log("Video links count:", videoLinks.length, "Window width:", window.innerWidth);
 
   return (
     <div className="pt-6 lg:pt-12">
@@ -117,7 +123,7 @@ const NewsArticle = () => {
           <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr,3fr] gap-4 lg:gap-6">
           <article className="text-left w-full">
             <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
               {article.title}
@@ -137,11 +143,11 @@ const NewsArticle = () => {
               </figure>
             )}
 
-            {/* Mobile video carousel - only visible on mobile */}
-            <div className="block lg:hidden my-2">
+            {/* Mobile video carousel - only visible on mobile/tablet */}
+            <div className="block lg:hidden my-6">
               <NewsVideos 
                 videoLinks={videoLinks} 
-                videoDescription={article.video_description} 
+                videoDescription={article.video_description}
                 viewMode="mobile"
               />
             </div>
@@ -161,8 +167,8 @@ const NewsArticle = () => {
           <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[50vh]">
             <NewsVideos 
               videoLinks={videoLinks} 
-              videoDescription={article.video_description} 
-              viewMode="desktop"
+              videoDescription={article.video_description}
+              viewMode="desktop" 
             />
           </div>
         </div>
