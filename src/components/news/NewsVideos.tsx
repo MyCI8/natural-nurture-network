@@ -139,9 +139,10 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
                     title={video.title || `Video ${index + 1}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
-                    className="absolute top-0 left-0 w-full h-full border-0"
+                    className="absolute top-0 left-0 w-full h-full border-0 z-10"
                     loading="lazy"
                     onError={(e) => console.error("Video iframe error:", e)}
+                    onLoad={() => console.log("Video iframe loaded for:", video.title || `Video ${index + 1}`)}
                   />
                 </div>
               </div>
@@ -174,9 +175,10 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
                       title={video.title || `Video ${index + 1}`}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
-                      className="absolute top-0 left-0 w-full h-full border-0"
+                      className="absolute top-0 left-0 w-full h-full border-0 z-10"
                       loading="lazy"
                       onError={(e) => console.error("Video iframe error:", e)}
+                      onLoad={() => console.log("Mobile video iframe loaded for:", video.title || `Video ${index + 1}`)}
                     />
                   </div>
                   <h3 className="font-medium text-sm text-center line-clamp-1 mt-2">
