@@ -78,7 +78,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
     if (autoplay) params.append('autoplay', '1');
     if (mute) params.append('mute', '1');
     params.append('enablejsapi', '1');
-    params.append('origin', window.location.origin);
+    params.append('origin', 'https://preview-natural-nurture-network.lovable.app');
     params.append('rel', '0'); // Don't show related videos
     
     return `${url}?${params.toString()}`;
@@ -118,18 +118,22 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
   const renderDesktopVideos = () => {
     console.log("Rendering desktop videos with", validVideoLinks.length, "valid links");
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 debug-video-content w-full">
         {validVideoLinks.map((video: VideoLink, index: number) => {
           const videoId = getYouTubeVideoId(video.url);
           if (!videoId) {
             console.log("No video ID extracted for URL:", video.url);
-            return null;
+            return (
+              <div key={index} className="text-red-500 mb-4">
+                Invalid Video ID: {video.url.substring(0, 30)}...
+              </div>
+            );
           }
           
           return (
             <div key={index} className="mb-6 group hover:opacity-95 transition-opacity">
               <div className="w-full">
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer">
+                <div className="relative aspect-video w-full overflow-visible rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer">
                   <iframe
                     src={getEmbedUrl(videoId)}
                     title={video.title || `Video ${index + 1}`}
@@ -137,6 +141,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
                     allowFullScreen
                     className="absolute top-0 left-0 w-full h-full border-0"
                     loading="lazy"
+                    onError={(e) => console.error("Video iframe error:", e)}
                   />
                 </div>
               </div>
@@ -171,6 +176,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
                       allowFullScreen
                       className="absolute top-0 left-0 w-full h-full border-0"
                       loading="lazy"
+                      onError={(e) => console.error("Video iframe error:", e)}
                     />
                   </div>
                   <h3 className="font-medium text-sm text-center line-clamp-1 mt-2">

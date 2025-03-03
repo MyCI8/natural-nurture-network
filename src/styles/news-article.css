@@ -18,7 +18,8 @@
   position: relative;
   padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
   height: 0;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible for better iframe display */
+  z-index: 1;
 }
 
 .video-container iframe {
@@ -28,6 +29,7 @@
   width: 100%;
   height: 100%;
   border: 0;
+  z-index: 5; /* Ensure iframes are above other elements */
 }
 
 /* X.com inspired spacing */
@@ -87,10 +89,26 @@
   /* Video column takes full width of its grid cell */
   .grid-cols-\[2fr\,3fr\] > div:last-child {
     width: 100%;
+    min-width: 300px; /* Prevent collapse by setting min-width */
   }
   
   /* Fix layout for the video section vertical separator */
   .border-l.border-gray-300 {
-    border-left-width: 1px;
+    border-left-width: 2px;
+    border-left-color: #d1d5db;
+    z-index: 10;
+  }
+
+  /* Debug classes for layout inspection */
+  .debug-grid {
+    /* border: 1px dashed rgba(255, 0, 0, 0.2); */ /* Uncomment to debug grid */
+  }
+  
+  .debug-video {
+    /* border: 1px dashed rgba(0, 0, 255, 0.2); */ /* Uncomment to debug video container */
+  }
+  
+  .debug-video-content {
+    /* border: 1px dashed rgba(0, 255, 0, 0.2); */ /* Uncomment to debug video content */
   }
 }
