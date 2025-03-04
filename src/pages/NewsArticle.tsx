@@ -140,7 +140,7 @@ const NewsArticle = () => {
           <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(400px,1fr)] gap-6 lg:gap-8 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(400px,1fr)] gap-6 lg:gap-8 relative">
           <article className="text-left w-full">
             <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
               {article.title}
@@ -175,8 +175,8 @@ const NewsArticle = () => {
             )}
           </article>
 
-          {/* Desktop video section - updated with wider width and top border */}
-          <div className="hidden lg:block border-l border-t border-gray-300 pl-6 min-h-[50vh] w-[400px] shrink-0 debug-video video-column">
+          {/* Desktop video section - updated with full height */}
+          <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[100vh] h-full w-[400px] shrink-0 debug-video video-column">
             <NewsVideos 
               videoLinks={videoLinks}
               videoDescription={article.video_description}

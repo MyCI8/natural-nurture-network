@@ -86,10 +86,23 @@
   @apply lg:!block lg:!visible lg:!w-[400px] lg:!opacity-100 transition-opacity duration-300;
 }
 
+/* Video column styles */
 .video-column {
   animation: appear 0.5s ease forwards;
-  border-top: 1px solid #e5e7eb; /* Extend the border to the top */
+  min-height: 100vh;
+  height: 100%;
   padding-top: 0; /* Remove extra padding */
+}
+
+/* Video thumbnail styles */
+.video-thumbnail {
+  max-width: 400px;
+}
+
+@media (min-width: 1024px) {
+  .video-thumbnail {
+    max-width: none;
+  }
 }
 
 .video-title {
