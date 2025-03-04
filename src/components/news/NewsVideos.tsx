@@ -79,9 +79,9 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
   if (isLoading) {
     return (
       <aside className="w-full text-left">
-        <h2 className="text-xl font-semibold mb-4">Videos</h2>
+        <h2 className="text-xl font-semibold mb-2">Videos</h2>
         {videoDescription && (
-          <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
+          <p className="text-text-light mb-2 text-sm">{videoDescription}</p>
         )}
         <div className="flex items-center justify-center h-32 border rounded-lg bg-secondary/50">
           <p className="text-text-light">Loading videos...</p>
@@ -93,9 +93,9 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
   if (validVideoLinks.length === 0) {
     return (
       <aside className="w-full text-left">
-        <h2 className="text-xl font-semibold mb-4">Videos</h2>
+        <h2 className="text-xl font-semibold mb-2">Videos</h2>
         {videoDescription && (
-          <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
+          <p className="text-text-light mb-2 text-sm">{videoDescription}</p>
         )}
         <div className="flex items-center justify-center h-32 border rounded-lg bg-secondary/50">
           <p className="text-text-light">No videos available</p>
@@ -106,15 +106,13 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
 
   return (
     <aside ref={videoContainerRef} className="w-full text-left sticky top-4">
-      <h2 className="text-xl font-semibold mb-4">
-        Videos {validVideoLinks.length > 0 ? `(${validVideoLinks.length})` : ''}
-      </h2>
+      <h2 className="text-xl font-semibold mb-2">Videos</h2>
       {videoDescription && (
-        <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
+        <p className="text-text-light mb-2 text-sm">{videoDescription}</p>
       )}
       
       {isDesktop ? (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {validVideoLinks.map((video, index) => {
             const videoId = getYouTubeVideoId(video.url);
             if (!videoId) {
@@ -123,7 +121,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
             }
             
             return (
-              <div key={index} className="group hover:opacity-95 transition-opacity mb-6">
+              <div key={index} className="group hover:opacity-95 transition-opacity mb-4">
                 <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg">
                   <iframe
                     src={getEmbedUrl(videoId)}
@@ -136,7 +134,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
                     onLoad={() => console.log(`Successfully loaded video: ${video.url}`)}
                   />
                 </div>
-                <h3 className="font-medium text-base line-clamp-2 mt-2 group-hover:text-primary transition-colors">
+                <h3 className="font-medium text-base line-clamp-2 mt-1 group-hover:text-primary transition-colors video-title">
                   {video.title || `Video ${index + 1}`}
                 </h3>
               </div>
@@ -165,7 +163,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
                         onLoad={() => console.log(`Successfully loaded video in carousel: ${video.url}`)}
                       />
                     </div>
-                    <h3 className="font-medium text-sm text-center line-clamp-1 mt-2">
+                    <h3 className="font-medium text-sm text-center line-clamp-1 mt-1 video-title">
                       {video.title || `Video ${index + 1}`}
                     </h3>
                   </div>
