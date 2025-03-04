@@ -92,16 +92,17 @@
   min-height: 100vh;
   height: 100%;
   padding-top: 0; /* Remove extra padding */
+  margin-top: -6rem; /* Adjust to align with the menu side */
 }
 
 /* Video thumbnail styles */
 .video-thumbnail {
-  max-width: 400px;
+  max-width: 300px; /* Smaller size for mobile */
 }
 
 @media (min-width: 1024px) {
   .video-thumbnail {
-    max-width: none;
+    max-width: 350px; /* Slightly larger for desktop */
   }
 }
 

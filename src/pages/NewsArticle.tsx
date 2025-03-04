@@ -140,7 +140,7 @@ const NewsArticle = () => {
           <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(400px,1fr)] gap-6 lg:gap-8 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(400px,1fr)] gap-6 lg:gap-8 relative">
           <article className="text-left w-full">
             <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
               {article.title}

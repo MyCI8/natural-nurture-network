@@ -122,7 +122,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
             
             return (
               <div key={index} className="group hover:opacity-95 transition-opacity mb-4">
-                <div className="relative aspect-video w-full max-w-[400px] lg:max-w-none overflow-hidden rounded-lg shadow-lg video-thumbnail">
+                <div className="relative aspect-video w-full max-w-[300px] lg:max-w-[350px] overflow-hidden rounded-lg shadow-lg video-thumbnail">
                   <iframe
                     src={getEmbedUrl(videoId)}
                     title={video.title || `Video ${index + 1}`}
