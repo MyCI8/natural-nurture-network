@@ -1,5 +1,3 @@
-
-import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,36 +6,29 @@ import { ArrowLeft } from "lucide-react";
 import { RelatedNewsExperts } from "@/components/news/RelatedNewsExperts";
 import { RelatedNewsLinks } from "@/components/news/RelatedNewsLinks";
 import { NewsVideos } from "@/components/news/NewsVideos";
+import { useBreakpoint } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
-import "../styles/news-article.css";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
 type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
-type VideoLink = { title: string; url: string };
+type VideoLink = {
+  title: string;
+  url: string;
+};
 type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
   experts?: Expert[];
   news_article_links?: NewsArticleLink[];
-  video_links?: VideoLink[] | null;
 };
 
 const NewsArticle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  
-  // Listen for window resize to update layout
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    console.log("NewsArticle: Initial window width:", windowWidth);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  const breakpoint = useBreakpoint();
+  const isMobile = breakpoint === 'mobile';
+  const isDesktop = breakpoint === 'desktop';
+
+  console.log("NewsArticle rendering with breakpoint:", breakpoint, "isDesktop:", isDesktop);
+  console.log("Window width:", window.innerWidth, "TABLET_BREAKPOINT:", 1200);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
@@ -53,7 +44,7 @@ const NewsArticle = () => {
         throw articleError;
       }
 
-      if (articleData.related_experts?.length > 0) {
+      if (articleData.related_experts && articleData.related_experts.length > 0) {
         const { data: expertsData, error: expertsError } = await supabase
           .from("experts")
           .select("*")
@@ -63,8 +54,11 @@ const NewsArticle = () => {
           console.error("Error fetching experts:", expertsError);
           throw expertsError;
         }
-
-        return { ...articleData, experts: expertsData } as NewsArticle;
+        
+        return {
+          ...articleData,
+          experts: expertsData
+        } as NewsArticle;
       }
 
       return articleData as NewsArticle;
@@ -100,58 +94,50 @@ const NewsArticle = () => {
   const videoLinks: VideoLink[] = (() => {
     try {
       if (!Array.isArray(article.video_links)) {
-        console.log("NewsArticle: Video links is not an array:", article.video_links);
+        console.log("Video links is not an array:", article.video_links);
         return [];
       }
       
-      console.log("NewsArticle: Raw video links:", article.video_links);
+      console.log("Raw video links:", article.video_links);
       
       const links = article.video_links
-        .filter((link): link is VideoLink =>
-          link && typeof link === "object" && "title" in link && "url" in link &&
-          typeof link.title === "string" && typeof link.url === "string"
-        )
-        .map(link => ({ title: link.title, url: link.url }))
-        .filter(link => link.url.trim() !== "");
+        .filter(link => link && typeof link === 'object')
+        .map(link => {
+          const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
+          return {
+            title: typeof linkObj.title === 'string' ? linkObj.title : '',
+            url: typeof linkObj.url === 'string' ? linkObj.url : ''
+          };
+        })
+        .filter(link => link.url.trim() !== '');
       
-      console.log("NewsArticle: Processed video links:", links);
+      console.log("Processed video links:", links);
       return links;
     } catch (error) {
-      console.error("NewsArticle: Error processing video links:", error);
+      console.error("Error processing video links:", error);
       return [];
     }
   })();
 
-  const isDesktop = windowWidth >= 1200;
-  
-  console.log(
-    "NewsArticle: Rendering with window width:", windowWidth, 
-    "isDesktop:", isDesktop,
-    "Video links count:", videoLinks.length
-  );
-  
+  console.log("Current breakpoint:", breakpoint, "Is Desktop:", isDesktop, "Has videos:", videoLinks.length > 0);
+
   return (
     <div className="pt-6 lg:pt-12">
       <div className="x-container px-4 sm:px-5 lg:px-6">
         <div className="mb-6 lg:mb-8">
-          <button
-            onClick={() => navigate(-1)}
+          <button 
+            onClick={() => navigate(-1)} 
             className="flex items-center text-text-light hover:text-primary mb-4"
-            aria-label="Go back"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
+          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6">News</h1>
         </div>
 
-        {/* Main content grid - 1 column on mobile, 2 columns on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-4 lg:gap-6">
-          {/* Article content - always visible */}
-          <article className="text-left w-full">
-            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
-              {article.title}
-            </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-6 lg:gap-8 relative">
+          <article className={`${isDesktop ? 'max-w-3xl' : 'max-w-xl mx-auto'} w-full`}>
+            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6">{article.title}</h2>
             
             {article.main_image_url && (
               <figure className="mb-8">
@@ -168,33 +154,46 @@ const NewsArticle = () => {
               </figure>
             )}
 
-            {/* Mobile video carousel - only visible on non-desktop */}
-            <div className="block lg:hidden my-6">
-              <NewsVideos 
-                videoLinks={videoLinks} 
-                videoDescription={article.video_description}
-                isMobile={true}
+            {isMobile && (
+              <div 
+                className="prose prose-sm sm:prose-base max-w-none mb-2"
+                dangerouslySetInnerHTML={{ 
+                  __html: article.content.substring(0, Math.floor(article.content.length / 2)) 
+                }}
               />
-            </div>
+            )}
 
-            <div
-              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+            {isMobile && videoLinks.length > 0 && (
+              <div className="my-2">
+                <NewsVideos 
+                  videoLinks={videoLinks}
+                  videoDescription={article.video_description} 
+                />
+              </div>
+            )}
+
+            <div 
+              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10"
+              dangerouslySetInnerHTML={{ 
+                __html: isMobile 
+                  ? article.content.substring(Math.floor(article.content.length / 2)) 
+                  : article.content 
+              }}
             />
-            
-            {article.experts?.length > 0 && <RelatedNewsExperts experts={article.experts} />}
-            
-            {article.news_article_links?.length > 0 && (
+
+            {article.experts && article.experts.length > 0 && (
+              <RelatedNewsExperts experts={article.experts} />
+            )}
+
+            {article.news_article_links && article.news_article_links.length > 0 && (
               <RelatedNewsLinks links={article.news_article_links} />
             )}
           </article>
 
-          {/* Desktop video section with vertical separator - only visible on desktop */}
-          <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[50vh]">
+          <div className={`${!isMobile ? 'block' : 'hidden'} border-l border-gray-300 pl-6 min-h-[50vh]`}>
             <NewsVideos 
               videoLinks={videoLinks}
               videoDescription={article.video_description} 
-              isMobile={false}
             />
           </div>
         </div>
