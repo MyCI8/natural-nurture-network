@@ -98,17 +98,4 @@
     border-left-color: #d1d5db;
     z-index: 10;
   }
-
-  /* Debug classes for layout inspection */
-  .debug-grid {
-    /* border: 1px dashed rgba(255, 0, 0, 0.2); */ /* Uncomment to debug grid */
-  }
-  
-  .debug-video {
-    /* border: 1px dashed rgba(0, 0, 255, 0.2); */ /* Uncomment to debug video container */
-  }
-  
-  .debug-video-content {
-    /* border: 1px dashed rgba(0, 255, 0, 0.2); */ /* Uncomment to debug video content */
-  }
 }
