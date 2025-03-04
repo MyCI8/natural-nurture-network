@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,14 +8,13 @@ import { RelatedNewsExperts } from "@/components/news/RelatedNewsExperts";
 import { RelatedNewsLinks } from "@/components/news/RelatedNewsLinks";
 import { NewsVideos } from "@/components/news/NewsVideos";
 import { useBreakpoint } from "@/hooks/use-mobile";
+import { useEffect, useState } from "react";
 import type { Database } from "@/integrations/supabase/types";
+import "../styles/news-article.css";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
 type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
-type VideoLink = {
-  title: string;
-  url: string;
-};
+type VideoLink = { title: string; url: string };
 type NewsArticle = Database["public"]["Tables"]["news_articles"]["Row"] & {
   experts?: Expert[];
   news_article_links?: NewsArticleLink[];
@@ -27,8 +27,15 @@ const NewsArticle = () => {
   const isMobile = breakpoint === 'mobile';
   const isDesktop = breakpoint === 'desktop';
 
-  console.log("NewsArticle rendering with breakpoint:", breakpoint, "isDesktop:", isDesktop);
-  console.log("Window width:", window.innerWidth, "TABLET_BREAKPOINT:", 1200);
+  // Track window width for debugging
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  console.log("NewsArticle rendering with breakpoint:", breakpoint, "isDesktop:", isDesktop, "windowWidth:", windowWidth);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
@@ -44,7 +51,7 @@ const NewsArticle = () => {
         throw articleError;
       }
 
-      if (articleData.related_experts && articleData.related_experts.length > 0) {
+      if (articleData.related_experts?.length > 0) {
         const { data: expertsData, error: expertsError } = await supabase
           .from("experts")
           .select("*")
@@ -119,8 +126,6 @@ const NewsArticle = () => {
     }
   })();
 
-  console.log("Current breakpoint:", breakpoint, "Is Desktop:", isDesktop, "Has videos:", videoLinks.length > 0);
-
   return (
     <div className="pt-6 lg:pt-12">
       <div className="x-container px-4 sm:px-5 lg:px-6">
@@ -132,12 +137,14 @@ const NewsArticle = () => {
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6">News</h1>
+          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-6 lg:gap-8 relative">
-          <article className={`${isDesktop ? 'max-w-3xl' : 'max-w-xl mx-auto'} w-full`}>
-            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6">{article.title}</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(350px,1fr)] gap-6 lg:gap-8 relative">
+          <article className="text-left w-full">
+            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
+              {article.title}
+            </h2>
             
             {article.main_image_url && (
               <figure className="mb-8">
@@ -154,46 +161,35 @@ const NewsArticle = () => {
               </figure>
             )}
 
-            {isMobile && (
-              <div 
-                className="prose prose-sm sm:prose-base max-w-none mb-2"
-                dangerouslySetInnerHTML={{ 
-                  __html: article.content.substring(0, Math.floor(article.content.length / 2)) 
-                }}
-              />
-            )}
-
-            {isMobile && videoLinks.length > 0 && (
-              <div className="my-2">
-                <NewsVideos 
-                  videoLinks={videoLinks}
-                  videoDescription={article.video_description} 
-                />
-              </div>
-            )}
-
             <div 
-              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10"
-              dangerouslySetInnerHTML={{ 
-                __html: isMobile 
-                  ? article.content.substring(Math.floor(article.content.length / 2)) 
-                  : article.content 
-              }}
+              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
+              dangerouslySetInnerHTML={{ __html: article.content }}
             />
 
-            {article.experts && article.experts.length > 0 && (
+            {article.experts?.length > 0 && (
               <RelatedNewsExperts experts={article.experts} />
             )}
 
-            {article.news_article_links && article.news_article_links.length > 0 && (
+            {article.news_article_links?.length > 0 && (
               <RelatedNewsLinks links={article.news_article_links} />
             )}
           </article>
 
-          <div className={`${!isMobile ? 'block' : 'hidden'} border-l border-gray-300 pl-6 min-h-[50vh]`}>
+          {/* Desktop video section */}
+          <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[50vh] w-[350px] shrink-0 debug-video video-column">
             <NewsVideos 
               videoLinks={videoLinks}
-              videoDescription={article.video_description} 
+              videoDescription={article.video_description}
+              isDesktop={true} // Force desktop layout
+            />
+          </div>
+
+          {/* Mobile video carousel */}
+          <div className="block lg:hidden my-6">
+            <NewsVideos 
+              videoLinks={videoLinks}
+              videoDescription={article.video_description}
+              isDesktop={false}
             />
           </div>
         </div>

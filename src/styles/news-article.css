@@ -79,3 +79,17 @@
     padding: 0;
   }
 }
+
+/* Debug classes for the video column */
+.debug-video {
+  @apply lg:!block lg:!visible lg:!w-[350px] lg:!opacity-100 transition-opacity duration-300;
+}
+
+.video-column {
+  animation: appear 0.5s ease forwards;
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
