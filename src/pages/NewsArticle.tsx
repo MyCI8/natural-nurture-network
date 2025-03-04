@@ -175,7 +175,7 @@ const NewsArticle = () => {
             )}
           </article>
 
-          {/* Desktop video section - updated with full height */}
+          {/* Desktop video section */}
           <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[100vh] h-full w-[400px] shrink-0 debug-video video-column">
             <NewsVideos 
               videoLinks={videoLinks}
