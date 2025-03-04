@@ -16,7 +16,6 @@ interface VideoLink {
 interface NewsVideosProps { 
   videoLinks: VideoLink[]; 
   videoDescription?: string;
-  viewMode?: "mobile" | "desktop";
 }
 
 // Helper function to extract YouTube video ID
@@ -34,12 +33,12 @@ const isValidYouTubeUrl = (url: string) => {
   return !!getYouTubeVideoId(url);
 };
 
-export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" }: NewsVideosProps) => {
+export const NewsVideos = ({ videoLinks, videoDescription }: NewsVideosProps) => {
   const [validVideoLinks, setValidVideoLinks] = useState<VideoLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isDesktop = window.innerWidth >= 1200;
 
-  console.log("NewsVideos rendering in", viewMode, "mode with", videoLinks?.length || 0, "links");
-  console.log("Window width:", window.innerWidth, "viewMode:", viewMode);
+  console.log("NewsVideos rendering with", videoLinks?.length || 0, "links, desktop mode:", isDesktop);
 
   // Filter valid YouTube links on component mount and when videoLinks change
   useEffect(() => {
@@ -65,10 +64,10 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
       return true;
     });
     
-    console.log(`Filtered ${filteredLinks.length} valid YouTube videos from ${videoLinks.length} links for ${viewMode} view`);
+    console.log(`Filtered ${filteredLinks.length} valid YouTube videos from ${videoLinks.length} links, isDesktop: ${isDesktop}`);
     setValidVideoLinks(filteredLinks);
     setIsLoading(false);
-  }, [videoLinks, viewMode]);
+  }, [videoLinks, isDesktop]);
   
   // Generate YouTube embed URL with autoplay and mute parameters for mobile carousel
   const getEmbedUrl = (videoId: string, autoplay: boolean = false, mute: boolean = true) => {
@@ -208,7 +207,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, viewMode = "desktop" 
         </p>
       )}
       
-      {viewMode === "mobile" ? renderMobileCarousel() : renderDesktopVideos()}
+      {isDesktop ? renderDesktopVideos() : renderMobileCarousel()}
     </aside>
   );
 };

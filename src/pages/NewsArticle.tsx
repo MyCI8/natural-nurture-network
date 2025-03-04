@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -145,11 +144,7 @@ const NewsArticle = () => {
 
             {/* Mobile video carousel - only visible on mobile/tablet */}
             <div className="block lg:hidden my-6">
-              <NewsVideos 
-                videoLinks={videoLinks} 
-                videoDescription={article.video_description}
-                viewMode="mobile"
-              />
+              <NewsVideos videoLinks={videoLinks} videoDescription={article.video_description} />
             </div>
 
             <div
@@ -165,11 +160,7 @@ const NewsArticle = () => {
 
           {/* Desktop video section - only visible on desktop */}
           <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[50vh] debug-video">
-            <NewsVideos 
-              videoLinks={videoLinks} 
-              videoDescription={article.video_description}
-              viewMode="desktop" 
-            />
+            <NewsVideos videoLinks={videoLinks} videoDescription={article.video_description} />
           </div>
         </div>
       </div>
