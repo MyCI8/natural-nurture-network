@@ -51,7 +51,7 @@ const NewsArticle = () => {
         throw articleError;
       }
 
-      if (articleData.related_experts?.length > 0) {
+      if (articleData.related_experts && articleData.related_experts.length > 0) {
         const { data: expertsData, error: expertsError } = await supabase
           .from("experts")
           .select("*")
@@ -140,11 +140,9 @@ const NewsArticle = () => {
           <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(350px,1fr)] gap-6 lg:gap-8 relative">
-          <article className="text-left w-full">
-            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
-              {article.title}
-            </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-[5fr_1fr] gap-6 lg:gap-8 relative debug-grid">
+          <article className="w-full text-left">
+            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6">{article.title}</h2>
             
             {article.main_image_url && (
               <figure className="mb-8">
@@ -175,23 +173,23 @@ const NewsArticle = () => {
             )}
           </article>
 
-          {/* Desktop video section */}
-          <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[100vh] h-full w-[350px] shrink-0 debug-video video-column">
+          <div className="hidden lg:block border-l border-gray-300 pl-6 video-column">
             <NewsVideos 
               videoLinks={videoLinks}
-              videoDescription={article.video_description}
-              isDesktop={true} // Force desktop layout
+              videoDescription={article.video_description} 
+              isDesktop={isDesktop || windowWidth >= 1024}
             />
           </div>
 
-          {/* Mobile video carousel */}
-          <div className="block lg:hidden my-6">
-            <NewsVideos 
-              videoLinks={videoLinks}
-              videoDescription={article.video_description}
-              isDesktop={false}
-            />
-          </div>
+          {isMobile && videoLinks.length > 0 && (
+            <div className="block lg:hidden my-6">
+              <NewsVideos 
+                videoLinks={videoLinks}
+                videoDescription={article.video_description} 
+                isDesktop={false}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
