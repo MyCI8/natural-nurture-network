@@ -83,7 +83,7 @@
 
 /* Debug classes for the video column */
 .debug-video {
-  @apply lg:!block lg:!visible lg:!w-[400px] lg:!opacity-100 transition-opacity duration-300;
+  @apply lg:!block lg:!visible lg:!opacity-100 transition-opacity duration-300;
 }
 
 /* Video column styles */
@@ -92,17 +92,36 @@
   min-height: 100vh;
   height: 100%;
   padding-top: 0; /* Remove extra padding */
-  margin-top: -6rem; /* Adjust to align with the menu side */
+  margin-top: -6rem; /* Align with the menu side */
 }
 
-/* Video thumbnail styles */
+/* Video thumbnail styles - Desktop */
 .video-thumbnail {
-  max-width: 300px; /* Smaller size for mobile */
+  width: 100%;
+  max-width: 350px;
 }
 
-@media (min-width: 1024px) {
+/* Video thumbnail styles - Mobile carousel */
+.video-thumbnail-mobile {
+  max-width: 200px;
+}
+
+/* Screen width based responsive adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
   .video-thumbnail {
-    max-width: 350px; /* Slightly larger for desktop */
+    max-width: 250px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .video-thumbnail {
+    max-width: 300px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .video-thumbnail {
+    max-width: 350px;
   }
 }
 
