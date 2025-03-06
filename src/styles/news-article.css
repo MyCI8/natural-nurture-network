@@ -28,7 +28,6 @@
   width: 100%;
   height: 100%;
   border: 0;
-  border-radius: 8px; /* Match the rounded corners */
 }
 
 /* X.com inspired spacing */
@@ -83,30 +82,11 @@
 
 /* Debug classes for the video column */
 .debug-video {
-  @apply lg:!block lg:!visible lg:!w-[400px] lg:!opacity-100 transition-opacity duration-300;
+  @apply lg:!block lg:!visible lg:!w-[350px] lg:!opacity-100 transition-opacity duration-300;
 }
 
-/* Video column styles */
 .video-column {
   animation: appear 0.5s ease forwards;
-  min-height: 100vh;
-  height: 100%;
-  padding-top: 0; /* Remove extra padding */
-}
-
-/* Video thumbnail styles */
-.video-thumbnail {
-  max-width: 400px;
-}
-
-@media (min-width: 1024px) {
-  .video-thumbnail {
-    max-width: none;
-  }
-}
-
-.video-title {
-  margin-top: 0.25rem; /* Reduce spacing between video and title */
 }
 
 @keyframes appear {
