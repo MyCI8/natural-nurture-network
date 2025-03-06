@@ -33,10 +33,11 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
   const [isLoading, setIsLoading] = useState(true);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
-  console.log("NewsVideos rendering. isDesktop:", isDesktop, "videoLinks:", videoLinks.length, "windowWidth:", window.innerWidth);
+  console.log("NewsVideos rendering. isDesktop:", isDesktop, "videoLinks:", videoLinks, "windowWidth:", window.innerWidth);
 
   useEffect(() => {
     setIsLoading(true);
+    
     if (!Array.isArray(videoLinks)) {
       console.log("No valid video links provided");
       setValidVideoLinks([]);
@@ -78,9 +79,9 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
   if (isLoading) {
     return (
       <aside className="w-full text-left">
-        <h2 className="text-xl font-semibold mb-4">Videos</h2>
+        <h2 className="text-xl font-semibold mb-2">Videos</h2>
         {videoDescription && (
-          <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
+          <p className="text-text-light mb-2 text-sm">{videoDescription}</p>
         )}
         <div className="flex items-center justify-center h-32 border rounded-lg bg-secondary/50">
           <p className="text-text-light">Loading videos...</p>
@@ -92,9 +93,9 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
   if (validVideoLinks.length === 0) {
     return (
       <aside className="w-full text-left">
-        <h2 className="text-xl font-semibold mb-4">Videos</h2>
+        <h2 className="text-xl font-semibold mb-2">Videos</h2>
         {videoDescription && (
-          <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
+          <p className="text-text-light mb-2 text-sm">{videoDescription}</p>
         )}
         <div className="flex items-center justify-center h-32 border rounded-lg bg-secondary/50">
           <p className="text-text-light">No videos available</p>
@@ -105,9 +106,9 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
 
   return (
     <aside ref={videoContainerRef} className="w-full text-left sticky top-4">
-      <h2 className="text-xl font-semibold mb-4">Videos ({validVideoLinks.length})</h2>
+      <h2 className="text-xl font-semibold mb-2">Videos</h2>
       {videoDescription && (
-        <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
+        <p className="text-text-light mb-2 text-sm">{videoDescription}</p>
       )}
       
       {isDesktop ? (
@@ -127,13 +128,13 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
                     title={video.title || `Video ${index + 1}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
-                    className="absolute top-0 left-0 w-full h-full border-0"
+                    className="absolute top-0 left-0 w-full h-full border-0 z-10"
                     loading="lazy"
                     onError={(e) => console.error(`Failed to load video: ${video.url}`, e)}
                     onLoad={() => console.log(`Successfully loaded video: ${video.url}`)}
                   />
                 </div>
-                <h3 className="font-medium text-base line-clamp-2 mt-2 group-hover:text-primary transition-colors text-left">
+                <h3 className="font-medium text-base line-clamp-2 mt-1 group-hover:text-primary transition-colors video-title">
                   {video.title || `Video ${index + 1}`}
                 </h3>
               </div>
@@ -141,29 +142,31 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
           })}
         </div>
       ) : (
-        <Carousel>
+        <Carousel className="w-full">
           <CarouselContent>
             {validVideoLinks.map((video, index) => {
               const videoId = getYouTubeVideoId(video.url);
               if (!videoId) return null;
               
               return (
-                <CarouselItem key={index}>
-                  <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg video-thumbnail-mobile">
-                    <iframe
-                      src={getEmbedUrl(videoId, true, true)}
-                      title={video.title || `Video ${index + 1}`}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="absolute top-0 left-0 w-full h-full border-0"
-                      loading="lazy"
-                      onError={(e) => console.error(`Failed to load video in carousel: ${video.url}`, e)}
-                      onLoad={() => console.log(`Successfully loaded video in carousel: ${video.url}`)}
-                    />
+                <CarouselItem key={index} className="pl-1">
+                  <div className="p-1">
+                    <div className="relative aspect-video w-full max-w-[200px] mx-auto overflow-hidden rounded-lg shadow-md video-thumbnail-mobile">
+                      <iframe
+                        src={getEmbedUrl(videoId, true, true)}
+                        title={video.title || `Video ${index + 1}`}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="absolute top-0 left-0 w-full h-full border-0 z-10"
+                        loading="lazy"
+                        onError={(e) => console.error(`Failed to load video in carousel: ${video.url}`, e)}
+                        onLoad={() => console.log(`Successfully loaded video in carousel: ${video.url}`)}
+                      />
+                    </div>
+                    <h3 className="font-medium text-sm text-center line-clamp-1 mt-1 video-title">
+                      {video.title || `Video ${index + 1}`}
+                    </h3>
                   </div>
-                  <h3 className="font-medium text-sm text-center line-clamp-2 mt-2">
-                    {video.title || `Video ${index + 1}`}
-                  </h3>
                 </CarouselItem>
               );
             })}

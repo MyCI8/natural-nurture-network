@@ -4,7 +4,7 @@
 /* Container widths that match x.com constraints */
 .x-container {
   width: 100%;
-  max-width: 1200px; /* Adjust if news section still feels narrow */
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -81,57 +81,35 @@
   }
 }
 
-/* Three-column layout grid adjustments */
-.debug-grid {
-  grid-template-columns: 1fr !important; /* Default mobile: single column */
+/* Debug classes for the video column */
+.debug-video {
+  @apply lg:!block lg:!visible lg:!opacity-100 transition-opacity duration-300;
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .debug-grid {
-    grid-template-columns: 1fr !important; /* Tablet: single column but wider */
-  }
+/* Video column styles */
+.video-column {
+  animation: appear 0.5s ease forwards;
+  min-height: 100vh;
+  height: 100%;
+  padding-top: 0; /* Remove extra padding */
+  margin-top: -6rem; /* Align with the menu side */
 }
 
-@media (min-width: 1024px) {
-  .debug-grid {
-    grid-template-columns: 5fr 1fr !important; /* Desktop: 83.3% for news, 16.7% for videos */
-  }
-}
-
-/* Ensure video column visibility and line height */
-@media (min-width: 1024px) {
-  .video-column {
-    display: block !important;
-    visibility: visible !important;
-    height: 100%; /* Match the grid container height dynamically */
-    border-left: 1px solid #e5e7eb !important;
-    padding-top: 0;
-    position: relative; /* Enable proper stacking context */
-  }
-}
-
-/* Dynamic thumbnail and news section sizing */
+/* Video thumbnail styles - Desktop */
 .video-thumbnail {
   width: 100%;
   max-width: 350px;
-  transition: max-width 0.3s ease;
 }
 
 /* Video thumbnail styles - Mobile carousel */
 .video-thumbnail-mobile {
   max-width: 200px;
-  margin: 0 auto;
 }
 
 /* Screen width based responsive adjustments */
 @media (min-width: 768px) and (max-width: 1023px) {
   .video-thumbnail {
     max-width: 250px;
-  }
-  
-  .debug-grid > article {
-    max-width: 75%; /* Proportional reduction */
-    margin: 0 auto;
   }
 }
 
@@ -147,23 +125,11 @@
   }
 }
 
-.debug-grid > article {
-  width: 100%;
-  transition: max-width 0.3s ease;
+.video-title {
+  margin-top: 0.25rem; /* Reduce spacing between video and title */
 }
 
-@media (max-width: 767px) {
-  .debug-grid > article {
-    max-width: 100%; /* Full width on mobile */
-  }
-}
-
-/* Animation for video column */
 @keyframes appear {
   from { opacity: 0; transform: translateX(20px); }
   to { opacity: 1; transform: translateX(0); }
-}
-
-.video-column {
-  animation: appear 0.5s ease forwards;
 }
