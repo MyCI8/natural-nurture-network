@@ -5,7 +5,7 @@ import Routes from "./routes";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./App.css";
-import './styles/news-article.css'; // Import our new CSS for news articles
+import './styles/news-article.css';
 
 // Create router from our routes
 const router = createBrowserRouter([

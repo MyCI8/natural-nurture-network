@@ -33,7 +33,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
   const [isLoading, setIsLoading] = useState(true);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
-  console.log("NewsVideos rendering. isDesktop:", isDesktop, "videoLinks:", videoLinks, "windowWidth:", window.innerWidth);
+  console.log("NewsVideos rendering. isDesktop:", isDesktop, "videoLinks:", videoLinks.length);
 
   useEffect(() => {
     setIsLoading(true);
@@ -114,7 +114,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
       )}
       
       {isDesktop ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {validVideoLinks.map((video, index) => {
             const videoId = getYouTubeVideoId(video.url);
             if (!videoId) {
@@ -123,8 +123,8 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
             }
             
             return (
-              <div key={index} className="group hover:opacity-95 transition-opacity mb-6">
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg">
+              <div key={index} className="group hover:opacity-95 transition-opacity">
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg video-thumbnail">
                   <iframe
                     src={getEmbedUrl(videoId)}
                     title={video.title || `Video ${index + 1}`}
@@ -132,8 +132,6 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
                     allowFullScreen
                     className="absolute top-0 left-0 w-full h-full border-0 z-10"
                     loading="lazy"
-                    onError={(e) => console.error(`Failed to load video: ${video.url}`, e)}
-                    onLoad={() => console.log(`Successfully loaded video: ${video.url}`)}
                   />
                 </div>
                 <h3 className="font-medium text-base line-clamp-2 mt-2 group-hover:text-primary transition-colors">
@@ -161,8 +159,6 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
                         allowFullScreen
                         className="absolute top-0 left-0 w-full h-full border-0 z-10"
                         loading="lazy"
-                        onError={(e) => console.error(`Failed to load video in carousel: ${video.url}`, e)}
-                        onLoad={() => console.log(`Successfully loaded video in carousel: ${video.url}`)}
                       />
                     </div>
                     <h3 className="font-medium text-sm text-center line-clamp-1 mt-2">

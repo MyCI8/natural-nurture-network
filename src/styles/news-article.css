@@ -80,16 +80,24 @@
   }
 }
 
-/* Debug classes for the video column */
-.debug-video {
-  @apply lg:!block lg:!visible lg:!w-[350px] lg:!opacity-100 transition-opacity duration-300;
+/* Video thumbnail styling */
+.video-thumbnail {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1.5rem;
+  transition: transform 0.2s ease;
 }
 
-.video-column {
-  animation: appear 0.5s ease forwards;
+.video-thumbnail:hover {
+  transform: translateY(-3px);
 }
 
-@keyframes appear {
-  from { opacity: 0; transform: translateX(20px); }
+/* Animation for right section appearance */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+aside {
+  animation: slideIn 0.3s ease forwards;
 }

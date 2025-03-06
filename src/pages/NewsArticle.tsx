@@ -8,9 +8,10 @@ import { RelatedNewsExperts } from "@/components/news/RelatedNewsExperts";
 import { RelatedNewsLinks } from "@/components/news/RelatedNewsLinks";
 import { NewsVideos } from "@/components/news/NewsVideos";
 import { useBreakpoint } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Database } from "@/integrations/supabase/types";
 import "../styles/news-article.css";
+import { useLayout } from "@/contexts/LayoutContext";
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
 type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
@@ -25,17 +26,21 @@ const NewsArticle = () => {
   const navigate = useNavigate();
   const breakpoint = useBreakpoint();
   const isMobile = breakpoint === 'mobile';
-  const isDesktop = breakpoint === 'desktop';
-
-  // Track window width for debugging
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  
+  // This ensures the layout context is properly set
+  const { setLayoutMode, setShowRightSection } = useLayout();
+  
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  console.log("NewsArticle rendering with breakpoint:", breakpoint, "isDesktop:", isDesktop, "windowWidth:", windowWidth);
+    // Ensure the right layout mode is set for this page
+    setLayoutMode('full');
+    setShowRightSection(true);
+    
+    return () => {
+      // Clean up when leaving the page
+      setLayoutMode('default');
+      setShowRightSection(false);
+    };
+  }, [setLayoutMode, setShowRightSection]);
 
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
@@ -75,7 +80,7 @@ const NewsArticle = () => {
   if (isLoading) {
     return (
       <div className="pt-8 lg:pt-12">
-        <div className="x-container px-4 sm:px-6">
+        <div className="px-4 sm:px-6">
           <Skeleton className="h-8 w-3/4 mb-4" />
           <Skeleton className="h-64 w-full mb-6" />
           <div className="space-y-4">
@@ -91,7 +96,7 @@ const NewsArticle = () => {
   if (!article) {
     return (
       <div className="pt-8 lg:pt-12">
-        <div className="x-container px-4 sm:px-6">
+        <div className="px-4 sm:px-6">
           <h1 className="text-2xl font-bold mb-4">Article not found</h1>
         </div>
       </div>
@@ -128,7 +133,7 @@ const NewsArticle = () => {
 
   return (
     <div className="pt-6 lg:pt-12">
-      <div className="x-container px-4 sm:px-5 lg:px-6">
+      <div className="px-4 sm:px-5 lg:px-0">
         <div className="mb-6 lg:mb-8">
           <button 
             onClick={() => navigate(-1)} 
@@ -140,51 +145,42 @@ const NewsArticle = () => {
           <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(350px,1fr)] gap-6 lg:gap-8 relative">
-          <article className="text-left w-full">
-            <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
-              {article.title}
-            </h2>
-            
-            {article.main_image_url && (
-              <figure className="mb-8">
-                <img
-                  src={article.main_image_url}
-                  alt={article.main_image_description || ""}
-                  className="w-full rounded-lg"
-                />
-                {article.main_image_description && (
-                  <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
-                    {article.main_image_description}
-                  </figcaption>
-                )}
-              </figure>
-            )}
+        <article className="w-full text-left">
+          <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
+            {article.title}
+          </h2>
+          
+          {article.main_image_url && (
+            <figure className="mb-8">
+              <img
+                src={article.main_image_url}
+                alt={article.main_image_description || ""}
+                className="w-full rounded-lg"
+              />
+              {article.main_image_description && (
+                <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
+                  {article.main_image_description}
+                </figcaption>
+              )}
+            </figure>
+          )}
 
-            <div 
-              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
-              dangerouslySetInnerHTML={{ __html: article.content }}
-            />
+          <div 
+            className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
 
-            {article.experts?.length > 0 && (
-              <RelatedNewsExperts experts={article.experts} />
-            )}
+          {article.experts?.length > 0 && (
+            <RelatedNewsExperts experts={article.experts} />
+          )}
 
-            {article.news_article_links?.length > 0 && (
-              <RelatedNewsLinks links={article.news_article_links} />
-            )}
-          </article>
+          {article.news_article_links?.length > 0 && (
+            <RelatedNewsLinks links={article.news_article_links} />
+          )}
+        </article>
 
-          {/* Desktop video section */}
-          <div className="hidden lg:block border-l border-gray-300 pl-6 min-h-[50vh] w-[350px] shrink-0 debug-video video-column">
-            <NewsVideos 
-              videoLinks={videoLinks}
-              videoDescription={article.video_description}
-              isDesktop={true} // Force desktop layout
-            />
-          </div>
-
-          {/* Mobile video carousel */}
+        {/* Show videos on mobile - the desktop videos are handled by RightSection */}
+        {isMobile && videoLinks.length > 0 && (
           <div className="block lg:hidden my-6">
             <NewsVideos 
               videoLinks={videoLinks}
@@ -192,7 +188,7 @@ const NewsArticle = () => {
               isDesktop={false}
             />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
