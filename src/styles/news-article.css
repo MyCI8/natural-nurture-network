@@ -88,8 +88,14 @@
     visibility: visible !important;
     height: 100%; /* Match the grid container height dynamically */
     border-left: 1px solid #e5e7eb !important;
+    /* Removed negative margin-top that was causing issues */
     padding-top: 0;
-    margin-top: -6rem; /* Align with the menu side */
+    position: relative; /* Enable proper stacking context */
+  }
+  
+  /* Grid adjustments for better width distribution */
+  .debug-grid {
+    grid-template-columns: 5fr 1fr !important; /* 83.3% for news, 16.7% for videos */
   }
 }
 
@@ -111,6 +117,11 @@
   .video-thumbnail {
     max-width: 250px;
   }
+  
+  .debug-grid > article {
+    max-width: 75%; /* Proportional reduction */
+    margin: 0 auto;
+  }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
@@ -128,13 +139,6 @@
 .debug-grid > article {
   width: 100%;
   transition: max-width 0.3s ease;
-}
-
-@media (max-width: 1023px) {
-  .debug-grid > article {
-    max-width: 75%; /* Proportional reduction */
-    margin: 0 auto;
-  }
 }
 
 @media (max-width: 767px) {
