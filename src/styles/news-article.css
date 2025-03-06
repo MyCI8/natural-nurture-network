@@ -81,6 +81,23 @@
   }
 }
 
+/* Three-column layout grid adjustments */
+.debug-grid {
+  grid-template-columns: 1fr !important; /* Default mobile: single column */
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .debug-grid {
+    grid-template-columns: 1fr !important; /* Tablet: single column but wider */
+  }
+}
+
+@media (min-width: 1024px) {
+  .debug-grid {
+    grid-template-columns: 5fr 1fr !important; /* Desktop: 83.3% for news, 16.7% for videos */
+  }
+}
+
 /* Ensure video column visibility and line height */
 @media (min-width: 1024px) {
   .video-column {
@@ -88,14 +105,8 @@
     visibility: visible !important;
     height: 100%; /* Match the grid container height dynamically */
     border-left: 1px solid #e5e7eb !important;
-    /* Removed negative margin-top that was causing issues */
     padding-top: 0;
     position: relative; /* Enable proper stacking context */
-  }
-  
-  /* Grid adjustments for better width distribution */
-  .debug-grid {
-    grid-template-columns: 5fr 1fr !important; /* 83.3% for news, 16.7% for videos */
   }
 }
 
