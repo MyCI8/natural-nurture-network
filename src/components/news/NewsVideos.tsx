@@ -112,7 +112,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
       )}
       
       {isDesktop ? (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {validVideoLinks.map((video, index) => {
             const videoId = getYouTubeVideoId(video.url);
             if (!videoId) {
@@ -122,7 +122,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
             
             return (
               <div key={index} className="group hover:opacity-95 transition-opacity mb-4">
-                <div className="relative aspect-video overflow-hidden rounded-lg shadow-lg video-thumbnail">
+                <div className="relative aspect-video w-full max-w-[300px] lg:max-w-[350px] overflow-hidden rounded-lg shadow-lg video-thumbnail">
                   <iframe
                     src={getEmbedUrl(videoId)}
                     title={video.title || `Video ${index + 1}`}
@@ -151,7 +151,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVide
               return (
                 <CarouselItem key={index} className="pl-1">
                   <div className="p-1">
-                    <div className="relative aspect-video w-full max-w-[200px] mx-auto overflow-hidden rounded-lg shadow-md video-thumbnail-mobile">
+                    <div className="relative aspect-video w-full max-w-[300px] mx-auto overflow-hidden rounded-lg shadow-md">
                       <iframe
                         src={getEmbedUrl(videoId, true, true)}
                         title={video.title || `Video ${index + 1}`}
