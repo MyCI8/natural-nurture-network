@@ -101,3 +101,29 @@
 aside {
   animation: slideIn 0.3s ease forwards;
 }
+
+/* Fix for sidebar and main content spacing */
+@media (min-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  
+  .main-content-with-sidebar {
+    margin-left: 240px;
+  }
+}
+
+/* Fix for the right section to maintain proper alignment */
+.news-article-container {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Ensure the bottom portion of the sidebar is always visible */
+nav[aria-label="Main navigation"] {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding-bottom: 1rem;
+  overflow-y: auto;
+}

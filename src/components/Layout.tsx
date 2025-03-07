@@ -42,13 +42,13 @@ const LayoutContent = () => {
     <div className="min-h-screen flex justify-center bg-background overflow-x-hidden w-full">
       {/* Container for max width */}
       <div className="w-full max-w-7xl flex relative">
-        {/* Left Sidebar */}
-        <div className={`${isMobile ? 'w-0' : 'w-[240px]'} shrink-0`}>
+        {/* Left Sidebar - Fixed width */}
+        <div className={`${isMobile ? 'hidden' : 'w-[240px] fixed top-0 left-0 bottom-0'} shrink-0 z-50`}>
           <MainSidebar />
         </div>
         
-        {/* Main Content and Optional Right Section */}
-        <div className="flex-1 min-h-screen w-full">
+        {/* Main Content and Optional Right Section - with left padding to account for sidebar */}
+        <div className={`flex-1 min-h-screen w-full ${isMobile ? '' : 'ml-[240px]'}`}>
           <div 
             className={`w-full mx-auto ${
               isMobile 

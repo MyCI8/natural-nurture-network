@@ -35,6 +35,9 @@ const NewsArticle = () => {
     setLayoutMode('full');
     setShowRightSection(true);
     
+    // Scroll to top on page load
+    window.scrollTo(0, 0);
+    
     return () => {
       // Clean up when leaving the page
       setLayoutMode('default');
@@ -132,7 +135,7 @@ const NewsArticle = () => {
   })();
 
   return (
-    <div className="pt-6 lg:pt-12">
+    <div className="pt-6 lg:pt-12 news-article-container">
       <div className="px-4 sm:px-5 lg:px-0">
         <div className="mb-6 lg:mb-8">
           <button 

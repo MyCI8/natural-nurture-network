@@ -38,7 +38,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
         setContentWidth('max-w-[1000px]');
         break;
       case 'full':
-        setContentWidth('max-w-none');
+        setContentWidth('max-w-none px-8');
         break;
       default:
         setContentWidth('max-w-[800px]');

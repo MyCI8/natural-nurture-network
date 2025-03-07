@@ -301,7 +301,7 @@ const MainSidebar = () => {
     <nav 
       role="navigation" 
       aria-label="Main navigation"
-      className="fixed h-screen flex flex-col py-4 bg-background border-r border-border transition-all duration-300 z-50"
+      className="h-screen flex flex-col py-4 bg-background border-r border-border transition-all duration-300 overflow-y-auto"
     >
       <div className="px-4">
         <Link 
@@ -349,7 +349,7 @@ const MainSidebar = () => {
         )}
       </div>
 
-      <div className="mt-auto px-4 space-y-4">
+      <div className="mt-auto px-4 space-y-4 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
