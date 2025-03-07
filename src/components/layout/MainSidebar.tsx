@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -73,7 +72,6 @@ const MainSidebar = () => {
     { path: '/symptoms', label: 'Symptoms', icon: Activity },
   ];
 
-  // Handle mobile scroll for top header
   useEffect(() => {
     if (!isMobile) return;
 
@@ -89,7 +87,6 @@ const MainSidebar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile, lastScrollY]);
 
-  // Auto collapse on mobile when route changes
   useEffect(() => {
     if (isMobile) {
       setIsExpanded(false);
@@ -97,7 +94,6 @@ const MainSidebar = () => {
     }
   }, [location.pathname, isMobile]);
 
-  // Expand sidebar on desktop
   useEffect(() => {
     if (!isMobile) {
       setIsExpanded(true);
@@ -159,7 +155,6 @@ const MainSidebar = () => {
   if (isMobile) {
     return (
       <>
-        {/* Mobile Top Header */}
         <header 
           className={`fixed top-0 left-0 right-0 h-14 bg-background border-b z-50 transition-transform duration-300 ease-in-out ${
             showMobileHeader ? 'translate-y-0' : '-translate-y-full'
@@ -190,7 +185,6 @@ const MainSidebar = () => {
           </div>
         </header>
 
-        {/* Mobile Bottom Navigation */}
         <nav 
           role="navigation" 
           aria-label="Main navigation"
@@ -221,7 +215,6 @@ const MainSidebar = () => {
           </div>
         </nav>
 
-        {/* Mobile Expandable Sidebar */}
         <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${
           isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}>
@@ -301,9 +294,9 @@ const MainSidebar = () => {
     <nav 
       role="navigation" 
       aria-label="Main navigation"
-      className="h-screen flex flex-col py-4 bg-background border-r border-border transition-all duration-300 overflow-y-auto"
+      className="h-full flex flex-col py-4 overflow-y-auto"
     >
-      <div className="px-4">
+      <div className="px-6">
         <Link 
           to="/" 
           className="flex items-center space-x-2 mb-8"
@@ -349,7 +342,7 @@ const MainSidebar = () => {
         )}
       </div>
 
-      <div className="mt-auto px-4 space-y-4 mb-6">
+      <div className="mt-auto px-6 space-y-4 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input

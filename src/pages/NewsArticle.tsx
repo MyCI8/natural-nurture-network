@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,64 +134,62 @@ const NewsArticle = () => {
   })();
 
   return (
-    <div className="pt-6 lg:pt-12 news-article-container">
-      <div className="px-4 sm:px-5 lg:px-0">
-        <div className="mb-6 lg:mb-8">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="flex items-center text-text-light hover:text-primary mb-4"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back
-          </button>
-          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
-        </div>
-
-        <article className="w-full text-left">
-          <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
-            {article.title}
-          </h2>
-          
-          {article.main_image_url && (
-            <figure className="mb-8">
-              <img
-                src={article.main_image_url}
-                alt={article.main_image_description || ""}
-                className="w-full rounded-lg"
-              />
-              {article.main_image_description && (
-                <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
-                  {article.main_image_description}
-                </figcaption>
-              )}
-            </figure>
-          )}
-
-          <div 
-            className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
-
-          {article.experts?.length > 0 && (
-            <RelatedNewsExperts experts={article.experts} />
-          )}
-
-          {article.news_article_links?.length > 0 && (
-            <RelatedNewsLinks links={article.news_article_links} />
-          )}
-        </article>
-
-        {/* Show videos on mobile - the desktop videos are handled by RightSection */}
-        {isMobile && videoLinks.length > 0 && (
-          <div className="block lg:hidden my-6">
-            <NewsVideos 
-              videoLinks={videoLinks}
-              videoDescription={article.video_description}
-              isDesktop={false}
-            />
-          </div>
-        )}
+    <div className="pt-6 lg:pt-12">
+      <div className="mb-6 lg:mb-8">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center text-text-light hover:text-primary mb-4"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back
+        </button>
+        <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
       </div>
+
+      <article className="w-full text-left">
+        <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
+          {article.title}
+        </h2>
+        
+        {article.main_image_url && (
+          <figure className="mb-8">
+            <img
+              src={article.main_image_url}
+              alt={article.main_image_description || ""}
+              className="w-full rounded-lg"
+            />
+            {article.main_image_description && (
+              <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
+                {article.main_image_description}
+              </figcaption>
+            )}
+          </figure>
+        )}
+
+        <div 
+          className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
+          dangerouslySetInnerHTML={{ __html: article.content }}
+        />
+
+        {article.experts?.length > 0 && (
+          <RelatedNewsExperts experts={article.experts} />
+        )}
+
+        {article.news_article_links?.length > 0 && (
+          <RelatedNewsLinks links={article.news_article_links} />
+        )}
+      </article>
+
+      {/* Show videos on mobile - the desktop videos are handled by RightSection */}
+      {isMobile && videoLinks.length > 0 && (
+        <div className="block lg:hidden my-6">
+          <NewsVideos 
+            videoLinks={videoLinks}
+            videoDescription={article.video_description}
+            isDesktop={false}
+          />
+        </div>
+      )}
     </div>
   );
 };
