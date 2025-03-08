@@ -58,7 +58,7 @@ const RightSection: React.FC = () => {
   // Render based on current page context
   if (isNewsArticle && videoLinks.length > 0) {
     return (
-      <div className="h-full py-6">
+      <div className="h-full py-6 pr-4">
         <NewsVideos 
           videoLinks={videoLinks}
           videoDescription={article?.video_description}

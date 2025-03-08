@@ -79,7 +79,7 @@ const NewsArticle = () => {
 
   if (isLoading) {
     return (
-      <div className="pt-8 lg:pt-12">
+      <div className="pt-8 lg:pt-12 news-article-container mx-auto">
         <div className="px-4 sm:px-6">
           <Skeleton className="h-8 w-3/4 mb-4" />
           <Skeleton className="h-64 w-full mb-6" />
@@ -95,7 +95,7 @@ const NewsArticle = () => {
 
   if (!article) {
     return (
-      <div className="pt-8 lg:pt-12">
+      <div className="pt-8 lg:pt-12 news-article-container mx-auto">
         <div className="px-4 sm:px-6">
           <h1 className="text-2xl font-bold mb-4">Article not found</h1>
         </div>
@@ -132,7 +132,7 @@ const NewsArticle = () => {
   })();
 
   return (
-    <div className="pt-6 lg:pt-12">
+    <div className="pt-6 lg:pt-12 news-article-content">
       <div className="px-4 sm:px-5 lg:px-0">
         <div className="mb-6 lg:mb-8">
           <button 

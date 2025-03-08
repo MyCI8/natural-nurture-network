@@ -4,13 +4,15 @@
 /* Container widths that match x.com constraints */
 .x-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: var(--layout-max-width);
   margin: 0 auto;
+  padding: 0;
 }
 
 /* Content widths */
 .x-content {
-  max-width: 600px; /* Desktop content width similar to x.com */
+  max-width: var(--content-max-width);
+  padding: 0 1.5rem;
 }
 
 /* Video embed container with aspect ratio preservation */
@@ -73,13 +75,6 @@
   transition: all 0.2s ease-in-out;
 }
 
-/* Ensure root padding doesn't interfere with grid layout */
-@media (min-width: 1200px) {
-  #root {
-    padding: 0;
-  }
-}
-
 /* Video thumbnail styling */
 .video-thumbnail {
   width: 100%;
@@ -100,4 +95,27 @@
 
 aside {
   animation: slideIn 0.3s ease forwards;
+}
+
+/* News article specific layout */
+.news-article-container {
+  padding: 0 1rem;
+  max-width: var(--content-max-width);
+}
+
+.news-article-content {
+  padding-right: 1.5rem;
+}
+
+/* Fixed width for side sections */
+.news-sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+}
+
+.news-right-section {
+  width: var(--rightsection-width);
+  flex-shrink: 0;
+  padding-left: 1.5rem;
+  border-left: 1px solid #eaeaea;
 }
