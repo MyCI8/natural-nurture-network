@@ -70,7 +70,7 @@ const RightSection: React.FC = () => {
   
   // Default content for right section when no specific content is available
   return (
-    <div className="py-6">
+    <div className="px-4 py-6">
       <h3 className="text-lg font-medium mb-4">Suggestions For You</h3>
       <div className="space-y-4">
         <p className="text-sm text-text-light">

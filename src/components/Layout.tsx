@@ -32,46 +32,44 @@ const LayoutContent = () => {
     if (isMobile) return '';
     
     if (layoutMode === 'full' && showRightSection) {
-      return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)_350px]';
+      return 'lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(300px,350px)]';
     }
     
-    if (layoutMode === 'wide') {
-      return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)]';
-    }
-    
-    return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)]';
+    return '';
   };
 
   return (
     <div className="min-h-screen flex justify-center bg-background overflow-x-hidden w-full">
       {/* Container for max width */}
-      <div className={`w-full max-w-7xl mx-auto ${getGridTemplate()} gap-0`}>
-        {/* Left Sidebar - Column 1 */}
-        <div className={`${isMobile ? 'hidden' : 'block'} shrink-0 border-r border-border`}>
+      <div className="w-full max-w-7xl flex relative">
+        {/* Left Sidebar */}
+        <div className={`${isMobile ? 'w-0' : 'w-[240px]'} shrink-0`}>
           <MainSidebar />
         </div>
         
-        {/* Main Content - Column 2 */}
-        <div className="min-h-screen w-full">
-          <main className={`w-full ${isMobile ? 'pb-20' : contentWidth} px-6`}>
-            <Outlet />
-          </main>
+        {/* Main Content and Optional Right Section */}
+        <div className="flex-1 min-h-screen w-full">
+          <div 
+            className={`w-full mx-auto ${
+              isMobile 
+                ? 'pb-20' // Mobile bottom padding
+                : `${contentWidth} px-4` // Desktop constraints
+            } ${getGridTemplate()} gap-8`}
+          >
+            {/* Main Content Area */}
+            <main className="min-h-screen w-full">
+              <Outlet />
+            </main>
+            
+            {/* Right Section - Only shown on desktop when enabled */}
+            {!isMobile && showRightSection && layoutMode === 'full' && (
+              <aside className="hidden lg:block min-h-screen border-l border-gray-300 pl-6">
+                <RightSection />
+              </aside>
+            )}
+          </div>
         </div>
-        
-        {/* Right Section - Column 3 (only shown when enabled) */}
-        {!isMobile && showRightSection && layoutMode === 'full' && (
-          <aside className="hidden lg:block min-h-screen border-l border-border">
-            <div className="px-6 h-full">
-              <RightSection />
-            </div>
-          </aside>
-        )}
       </div>
-      
-      {/* Mobile Version of Layout */}
-      {isMobile && (
-        <MainSidebar />
-      )}
     </div>
   );
 };

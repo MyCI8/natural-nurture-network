@@ -101,35 +101,3 @@
 aside {
   animation: slideIn 0.3s ease forwards;
 }
-
-/* Layout spacing constants */
-:root {
-  --sidebar-width: 240px;
-  --column-spacing: 1.5rem;
-  --right-section-width: 350px;
-}
-
-/* Consistent grid layout for the app */
-.three-column-layout {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--right-section-width);
-  gap: var(--column-spacing);
-}
-
-.two-column-layout {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-  gap: var(--column-spacing);
-}
-
-/* Make sure the news article container has consistent padding */
-.news-article-container {
-  padding: 0 1.5rem;
-}
-
-/* Make sure sidebar and main content have proper height */
-nav[aria-label="Main navigation"] {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
