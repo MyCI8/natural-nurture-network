@@ -39,22 +39,22 @@ const LayoutContent = () => {
       <div className="flex-grow flex">
         {/* Left Sidebar - Hidden on mobile */}
         {!isMobile && (
-          <div className="w-[240px] shrink-0 border-r border-border">
+          <div className="w-[var(--sidebar-width)] shrink-0 border-r border-border">
             <MainSidebar />
           </div>
         )}
         
         {/* Main Content Area */}
         <div className="flex-grow min-h-screen">
-          <main className={`${contentWidth} px-6 py-4 ${isMobile ? 'pb-20 pt-16' : ''}`}>
+          <main className={`${contentWidth} px-[var(--content-padding)] py-4 ${isMobile ? 'pb-20 pt-16' : ''}`}>
             <Outlet />
           </main>
         </div>
         
         {/* Right Section - Only shown when enabled and on desktop */}
         {!isMobile && showRightSection && layoutMode === 'full' && (
-          <div className="w-[350px] shrink-0 border-l border-border">
-            <div className="p-6 h-full">
+          <div className="w-[var(--right-section-width)] shrink-0 border-l border-border">
+            <div className="p-[var(--content-padding)] h-full">
               <RightSection />
             </div>
           </div>

@@ -102,14 +102,6 @@ aside {
   animation: slideIn 0.3s ease forwards;
 }
 
-/* Layout constants for spacing that can be reused throughout the app */
-:root {
-  --sidebar-width: 240px;
-  --right-section-width: 350px;
-  --column-spacing: 1.5rem;
-  --content-padding: 1.5rem;
-}
-
 /* News article specific styling */
 .news-article-container {
   padding: 0 var(--content-padding);

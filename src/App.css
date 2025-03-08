@@ -48,11 +48,20 @@ body {
   flex-direction: column;
 }
 
+/* Layout variables for consistent spacing */
+:root {
+  --sidebar-width: 240px;
+  --right-section-width: 350px;
+  --content-padding: 1.5rem;
+  --content-max-width: 800px; 
+  --wide-content-max-width: 1000px;
+}
+
 /* Apply consistent padding and spacing in the app */
 .content-padding {
-  padding: 1.5rem;
+  padding: var(--content-padding);
 }
 
 .column-spacing {
-  gap: 1.5rem;
+  gap: var(--content-padding);
 }

@@ -18,7 +18,7 @@ const defaultContext: LayoutContextProps = {
   showRightSection: false,
   setLayoutMode: () => {},
   setShowRightSection: () => {},
-  contentWidth: 'max-w-[800px] mx-auto'
+  contentWidth: 'max-w-[var(--content-max-width)] mx-auto'
 };
 
 const LayoutContext = createContext<LayoutContextProps>(defaultContext);
@@ -28,20 +28,20 @@ export const useLayout = () => useContext(LayoutContext);
 export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const [showRightSection, setShowRightSection] = useState(false);
-  const [contentWidth, setContentWidth] = useState('max-w-[800px] mx-auto');
+  const [contentWidth, setContentWidth] = useState('max-w-[var(--content-max-width)] mx-auto');
   const location = useLocation();
   
   // Update content width based on layout mode
   useEffect(() => {
     switch (layoutMode) {
       case 'wide':
-        setContentWidth('max-w-[1000px] mx-auto');
+        setContentWidth('max-w-[var(--wide-content-max-width)] mx-auto');
         break;
       case 'full':
         setContentWidth('max-w-none');
         break;
       default:
-        setContentWidth('max-w-[800px] mx-auto');
+        setContentWidth('max-w-[var(--content-max-width)] mx-auto');
     }
   }, [layoutMode]);
   
