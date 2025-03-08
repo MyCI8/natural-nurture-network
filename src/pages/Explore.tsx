@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -230,9 +229,6 @@ const Explore = () => {
               <span className="instagram-username" onClick={() => navigate(`/users/${video.creator?.id}`)}>
                 {video.creator?.username || 'Anonymous'}
               </span>
-              {video.location && (
-                <div className="text-xs text-gray-500">{video.location}</div>
-              )}
             </div>
             <Button variant="ghost" size="icon" className="text-gray-700">
               <MoreHorizontal className="h-5 w-5" />
