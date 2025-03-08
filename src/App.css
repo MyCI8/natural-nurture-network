@@ -35,33 +35,3 @@
 .read-the-docs {
   color: #888;
 }
-
-/* Global layout styles */
-body {
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Layout variables for consistent spacing */
-:root {
-  --sidebar-width: 240px;
-  --right-section-width: 350px;
-  --content-padding: 1.5rem;
-  --content-max-width: 800px; 
-  --wide-content-max-width: 1000px;
-}
-
-/* Apply consistent padding and spacing in the app */
-.content-padding {
-  padding: var(--content-padding);
-}
-
-.column-spacing {
-  gap: var(--content-padding);
-}

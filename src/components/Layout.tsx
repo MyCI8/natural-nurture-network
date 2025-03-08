@@ -27,48 +27,51 @@ const LayoutContent = () => {
     };
   }, [location]);
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* Mobile Header - Only shown on mobile */}
-      {isMobile && (
-        <div className="fixed top-0 left-0 right-0 h-14 bg-background border-b z-50">
-          {/* Mobile header content handled in MainSidebar component */}
-        </div>
-      )}
+  // Determine grid template based on layout mode and mobile state
+  const getGridTemplate = () => {
+    if (isMobile) return '';
+    
+    if (layoutMode === 'full' && showRightSection) {
+      return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)_350px]';
+    }
+    
+    if (layoutMode === 'wide') {
+      return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)]';
+    }
+    
+    return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)]';
+  };
 
-      <div className="flex-grow flex">
-        {/* Left Sidebar - Hidden on mobile */}
-        {!isMobile && (
-          <div className="w-[var(--sidebar-width)] shrink-0 border-r border-border">
-            <MainSidebar />
-          </div>
-        )}
+  return (
+    <div className="min-h-screen flex justify-center bg-background overflow-x-hidden w-full">
+      {/* Container for max width */}
+      <div className={`w-full max-w-7xl mx-auto ${getGridTemplate()} gap-0`}>
+        {/* Left Sidebar - Column 1 */}
+        <div className={`${isMobile ? 'hidden' : 'block'} shrink-0 border-r border-border`}>
+          <MainSidebar />
+        </div>
         
-        {/* Main Content Area */}
-        <div className="flex-grow min-h-screen">
-          <main className={`${contentWidth} px-[var(--content-padding)] py-4 ${isMobile ? 'pb-20 pt-16' : ''}`}>
+        {/* Main Content - Column 2 */}
+        <div className="min-h-screen w-full">
+          <main className={`w-full ${isMobile ? 'pb-20' : contentWidth} px-6`}>
             <Outlet />
           </main>
         </div>
         
-        {/* Right Section - Only shown when enabled and on desktop */}
+        {/* Right Section - Column 3 (only shown when enabled) */}
         {!isMobile && showRightSection && layoutMode === 'full' && (
-          <div className="w-[var(--right-section-width)] shrink-0 border-l border-border">
-            <div className="p-[var(--content-padding)] h-full">
+          <aside className="hidden lg:block min-h-screen border-l border-border">
+            <div className="px-6 h-full">
               <RightSection />
             </div>
-          </div>
+          </aside>
         )}
       </div>
       
-      {/* Mobile Navigation - Only shown on mobile */}
+      {/* Mobile Version of Layout */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 h-16 bg-background border-t z-50">
-          {/* Mobile navigation content handled in MainSidebar component */}
-        </div>
+        <MainSidebar />
       )}
-
-      {/* Mobile Sidebar Overlay - Rendered by MainSidebar component */}
     </div>
   );
 };
