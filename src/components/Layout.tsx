@@ -27,51 +27,48 @@ const LayoutContent = () => {
     };
   }, [location]);
 
-  // Determine grid template based on layout mode and mobile state
-  const getGridTemplate = () => {
-    if (isMobile) return '';
-    
-    if (layoutMode === 'full' && showRightSection) {
-      return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)_350px]';
-    }
-    
-    if (layoutMode === 'wide') {
-      return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)]';
-    }
-    
-    return 'lg:grid lg:grid-cols-[240px_minmax(0,1fr)]';
-  };
-
   return (
-    <div className="min-h-screen flex justify-center bg-background overflow-x-hidden w-full">
-      {/* Container for max width */}
-      <div className={`w-full max-w-7xl mx-auto ${getGridTemplate()} gap-0`}>
-        {/* Left Sidebar - Column 1 */}
-        <div className={`${isMobile ? 'hidden' : 'block'} shrink-0 border-r border-border`}>
-          <MainSidebar />
+    <div className="min-h-screen flex flex-col">
+      {/* Mobile Header - Only shown on mobile */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 h-14 bg-background border-b z-50">
+          {/* Mobile header content handled in MainSidebar component */}
         </div>
+      )}
+
+      <div className="flex-grow flex">
+        {/* Left Sidebar - Hidden on mobile */}
+        {!isMobile && (
+          <div className="w-[240px] shrink-0 border-r border-border">
+            <MainSidebar />
+          </div>
+        )}
         
-        {/* Main Content - Column 2 */}
-        <div className="min-h-screen w-full">
-          <main className={`w-full ${isMobile ? 'pb-20' : contentWidth} px-6`}>
+        {/* Main Content Area */}
+        <div className="flex-grow min-h-screen">
+          <main className={`${contentWidth} px-6 py-4 ${isMobile ? 'pb-20 pt-16' : ''}`}>
             <Outlet />
           </main>
         </div>
         
-        {/* Right Section - Column 3 (only shown when enabled) */}
+        {/* Right Section - Only shown when enabled and on desktop */}
         {!isMobile && showRightSection && layoutMode === 'full' && (
-          <aside className="hidden lg:block min-h-screen border-l border-border">
-            <div className="px-6 h-full">
+          <div className="w-[350px] shrink-0 border-l border-border">
+            <div className="p-6 h-full">
               <RightSection />
             </div>
-          </aside>
+          </div>
         )}
       </div>
       
-      {/* Mobile Version of Layout */}
+      {/* Mobile Navigation - Only shown on mobile */}
       {isMobile && (
-        <MainSidebar />
+        <div className="fixed bottom-0 left-0 right-0 h-16 bg-background border-t z-50">
+          {/* Mobile navigation content handled in MainSidebar component */}
+        </div>
       )}
+
+      {/* Mobile Sidebar Overlay - Rendered by MainSidebar component */}
     </div>
   );
 };

@@ -35,3 +35,24 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Global layout styles */
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Apply consistent padding and spacing in the app */
+.content-padding {
+  padding: 1.5rem;
+}
+
+.column-spacing {
+  gap: 1.5rem;
+}
