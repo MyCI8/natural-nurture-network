@@ -5,6 +5,7 @@ import { Video, ProductLink } from '@/types/video';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 interface VideoPlayerProps {
   video: Video;
@@ -14,6 +15,7 @@ interface VideoPlayerProps {
   globalAudioEnabled?: boolean;
   onAudioStateChange?: (isMuted: boolean) => void;
   isFullscreen?: boolean;
+  className?: string;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -23,7 +25,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   showControls = true,
   globalAudioEnabled = false,
   onAudioStateChange,
-  isFullscreen = false
+  isFullscreen = false,
+  className
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -45,8 +48,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
       
-      // Adjust video height based on its natural aspect ratio
-      adjustVideoHeight();
+      // Only adjust height if not in Instagram mode
+      if (!className?.includes('instagram-video')) {
+        adjustVideoHeight();
+      }
     };
 
     const adjustVideoHeight = () => {
@@ -65,13 +70,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.addEventListener('loadedmetadata', handleMetadata);
     
     // Add resize listener to adjust video height when window is resized
-    window.addEventListener('resize', adjustVideoHeight);
+    if (!className?.includes('instagram-video')) {
+      window.addEventListener('resize', adjustVideoHeight);
+    }
 
     return () => {
       video.removeEventListener('loadedmetadata', handleMetadata);
       window.removeEventListener('resize', adjustVideoHeight);
     };
-  }, []);
+  }, [className]);
 
   useEffect(() => {
     const handleVideoVisibility = async () => {
@@ -115,13 +122,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         inViewRef(node);
         if (node) containerRef.current = node;
       }}
-      className={`relative w-full overflow-hidden ${isFullscreen ? 'bg-black' : 'bg-black/5'}`}
+      className={cn("relative w-full overflow-hidden", className, isFullscreen ? 'bg-black' : 'bg-black/5')}
       style={isFullscreen ? { height: '100vh' } : undefined}
     >
       <video
         ref={videoRef}
         src={video.video_url}
-        className={`w-full ${isFullscreen ? 'h-full object-contain' : 'h-auto object-contain'}`}
+        className={cn("w-full", className, isFullscreen ? 'h-full object-contain' : 'h-auto object-contain')}
         loop
         muted={isMuted}
         playsInline

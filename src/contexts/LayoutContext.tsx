@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 // Define layout modes
-export type LayoutMode = 'default' | 'wide' | 'full';
+export type LayoutMode = 'default' | 'wide' | 'full' | 'instagram';
 
 interface LayoutContextProps {
   layoutMode: LayoutMode;
@@ -40,13 +40,11 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       case 'full':
         setContentWidth('news-article-container mx-auto');
         break;
+      case 'instagram':
+        setContentWidth('w-full mx-auto p-0');
+        break;
       default:
         setContentWidth('max-w-[700px] mx-auto px-6');
-    }
-    
-    // Special case for explore page - Instagram-like feed
-    if (location.pathname === '/explore') {
-      setContentWidth('w-full mx-auto');
     }
   }, [layoutMode, location.pathname]);
   
@@ -61,7 +59,10 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     } else if (path.startsWith('/admin')) {
       setLayoutMode('wide');
       setShowRightSection(false);
-    } else if (path === '/' || path.startsWith('/explore')) {
+    } else if (path === '/explore' || path.startsWith('/explore')) {
+      setLayoutMode('instagram');
+      setShowRightSection(false);
+    } else if (path === '/') {
       setLayoutMode('default');
       setShowRightSection(false);
     } else {

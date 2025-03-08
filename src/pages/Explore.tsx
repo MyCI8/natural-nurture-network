@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -210,7 +211,7 @@ const Explore = () => {
   }
 
   return (
-    <div className="w-full max-w-[600px] mx-auto bg-white dark:bg-black">
+    <div className="flex flex-col items-center w-full bg-white dark:bg-black">
       {videos.map((video) => (
         <div 
           key={video.id}
@@ -235,9 +236,9 @@ const Explore = () => {
             </Button>
           </div>
 
-          {/* Video player */}
+          {/* Video container with proper aspect ratio */}
           <div 
-            className="w-full cursor-pointer bg-black"
+            className="instagram-video-container"
             onClick={() => setSelectedVideo(video)}
           >
             <VideoPlayer 
@@ -246,6 +247,7 @@ const Explore = () => {
               showControls={false}
               globalAudioEnabled={globalAudioEnabled}
               onAudioStateChange={(isMuted) => setGlobalAudioEnabled(!isMuted)}
+              className="instagram-video"
             />
           </div>
 
