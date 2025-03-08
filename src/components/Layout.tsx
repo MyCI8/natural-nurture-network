@@ -11,6 +11,7 @@ const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { layoutMode, showRightSection, contentWidth } = useLayout();
+  const isExplorePage = location.pathname === '/explore';
 
   // Prevent unwanted redirects
   useEffect(() => {
@@ -28,24 +29,24 @@ const LayoutContent = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex justify-center bg-background overflow-x-hidden w-full">
+    <div className="min-h-screen flex justify-center bg-white dark:bg-black overflow-x-hidden w-full">
       {/* Main container with max width */}
       <div className="w-full max-w-[1400px] flex relative">
-        {/* Left Sidebar */}
-        <div className={`${isMobile ? 'hidden' : 'block'} news-sidebar`}>
+        {/* Left Sidebar - Hide on mobile and make narrower on explore page */}
+        <div className={`${isMobile ? 'hidden' : 'block'} ${isExplorePage ? 'w-[80px]' : 'news-sidebar'}`}>
           <MainSidebar />
         </div>
         
         {/* Main Content Area */}
         <div className="flex-1 min-h-screen">
-          {/* Content with proper constraints */}
-          <main className={`min-h-screen ${isMobile ? 'pb-20 w-full' : contentWidth}`}>
+          {/* Content with proper constraints - Instagram style for explore page */}
+          <main className={`min-h-screen ${isMobile ? 'pb-20 w-full' : isExplorePage ? 'py-0 w-full' : contentWidth}`}>
             <Outlet />
           </main>
         </div>
 
         {/* Right Section - Only shown when enabled */}
-        {!isMobile && showRightSection && layoutMode === 'full' && (
+        {!isMobile && showRightSection && layoutMode === 'full' && !isExplorePage && (
           <aside className="hidden lg:block min-h-screen news-right-section">
             <RightSection />
           </aside>

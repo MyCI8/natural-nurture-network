@@ -43,7 +43,12 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       default:
         setContentWidth('max-w-[700px] mx-auto px-6');
     }
-  }, [layoutMode]);
+    
+    // Special case for explore page - Instagram-like feed
+    if (location.pathname === '/explore') {
+      setContentWidth('w-full mx-auto');
+    }
+  }, [layoutMode, location.pathname]);
   
   // Update layout based on routes
   useEffect(() => {
