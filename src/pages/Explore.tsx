@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,14 +21,12 @@ const Explore = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
   
-  // Get current user
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
         setCurrentUser(data.user);
         
-        // Fetch user likes
         const { data: likes } = await supabase
           .from('video_likes')
           .select('video_id')
@@ -70,7 +67,6 @@ const Explore = () => {
     },
   });
 
-  // Like mutation
   const likeMutation = useMutation({
     mutationFn: async ({ videoId, isLiked }: { videoId: string, isLiked: boolean }) => {
       if (!currentUser) {
@@ -78,7 +74,6 @@ const Explore = () => {
       }
       
       if (isLiked) {
-        // Unlike
         const { error } = await supabase
           .from('video_likes')
           .delete()
@@ -88,7 +83,6 @@ const Explore = () => {
         if (error) throw error;
         return { videoId, liked: false };
       } else {
-        // Like
         const { error } = await supabase
           .from('video_likes')
           .insert([
@@ -100,13 +94,11 @@ const Explore = () => {
       }
     },
     onSuccess: (data) => {
-      // Update local state
       setUserLikes(prev => ({
         ...prev,
         [data.videoId]: data.liked
       }));
       
-      // Invalidate video query to refresh like count
       queryClient.invalidateQueries({ queryKey: ['explore-videos'] });
     },
     onError: (error) => {
@@ -118,7 +110,6 @@ const Explore = () => {
     }
   });
 
-  // Comment mutation
   const commentMutation = useMutation({
     mutationFn: async ({ videoId, comment }: { videoId: string, comment: string }) => {
       if (!currentUser) {
@@ -141,7 +132,6 @@ const Explore = () => {
         description: "Your comment has been posted successfully!"
       });
       
-      // Navigate to detail page
       navigate(`/explore/${data.videoId}`);
     },
     onError: (error) => {
@@ -217,7 +207,6 @@ const Explore = () => {
           key={video.id}
           className="instagram-feed-item"
         >
-          {/* Instagram-like header */}
           <div className="instagram-header">
             <Avatar className="h-8 w-8 border border-gray-200">
               {video.creator?.avatar_url ? (
@@ -236,7 +225,6 @@ const Explore = () => {
             </Button>
           </div>
 
-          {/* Video container with proper aspect ratio */}
           <div 
             className="instagram-video-container"
             onClick={() => setSelectedVideo(video)}
@@ -251,7 +239,6 @@ const Explore = () => {
             />
           </div>
 
-          {/* Instagram-like actions */}
           <div className="instagram-actions justify-between">
             <div className="flex gap-4">
               <Button 
@@ -291,7 +278,6 @@ const Explore = () => {
             </Button>
           </div>
 
-          {/* Instagram-like content */}
           <div className="instagram-likes">
             {video.likes_count || 0} likes
           </div>
@@ -308,7 +294,6 @@ const Explore = () => {
             View all comments
           </div>
           
-          {/* Comment input - Instagram style */}
           <div className="instagram-comment-input">
             <Input
               type="text"
@@ -336,7 +321,6 @@ const Explore = () => {
         </div>
       ))}
 
-      {/* Fullscreen video dialog */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
         <DialogContent className="max-w-none w-full h-full p-0 bg-black overflow-hidden">
           {selectedVideo && (

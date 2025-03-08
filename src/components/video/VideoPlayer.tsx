@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -48,14 +47,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
       
-      // Only adjust height if not in Instagram mode
-      if (!className?.includes('instagram-video')) {
-        adjustVideoHeight();
+      // Only set max height for Instagram videos to maintain their natural ratio
+      if (className?.includes('instagram-video')) {
+        if (containerRef.current) {
+          // For Instagram, we want to keep the width fixed and let height adjust naturally
+          // to maintain the original aspect ratio, but with a max height for very tall videos
+          const maxHeight = 700; // Maximum height for very tall videos
+          containerRef.current.style.maxHeight = `${maxHeight}px`;
+        }
+      } else if (containerRef.current) {
+        // For non-Instagram videos, maintain the old behavior
+        const width = containerRef.current.clientWidth;
+        const height = video.videoHeight / video.videoWidth * width;
+        containerRef.current.style.height = `${height}px`;
       }
+      
+      console.log(`Video dimensions: ${video.videoWidth}x${video.videoHeight}, Aspect ratio: ${ratio}`);
     };
 
     const adjustVideoHeight = () => {
-      if (!video || !containerRef.current) return;
+      if (!video || !containerRef.current || className?.includes('instagram-video')) return;
       
       // Calculate height based on aspect ratio and current width
       const width = containerRef.current.clientWidth;
@@ -63,8 +74,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       // Set container height to maintain aspect ratio
       containerRef.current.style.height = `${height}px`;
-      
-      console.log(`Video dimensions: ${video.videoWidth}x${video.videoHeight}, Aspect ratio: ${video.videoWidth/video.videoHeight}, Setting container height: ${height}px`);
     };
 
     video.addEventListener('loadedmetadata', handleMetadata);
