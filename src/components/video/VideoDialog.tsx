@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video } from '@/types/video';
@@ -77,7 +76,6 @@ const VideoDialog = ({
       
       if (error) throw error;
       
-      // Check if user has liked each comment
       if (currentUser && data.length > 0) {
         const commentIds = data.map(comment => comment.id);
         const { data: commentLikes } = await supabase
@@ -105,7 +103,6 @@ const VideoDialog = ({
     enabled: !!video?.id && isOpen,
   });
 
-  // Add comment mutation
   const addCommentMutation = useMutation({
     mutationFn: async (commentText: string) => {
       if (!currentUser || !video) {
@@ -137,17 +134,14 @@ const VideoDialog = ({
       return { ...data, user_has_liked: false };
     },
     onSuccess: (newComment) => {
-      // Reset comment text
       setCommentText('');
       
-      // Update comments cache
       queryClient.setQueryData(['video-comments', video?.id], (oldData: any) => {
         return [newComment, ...(oldData || [])];
       });
     }
   });
 
-  // Like comment mutation
   const likeCommentMutation = useMutation({
     mutationFn: async ({ commentId, isLiked }: { commentId: string, isLiked: boolean }) => {
       if (!currentUser) {
@@ -155,7 +149,6 @@ const VideoDialog = ({
       }
       
       if (isLiked) {
-        // Unlike
         const { error } = await supabase
           .from('comment_likes')
           .delete()
@@ -164,7 +157,6 @@ const VideoDialog = ({
           
         if (error) throw error;
         
-        // Decrement likes count
         const { error: updateError } = await supabase
           .from('video_comments')
           .update({ likes_count: Math.max(0, (await getLikesCount(commentId)) - 1) })
@@ -174,7 +166,6 @@ const VideoDialog = ({
         
         return { commentId, liked: false };
       } else {
-        // Like
         const { error } = await supabase
           .from('comment_likes')
           .insert([
@@ -183,7 +174,6 @@ const VideoDialog = ({
           
         if (error) throw error;
         
-        // Increment likes count
         const { error: updateError } = await supabase
           .from('video_comments')
           .update({ likes_count: (await getLikesCount(commentId)) + 1 })
@@ -195,7 +185,6 @@ const VideoDialog = ({
       }
     },
     onSuccess: ({ commentId, liked }) => {
-      // Update comments cache
       queryClient.setQueryData(['video-comments', video?.id], (oldData: any) => {
         return oldData?.map((comment: any) => {
           if (comment.id === commentId) {
@@ -212,8 +201,7 @@ const VideoDialog = ({
       });
     }
   });
-  
-  // Helper function to get current likes count
+
   const getLikesCount = async (commentId: string): Promise<number> => {
     const { count, error } = await supabase
       .from('comment_likes')
@@ -254,11 +242,9 @@ const VideoDialog = ({
 
   if (!video || !isOpen) return null;
 
-  // Return a three-column layout instead of a dialog
   return (
     <div className="w-full bg-white dark:bg-gray-900 min-h-[calc(100vh-80px)]">
       <div className="flex flex-col md:flex-row max-w-[1400px] mx-auto">
-        {/* Close Button - Mobile Only */}
         <div className="md:hidden p-4 flex justify-end">
           <Button 
             variant="ghost" 
@@ -270,19 +256,20 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        {/* Video Column */}
-        <div className="relative md:w-[60%] bg-black flex items-center justify-center py-4">
+        <div className="hidden md:block md:w-[20%]">
+        </div>
+        
+        <div className="relative md:w-[60%] bg-black flex items-center justify-center py-6">
           <VideoPlayer
             video={video}
             autoPlay={true}
             showControls={true}
             globalAudioEnabled={globalAudioEnabled}
             onAudioStateChange={onAudioStateChange}
-            className="w-full h-auto object-contain"
+            className="w-full h-auto max-h-[80vh] object-contain"
             isFullscreen={false}
           />
           
-          {/* Desktop Close Button */}
           <Button 
             variant="ghost" 
             size="icon" 
@@ -293,9 +280,8 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        {/* Info Column - Visible on medium and large screens */}
-        <div className="hidden md:block md:w-[20%] border-l border-r border-gray-200 dark:border-gray-800 px-6">
-          <div className="py-6">
+        <div className="w-full md:w-[20%] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center mb-4">
               <Avatar className="h-8 w-8 mr-3">
                 {video.creator?.avatar_url ? (
@@ -384,108 +370,11 @@ const VideoDialog = ({
               <p className="font-semibold text-sm">{video.likes_count || 0} likes</p>
             </div>
           </div>
-        </div>
-        
-        {/* Comments Column */}
-        <div className="w-full md:w-[20%] bg-white dark:bg-gray-900 flex flex-col h-full">
-          {/* Mobile Info Section */}
-          <div className="md:hidden p-6 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center">
-              <Avatar className="h-8 w-8 mr-3">
-                {video.creator?.avatar_url ? (
-                  <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
-                ) : (
-                  <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
-                )}
-              </Avatar>
-              <div className="flex-1">
-                <p className="font-semibold text-sm">{video.creator?.username || 'Anonymous'}</p>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="mr-2">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="text-red-500">
-                    Report
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Add to favorites
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    Share to...
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopyLink}>
-                    Copy link
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onClose}>
-                    Cancel
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            
-            <div className="flex justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-              <div className="flex space-x-4">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-white'}`}
-                  onClick={() => onLikeToggle?.(video.id)}
-                >
-                  <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="p-0 hover:bg-transparent text-black dark:text-white"
-                  onClick={handleViewDetails}
-                >
-                  <MessageCircle className="h-6 w-6" />
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="p-0 hover:bg-transparent text-black dark:text-white"
-                >
-                  <Send className="h-6 w-6" />
-                </Button>
-              </div>
-              
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="p-0 hover:bg-transparent text-black dark:text-white"
-              >
-                <Bookmark className="h-6 w-6" />
-              </Button>
-            </div>
-            
-            <p className="font-semibold text-sm mt-2">{video.likes_count || 0} likes</p>
-            
-            <div className="mt-2">
-              <p className="text-sm">
-                <span className="font-semibold mr-2">{video.creator?.username}</span>
-                {video.description}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {new Date(video.created_at || '').toLocaleDateString()}
-              </p>
-            </div>
-          </div>
           
-          {/* Comments Header */}
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <h3 className="font-medium text-sm">Comments</h3>
           </div>
           
-          {/* Comments List */}
           <div className="flex-1 overflow-y-auto p-6">
             {isCommentsLoading ? (
               <p className="text-center text-gray-500 py-4">Loading comments...</p>
@@ -527,7 +416,6 @@ const VideoDialog = ({
             )}
           </div>
           
-          {/* Comment Input */}
           <div className="p-6 border-t border-gray-200 dark:border-gray-800">
             <div className="flex items-center">
               <Input
