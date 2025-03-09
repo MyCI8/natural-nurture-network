@@ -9,8 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface VideoDialogProps {
   video: Video | null;
@@ -21,6 +28,20 @@ interface VideoDialogProps {
   userLikes?: Record<string, boolean>;
   onLikeToggle?: (videoId: string) => void;
   currentUser?: any;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  user: {
+    id: string;
+    username: string;
+    avatar_url: string | null;
+    full_name: string | null;
+  };
+  likes_count: number;
+  user_has_liked: boolean;
 }
 
 const VideoDialog = ({ 
@@ -34,6 +55,7 @@ const VideoDialog = ({
   currentUser
 }: VideoDialogProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState('');
   
   const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
@@ -56,9 +78,141 @@ const VideoDialog = ({
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      
+      // Check if user has liked each comment
+      if (currentUser && data.length > 0) {
+        const commentIds = data.map(comment => comment.id);
+        const { data: commentLikes } = await supabase
+          .from('comment_likes')
+          .select('comment_id')
+          .eq('user_id', currentUser.id)
+          .in('comment_id', commentIds);
+          
+        const likedCommentIds = commentLikes?.reduce((acc: Record<string, boolean>, like) => {
+          acc[like.comment_id] = true;
+          return acc;
+        }, {}) || {};
+        
+        return data.map(comment => ({
+          ...comment,
+          user_has_liked: !!likedCommentIds[comment.id]
+        }));
+      }
+      
+      return data.map(comment => ({
+        ...comment,
+        user_has_liked: false
+      }));
     },
     enabled: !!video?.id && isOpen,
+  });
+
+  // Add comment mutation
+  const addCommentMutation = useMutation({
+    mutationFn: async (commentText: string) => {
+      if (!currentUser || !video) {
+        throw new Error('You must be logged in to comment');
+      }
+      
+      const { data, error } = await supabase
+        .from('video_comments')
+        .insert([
+          { 
+            video_id: video.id, 
+            user_id: currentUser.id, 
+            content: commentText,
+            likes_count: 0
+          }
+        ])
+        .select(`
+          *,
+          user:user_id (
+            id,
+            username,
+            avatar_url,
+            full_name
+          )
+        `)
+        .single();
+        
+      if (error) throw error;
+      return { ...data, user_has_liked: false };
+    },
+    onSuccess: (newComment) => {
+      // Reset comment text
+      setCommentText('');
+      
+      // Update comments cache
+      queryClient.setQueryData(['video-comments', video?.id], (oldData: any) => {
+        return [newComment, ...(oldData || [])];
+      });
+    }
+  });
+
+  // Like comment mutation
+  const likeCommentMutation = useMutation({
+    mutationFn: async ({ commentId, isLiked }: { commentId: string, isLiked: boolean }) => {
+      if (!currentUser) {
+        throw new Error('You must be logged in to like comments');
+      }
+      
+      if (isLiked) {
+        // Unlike
+        const { error } = await supabase
+          .from('comment_likes')
+          .delete()
+          .eq('comment_id', commentId)
+          .eq('user_id', currentUser.id);
+          
+        if (error) throw error;
+        
+        // Decrement likes count
+        const { error: updateError } = await supabase
+          .from('video_comments')
+          .update({ likes_count: supabase.rpc('decrement', { x: 1 }) })
+          .eq('id', commentId);
+          
+        if (updateError) throw updateError;
+        
+        return { commentId, liked: false };
+      } else {
+        // Like
+        const { error } = await supabase
+          .from('comment_likes')
+          .insert([
+            { comment_id: commentId, user_id: currentUser.id }
+          ]);
+          
+        if (error) throw error;
+        
+        // Increment likes count
+        const { error: updateError } = await supabase
+          .from('video_comments')
+          .update({ likes_count: supabase.rpc('increment', { x: 1 }) })
+          .eq('id', commentId);
+          
+        if (updateError) throw updateError;
+        
+        return { commentId, liked: true };
+      }
+    },
+    onSuccess: ({ commentId, liked }) => {
+      // Update comments cache
+      queryClient.setQueryData(['video-comments', video?.id], (oldData: any) => {
+        return oldData?.map((comment: any) => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              likes_count: liked 
+                ? (comment.likes_count || 0) + 1 
+                : Math.max(0, (comment.likes_count || 0) - 1),
+              user_has_liked: liked
+            };
+          }
+          return comment;
+        });
+      });
+    }
   });
 
   const handleViewDetails = () => {
@@ -70,10 +224,19 @@ const VideoDialog = ({
 
   const handleSendComment = () => {
     if (!commentText.trim() || !currentUser || !video) return;
-    
-    // Navigate to detail page for commenting
-    navigate(`/explore/${video.id}`);
-    onClose();
+    addCommentMutation.mutate(commentText);
+  };
+
+  const handleLikeComment = (commentId: string, isLiked: boolean) => {
+    if (!currentUser) return;
+    likeCommentMutation.mutate({ commentId, isLiked });
+  };
+
+  const handleCopyLink = () => {
+    if (video) {
+      const url = `${window.location.origin}/explore/${video.id}`;
+      navigator.clipboard.writeText(url);
+    }
   };
 
   if (!video) return null;
@@ -102,7 +265,7 @@ const VideoDialog = ({
               variant="ghost" 
               size="icon" 
               onClick={onClose}
-              className="absolute top-4 right-4 text-white bg-black/30 hover:bg-black/50 rounded-full"
+              className="absolute top-4 right-4 text-white bg-black/30 hover:bg-black/50 rounded-full z-10"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -123,9 +286,32 @@ const VideoDialog = ({
                 <div className="flex-1">
                   <p className="font-semibold text-sm">{video.creator?.username || 'Anonymous'}</p>
                 </div>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="mr-2">
+                      <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="text-red-500">
+                      Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      Add to favorites
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      Share to...
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyLink}>
+                      Copy link
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={onClose}>
+                      Cancel
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             
@@ -160,7 +346,7 @@ const VideoDialog = ({
                 ) : comments.length === 0 ? (
                   <p className="text-center text-gray-500 py-4">No comments yet</p>
                 ) : (
-                  comments.map((comment: any) => (
+                  comments.map((comment: Comment) => (
                     <div key={comment.id} className="flex items-start mb-4">
                       <Avatar className="h-8 w-8 mr-3">
                         {comment.user?.avatar_url ? (
@@ -174,10 +360,22 @@ const VideoDialog = ({
                           <span className="font-semibold mr-2">{comment.user?.username}</span>
                           {comment.content}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(comment.created_at).toLocaleDateString()}
-                        </p>
+                        <div className="flex items-center mt-1 text-xs text-gray-500">
+                          <span>{new Date(comment.created_at).toLocaleDateString()}</span>
+                          {comment.likes_count > 0 && (
+                            <span className="ml-3">{comment.likes_count} likes</span>
+                          )}
+                          <button className="ml-3 font-medium">Reply</button>
+                        </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`p-0 hover:bg-transparent ${comment.user_has_liked ? 'text-red-500' : 'text-black dark:text-white'}`}
+                        onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
+                      >
+                        <Heart className={`h-4 w-4 ${comment.user_has_liked ? 'fill-current' : ''}`} />
+                      </Button>
                     </div>
                   ))
                 )}
@@ -240,6 +438,12 @@ const VideoDialog = ({
                     className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1.5"
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSendComment();
+                      }
+                    }}
                   />
                   <Button
                     variant="ghost"

@@ -11,7 +11,12 @@ export interface Video {
   likes_count: number;
   created_at: string;
   updated_at: string;
-  creator?: any; // Added creator property
+  creator?: {
+    id: string;
+    username: string;
+    avatar_url: string | null;
+    full_name: string | null;
+  };
 }
 
 export interface ProductLink {
