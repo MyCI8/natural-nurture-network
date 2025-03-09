@@ -271,14 +271,14 @@ const VideoDialog = ({
         </div>
         
         {/* Video Column */}
-        <div className="relative md:w-[60%] bg-black flex items-center justify-center">
+        <div className="relative md:w-[60%] bg-black flex items-center justify-center py-4">
           <VideoPlayer
             video={video}
             autoPlay={true}
             showControls={true}
             globalAudioEnabled={globalAudioEnabled}
             onAudioStateChange={onAudioStateChange}
-            className="w-full h-auto aspect-video object-contain"
+            className="w-full h-auto object-contain"
             isFullscreen={false}
           />
           
@@ -294,8 +294,8 @@ const VideoDialog = ({
         </div>
         
         {/* Info Column - Visible on medium and large screens */}
-        <div className="hidden md:block md:w-[20%] border-l border-r border-gray-200 dark:border-gray-800">
-          <div className="p-4">
+        <div className="hidden md:block md:w-[20%] border-l border-r border-gray-200 dark:border-gray-800 px-6">
+          <div className="py-6">
             <div className="flex items-center mb-4">
               <Avatar className="h-8 w-8 mr-3">
                 {video.creator?.avatar_url ? (
@@ -389,7 +389,7 @@ const VideoDialog = ({
         {/* Comments Column */}
         <div className="w-full md:w-[20%] bg-white dark:bg-gray-900 flex flex-col h-full">
           {/* Mobile Info Section */}
-          <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="md:hidden p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center">
               <Avatar className="h-8 w-8 mr-3">
                 {video.creator?.avatar_url ? (
@@ -481,19 +481,19 @@ const VideoDialog = ({
           </div>
           
           {/* Comments Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <h3 className="font-medium text-sm">Comments</h3>
           </div>
           
           {/* Comments List */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-6">
             {isCommentsLoading ? (
               <p className="text-center text-gray-500 py-4">Loading comments...</p>
             ) : comments.length === 0 ? (
               <p className="text-center text-gray-500 py-4">No comments yet</p>
             ) : (
               comments.map((comment: Comment) => (
-                <div key={comment.id} className="flex items-start mb-4">
+                <div key={comment.id} className="flex items-start mb-6">
                   <Avatar className="h-8 w-8 mr-3">
                     {comment.user?.avatar_url ? (
                       <AvatarImage src={comment.user.avatar_url} alt={comment.user.username || ''} />
@@ -528,7 +528,7 @@ const VideoDialog = ({
           </div>
           
           {/* Comment Input */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+          <div className="p-6 border-t border-gray-200 dark:border-gray-800">
             <div className="flex items-center">
               <Input
                 type="text"
