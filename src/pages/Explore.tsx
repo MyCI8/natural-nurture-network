@@ -1,13 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
+import VideoDialog from '@/components/video/VideoDialog';
 import type { Video } from '@/types/video';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 
@@ -321,20 +322,17 @@ const Explore = () => {
         </div>
       ))}
 
-      <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-        <DialogContent className="max-w-none w-full h-full p-0 bg-black overflow-hidden">
-          {selectedVideo && (
-            <VideoPlayer 
-              video={selectedVideo}
-              autoPlay
-              showControls={true}
-              globalAudioEnabled={globalAudioEnabled}
-              onAudioStateChange={(isMuted) => setGlobalAudioEnabled(!isMuted)}
-              isFullscreen
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Enhanced Instagram-style Dialog for Video Viewing */}
+      <VideoDialog
+        video={selectedVideo}
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+        globalAudioEnabled={globalAudioEnabled}
+        onAudioStateChange={(isMuted) => setGlobalAudioEnabled(!isMuted)}
+        userLikes={userLikes}
+        onLikeToggle={handleLike}
+        currentUser={currentUser}
+      />
     </div>
   );
 };

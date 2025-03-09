@@ -1,3 +1,4 @@
+
 #root {
   margin: 0 auto;
   text-align: center;
@@ -79,6 +80,7 @@
 .instagram-actions {
   display: flex;
   padding: 8px 16px;
+  justify-content: space-between;
 }
 
 .instagram-caption {
@@ -123,6 +125,7 @@
   width: 100%;
   background-color: black;
   overflow: hidden;
+  cursor: pointer;
 }
 
 /* Video fitting inside container */
@@ -141,5 +144,46 @@
   .instagram-feed-item {
     border-bottom: none;
     margin-bottom: 0;
+  }
+}
+
+/* Instagram dialog styles */
+.instagram-dialog-content {
+  display: flex;
+  border-radius: 0;
+  max-width: none;
+  width: 95vw;
+  height: 90vh;
+  padding: 0;
+  overflow: hidden;
+}
+
+.instagram-dialog-video {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.instagram-dialog-sidebar {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-left: 1px solid var(--instagram-border-color);
+}
+
+@media (max-width: 768px) {
+  .instagram-dialog-content {
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .instagram-dialog-sidebar {
+    width: 100%;
+    height: 40%;
+    border-left: none;
+    border-top: 1px solid var(--instagram-border-color);
   }
 }

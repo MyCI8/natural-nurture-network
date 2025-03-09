@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -47,26 +48,36 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
       
-      // Only set max height for Instagram videos to maintain their natural ratio
-      if (className?.includes('instagram-video')) {
-        if (containerRef.current) {
-          // For Instagram, we want to keep the width fixed and let height adjust naturally
-          // to maintain the original aspect ratio, but with a max height for very tall videos
-          const maxHeight = 700; // Maximum height for very tall videos
+      // Set container height based on context
+      if (containerRef.current) {
+        if (isFullscreen) {
+          // Fullscreen view - let video take available space
+          containerRef.current.style.height = '100%';
+        } else if (className?.includes('instagram-video')) {
+          // Instagram feed view - natural height with max constraint
+          const maxHeight = 700;
           containerRef.current.style.maxHeight = `${maxHeight}px`;
+        } else if (className?.includes('dialog-video')) {
+          // Instagram dialog view - fit container
+          containerRef.current.style.height = '100%';
+        } else {
+          // Default behavior for other contexts
+          const width = containerRef.current.clientWidth;
+          const height = video.videoHeight / video.videoWidth * width;
+          containerRef.current.style.height = `${height}px`;
         }
-      } else if (containerRef.current) {
-        // For non-Instagram videos, maintain the old behavior
-        const width = containerRef.current.clientWidth;
-        const height = video.videoHeight / video.videoWidth * width;
-        containerRef.current.style.height = `${height}px`;
       }
       
       console.log(`Video dimensions: ${video.videoWidth}x${video.videoHeight}, Aspect ratio: ${ratio}`);
     };
 
     const adjustVideoHeight = () => {
-      if (!video || !containerRef.current || className?.includes('instagram-video')) return;
+      if (!video || !containerRef.current) return;
+      
+      // Skip adjustment for special cases
+      if (isFullscreen || className?.includes('instagram-video') || className?.includes('dialog-video')) {
+        return;
+      }
       
       // Calculate height based on aspect ratio and current width
       const width = containerRef.current.clientWidth;
@@ -79,7 +90,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.addEventListener('loadedmetadata', handleMetadata);
     
     // Add resize listener to adjust video height when window is resized
-    if (!className?.includes('instagram-video')) {
+    if (!isFullscreen && !className?.includes('instagram-video') && !className?.includes('dialog-video')) {
       window.addEventListener('resize', adjustVideoHeight);
     }
 
@@ -87,7 +98,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       video.removeEventListener('loadedmetadata', handleMetadata);
       window.removeEventListener('resize', adjustVideoHeight);
     };
-  }, [className]);
+  }, [className, isFullscreen]);
 
   useEffect(() => {
     const handleVideoVisibility = async () => {
@@ -131,13 +142,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         inViewRef(node);
         if (node) containerRef.current = node;
       }}
-      className={cn("relative w-full overflow-hidden", className, isFullscreen ? 'bg-black' : 'bg-black/5')}
-      style={isFullscreen ? { height: '100vh' } : undefined}
+      className={cn(
+        "relative w-full overflow-hidden", 
+        className,
+        isFullscreen ? 'bg-black h-full' : 'bg-black/5',
+        className?.includes('dialog-video') ? 'h-full flex items-center justify-center' : ''
+      )}
     >
       <video
         ref={videoRef}
         src={video.video_url}
-        className={cn("w-full", className, isFullscreen ? 'h-full object-contain' : 'h-auto object-contain')}
+        className={cn(
+          "w-full", 
+          className,
+          isFullscreen || className?.includes('dialog-video') 
+            ? 'h-full object-contain' 
+            : 'h-auto object-contain'
+        )}
         loop
         muted={isMuted}
         playsInline
@@ -148,18 +169,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/60 pointer-events-none" />
       
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleMute}
-        className="absolute bottom-4 right-4 text-white hover:bg-black/20 z-10"
-      >
-        {isMuted ? (
-          <VolumeX className="h-6 w-6" />
-        ) : (
-          <Volume2 className="h-6 w-6" />
-        )}
-      </Button>
+      {!showControls && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleMute}
+          className="absolute bottom-4 right-4 text-white hover:bg-black/20 z-10"
+        >
+          {isMuted ? (
+            <VolumeX className="h-6 w-6" />
+          ) : (
+            <Volume2 className="h-6 w-6" />
+          )}
+        </Button>
+      )}
 
       {productLinks.length > 0 && !isFullscreen && (
         <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none">
