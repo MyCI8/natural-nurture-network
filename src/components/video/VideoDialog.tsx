@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import VideoPlayer from '@/components/video/VideoPlayer';
-import { Video, ProductLink } from '@/types/video';
+import { Video } from '@/types/video';
 import { Heart, MessageCircle, Send, Bookmark, X, MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -254,228 +252,311 @@ const VideoDialog = ({
     }
   };
 
-  if (!video) return null;
+  if (!video || !isOpen) return null;
 
+  // Return a three-column layout instead of a dialog
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] lg:max-w-[90vw] xl:max-w-[1300px] p-0 bg-black h-[98vh] overflow-hidden">
-        <VisuallyHidden>
-          <DialogTitle>Video Details</DialogTitle>
-        </VisuallyHidden>
+    <div className="w-full bg-white dark:bg-gray-900 min-h-[calc(100vh-80px)]">
+      <div className="flex flex-col md:flex-row max-w-[1400px] mx-auto">
+        {/* Close Button - Mobile Only */}
+        <div className="md:hidden p-4 flex justify-end">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose}
+            className="rounded-full"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
         
-        <div className="flex flex-col md:flex-row h-full">
-          {/* Video Side */}
-          <div className="relative flex-1 bg-black flex items-center justify-center">
-            <VideoPlayer
-              video={video}
-              autoPlay={true}
-              showControls={true}
-              globalAudioEnabled={globalAudioEnabled}
-              onAudioStateChange={onAudioStateChange}
-              className="h-full dialog-video"
-              isFullscreen={false}
-            />
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={onClose}
-              className="absolute top-4 right-4 text-white bg-black/30 hover:bg-black/50 rounded-full z-10"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+        {/* Video Column */}
+        <div className="relative md:w-[60%] bg-black flex items-center justify-center">
+          <VideoPlayer
+            video={video}
+            autoPlay={true}
+            showControls={true}
+            globalAudioEnabled={globalAudioEnabled}
+            onAudioStateChange={onAudioStateChange}
+            className="w-full h-auto aspect-video object-contain"
+            isFullscreen={false}
+          />
           
-          {/* Comments Side */}
-          <div className="w-full md:w-[420px] bg-white dark:bg-gray-900 flex flex-col h-full">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-              <div className="flex items-center">
-                <Avatar className="h-8 w-8 mr-3">
-                  {video.creator?.avatar_url ? (
-                    <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
-                  ) : (
-                    <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">{video.creator?.username || 'Anonymous'}</p>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="mr-2">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="text-red-500">
-                      Report
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      Add to favorites
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      Share to...
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCopyLink}>
-                      Copy link
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={onClose}>
-                      Cancel
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+          {/* Desktop Close Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose}
+            className="absolute top-4 right-4 text-white bg-black/30 hover:bg-black/50 rounded-full z-10 hidden md:flex"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        {/* Info Column - Visible on medium and large screens */}
+        <div className="hidden md:block md:w-[20%] border-l border-r border-gray-200 dark:border-gray-800">
+          <div className="p-4">
+            <div className="flex items-center mb-4">
+              <Avatar className="h-8 w-8 mr-3">
+                {video.creator?.avatar_url ? (
+                  <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+                ) : (
+                  <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
+                )}
+              </Avatar>
+              <div>
+                <p className="font-semibold text-sm">{video.creator?.username || 'Anonymous'}</p>
               </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="ml-auto">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem className="text-red-500">
+                    Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Add to favorites
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    Share to...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopyLink}>
+                    Copy link
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onClose}>
+                    Cancel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             
-            {/* Comments Section */}
-            <div className="flex-1 overflow-y-auto">
-              {/* Description */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-                <div className="flex items-start">
-                  <Avatar className="h-8 w-8 mr-3">
-                    {video.creator?.avatar_url ? (
-                      <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
-                    ) : (
-                      <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="text-sm">
-                      <span className="font-semibold mr-2">{video.creator?.username}</span>
-                      {video.description}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(video.created_at || '').toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
+            <div className="flex flex-col space-y-4">
+              <div>
+                <p className="text-sm">{video.description}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {new Date(video.created_at || '').toLocaleDateString()}
+                </p>
               </div>
               
-              {/* Comments List */}
-              <div className="p-4">
-                {isCommentsLoading ? (
-                  <p className="text-center text-gray-500 py-4">Loading comments...</p>
-                ) : comments.length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">No comments yet</p>
-                ) : (
-                  comments.map((comment: Comment) => (
-                    <div key={comment.id} className="flex items-start mb-4">
-                      <Avatar className="h-8 w-8 mr-3">
-                        {comment.user?.avatar_url ? (
-                          <AvatarImage src={comment.user.avatar_url} alt={comment.user.username || ''} />
-                        ) : (
-                          <AvatarFallback>{(comment.user?.username || '?')[0]}</AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm">
-                          <span className="font-semibold mr-2">{comment.user?.username}</span>
-                          {comment.content}
-                        </p>
-                        <div className="flex items-center mt-1 text-xs text-gray-500">
-                          <span>{new Date(comment.created_at).toLocaleDateString()}</span>
-                          {comment.likes_count > 0 && (
-                            <span className="ml-3">{comment.likes_count} likes</span>
-                          )}
-                          <button className="ml-3 font-medium">Reply</button>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={`p-0 hover:bg-transparent ${comment.user_has_liked ? 'text-red-500' : 'text-black dark:text-white'}`}
-                        onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
-                      >
-                        <Heart className={`h-4 w-4 ${comment.user_has_liked ? 'fill-current' : ''}`} />
-                      </Button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-            
-            {/* Actions Bar */}
-            <div className="border-t border-gray-200 dark:border-gray-800">
-              <div className="p-4">
-                <div className="flex justify-between mb-2">
-                  <div className="flex space-x-4">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-white'}`}
-                      onClick={() => onLikeToggle?.(video.id)}
-                    >
-                      <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="p-0 hover:bg-transparent text-black dark:text-white"
-                      onClick={handleViewDetails}
-                    >
-                      <MessageCircle className="h-6 w-6" />
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="p-0 hover:bg-transparent text-black dark:text-white"
-                    >
-                      <Send className="h-6 w-6" />
-                    </Button>
-                  </div>
+              <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-800">
+                <div className="flex space-x-4">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-white'}`}
+                    onClick={() => onLikeToggle?.(video.id)}
+                  >
+                    <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="p-0 hover:bg-transparent text-black dark:text-white"
+                    onClick={handleViewDetails}
+                  >
+                    <MessageCircle className="h-6 w-6" />
+                  </Button>
                   
                   <Button 
                     variant="ghost" 
                     size="icon"
                     className="p-0 hover:bg-transparent text-black dark:text-white"
                   >
-                    <Bookmark className="h-6 w-6" />
+                    <Send className="h-6 w-6" />
                   </Button>
                 </div>
                 
-                <p className="font-semibold text-sm mb-1">{video.likes_count || 0} likes</p>
-                <p className="text-xs text-gray-500">
-                  {new Date(video.created_at || '').toLocaleDateString()}
-                </p>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="p-0 hover:bg-transparent text-black dark:text-white"
+                >
+                  <Bookmark className="h-6 w-6" />
+                </Button>
               </div>
               
-              {/* Comment Input */}
-              <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-                <div className="flex items-center">
-                  <Input
-                    type="text"
-                    placeholder="Add a comment..."
-                    className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1.5"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleSendComment();
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`text-blue-500 font-semibold ${!commentText.trim() ? 'opacity-50' : 'opacity-100'}`}
-                    onClick={handleSendComment}
-                    disabled={!commentText.trim()}
-                  >
-                    Post
-                  </Button>
-                </div>
-              </div>
+              <p className="font-semibold text-sm">{video.likes_count || 0} likes</p>
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+        
+        {/* Comments Column */}
+        <div className="w-full md:w-[20%] bg-white dark:bg-gray-900 flex flex-col h-full">
+          {/* Mobile Info Section */}
+          <div className="md:hidden p-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center">
+              <Avatar className="h-8 w-8 mr-3">
+                {video.creator?.avatar_url ? (
+                  <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+                ) : (
+                  <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
+                )}
+              </Avatar>
+              <div className="flex-1">
+                <p className="font-semibold text-sm">{video.creator?.username || 'Anonymous'}</p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="mr-2">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem className="text-red-500">
+                    Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Add to favorites
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    Share to...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopyLink}>
+                    Copy link
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onClose}>
+                    Cancel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            <div className="flex justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+              <div className="flex space-x-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-white'}`}
+                  onClick={() => onLikeToggle?.(video.id)}
+                >
+                  <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="p-0 hover:bg-transparent text-black dark:text-white"
+                  onClick={handleViewDetails}
+                >
+                  <MessageCircle className="h-6 w-6" />
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="p-0 hover:bg-transparent text-black dark:text-white"
+                >
+                  <Send className="h-6 w-6" />
+                </Button>
+              </div>
+              
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="p-0 hover:bg-transparent text-black dark:text-white"
+              >
+                <Bookmark className="h-6 w-6" />
+              </Button>
+            </div>
+            
+            <p className="font-semibold text-sm mt-2">{video.likes_count || 0} likes</p>
+            
+            <div className="mt-2">
+              <p className="text-sm">
+                <span className="font-semibold mr-2">{video.creator?.username}</span>
+                {video.description}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {new Date(video.created_at || '').toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          
+          {/* Comments Header */}
+          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <h3 className="font-medium text-sm">Comments</h3>
+          </div>
+          
+          {/* Comments List */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {isCommentsLoading ? (
+              <p className="text-center text-gray-500 py-4">Loading comments...</p>
+            ) : comments.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">No comments yet</p>
+            ) : (
+              comments.map((comment: Comment) => (
+                <div key={comment.id} className="flex items-start mb-4">
+                  <Avatar className="h-8 w-8 mr-3">
+                    {comment.user?.avatar_url ? (
+                      <AvatarImage src={comment.user.avatar_url} alt={comment.user.username || ''} />
+                    ) : (
+                      <AvatarFallback>{(comment.user?.username || '?')[0]}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="text-sm">
+                      <span className="font-semibold mr-2">{comment.user?.username}</span>
+                      {comment.content}
+                    </p>
+                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                      <span>{new Date(comment.created_at).toLocaleDateString()}</span>
+                      {comment.likes_count > 0 && (
+                        <span className="ml-3">{comment.likes_count} likes</span>
+                      )}
+                      <button className="ml-3 font-medium">Reply</button>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`p-0 hover:bg-transparent ${comment.user_has_liked ? 'text-red-500' : 'text-black dark:text-white'}`}
+                    onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
+                  >
+                    <Heart className={`h-4 w-4 ${comment.user_has_liked ? 'fill-current' : ''}`} />
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+          
+          {/* Comment Input */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex items-center">
+              <Input
+                type="text"
+                placeholder="Add a comment..."
+                className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1.5"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSendComment();
+                  }
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`text-blue-500 font-semibold ${!commentText.trim() ? 'opacity-50' : 'opacity-100'}`}
+                onClick={handleSendComment}
+                disabled={!commentText.trim()}
+              >
+                Post
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
