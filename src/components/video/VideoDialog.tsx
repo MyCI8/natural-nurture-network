@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video } from '@/types/video';
@@ -245,6 +246,7 @@ const VideoDialog = ({
   return (
     <div className="w-full bg-white dark:bg-gray-900 min-h-[calc(100vh-80px)]">
       <div className="flex flex-col md:flex-row max-w-[1400px] mx-auto">
+        {/* Mobile close button */}
         <div className="md:hidden p-4 flex justify-end">
           <Button 
             variant="ghost" 
@@ -256,19 +258,24 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        <div className="hidden md:block md:w-[20%]">
+        {/* Left empty section - similar to news article layout */}
+        <div className="hidden md:block md:w-[20%] border-r border-gray-200 dark:border-gray-800 px-4">
+          {/* Empty left sidebar for layout balance */}
         </div>
         
-        <div className="relative md:w-[60%] bg-black flex items-center justify-center py-6">
-          <VideoPlayer
-            video={video}
-            autoPlay={true}
-            showControls={true}
-            globalAudioEnabled={globalAudioEnabled}
-            onAudioStateChange={onAudioStateChange}
-            className="w-full h-auto max-h-[80vh] object-contain"
-            isFullscreen={false}
-          />
+        {/* Center video section with proper padding */}
+        <div className="relative md:w-[55%] bg-black">
+          <div className="py-8 px-4">
+            <VideoPlayer
+              video={video}
+              autoPlay={true}
+              showControls={true}
+              globalAudioEnabled={globalAudioEnabled}
+              onAudioStateChange={onAudioStateChange}
+              className="w-full h-auto object-contain"
+              isFullscreen={false}
+            />
+          </div>
           
           <Button 
             variant="ghost" 
@@ -280,7 +287,8 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        <div className="w-full md:w-[20%] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800">
+        {/* Right comments section with proper spacing */}
+        <div className="w-full md:w-[25%] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800 px-4">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center mb-4">
               <Avatar className="h-8 w-8 mr-3">

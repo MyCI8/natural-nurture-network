@@ -48,25 +48,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
       
-      // Set container height based on context
+      // For sizing adjustments based on context, but never crop
       if (containerRef.current) {
-        if (isFullscreen) {
-          // Fullscreen view - let video take available space
-          containerRef.current.style.height = '100%';
-        } else if (className?.includes('instagram-video')) {
-          // Instagram feed view - natural height with max constraint
-          const maxHeight = 700;
-          containerRef.current.style.maxHeight = `${maxHeight}px`;
-        } else if (className?.includes('dialog-video')) {
-          // Instagram dialog view - fit container
-          containerRef.current.style.height = '100%'; 
-        } else {
-          // Default behavior - maintain aspect ratio but never crop
-          containerRef.current.style.height = 'auto';
-          containerRef.current.style.display = 'flex';
-          containerRef.current.style.alignItems = 'center';
-          containerRef.current.style.justifyContent = 'center';
-        }
+        containerRef.current.style.display = 'flex';
+        containerRef.current.style.alignItems = 'center';
+        containerRef.current.style.justifyContent = 'center';
       }
       
       console.log(`Video dimensions: ${video.videoWidth}x${video.videoHeight}, Aspect ratio: ${ratio}`);
@@ -124,8 +110,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       className={cn(
         "relative w-full overflow-hidden", 
         className,
-        isFullscreen ? 'bg-black h-full' : 'bg-black',
-        className?.includes('dialog-video') ? 'h-full flex items-center justify-center' : 'flex items-center justify-center'
+        "bg-black p-4 flex items-center justify-center h-full"
       )}
     >
       <video
