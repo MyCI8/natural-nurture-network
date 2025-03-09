@@ -169,7 +169,7 @@ const VideoDialog = ({
         // Decrement likes count
         const { error: updateError } = await supabase
           .from('video_comments')
-          .update({ likes_count: supabase.rpc('decrement', { x: 1 }) })
+          .update({ likes_count: Math.max(0, (await getLikesCount(commentId)) - 1) })
           .eq('id', commentId);
           
         if (updateError) throw updateError;
@@ -188,7 +188,7 @@ const VideoDialog = ({
         // Increment likes count
         const { error: updateError } = await supabase
           .from('video_comments')
-          .update({ likes_count: supabase.rpc('increment', { x: 1 }) })
+          .update({ likes_count: (await getLikesCount(commentId)) + 1 })
           .eq('id', commentId);
           
         if (updateError) throw updateError;
@@ -214,6 +214,21 @@ const VideoDialog = ({
       });
     }
   });
+  
+  // Helper function to get current likes count
+  const getLikesCount = async (commentId: string): Promise<number> => {
+    const { count, error } = await supabase
+      .from('comment_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('comment_id', commentId);
+      
+    if (error) {
+      console.error('Error getting likes count:', error);
+      return 0;
+    }
+    
+    return count || 0;
+  };
 
   const handleViewDetails = () => {
     if (video) {
