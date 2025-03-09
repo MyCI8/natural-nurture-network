@@ -79,7 +79,7 @@ const VideoDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl p-0 bg-black h-[90vh] sm:h-[80vh] overflow-hidden" closeButton={false}>
+      <DialogContent className="max-w-6xl p-0 bg-black h-[90vh] sm:h-[80vh] overflow-hidden">
         <div className="flex flex-col md:flex-row h-full">
           {/* Video Side */}
           <div className="flex-1 bg-black relative">
