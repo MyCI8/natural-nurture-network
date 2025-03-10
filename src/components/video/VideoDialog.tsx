@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video, ProductLink } from '@/types/video';
@@ -269,8 +270,8 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="relative md:flex-1 bg-black flex items-center justify-center p-4">
-          <div className="w-full max-w-[800px] mx-auto flex items-center justify-center">
+        <div className="relative md:flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-[900px] mx-auto flex items-center justify-center">
             <VideoPlayer
               video={video}
               autoPlay={true}
@@ -278,7 +279,7 @@ const VideoDialog = ({
               globalAudioEnabled={globalAudioEnabled}
               onAudioStateChange={onAudioStateChange}
               isFullscreen={false}
-              className="rounded-lg overflow-hidden w-full"
+              className="w-full"
             />
           </div>
           
@@ -286,7 +287,7 @@ const VideoDialog = ({
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="absolute top-4 right-4 text-white bg-black/30 hover:bg-black/50 rounded-full z-10 hidden md:flex"
+            className="absolute top-4 right-4 text-black dark:text-white bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-full z-10 hidden md:flex"
           >
             <X className="h-5 w-5" />
           </Button>

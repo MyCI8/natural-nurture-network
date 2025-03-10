@@ -239,13 +239,13 @@ const ExploreDetail = () => {
     <div className="max-w-[1200px] mx-auto min-h-screen bg-white dark:bg-gray-900">
       <div className="flex flex-col md:flex-row">
         <div className="md:flex-1">
-          <div className="w-full bg-black">
+          <div className="w-full p-6">
             <VideoPlayer video={video} autoPlay={false} showControls />
           </div>
         </div>
 
         <div className="md:w-[350px] border-l border-gray-200 dark:border-gray-800">
-          <div className="p-4">
+          <div className="p-6">
             <div className="flex items-center space-x-2 mb-4">
               <Avatar className="h-8 w-8">
                 {video.creator?.avatar_url ? (
