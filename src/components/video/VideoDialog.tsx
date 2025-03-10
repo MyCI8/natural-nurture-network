@@ -243,8 +243,8 @@ const VideoDialog = ({
   if (!video || !isOpen) return null;
 
   return (
-    <div className="w-full bg-white dark:bg-gray-900 min-h-[calc(100vh-80px)]">
-      <div className="flex flex-col md:flex-row max-w-[1400px] mx-auto">
+    <div className="w-full bg-white dark:bg-gray-900 min-h-screen">
+      <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto">
         <div className="md:hidden p-4 flex justify-end">
           <Button 
             variant="ghost" 
@@ -269,19 +269,17 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="relative md:flex-1 bg-black">
-          <div className="py-6 px-4 md:px-8 flex items-center justify-center min-h-[300px] max-h-[calc(100vh-120px)]">
-            <div className="w-full max-w-[800px] mx-auto">
-              <VideoPlayer
-                video={video}
-                autoPlay={true}
-                showControls={true}
-                globalAudioEnabled={globalAudioEnabled}
-                onAudioStateChange={onAudioStateChange}
-                isFullscreen={false}
-                className="rounded-lg overflow-hidden"
-              />
-            </div>
+        <div className="relative md:flex-1 bg-black flex items-center justify-center p-4">
+          <div className="w-full max-w-[800px] mx-auto flex items-center justify-center">
+            <VideoPlayer
+              video={video}
+              autoPlay={true}
+              showControls={true}
+              globalAudioEnabled={globalAudioEnabled}
+              onAudioStateChange={onAudioStateChange}
+              isFullscreen={false}
+              className="rounded-lg overflow-hidden w-full"
+            />
           </div>
           
           <Button 

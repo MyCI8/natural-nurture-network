@@ -47,14 +47,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const handleMetadata = () => {
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
-      
-      // Sizing adjustments to fit within container while maintaining aspect ratio
-      if (containerRef.current) {
-        containerRef.current.style.display = 'flex';
-        containerRef.current.style.alignItems = 'center';
-        containerRef.current.style.justifyContent = 'center';
-      }
-      
       console.log(`Video dimensions: ${video.videoWidth}x${video.videoHeight}, Aspect ratio: ${ratio}`);
     };
 
@@ -107,15 +99,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         if (node) containerRef.current = node;
       }}
       className={cn(
-        "relative w-full overflow-hidden bg-black flex items-center justify-center", 
-        isFullscreen ? "h-screen" : "max-h-[calc(100vh-120px)]",
+        "relative overflow-hidden bg-black flex items-center justify-center rounded-lg", 
+        isFullscreen ? "h-screen" : "h-auto",
         className
       )}
+      style={{
+        maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 160px)',
+        padding: '12px',
+      }}
     >
       <video
         ref={videoRef}
         src={video.video_url}
-        className="w-full h-full object-contain"
+        className="max-w-full max-h-full object-contain"
+        style={{
+          borderRadius: '8px',
+          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 180px)',
+        }}
         loop
         muted={isMuted}
         playsInline
