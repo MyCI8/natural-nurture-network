@@ -103,19 +103,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div 
       ref={(node) => {
-        // Combine refs
         inViewRef(node);
         if (node) containerRef.current = node;
       }}
       className={cn(
         "relative w-full overflow-hidden bg-black flex items-center justify-center", 
+        isFullscreen ? "h-screen" : "max-h-[calc(100vh-120px)]",
         className
       )}
     >
       <video
         ref={videoRef}
         src={video.video_url}
-        className="max-w-full max-h-full object-contain"
+        className="w-full h-full object-contain"
         loop
         muted={isMuted}
         playsInline

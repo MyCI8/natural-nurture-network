@@ -256,19 +256,22 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        <div className="hidden md:block md:w-[20%] border-r border-gray-200 dark:border-gray-800 px-4">
-          <Avatar className="h-8 w-8 mr-3">
-            {video.creator?.avatar_url ? (
-              <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
-            ) : (
-              <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
-            )}
-          </Avatar>
+        <div className="hidden md:block md:w-[240px] border-r border-gray-200 dark:border-gray-800 p-4">
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8 mr-3">
+              {video.creator?.avatar_url ? (
+                <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+              ) : (
+                <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
+              )}
+            </Avatar>
+            <span className="font-medium text-sm">{video.creator?.username || 'Anonymous'}</span>
+          </div>
         </div>
         
-        <div className="relative md:w-[55%] bg-black">
-          <div className="py-10 px-8">
-            <div className="w-full h-full flex items-center justify-center">
+        <div className="relative md:flex-1 bg-black">
+          <div className="py-6 px-4 md:px-8 flex items-center justify-center min-h-[300px] max-h-[calc(100vh-120px)]">
+            <div className="w-full max-w-[800px] mx-auto">
               <VideoPlayer
                 video={video}
                 autoPlay={true}
@@ -276,6 +279,7 @@ const VideoDialog = ({
                 globalAudioEnabled={globalAudioEnabled}
                 onAudioStateChange={onAudioStateChange}
                 isFullscreen={false}
+                className="rounded-lg overflow-hidden"
               />
             </div>
           </div>
@@ -290,7 +294,7 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        <div className="w-full md:w-[25%] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800 px-4">
+        <div className="w-full md:w-[350px] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center mb-4">
               <Avatar className="h-8 w-8 mr-3">
