@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -99,13 +98,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         if (node) containerRef.current = node;
       }}
       className={cn(
-        "relative overflow-hidden flex items-center justify-center rounded-lg", 
+        "relative overflow-hidden flex items-center justify-center", 
         isFullscreen ? "h-screen" : "h-auto",
         className
       )}
       style={{
         maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 120px)',
-        padding: '16px',
+        padding: '10px',
       }}
     >
       <video
@@ -113,7 +112,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         src={video.video_url}
         className="max-w-full max-h-full object-contain rounded-lg"
         style={{
-          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 160px)',
+          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 140px)',
         }}
         loop
         muted={isMuted}
