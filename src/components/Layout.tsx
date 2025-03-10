@@ -10,16 +10,8 @@ import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
 const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { 
-    layoutMode, 
-    showRightSection, 
-    showLeftSidebar,
-    contentWidth, 
-    contentClass,
-    mainClass 
-  } = useLayout();
-  const isExplorePage = location.pathname === '/explore' || location.pathname.startsWith('/explore/');
-  const isAdminPage = location.pathname.startsWith('/admin');
+  const { layoutMode, showRightSection, contentWidth } = useLayout();
+  const isExplorePage = location.pathname === '/explore';
 
   // Prevent unwanted redirects
   useEffect(() => {
@@ -36,39 +28,26 @@ const LayoutContent = () => {
     };
   }, [location]);
 
-  if (isAdminPage) {
-    // Admin pages use their own layout
-    return (
-      <div className="min-h-screen w-full">
-        <Outlet />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex justify-center bg-white dark:bg-black overflow-x-hidden w-full">
       {/* Main container with max width */}
       <div className="w-full max-w-[1400px] flex relative">
-        {/* Left Sidebar */}
-        {showLeftSidebar && (
-          <div className={`${isMobile ? 'hidden' : 'block'} ${isExplorePage ? 'w-[80px]' : 'x-sidebar'}`}>
-            <MainSidebar />
-          </div>
-        )}
+        {/* Left Sidebar - Hide on mobile and make narrower on explore page */}
+        <div className={`${isMobile ? 'hidden' : 'block'} ${isExplorePage ? 'w-[80px]' : 'news-sidebar'}`}>
+          <MainSidebar />
+        </div>
         
         {/* Main Content Area */}
-        <div className="flex-1 min-h-screen x-content">
-          {/* Content with proper constraints */}
-          <main className={`${mainClass} ${isMobile ? 'pb-20 w-full' : contentWidth}`}>
-            <div className={contentClass}>
-              <Outlet />
-            </div>
+        <div className="flex-1 min-h-screen">
+          {/* Content with proper constraints - Instagram style for explore page */}
+          <main className={`min-h-screen ${isMobile ? 'pb-20 w-full' : isExplorePage ? 'py-0 w-full' : contentWidth}`}>
+            <Outlet />
           </main>
         </div>
 
         {/* Right Section - Only shown when enabled */}
-        {!isMobile && showRightSection && layoutMode === 'full' && (
-          <aside className="hidden lg:block min-h-screen x-right-section">
+        {!isMobile && showRightSection && layoutMode === 'full' && !isExplorePage && (
+          <aside className="hidden lg:block min-h-screen news-right-section">
             <RightSection />
           </aside>
         )}

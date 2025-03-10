@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -47,6 +48,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
       
+      // Sizing adjustments to fit within container while maintaining aspect ratio
       if (containerRef.current) {
         containerRef.current.style.display = 'flex';
         containerRef.current.style.alignItems = 'center';
@@ -101,6 +103,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div 
       ref={(node) => {
+        // Combine refs
         inViewRef(node);
         if (node) containerRef.current = node;
       }}
