@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video, ProductLink } from '@/types/video';
@@ -269,7 +270,7 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="relative md:flex-1 flex items-center justify-center py-3 px-6">
+        <div className="relative md:flex-1 flex items-center justify-center py-2 px-6">
           <div className="w-full max-w-[900px] mx-auto flex items-center justify-center">
             <VideoPlayer
               video={video}

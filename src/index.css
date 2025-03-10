@@ -66,4 +66,12 @@
   .group:hover .group-hover\:pause-animation {
     animation-play-state: paused;
   }
+  
+  .instagram-video {
+    @apply w-full h-auto;
+  }
+  
+  .instagram-video-container {
+    @apply w-full cursor-pointer;
+  }
 }

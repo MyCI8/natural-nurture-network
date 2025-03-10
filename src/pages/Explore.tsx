@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -322,7 +321,6 @@ const Explore = () => {
         </div>
       ))}
 
-      {/* Enhanced Instagram-style Dialog for Video Viewing */}
       <VideoDialog
         video={selectedVideo}
         isOpen={!!selectedVideo}
