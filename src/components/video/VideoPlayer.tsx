@@ -48,7 +48,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       const ratio = video.videoWidth / video.videoHeight;
       setAspectRatio(ratio);
       
-      // For sizing adjustments based on context, but never crop
+      // Sizing adjustments to fit within container while maintaining aspect ratio
       if (containerRef.current) {
         containerRef.current.style.display = 'flex';
         containerRef.current.style.alignItems = 'center';
@@ -108,18 +108,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         if (node) containerRef.current = node;
       }}
       className={cn(
-        "relative w-full overflow-hidden", 
-        className,
-        "bg-black p-4 flex items-center justify-center h-full"
+        "relative w-full overflow-hidden bg-black flex items-center justify-center", 
+        className
       )}
     >
       <video
         ref={videoRef}
         src={video.video_url}
-        className={cn(
-          "max-w-full max-h-full object-contain", 
-          className
-        )}
+        className="max-w-full max-h-full object-contain"
         loop
         muted={isMuted}
         playsInline

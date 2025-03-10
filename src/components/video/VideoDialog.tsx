@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
-import { Video } from '@/types/video';
+import { Video, ProductLink } from '@/types/video';
 import { Heart, MessageCircle, Send, Bookmark, X, MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -246,7 +245,6 @@ const VideoDialog = ({
   return (
     <div className="w-full bg-white dark:bg-gray-900 min-h-[calc(100vh-80px)]">
       <div className="flex flex-col md:flex-row max-w-[1400px] mx-auto">
-        {/* Mobile close button */}
         <div className="md:hidden p-4 flex justify-end">
           <Button 
             variant="ghost" 
@@ -258,23 +256,28 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        {/* Left empty section - similar to news article layout */}
         <div className="hidden md:block md:w-[20%] border-r border-gray-200 dark:border-gray-800 px-4">
-          {/* Empty left sidebar for layout balance */}
+          <Avatar className="h-8 w-8 mr-3">
+            {video.creator?.avatar_url ? (
+              <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+            ) : (
+              <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
+            )}
+          </Avatar>
         </div>
         
-        {/* Center video section with proper padding */}
         <div className="relative md:w-[55%] bg-black">
-          <div className="py-8 px-4">
-            <VideoPlayer
-              video={video}
-              autoPlay={true}
-              showControls={true}
-              globalAudioEnabled={globalAudioEnabled}
-              onAudioStateChange={onAudioStateChange}
-              className="w-full h-auto object-contain"
-              isFullscreen={false}
-            />
+          <div className="py-10 px-8">
+            <div className="w-full h-full flex items-center justify-center">
+              <VideoPlayer
+                video={video}
+                autoPlay={true}
+                showControls={true}
+                globalAudioEnabled={globalAudioEnabled}
+                onAudioStateChange={onAudioStateChange}
+                isFullscreen={false}
+              />
+            </div>
           </div>
           
           <Button 
@@ -287,7 +290,6 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        {/* Right comments section with proper spacing */}
         <div className="w-full md:w-[25%] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800 px-4">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center mb-4">
