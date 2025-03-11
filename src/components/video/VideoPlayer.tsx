@@ -104,6 +104,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         className
       )}
       style={{
+        aspectRatio: aspectRatio ? `${aspectRatio}` : '16/9',
         maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 80px)',
         padding: '0',
       }}
@@ -122,8 +123,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         poster={video.thumbnail_url || undefined}
         preload="metadata"
       />
-      
-      <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/60 pointer-events-none" />
       
       {!showControls && (
         <Button
