@@ -166,6 +166,8 @@
   align-items: center;
   justify-content: center;
   max-height: 98vh;
+  margin: 0;
+  padding: 0;
 }
 
 .instagram-dialog-sidebar {
@@ -181,6 +183,7 @@
   width: auto !important;
   max-width: 100%;
   object-fit: contain !important;
+  margin: 0 auto;
 }
 
 /* Ensure videos in the dialog are properly sized and not cropped */

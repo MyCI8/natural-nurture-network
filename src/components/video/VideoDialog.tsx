@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video, ProductLink } from '@/types/video';
@@ -270,17 +269,19 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="relative md:flex-1 flex items-center justify-center py-2 px-6">
+        <div className="relative md:flex-1 flex items-center justify-center py-0">
           <div className="w-full max-w-[900px] mx-auto flex items-center justify-center">
-            <VideoPlayer
-              video={video}
-              autoPlay={true}
-              showControls={true}
-              globalAudioEnabled={globalAudioEnabled}
-              onAudioStateChange={onAudioStateChange}
-              isFullscreen={false}
-              className="w-full"
-            />
+            <div className="instagram-dialog-video w-full flex items-center justify-center">
+              <VideoPlayer
+                video={video}
+                autoPlay={true}
+                showControls={true}
+                globalAudioEnabled={globalAudioEnabled}
+                onAudioStateChange={onAudioStateChange}
+                isFullscreen={false}
+                className="w-full"
+              />
+            </div>
           </div>
           
           <Button 
