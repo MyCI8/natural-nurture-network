@@ -216,6 +216,10 @@ const ExploreDetail = () => {
     commentMutation.mutate(commentText);
   };
 
+  const handleClose = () => {
+    navigate('/explore');
+  };
+
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -230,7 +234,12 @@ const ExploreDetail = () => {
         <div className="md:flex-1">
           <div className="comments-view-container w-full p-4">
             <div className="instagram-dialog-video">
-              <VideoPlayer video={video} autoPlay={false} showControls />
+              <VideoPlayer 
+                video={video} 
+                autoPlay={false} 
+                showControls 
+                onClose={handleClose}
+              />
             </div>
           </div>
         </div>
