@@ -118,19 +118,22 @@
   cursor: pointer;
 }
 
-/* Instagram video container with natural aspect ratio */
+/* Instagram video container with fixed aspect ratio */
 .instagram-video-container {
-  position: relative;
   width: 100%;
   overflow: hidden;
   cursor: pointer;
+  background-color: black; /* For letterboxing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Video fitting inside container */
 .instagram-video {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* Mobile optimizations */

@@ -104,7 +104,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         className
       )}
       style={{
-        aspectRatio: aspectRatio ? `${aspectRatio}` : '16/9',
         maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 80px)',
         padding: '0',
       }}

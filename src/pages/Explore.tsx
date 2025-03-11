@@ -227,6 +227,10 @@ const Explore = () => {
 
           <div 
             className="instagram-video-container"
+            style={{ 
+              aspectRatio: '4/5', // Fixed aspect ratio for feed view
+              position: 'relative'
+            }}
             onClick={() => setSelectedVideo(video)}
           >
             <VideoPlayer 
@@ -235,7 +239,7 @@ const Explore = () => {
               showControls={false}
               globalAudioEnabled={globalAudioEnabled}
               onAudioStateChange={(isMuted) => setGlobalAudioEnabled(!isMuted)}
-              className="instagram-video"
+              className="absolute inset-0 w-full h-full"
             />
           </div>
 
