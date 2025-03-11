@@ -1,4 +1,3 @@
-
 #root {
   margin: 0 auto;
   text-align: center;
@@ -209,18 +208,18 @@
 
 /* Give the video more height in detailed view */
 .instagram-dialog-video video {
-  max-height: 90vh !important; 
-  max-width: 80% !important; /* Reduce width to allow for more height */
+  max-height: 98vh !important; 
+  max-width: 100% !important; /* Allow full width */
   object-fit: contain !important;
-  background-color: rgba(0, 0, 0, 0.7); /* Less black, more transparent */
+  background-color: rgba(0, 0, 0, 0.3); /* Much more transparent background */
 }
 
 /* Similar changes for ExploreDetail page */
 .comments-view-container .instagram-dialog-video video {
-  max-height: 90vh !important;
-  max-width: 80% !important;
+  max-height: 98vh !important;
+  max-width: 100% !important;
   object-fit: contain !important;
-  background-color: rgba(0, 0, 0, 0.7); /* Less black, more transparent */
+  background-color: rgba(0, 0, 0, 0.3); /* Much more transparent background */
 }
 
 @media (max-width: 768px) {
