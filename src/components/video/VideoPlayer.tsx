@@ -105,7 +105,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       )}
       style={{
         maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 80px)',
-        padding: '6px',
+        padding: '0',
       }}
     >
       <video

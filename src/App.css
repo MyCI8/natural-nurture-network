@@ -1,4 +1,3 @@
-
 #root {
   margin: 0 auto;
   text-align: center;
@@ -123,7 +122,6 @@
 .instagram-video-container {
   position: relative;
   width: 100%;
-  background-color: black;
   overflow: hidden;
   cursor: pointer;
 }

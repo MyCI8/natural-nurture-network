@@ -73,5 +73,6 @@
   
   .instagram-video-container {
     @apply w-full cursor-pointer;
+    background: transparent;
   }
 }
