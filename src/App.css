@@ -207,6 +207,22 @@
   object-fit: contain !important;
 }
 
+/* Give the video more height in detailed view */
+.instagram-dialog-video video {
+  max-height: 90vh !important; 
+  max-width: 80% !important; /* Reduce width to allow for more height */
+  object-fit: contain !important;
+  background-color: rgba(0, 0, 0, 0.7); /* Less black, more transparent */
+}
+
+/* Similar changes for ExploreDetail page */
+.comments-view-container .instagram-dialog-video video {
+  max-height: 90vh !important;
+  max-width: 80% !important;
+  object-fit: contain !important;
+  background-color: rgba(0, 0, 0, 0.7); /* Less black, more transparent */
+}
+
 @media (max-width: 768px) {
   .instagram-dialog-content {
     flex-direction: column;

@@ -113,7 +113,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         src={video.video_url}
         className="max-w-full max-h-full object-contain"
         style={{
-          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 100px)',
+          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 80px)',
         }}
         loop
         muted={isMuted}

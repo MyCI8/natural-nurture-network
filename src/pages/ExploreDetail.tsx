@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,14 +20,12 @@ const ExploreDetail = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLiked, setIsLiked] = useState(false);
 
-  // Get current user
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
         setCurrentUser(data.user);
         
-        // Check if user has liked this video
         if (id) {
           const { data: like } = await supabase
             .from('video_likes')
@@ -89,7 +86,6 @@ const ExploreDetail = () => {
     },
   });
 
-  // Like mutation
   const likeMutation = useMutation({
     mutationFn: async () => {
       if (!currentUser) {
@@ -97,7 +93,6 @@ const ExploreDetail = () => {
       }
       
       if (isLiked) {
-        // Unlike
         const { error } = await supabase
           .from('video_likes')
           .delete()
@@ -107,7 +102,6 @@ const ExploreDetail = () => {
         if (error) throw error;
         return { liked: false };
       } else {
-        // Like
         const { error } = await supabase
           .from('video_likes')
           .insert([
@@ -119,10 +113,7 @@ const ExploreDetail = () => {
       }
     },
     onSuccess: (data) => {
-      // Update local state
       setIsLiked(data.liked);
-      
-      // Invalidate video query to refresh like count
       queryClient.invalidateQueries({ queryKey: ['video', id] });
     },
     onError: (error) => {
@@ -134,7 +125,6 @@ const ExploreDetail = () => {
     }
   });
 
-  // Comment mutation
   const commentMutation = useMutation({
     mutationFn: async (comment: string) => {
       if (!currentUser) {
@@ -157,7 +147,6 @@ const ExploreDetail = () => {
         description: "Your comment has been posted successfully!"
       });
       
-      // Invalidate comments query to refresh
       queryClient.invalidateQueries({ queryKey: ['video-comments', id] });
     },
     onError: (error) => {
@@ -308,7 +297,6 @@ const ExploreDetail = () => {
               </p>
             </div>
 
-            {/* Comments section */}
             <div className="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
               <h3 className="font-medium text-sm mb-4">Comments</h3>
               
@@ -341,7 +329,6 @@ const ExploreDetail = () => {
                 </div>
               )}
               
-              {/* Add comment input */}
               <div className="flex items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
                 <Input
                   type="text"
@@ -382,7 +369,6 @@ const ExploreDetail = () => {
             >
               Copy link
             </Button>
-            {/* Additional share options will be implemented */}
           </div>
         </DialogContent>
       </Dialog>
