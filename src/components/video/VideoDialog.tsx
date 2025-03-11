@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video, ProductLink } from '@/types/video';
@@ -269,19 +270,18 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="relative md:flex-1 flex items-center justify-center py-0">
-          <div className="w-full max-w-[900px] mx-auto flex items-center justify-center">
-            <div className="instagram-dialog-video w-full flex items-center justify-center">
-              <VideoPlayer
-                video={video}
-                autoPlay={true}
-                showControls={true}
-                globalAudioEnabled={globalAudioEnabled}
-                onAudioStateChange={onAudioStateChange}
-                isFullscreen={false}
-                className="w-full"
-              />
-            </div>
+        {/* This is the video container with the improved centering */}
+        <div className="comments-view-container relative md:flex-1 flex items-center justify-center">
+          <div className="instagram-dialog-video w-full flex items-center justify-center">
+            <VideoPlayer
+              video={video}
+              autoPlay={true}
+              showControls={true}
+              globalAudioEnabled={globalAudioEnabled}
+              onAudioStateChange={onAudioStateChange}
+              isFullscreen={false}
+              className="w-full"
+            />
           </div>
           
           <Button 
@@ -294,6 +294,7 @@ const VideoDialog = ({
           </Button>
         </div>
         
+        {/* Comment sidebar */}
         <div className="w-full md:w-[350px] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800">
           <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center mb-4">

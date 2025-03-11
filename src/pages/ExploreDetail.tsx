@@ -239,8 +239,10 @@ const ExploreDetail = () => {
     <div className="max-w-[1200px] mx-auto min-h-screen bg-white dark:bg-gray-900">
       <div className="flex flex-col md:flex-row">
         <div className="md:flex-1">
-          <div className="w-full p-4">
-            <VideoPlayer video={video} autoPlay={false} showControls />
+          <div className="comments-view-container w-full p-4">
+            <div className="instagram-dialog-video">
+              <VideoPlayer video={video} autoPlay={false} showControls />
+            </div>
           </div>
         </div>
 

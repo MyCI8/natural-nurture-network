@@ -1,3 +1,4 @@
+
 #root {
   margin: 0 auto;
   text-align: center;
@@ -159,6 +160,16 @@
   overflow: hidden;
 }
 
+/* Comments view container for better centering */
+.comments-view-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  padding: 0;
+}
+
 .instagram-dialog-video {
   flex: 1;
   background: #000;
@@ -168,6 +179,7 @@
   max-height: 98vh;
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 .instagram-dialog-sidebar {
