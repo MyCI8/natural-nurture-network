@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video, ProductLink } from '@/types/video';
@@ -57,6 +56,7 @@ const VideoDialog = ({
   const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState('');
   const { toast } = useToast();
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   
   const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
     queryKey: ['video-comments', video?.id],
@@ -137,6 +137,7 @@ const VideoDialog = ({
     },
     onSuccess: (newComment) => {
       setCommentText('');
+      setIsSubmittingComment(false);
       
       queryClient.setQueryData(['video-comments', video?.id], (oldData: any) => {
         return [newComment, ...(oldData || [])];
@@ -148,6 +149,7 @@ const VideoDialog = ({
       });
     },
     onError: (error) => {
+      setIsSubmittingComment(false);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to post comment",
@@ -239,6 +241,7 @@ const VideoDialog = ({
 
   const handleSendComment = () => {
     if (!commentText.trim() || !currentUser || !video) return;
+    setIsSubmittingComment(true);
     addCommentMutation.mutate(commentText);
   };
 
@@ -456,15 +459,16 @@ const VideoDialog = ({
                     handleSendComment();
                   }
                 }}
+                disabled={isSubmittingComment}
               />
               <Button
                 variant="ghost"
                 size="sm"
-                className={`text-blue-500 font-semibold ${!commentText.trim() ? 'opacity-50' : 'opacity-100'}`}
+                className={`text-blue-500 font-semibold ${!commentText.trim() || isSubmittingComment ? 'opacity-50' : 'opacity-100'}`}
                 onClick={handleSendComment}
-                disabled={!commentText.trim()}
+                disabled={!commentText.trim() || isSubmittingComment}
               >
-                Post
+                {isSubmittingComment ? 'Posting...' : 'Post'}
               </Button>
             </div>
           </div>
