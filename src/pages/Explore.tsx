@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -144,17 +143,20 @@ const Explore = () => {
       setCommentText('');
       setSubmittingCommentFor(null);
       
+      // Create a new comment object to update local state
       const newComment = {
         id: data.id,
         content: data.comment,
         username: currentUser?.username || 'scoviumdesign'
       };
       
+      // Update local comments state
       setLocalComments(prev => ({
         ...prev,
         [data.videoId]: [newComment, ...(prev[data.videoId] || [])]
       }));
       
+      // Invalidate query to refresh data
       queryClient.invalidateQueries({ queryKey: ['explore-videos'] });
       
       toast({
