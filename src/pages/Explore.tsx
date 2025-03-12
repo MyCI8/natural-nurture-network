@@ -231,7 +231,7 @@ const Explore = () => {
               aspectRatio: '4/5', // Fixed aspect ratio for feed view
               position: 'relative'
             }}
-            onClick={() => setSelectedVideo(video)}
+            onClick={() => navigate(`/explore/${video.id}`)}
           >
             <VideoPlayer 
               video={video} 

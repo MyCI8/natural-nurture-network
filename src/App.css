@@ -208,18 +208,40 @@
 
 /* Give the video more height in detailed view */
 .instagram-dialog-video video {
-  max-height: 98vh !important; 
+  max-height: 100vh !important; 
   max-width: 100% !important; /* Allow full width */
   object-fit: contain !important;
-  background-color: rgba(0, 0, 0, 0.3); /* Much more transparent background */
+  background-color: rgba(0, 0, 0, 0.15); /* Even more transparent background */
 }
 
 /* Similar changes for ExploreDetail page */
 .comments-view-container .instagram-dialog-video video {
-  max-height: 98vh !important;
+  max-height: 100vh !important;
   max-width: 100% !important;
   object-fit: contain !important;
-  background-color: rgba(0, 0, 0, 0.3); /* Much more transparent background */
+  background-color: rgba(0, 0, 0, 0.15); /* Even more transparent background */
+}
+
+/* Comments view container for better centering with reduced padding */
+.comments-view-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  padding: 0;
+}
+
+.instagram-dialog-video {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.15); /* More transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
