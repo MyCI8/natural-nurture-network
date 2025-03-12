@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX, X } from 'lucide-react'; // Added X icon for close button
+import { Volume2, VolumeX, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -16,7 +16,8 @@ interface VideoPlayerProps {
   onAudioStateChange?: (isMuted: boolean) => void;
   isFullscreen?: boolean;
   className?: string;
-  onClose?: () => void; // Added onClose callback
+  onClose?: () => void;
+  onClick?: () => void;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -28,7 +29,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onAudioStateChange,
   isFullscreen = false,
   className,
-  onClose
+  onClose,
+  onClick
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,6 +112,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         padding: '0',
         backgroundColor: 'transparent',
       }}
+      onClick={() => onClick?.()}
     >
       {/* Add close button */}
       {onClose && (

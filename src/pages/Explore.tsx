@@ -201,6 +201,10 @@ const Explore = () => {
     commentMutation.mutate({ videoId, comment: commentText });
   };
 
+  const handleNavigateToVideo = (videoId: string) => {
+    navigate(`/explore/${videoId}`);
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -233,10 +237,9 @@ const Explore = () => {
           <div 
             className="instagram-video-container"
             style={{ 
-              aspectRatio: '1/1', // Square aspect ratio for feed container
               position: 'relative'
             }}
-            onClick={() => navigate(`/explore/${video.id}`)}
+            onClick={() => handleNavigateToVideo(video.id)}
           >
             <VideoPlayer 
               video={video} 
@@ -244,7 +247,8 @@ const Explore = () => {
               showControls={false}
               globalAudioEnabled={globalAudioEnabled}
               onAudioStateChange={(isMuted) => setGlobalAudioEnabled(!isMuted)}
-              className="absolute inset-0 w-full h-full"
+              onClick={() => handleNavigateToVideo(video.id)}
+              className="w-full h-full"
             />
           </div>
 
@@ -263,7 +267,7 @@ const Explore = () => {
                 variant="ghost" 
                 size="icon"
                 className="p-0 hover:bg-transparent text-black dark:text-white"
-                onClick={() => navigate(`/explore/${video.id}`)}
+                onClick={() => handleNavigateToVideo(video.id)}
               >
                 <MessageCircle className="h-6 w-6" />
               </Button>
@@ -298,7 +302,7 @@ const Explore = () => {
           
           <div 
             className="instagram-view-comments"
-            onClick={() => navigate(`/explore/${video.id}`)}
+            onClick={() => handleNavigateToVideo(video.id)}
           >
             View all {video.comments_count || 0} comments
           </div>
