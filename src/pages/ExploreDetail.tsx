@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,7 +7,7 @@ import VideoPlayer from '@/components/video/VideoPlayer';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, Bookmark, X, Send } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, X, Send, Loader } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,6 +20,7 @@ const ExploreDetail = () => {
   const [commentText, setCommentText] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLiked, setIsLiked] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -131,25 +133,36 @@ const ExploreDetail = () => {
         throw new Error('You must be logged in to comment');
       }
       
-      const { error } = await supabase
+      if (!id) {
+        throw new Error('Video ID is missing');
+      }
+      
+      const { data, error } = await supabase
         .from('video_comments')
         .insert([
           { video_id: id, user_id: currentUser.id, content: comment }
-        ]);
+        ])
+        .select('*, user:user_id(*)');
         
       if (error) throw error;
-      return { comment };
+      return data[0];
     },
-    onSuccess: () => {
+    onSuccess: (newComment) => {
       setCommentText('');
+      setIsSubmittingComment(false);
+      
+      // Add the new comment to the existing comments list
+      queryClient.setQueryData(['video-comments', id], (oldData: any) => {
+        return [newComment, ...(oldData || [])];
+      });
+      
       toast({
         title: "Comment added",
         description: "Your comment has been posted successfully!"
       });
-      
-      queryClient.invalidateQueries({ queryKey: ['video-comments', id] });
     },
     onError: (error) => {
+      setIsSubmittingComment(false);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to post comment",
@@ -213,6 +226,7 @@ const ExploreDetail = () => {
       return;
     }
     
+    setIsSubmittingComment(true);
     commentMutation.mutate(commentText);
   };
 
@@ -351,16 +365,23 @@ const ExploreDetail = () => {
                       handleComment();
                     }
                   }}
+                  disabled={isSubmittingComment}
                 />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`text-[#4CAF50] ${!commentText.trim() ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`}
-                  disabled={!commentText.trim()}
-                  onClick={handleComment}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                {isSubmittingComment ? (
+                  <Button variant="ghost" size="sm" disabled>
+                    <Loader className="h-4 w-4 animate-spin" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`text-[#4CAF50] ${!commentText.trim() ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`}
+                    disabled={!commentText.trim()}
+                    onClick={handleComment}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
