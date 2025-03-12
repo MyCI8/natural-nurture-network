@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -209,7 +210,7 @@ const Explore = () => {
           username: profile?.username,
           avatar_url: profile?.avatar_url,
           posts: recentVideos || [],
-          postsCount: videosCount || 0,
+          posts_count: videosCount || 0,
           followers_count: 0,
           following_count: 0
         }
@@ -524,7 +525,7 @@ const Explore = () => {
               <div className="flex border-y border-gray-200 dark:border-gray-700">
                 <div className="flex-1 text-center py-2">
                   <div className="font-semibold">
-                    {userProfileData[hoveredUser]?.postsCount || 0}
+                    {userProfileData[hoveredUser]?.posts_count || 0}
                   </div>
                   <div className="text-xs text-gray-500">posts</div>
                 </div>
