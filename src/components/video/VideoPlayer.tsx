@@ -106,9 +106,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         className
       )}
       style={{
-        maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)', // Reduced padding by 30%
+        maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)',
         padding: '0',
-        backgroundColor: 'transparent', // Ensure background is transparent
+        backgroundColor: 'transparent',
       }}
     >
       {/* Add close button */}
@@ -128,8 +128,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         src={video.video_url}
         className="max-w-full max-h-full object-contain"
         style={{
-          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)', // Reduced padding by 30%
-          backgroundColor: 'transparent', // Ensure video background is transparent
+          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)',
+          backgroundColor: 'transparent',
         }}
         loop
         muted={isMuted}
@@ -144,12 +144,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           variant="ghost"
           size="icon"
           onClick={toggleMute}
-          className="absolute bottom-4 right-4 text-white hover:bg-black/20 z-10"
+          className="absolute bottom-2 right-2 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center"
         >
           {isMuted ? (
-            <VolumeX className="h-6 w-6" />
+            <VolumeX className="h-4 w-4 text-white" />
           ) : (
-            <Volume2 className="h-6 w-6" />
+            <Volume2 className="h-4 w-4 text-white" />
           )}
         </Button>
       )}

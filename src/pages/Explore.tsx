@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,13 +58,17 @@ const Explore = () => {
             username,
             avatar_url,
             full_name
-          )
+          ),
+          comments:video_comments(count)
         `)
         .eq('status', 'published')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as (Video & { creator: any })[];
+      return data.map((video: any) => ({
+        ...video,
+        comments_count: video.comments?.[0]?.count || 0
+      })) as (Video & { creator: any, comments_count: number })[];
     },
   });
 
@@ -228,7 +233,7 @@ const Explore = () => {
           <div 
             className="instagram-video-container"
             style={{ 
-              aspectRatio: '4/5', // Fixed aspect ratio for feed view
+              aspectRatio: '1/1', // Square aspect ratio for feed container
               position: 'relative'
             }}
             onClick={() => navigate(`/explore/${video.id}`)}
@@ -295,7 +300,7 @@ const Explore = () => {
             className="instagram-view-comments"
             onClick={() => navigate(`/explore/${video.id}`)}
           >
-            View all comments
+            View all {video.comments_count || 0} comments
           </div>
           
           <div className="instagram-comment-input">
