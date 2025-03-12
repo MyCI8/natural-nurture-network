@@ -140,9 +140,22 @@ const ExploreDetail = () => {
       const { data, error } = await supabase
         .from('video_comments')
         .insert([
-          { video_id: id, user_id: currentUser.id, content: comment }
+          { 
+            video_id: id, 
+            user_id: currentUser.id, 
+            content: comment,
+            likes_count: 0
+          }
         ])
-        .select('*, user:user_id(*)');
+        .select(`
+          *,
+          user:user_id (
+            id,
+            username,
+            avatar_url,
+            full_name
+          )
+        `);
         
       if (error) throw error;
       return data[0];

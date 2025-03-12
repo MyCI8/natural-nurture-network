@@ -132,9 +132,22 @@ const Explore = () => {
       const { data, error } = await supabase
         .from('video_comments')
         .insert([
-          { video_id: videoId, user_id: currentUser.id, content: comment }
+          { 
+            video_id: videoId, 
+            user_id: currentUser.id, 
+            content: comment,
+            likes_count: 0
+          }
         ])
-        .select('id');
+        .select(`
+          *,
+          user:user_id (
+            id,
+            username,
+            avatar_url,
+            full_name
+          )
+        `);
         
       if (error) throw error;
       return { videoId, comment, id: data[0].id };
