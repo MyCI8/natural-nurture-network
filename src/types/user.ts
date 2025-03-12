@@ -22,3 +22,18 @@ export type User = {
 export type UserWithProfile = User & {
   profile: Profile | null;
 };
+
+export type UserProfileData = {
+  id: string;
+  full_name?: string;
+  username?: string;
+  avatar_url?: string;
+  bio?: string;
+  followers_count?: number;
+  following_count?: number;
+  posts_count?: number;
+  posts?: Array<{
+    id: string;
+    thumbnail_url?: string;
+  }>;
+}

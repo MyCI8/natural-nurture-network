@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import VideoDialog from '@/components/video/VideoDialog';
 import type { Video } from '@/types/video';
+import type { UserProfileData } from '@/types/user';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Loader, UserRound, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,7 +27,7 @@ const Explore = () => {
   const [localComments, setLocalComments] = useState<Record<string, { id: string, content: string, username: string }[]>>({});
   const [hoveredUser, setHoveredUser] = useState<string | null>(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
-  const [userProfileData, setUserProfileData] = useState<Record<string, any>>({});
+  const [userProfileData, setUserProfileData] = useState<Record<string, UserProfileData>>({});
   const [isLoadingUserData, setIsLoadingUserData] = useState<Record<string, boolean>>({});
   
   useEffect(() => {
@@ -194,20 +195,23 @@ const Explore = () => {
         
       if (videosError) throw videosError;
       
-      const videosCount = await supabase
+      const { count: videosCount } = await supabase
         .from('videos')
-        .select('id', { count: 'exact' })
+        .select('id', { count: 'exact', head: true })
         .eq('creator_id', userId)
         .eq('status', 'published');
         
       setUserProfileData(prev => ({
         ...prev,
         [userId]: {
-          ...profile,
-          posts: recentVideos,
-          postsCount: videosCount.count || 0,
-          followersCount: profile?.followers_count || 0,
-          followingCount: profile?.following_count || 0
+          id: userId,
+          full_name: profile?.full_name,
+          username: profile?.username,
+          avatar_url: profile?.avatar_url,
+          posts: recentVideos || [],
+          postsCount: videosCount || 0,
+          followers_count: 0,
+          following_count: 0
         }
       }));
     } catch (error) {
@@ -526,13 +530,13 @@ const Explore = () => {
                 </div>
                 <div className="flex-1 text-center py-2">
                   <div className="font-semibold">
-                    {userProfileData[hoveredUser]?.followersCount || 0}
+                    {userProfileData[hoveredUser]?.followers_count || 0}
                   </div>
                   <div className="text-xs text-gray-500">followers</div>
                 </div>
                 <div className="flex-1 text-center py-2">
                   <div className="font-semibold">
-                    {userProfileData[hoveredUser]?.followingCount || 0}
+                    {userProfileData[hoveredUser]?.following_count || 0}
                   </div>
                   <div className="text-xs text-gray-500">following</div>
                 </div>
@@ -540,7 +544,7 @@ const Explore = () => {
               
               <div className="grid grid-cols-3 gap-[1px] bg-gray-200 dark:bg-gray-700">
                 {userProfileData[hoveredUser]?.posts?.length > 0 ? (
-                  userProfileData[hoveredUser].posts.map((post: any) => (
+                  userProfileData[hoveredUser].posts.map((post) => (
                     <div 
                       key={post.id} 
                       className="aspect-square bg-cover bg-center" 
