@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video, ProductLink } from '@/types/video';
@@ -63,6 +64,7 @@ const VideoDialog = ({
     queryFn: async () => {
       if (!video?.id) return [];
       
+      console.log('Fetching comments for video:', video.id);
       const { data, error } = await supabase
         .from('video_comments')
         .select(`
@@ -77,7 +79,12 @@ const VideoDialog = ({
         .eq('video_id', video.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching comments:', error);
+        throw error;
+      }
+      
+      console.log('Comments data:', data);
       
       if (currentUser && data.length > 0) {
         const commentIds = data.map(comment => comment.id);
@@ -109,8 +116,11 @@ const VideoDialog = ({
   const addCommentMutation = useMutation({
     mutationFn: async (commentText: string) => {
       if (!currentUser || !video) {
+        console.error('User or video missing:', { currentUser, video });
         throw new Error('You must be logged in to comment');
       }
+      
+      console.log('Adding comment for video:', video.id, 'by user:', currentUser.id);
       
       const { data, error } = await supabase
         .from('video_comments')
@@ -132,16 +142,26 @@ const VideoDialog = ({
           )
         `);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding comment:', error);
+        throw error;
+      }
+      
+      console.log('New comment data:', data);
       return { ...data[0], user_has_liked: false };
     },
     onSuccess: (newComment) => {
       setCommentText('');
       setIsSubmittingComment(false);
       
+      console.log('Comment added successfully:', newComment);
+      
       queryClient.setQueryData(['video-comments', video?.id], (oldData: any) => {
         return [newComment, ...(oldData || [])];
       });
+      
+      // Force a refetch of the comments
+      queryClient.invalidateQueries({ queryKey: ['video-comments', video?.id] });
       
       toast({
         title: "Comment added",
@@ -150,6 +170,7 @@ const VideoDialog = ({
     },
     onError: (error) => {
       setIsSubmittingComment(false);
+      console.error('Error in comment mutation:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to post comment",
@@ -215,6 +236,13 @@ const VideoDialog = ({
           return comment;
         });
       });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to like comment",
+        variant: "destructive"
+      });
     }
   });
 
@@ -240,20 +268,43 @@ const VideoDialog = ({
   };
 
   const handleSendComment = () => {
-    if (!commentText.trim() || !currentUser || !video) return;
+    if (!commentText.trim() || !currentUser || !video) {
+      console.log('Cannot post comment:', { commentText, currentUser, video });
+      return;
+    }
     setIsSubmittingComment(true);
     addCommentMutation.mutate(commentText);
   };
 
   const handleLikeComment = (commentId: string, isLiked: boolean) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      toast({
+        title: "Login required",
+        description: "Please log in to like comments"
+      });
+      return;
+    }
     likeCommentMutation.mutate({ commentId, isLiked });
   };
 
   const handleCopyLink = () => {
     if (video) {
       const url = `${window.location.origin}/explore/${video.id}`;
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(url)
+        .then(() => {
+          toast({
+            title: "Link copied",
+            description: "Share it with others!"
+          });
+        })
+        .catch((err) => {
+          console.error('Error copying link:', err);
+          toast({
+            title: "Error",
+            description: "Failed to copy link",
+            variant: "destructive"
+          });
+        });
     }
   };
 
