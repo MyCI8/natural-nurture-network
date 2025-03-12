@@ -108,6 +108,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       style={{
         maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)', // Reduced padding by 30%
         padding: '0',
+        backgroundColor: 'transparent', // Ensure background is transparent
       }}
     >
       {/* Add close button */}
@@ -128,6 +129,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         className="max-w-full max-h-full object-contain"
         style={{
           maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)', // Reduced padding by 30%
+          backgroundColor: 'transparent', // Ensure video background is transparent
         }}
         loop
         muted={isMuted}
