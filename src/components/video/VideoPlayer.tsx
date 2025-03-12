@@ -59,7 +59,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => {
       video.removeEventListener('loadedmetadata', handleMetadata);
     };
-  }, [className, isFullscreen]);
+  }, []);
 
   useEffect(() => {
     const handleVideoVisibility = async () => {
@@ -103,23 +103,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         if (node) containerRef.current = node;
       }}
       className={cn(
-        "relative overflow-hidden flex items-center justify-center", 
+        "relative overflow-hidden flex items-center justify-center bg-black", 
         isFullscreen ? "h-screen" : "h-auto",
         className
       )}
-      style={{
-        maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)',
-        padding: '0',
-        backgroundColor: 'transparent',
-      }}
       onClick={() => onClick?.()}
     >
-      {/* Add close button */}
       {onClose && (
         <Button
           variant="ghost"
           size="icon"
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           className="absolute top-4 right-4 z-20 text-white bg-black/20 hover:bg-black/40 rounded-full"
         >
           <X className="h-5 w-5" />
@@ -130,10 +127,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         ref={videoRef}
         src={video.video_url}
         className="max-w-full max-h-full object-contain"
-        style={{
-          maxHeight: isFullscreen ? '100vh' : 'calc(100vh - 60px)',
-          backgroundColor: 'transparent',
-        }}
         loop
         muted={isMuted}
         playsInline
@@ -147,7 +140,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           variant="ghost"
           size="icon"
           onClick={toggleMute}
-          className="absolute bottom-2 right-2 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center"
+          className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center"
         >
           {isMuted ? (
             <VolumeX className="h-4 w-4 text-white" />

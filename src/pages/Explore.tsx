@@ -237,6 +237,7 @@ const Explore = () => {
           <div 
             className="instagram-video-container"
             style={{ 
+              aspectRatio: '4/5',
               position: 'relative'
             }}
             onClick={() => handleNavigateToVideo(video.id)}
@@ -252,13 +253,16 @@ const Explore = () => {
             />
           </div>
 
-          <div className="instagram-actions justify-between">
+          <div className="instagram-actions">
             <div className="flex gap-4">
               <Button 
                 variant="ghost" 
                 size="icon"
                 className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-white'}`}
-                onClick={() => handleLike(video.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLike(video.id);
+                }}
               >
                 <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
               </Button>
@@ -267,7 +271,10 @@ const Explore = () => {
                 variant="ghost" 
                 size="icon"
                 className="p-0 hover:bg-transparent text-black dark:text-white"
-                onClick={() => handleNavigateToVideo(video.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNavigateToVideo(video.id);
+                }}
               >
                 <MessageCircle className="h-6 w-6" />
               </Button>
@@ -276,7 +283,10 @@ const Explore = () => {
                 variant="ghost" 
                 size="icon"
                 className="p-0 hover:bg-transparent text-black dark:text-white"
-                onClick={() => handleShare(video)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShare(video);
+                }}
               >
                 <Share2 className="h-6 w-6" />
               </Button>

@@ -117,6 +117,7 @@
   font-size: 14px;
   margin-bottom: 0;
   cursor: pointer;
+  border-bottom: none;
 }
 
 /* Instagram video container with fixed aspect ratio */
@@ -124,7 +125,7 @@
   width: 100%;
   overflow: hidden;
   cursor: pointer;
-  background-color: transparent;
+  background-color: black;
   display: flex;
   align-items: center;
   justify-content: center;
