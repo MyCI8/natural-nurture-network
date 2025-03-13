@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -177,7 +176,7 @@ const ExploreDetail = () => {
 
         <div className="md:w-[350px] border-l border-gray-200 dark:border-gray-800">
           <div className="p-4">
-            <div className="flex items-center space-x-2 mb-3">
+            <div className="flex items-center space-x-2 mb-2">
               <Avatar className="h-8 w-8">
                 {video.creator?.avatar_url ? (
                   <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} />
@@ -188,39 +187,41 @@ const ExploreDetail = () => {
               <span className="font-medium">{video.creator?.username || 'Anonymous'}</span>
             </div>
 
-            <div className="text-left mb-3">
+            <div className="text-left mb-2">
               <p className="text-sm">{video.description}</p>
             </div>
 
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className={`transition-colors ${isLiked ? 'text-red-500 hover:text-red-600' : 'hover:text-[#4CAF50]'}`}
-                  aria-label={isLiked ? "Unlike video" : "Like video"}
-                  onClick={handleLike}
-                >
-                  <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="hover:text-[#4CAF50] transition-colors"
-                  aria-label="Comment on video"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="hover:text-[#4CAF50] transition-colors"
-                  aria-label="Share video"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-5 w-5" />
-                </Button>
-              </div>
+            <div className="text-left mb-2 text-sm text-[#666666]">
+              <p>{video.likes_count || 0} likes</p>
+            </div>
+
+            <div className="flex items-center space-x-4 mb-2 border-t pt-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className={`transition-colors ${isLiked ? 'text-red-500 hover:text-red-600' : 'hover:text-[#4CAF50]'}`}
+                aria-label={isLiked ? "Unlike video" : "Like video"}
+                onClick={handleLike}
+              >
+                <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="hover:text-[#4CAF50] transition-colors"
+                aria-label="Comment on video"
+              >
+                <MessageCircle className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="hover:text-[#4CAF50] transition-colors"
+                aria-label="Share video"
+                onClick={handleShare}
+              >
+                <Share2 className="h-5 w-5" />
+              </Button>
               <Button 
                 variant="ghost" 
                 size="icon"
@@ -231,14 +232,9 @@ const ExploreDetail = () => {
               </Button>
             </div>
 
-            <div className="text-left mb-3">
-              <p className="font-medium text-sm">
-                {video.likes_count || 0} likes
-              </p>
+            <div className="mt-1">
+              {id && <Comments videoId={id} currentUser={currentUser} />}
             </div>
-
-            {/* Use our updated Comments component */}
-            {id && <Comments videoId={id} currentUser={currentUser} />}
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
@@ -130,7 +131,7 @@ const VideoDialog = ({
         
         <div className="w-full md:w-[350px] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800">
           <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center mb-3">
+            <div className="flex items-center mb-2">
               <Avatar className="h-8 w-8 mr-3">
                 {video.creator?.avatar_url ? (
                   <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
@@ -169,12 +170,41 @@ const VideoDialog = ({
               </DropdownMenu>
             </div>
             
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-2">
               <div>
                 <p className="text-sm text-left">{video.description}</p>
                 <p className="text-xs text-gray-500 mt-1 text-left">
                   {new Date(video.created_at || '').toLocaleDateString()}
                 </p>
+              </div>
+              
+              <div className="text-sm text-gray-500">
+                <span>{video.likes_count || 0} likes</span>
+              </div>
+              
+              {/* Interaction Buttons - Positioned above the comments section */}
+              <div className="flex items-center space-x-4 pt-2 border-t">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                >
+                  <Heart className="h-5 w-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                >
+                  <Bookmark className="h-5 w-5" />
+                </Button>
               </div>
             </div>
           </div>
