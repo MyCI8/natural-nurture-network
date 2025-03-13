@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, X } from 'lucide-react';
+import { Heart, X, MessageCircle, Share2, Bookmark, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -302,11 +302,26 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
 
   return (
     <div className="w-full">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-        <h3 className="font-medium text-sm">Comments</h3>
+      {/* Action buttons row - Moved above comments section */}
+      <div className="flex items-center justify-between px-4 py-2 border-t border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
+            <Heart className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
+            <MessageCircle className="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
+            <Share2 className="h-5 w-5" />
+          </Button>
+        </div>
+        <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
+          <Bookmark className="h-5 w-5" />
+        </Button>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-6 max-h-[400px] scrollbar-hide" 
+      {/* Flex-1 to take remaining space, with slight reduced padding and max height */}
+      <div className="flex-1 overflow-y-auto px-4 py-1 max-h-[380px] scrollbar-hide" 
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none'
@@ -318,13 +333,13 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
         `}</style>
         
         {isCommentsLoading ? (
-          <p className="text-center text-gray-500 py-4">Loading comments...</p>
+          <p className="text-center text-gray-500 py-2">Loading comments...</p>
         ) : comments.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">No comments yet</p>
+          <p className="text-center text-gray-500 py-2">No comments yet</p>
         ) : (
           comments.map((comment: Comment) => (
-            <div key={comment.id} className="flex items-start mb-6">
-              <Avatar className="h-8 w-8 mr-3">
+            <div key={comment.id} className="flex items-start mb-2 relative">
+              <Avatar className="h-6 w-6 mr-2">
                 {comment.user?.avatar_url ? (
                   <AvatarImage src={comment.user.avatar_url} alt={comment.user.username || ''} />
                 ) : (
@@ -332,49 +347,52 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
                 )}
               </Avatar>
               <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <p className="text-sm">
-                    <span className="font-semibold mr-2">{comment.user?.username}</span>
+                <div className="flex items-start">
+                  <p className="text-sm text-left">
+                    <span className="font-semibold mr-1.5">{comment.user?.username}</span>
                     {comment.content}
                   </p>
-                  {comment.user?.id === currentUser?.id && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 p-0 ml-2 hover:bg-transparent hover:text-red-500"
-                      onClick={() => deleteCommentMutation.mutate(comment.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
                 </div>
-                <div className="flex items-center mt-1 text-xs text-gray-500">
+                <div className="flex items-center mt-0.5 text-xs text-gray-500 space-x-2">
                   <span>{new Date(comment.created_at).toLocaleDateString()}</span>
                   {comment.likes_count > 0 && (
-                    <span className="ml-3">{comment.likes_count} likes</span>
+                    <span>{comment.likes_count} likes</span>
                   )}
-                  <button className="ml-3 font-medium">Reply</button>
+                  <button className="font-medium">Reply</button>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`p-0 hover:bg-transparent ${comment.user_has_liked ? 'text-red-500' : 'text-black dark:text-white'}`}
-                onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
-              >
-                <Heart className={`h-4 w-4 ${comment.user_has_liked ? 'fill-current' : ''}`} />
-              </Button>
+              <div className="flex flex-col items-center absolute right-0 bottom-0">
+                {comment.user?.id === currentUser?.id && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 p-0 mb-1 hover:bg-transparent hover:text-red-500"
+                    onClick={() => deleteCommentMutation.mutate(comment.id)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`p-0 h-4 w-4 hover:bg-transparent ${comment.user_has_liked ? 'text-red-500' : 'text-black dark:text-white'}`}
+                  onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}
+                >
+                  <Heart className={`h-3 w-3 ${comment.user_has_liked ? 'fill-current' : ''}`} />
+                </Button>
+              </div>
             </div>
           ))
         )}
       </div>
       
-      <div className="p-6 border-t border-gray-200 dark:border-gray-800">
+      {/* Comment input at bottom with reduced padding */}
+      <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
         <div className="flex items-center">
           <Input
             type="text"
             placeholder="Add a comment..."
-            className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1.5"
+            className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             onKeyDown={(e) => {
@@ -393,7 +411,7 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
             disabled={!commentText.trim() || isSubmittingComment}
           >
             {isSubmittingComment ? (
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></span>
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></span>
             ) : (
               'Post'
             )}

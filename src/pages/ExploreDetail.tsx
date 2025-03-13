@@ -176,8 +176,8 @@ const ExploreDetail = () => {
         </div>
 
         <div className="md:w-[350px] border-l border-gray-200 dark:border-gray-800">
-          <div className="p-6">
-            <div className="flex items-center space-x-2 mb-4">
+          <div className="p-4">
+            <div className="flex items-center space-x-2 mb-3">
               <Avatar className="h-8 w-8">
                 {video.creator?.avatar_url ? (
                   <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} />
@@ -188,7 +188,11 @@ const ExploreDetail = () => {
               <span className="font-medium">{video.creator?.username || 'Anonymous'}</span>
             </div>
 
-            <div className="flex items-center justify-between mb-4">
+            <div className="text-left mb-3">
+              <p className="text-sm">{video.description}</p>
+            </div>
+
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-4">
                 <Button 
                   variant="ghost" 
@@ -197,7 +201,7 @@ const ExploreDetail = () => {
                   aria-label={isLiked ? "Unlike video" : "Like video"}
                   onClick={handleLike}
                 >
-                  <Heart className={`h-6 w-6 ${isLiked ? 'fill-current' : ''}`} />
+                  <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
                 </Button>
                 <Button 
                   variant="ghost" 
@@ -205,7 +209,7 @@ const ExploreDetail = () => {
                   className="hover:text-[#4CAF50] transition-colors"
                   aria-label="Comment on video"
                 >
-                  <MessageCircle className="h-6 w-6" />
+                  <MessageCircle className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
@@ -214,7 +218,7 @@ const ExploreDetail = () => {
                   aria-label="Share video"
                   onClick={handleShare}
                 >
-                  <Share2 className="h-6 w-6" />
+                  <Share2 className="h-5 w-5" />
                 </Button>
               </div>
               <Button 
@@ -223,21 +227,17 @@ const ExploreDetail = () => {
                 className="hover:text-[#4CAF50] transition-colors"
                 aria-label="Save video"
               >
-                <Bookmark className="h-6 w-6" />
+                <Bookmark className="h-5 w-5" />
               </Button>
             </div>
 
-            <div className="space-y-2 mb-4">
-              <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
+            <div className="text-left mb-3">
+              <p className="font-medium text-sm">
                 {video.likes_count || 0} likes
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-medium mr-2">{video.creator?.username}</span>
-                {video.description}
               </p>
             </div>
 
-            {/* Use our new Comments component here */}
+            {/* Use our updated Comments component */}
             {id && <Comments videoId={id} currentUser={currentUser} />}
           </div>
         </div>

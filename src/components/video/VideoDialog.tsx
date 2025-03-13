@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
@@ -42,7 +41,6 @@ const VideoDialog = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Debug log for current props
   useEffect(() => {
     if (video && isOpen) {
       console.log('VideoDialog opened with video:', video);
@@ -131,8 +129,8 @@ const VideoDialog = ({
         </div>
         
         <div className="w-full md:w-[350px] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center mb-4">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center mb-3">
               <Avatar className="h-8 w-8 mr-3">
                 {video.creator?.avatar_url ? (
                   <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
@@ -171,57 +169,16 @@ const VideoDialog = ({
               </DropdownMenu>
             </div>
             
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-3">
               <div>
-                <p className="text-sm">{video.description}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-sm text-left">{video.description}</p>
+                <p className="text-xs text-gray-500 mt-1 text-left">
                   {new Date(video.created_at || '').toLocaleDateString()}
                 </p>
               </div>
-              
-              <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-800">
-                <div className="flex space-x-4">
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-white'}`}
-                    onClick={() => onLikeToggle?.(video.id)}
-                  >
-                    <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
-                  </Button>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="p-0 hover:bg-transparent text-black dark:text-white"
-                    onClick={handleViewDetails}
-                  >
-                    <MessageCircle className="h-6 w-6" />
-                  </Button>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="p-0 hover:bg-transparent text-black dark:text-white"
-                  >
-                    <Send className="h-6 w-6" />
-                  </Button>
-                </div>
-                
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="p-0 hover:bg-transparent text-black dark:text-white"
-                >
-                  <Bookmark className="h-6 w-6" />
-                </Button>
-              </div>
-              
-              <p className="font-semibold text-sm">{video.likes_count || 0} likes</p>
             </div>
           </div>
           
-          {/* Replace the old comments section with our new Comments component */}
           <Comments videoId={video.id} currentUser={currentUser} />
         </div>
       </div>
