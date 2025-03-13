@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +9,7 @@ import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Comments } from '@/components/video/Comments';
+import Comments from '@/components/video/Comments';
 import VideoDialog from '@/components/video/VideoDialog';
 
 const VideoFeed = () => {
