@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, X, MessageCircle, Share2, Bookmark, Send } from 'lucide-react';
+import { Heart, X, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,7 +84,7 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
       }));
     },
     enabled: !!videoId,
-    staleTime: 1000, // Reduce stale time for more frequent refreshes
+    staleTime: 1000,
   });
 
   const addCommentMutation = useMutation({
@@ -135,13 +134,11 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
       
       console.log('Comment added successfully:', newComment);
       
-      // Update local query cache
       queryClient.setQueryData(['video-comments', videoId], (oldData: any) => {
         console.log('Updating query cache with new comment', { oldData, newComment });
         return [newComment, ...(oldData || [])];
       });
       
-      // Force a refetch of the comments
       refetchComments();
       
       toast({
@@ -302,25 +299,6 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
 
   return (
     <div className="w-full">
-      {/* Action buttons row - Moved above comments section */}
-      <div className="flex items-center justify-between px-4 py-2 border-t border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
-            <Heart className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
-            <MessageCircle className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
-            <Share2 className="h-5 w-5" />
-          </Button>
-        </div>
-        <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-white">
-          <Bookmark className="h-5 w-5" />
-        </Button>
-      </div>
-      
-      {/* Flex-1 to take remaining space, with slight reduced padding and max height */}
       <div className="flex-1 overflow-y-auto px-4 py-1 max-h-[380px] scrollbar-hide" 
         style={{
           scrollbarWidth: 'none',
@@ -386,7 +364,6 @@ const Comments: React.FC<CommentsProps> = ({ videoId, currentUser }) => {
         )}
       </div>
       
-      {/* Comment input at bottom with reduced padding */}
       <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-800">
         <div className="flex items-center">
           <Input

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
 import { Video, ProductLink } from '@/types/video';
-import { Heart, MessageCircle, Send, Bookmark, X, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, X, MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -107,7 +107,8 @@ const VideoDialog = ({
         </div>
         
         <div className="comments-view-container relative md:flex-1 flex items-center justify-center">
-          <div className="instagram-dialog-video w-full flex items-center justify-center">
+          {/* Added small padding (8px) top and bottom to the video container */}
+          <div className="instagram-dialog-video w-full flex items-center justify-center py-2">
             <VideoPlayer
               video={video}
               autoPlay={true}
@@ -123,7 +124,7 @@ const VideoDialog = ({
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="absolute top-4 right-4 text-black dark:text-white hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-full z-10 hidden md:flex"
+            className="absolute top-4 right-4 z-20 text-black dark:text-white hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-full hidden md:flex"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -178,12 +179,12 @@ const VideoDialog = ({
                 </p>
               </div>
               
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 mb-2">
                 <span>{video.likes_count || 0} likes</span>
               </div>
               
-              {/* Interaction Buttons - Positioned above the comments section */}
-              <div className="flex items-center space-x-4 pt-2 border-t">
+              {/* Moved interaction buttons here between likes count and comments */}
+              <div className="flex items-center space-x-4 mb-2">
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -197,6 +198,13 @@ const VideoDialog = ({
                   className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
                 >
                   <MessageCircle className="h-5 w-5" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                >
+                  <Share2 className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 

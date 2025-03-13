@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -163,7 +164,8 @@ const ExploreDetail = () => {
       <div className="flex flex-col md:flex-row">
         <div className="md:flex-1">
           <div className="comments-view-container w-full p-4">
-            <div className="instagram-dialog-video">
+            {/* Added small padding (8px) top and bottom to the video container */}
+            <div className="instagram-dialog-video py-2">
               <VideoPlayer 
                 video={video} 
                 autoPlay={false} 
@@ -191,11 +193,12 @@ const ExploreDetail = () => {
               <p className="text-sm">{video.description}</p>
             </div>
 
-            <div className="text-left mb-2 text-sm text-[#666666]">
+            <div className="text-left mb-3 text-sm text-[#666666]">
               <p>{video.likes_count || 0} likes</p>
             </div>
 
-            <div className="flex items-center space-x-4 mb-2 border-t pt-2">
+            {/* Moved interaction buttons here between likes count and comments */}
+            <div className="flex items-center space-x-4 mb-3">
               <Button 
                 variant="ghost" 
                 size="icon"
