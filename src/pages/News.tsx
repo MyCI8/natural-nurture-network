@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -25,7 +26,7 @@ const News = () => {
 
   if (isLoading) {
     return (
-      <div className="pt-6 sm:pt-12">
+      <div className="pt-6 sm:pt-12 px-4 w-full">
         <div className="space-y-4 sm:space-y-8">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="overflow-hidden border-0 border-b">
@@ -44,7 +45,7 @@ const News = () => {
 
   if (!newsItems?.length) {
     return (
-      <div className="pt-6 sm:pt-12">
+      <div className="pt-6 sm:pt-12 px-4 w-full">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">News</h1>
         <p className="text-lg sm:text-xl text-text-light mb-6 sm:mb-8">Latest Health News Articles</p>
         <p className="text-center text-text-light py-8 sm:py-12">No news articles available.</p>
@@ -53,7 +54,7 @@ const News = () => {
   }
 
   return (
-    <div className="pt-6 sm:pt-12">
+    <div className="pt-6 sm:pt-12 px-4 w-full">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">News</h1>
         <p className="text-lg sm:text-xl text-text-light">Latest Health News Articles</p>

@@ -24,7 +24,7 @@ const NewsSection = () => {
   if (isLoading) {
     return (
       <section className="py-16 bg-secondary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6">
           <h2 className="text-3xl font-bold mb-10 text-center">Latest News</h2>
           <div className="space-y-12">
             {[1, 2, 3, 4].map((i) => (
@@ -52,7 +52,7 @@ const NewsSection = () => {
 
   return (
     <section className="py-16 bg-secondary">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6">
         <h2 className="text-3xl font-bold mb-10 text-center">Latest News</h2>
         <div className="space-y-12">
           {newsItems?.map((item) => (
