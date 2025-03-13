@@ -4,11 +4,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
+import Comments from '@/components/video/Comments';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Share2, Bookmark, X, Send, Loader } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 const ExploreDetail = () => {
@@ -17,10 +17,8 @@ const ExploreDetail = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showShare, setShowShare] = React.useState(false);
-  const [commentText, setCommentText] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLiked, setIsLiked] = useState(false);
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -66,28 +64,6 @@ const ExploreDetail = () => {
     },
   });
 
-  const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
-    queryKey: ['video-comments', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('video_comments')
-        .select(`
-          *,
-          user:user_id (
-            id,
-            username,
-            avatar_url,
-            full_name
-          )
-        `)
-        .eq('video_id', id)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
   const likeMutation = useMutation({
     mutationFn: async () => {
       if (!currentUser) {
@@ -122,63 +98,6 @@ const ExploreDetail = () => {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update like",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const commentMutation = useMutation({
-    mutationFn: async (comment: string) => {
-      if (!currentUser) {
-        throw new Error('You must be logged in to comment');
-      }
-      
-      if (!id) {
-        throw new Error('Video ID is missing');
-      }
-      
-      const { data, error } = await supabase
-        .from('video_comments')
-        .insert([
-          { 
-            video_id: id, 
-            user_id: currentUser.id, 
-            content: comment,
-            likes_count: 0
-          }
-        ])
-        .select(`
-          *,
-          user:user_id (
-            id,
-            username,
-            avatar_url,
-            full_name
-          )
-        `);
-        
-      if (error) throw error;
-      return data[0];
-    },
-    onSuccess: (newComment) => {
-      setCommentText('');
-      setIsSubmittingComment(false);
-      
-      // Add the new comment to the existing comments list
-      queryClient.setQueryData(['video-comments', id], (oldData: any) => {
-        return [newComment, ...(oldData || [])];
-      });
-      
-      toast({
-        title: "Comment added",
-        description: "Your comment has been posted successfully!"
-      });
-    },
-    onError: (error) => {
-      setIsSubmittingComment(false);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to post comment",
         variant: "destructive"
       });
     }
@@ -226,21 +145,6 @@ const ExploreDetail = () => {
     }
     
     likeMutation.mutate();
-  };
-
-  const handleComment = () => {
-    if (!commentText.trim()) return;
-    
-    if (!currentUser) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to comment",
-      });
-      return;
-    }
-    
-    setIsSubmittingComment(true);
-    commentMutation.mutate(commentText);
   };
 
   const handleClose = () => {
@@ -333,70 +237,8 @@ const ExploreDetail = () => {
               </p>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4">
-              <h3 className="font-medium text-sm mb-4">Comments</h3>
-              
-              {isCommentsLoading ? (
-                <p className="text-sm text-gray-500">Loading comments...</p>
-              ) : comments.length === 0 ? (
-                <p className="text-sm text-gray-500">No comments yet. Be the first to comment!</p>
-              ) : (
-                <div className="space-y-4 max-h-[400px] overflow-y-auto">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="flex space-x-2">
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        {comment.user?.avatar_url ? (
-                          <AvatarImage src={comment.user.avatar_url} alt={comment.user.username || ''} />
-                        ) : (
-                          <AvatarFallback>{comment.user?.username?.[0] || '?'}</AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-medium">{comment.user?.username || 'Anonymous'}</span>{' '}
-                          <span className="text-gray-600 dark:text-gray-400">{comment.content}</span>
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(comment.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <div className="flex items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-                <Input
-                  type="text"
-                  placeholder="Add a comment..."
-                  className="text-sm border-none focus-visible:ring-0 px-0 h-auto py-1"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleComment();
-                    }
-                  }}
-                  disabled={isSubmittingComment}
-                />
-                {isSubmittingComment ? (
-                  <Button variant="ghost" size="sm" disabled>
-                    <Loader className="h-4 w-4 animate-spin" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`text-[#4CAF50] ${!commentText.trim() ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`}
-                    disabled={!commentText.trim()}
-                    onClick={handleComment}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
+            {/* Use our new Comments component here */}
+            {id && <Comments videoId={id} currentUser={currentUser} />}
           </div>
         </div>
       </div>
