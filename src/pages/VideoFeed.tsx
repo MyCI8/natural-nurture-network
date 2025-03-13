@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -208,9 +209,20 @@ const VideoFeed = () => {
                   />
                 </div>
 
-                {/* Interaction Buttons */}
+                {/* Video Description */}
                 <div className="p-4">
-                  <div className="flex items-center space-x-4 mb-3">
+                  <p className="text-sm text-[#666666] text-left mb-2">
+                    {video.description?.substring(0, 100)}
+                    {video.description?.length > 100 && '...'}
+                  </p>
+                  
+                  <div className="mt-2 mb-3 text-sm text-[#666666]">
+                    <span className="mr-4">{video.likes_count || 0} likes</span>
+                    <span>{video.views_count || 0} views</span>
+                  </div>
+
+                  {/* Interaction Buttons - Moved above the comments section */}
+                  <div className="flex items-center space-x-4 mb-3 border-t pt-3">
                     <Button 
                       variant="ghost"
                       size="icon"
@@ -246,19 +258,9 @@ const VideoFeed = () => {
                       />
                     </Button>
                   </div>
-                  
-                  <p className="text-sm text-[#666666] text-left">
-                    {video.description?.substring(0, 100)}
-                    {video.description?.length > 100 && '...'}
-                  </p>
-                  
-                  <div className="mt-3 text-sm text-[#666666]">
-                    <span className="mr-4">{video.likes_count || 0} likes</span>
-                    <span>{video.views_count || 0} views</span>
-                  </div>
 
-                  {/* Comments Section - Fix by passing currentUser */}
-                  <div className="mt-4 border-t pt-4">
+                  {/* Comments Section */}
+                  <div className="mt-1">
                     <Comments videoId={video.id} currentUser={currentUser} />
                   </div>
                 </div>
