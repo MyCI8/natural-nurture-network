@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video, ProductLink } from '@/types/video';
 import { Heart, MessageCircle, Send, Bookmark, X, MoreHorizontal } from 'lucide-react';
@@ -59,7 +59,15 @@ const VideoDialog = ({
   const { toast } = useToast();
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   
-  const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
+  // Debug log for current props
+  useEffect(() => {
+    if (video && isOpen) {
+      console.log('VideoDialog opened with video:', video);
+      console.log('Current user:', currentUser);
+    }
+  }, [video, isOpen, currentUser]);
+  
+  const { data: comments = [], isLoading: isCommentsLoading, refetch: refetchComments } = useQuery({
     queryKey: ['video-comments', video?.id],
     queryFn: async () => {
       if (!video?.id) return [];
@@ -111,6 +119,7 @@ const VideoDialog = ({
       }));
     },
     enabled: !!video?.id && isOpen,
+    staleTime: 1000, // Reduce stale time for more frequent refreshes
   });
 
   const addCommentMutation = useMutation({
@@ -148,6 +157,10 @@ const VideoDialog = ({
       }
       
       console.log('New comment data:', data);
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from comment insert');
+      }
+      
       return { ...data[0], user_has_liked: false };
     },
     onSuccess: (newComment) => {
@@ -156,12 +169,14 @@ const VideoDialog = ({
       
       console.log('Comment added successfully:', newComment);
       
+      // Update local query cache
       queryClient.setQueryData(['video-comments', video?.id], (oldData: any) => {
+        console.log('Updating query cache with new comment', { oldData, newComment });
         return [newComment, ...(oldData || [])];
       });
       
       // Force a refetch of the comments
-      queryClient.invalidateQueries({ queryKey: ['video-comments', video?.id] });
+      refetchComments();
       
       toast({
         title: "Comment added",
@@ -270,6 +285,13 @@ const VideoDialog = ({
   const handleSendComment = () => {
     if (!commentText.trim() || !currentUser || !video) {
       console.log('Cannot post comment:', { commentText, currentUser, video });
+      
+      if (!currentUser) {
+        toast({
+          title: "Login required",
+          description: "Please log in to comment"
+        });
+      }
       return;
     }
     setIsSubmittingComment(true);
@@ -519,7 +541,11 @@ const VideoDialog = ({
                 onClick={handleSendComment}
                 disabled={!commentText.trim() || isSubmittingComment}
               >
-                {isSubmittingComment ? 'Posting...' : 'Post'}
+                {isSubmittingComment ? (
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></span>
+                ) : (
+                  'Post'
+                )}
               </Button>
             </div>
           </div>
