@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -248,7 +247,7 @@ const VideoFeed = () => {
                     </Button>
                   </div>
                   
-                  <p className="text-sm text-[#666666]">
+                  <p className="text-sm text-[#666666] text-left">
                     {video.description?.substring(0, 100)}
                     {video.description?.length > 100 && '...'}
                   </p>
@@ -258,9 +257,9 @@ const VideoFeed = () => {
                     <span>{video.views_count || 0} views</span>
                   </div>
 
-                  {/* Comments Section - Always Visible */}
+                  {/* Comments Section - Fix by passing currentUser */}
                   <div className="mt-4 border-t pt-4">
-                    <Comments videoId={video.id} />
+                    <Comments videoId={video.id} currentUser={currentUser} />
                   </div>
                 </div>
               </div>
@@ -273,6 +272,7 @@ const VideoFeed = () => {
         video={selectedVideo}
         isOpen={!!selectedVideo}
         onClose={() => setSelectedVideo(null)}
+        currentUser={currentUser}
       />
     </div>
   );
