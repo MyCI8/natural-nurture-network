@@ -1,7 +1,10 @@
 
-import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink } from "lucide-react";
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import VideoPlayer from '@/components/video/VideoPlayer';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface VideoLink {
   title: string;
@@ -10,73 +13,157 @@ interface VideoLink {
 
 interface NewsVideosProps {
   videoLinks: VideoLink[];
-  videoDescription?: string | null;
-  isDesktop: boolean;
+  videoDescription?: string;
+  isDesktop?: boolean;
 }
 
-export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVideosProps) => {
-  if (!videoLinks.length) return null;
+export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: NewsVideosProps) => {
+  const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Filter out invalid URLs
-  const validVideoLinks = videoLinks.filter(link => link.url && link.url.trim() !== '');
+  const handleVideoClick = (index: number) => {
+    setActiveVideoIndex(index);
+    setIsFullscreen(true);
+  };
 
-  if (!validVideoLinks.length) return null;
+  const handleClose = () => {
+    setIsFullscreen(false);
+  };
 
-  const getEmbedUrl = (url: string) => {
-    // Convert YouTube watch URL to embed URL
-    if (url.includes('youtube.com/watch')) {
-      const videoId = new URL(url).searchParams.get('v');
-      return `https://www.youtube.com/embed/${videoId}`;
+  const handleNext = () => {
+    if (activeVideoIndex !== null && videoLinks.length > 0) {
+      setActiveVideoIndex((prev) => (prev === null ? 0 : (prev + 1) % videoLinks.length));
     }
-    // Handle YouTube short links
-    else if (url.includes('youtu.be/')) {
-      const videoId = url.split('youtu.be/')[1].split('?')[0];
-      return `https://www.youtube.com/embed/${videoId}`;
+  };
+
+  const handlePrevious = () => {
+    if (activeVideoIndex !== null && videoLinks.length > 0) {
+      setActiveVideoIndex((prev) => (prev === null ? 0 : (prev - 1 + videoLinks.length) % videoLinks.length));
     }
-    // Return original URL if it's already an embed or another video service
-    return url;
+  };
+
+  // Helper function to extract video ID from YouTube URL
+  const getYoutubeVideoId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Function to create a mock video object for the VideoPlayer component
+  const createVideoObject = (videoLink: VideoLink) => {
+    return {
+      id: Math.random().toString(),
+      title: videoLink.title,
+      video_url: videoLink.url,
+      thumbnail_url: videoLink.url.includes('youtube.com') || videoLink.url.includes('youtu.be')
+        ? `https://img.youtube.com/vi/${getYoutubeVideoId(videoLink.url)}/hqdefault.jpg`
+        : '',
+    };
   };
 
   return (
-    <Card className="border-0 shadow-none">
-      <CardContent className={`p-0 ${isDesktop ? 'px-4' : 'px-0'}`}>
-        <div className="mb-4">
-          <h2 className="text-xl font-bold">Related Videos</h2>
-          {videoDescription && (
-            <p className="text-sm text-muted-foreground mt-1">{videoDescription}</p>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {validVideoLinks.map((video, index) => (
-            <div key={index} className="space-y-2">
-              <div className="aspect-video w-full overflow-hidden rounded-lg">
-                <iframe
-                  src={getEmbedUrl(video.url)}
-                  title={video.title || `Video ${index + 1}`}
-                  className="w-full h-full"
-                  allowFullScreen
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                />
-              </div>
-              
-              {video.title && (
-                <div className="flex items-start">
-                  <h3 className="text-sm font-medium">{video.title}</h3>
-                  <a 
-                    href={video.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:text-primary/80 ml-auto"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+    <div className="space-y-4">
+      {videoDescription && (
+        <p className="text-sm text-muted-foreground mb-4">{videoDescription}</p>
+      )}
+      
+      <div className="grid grid-cols-1 gap-4">
+        {videoLinks.map((videoLink, index) => (
+          <Card 
+            key={index} 
+            className="overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            onClick={() => handleVideoClick(index)}
+          >
+            <CardContent className="p-0">
+              <div className="aspect-video bg-gray-100 relative">
+                {videoLink.url.includes('youtube.com') || videoLink.url.includes('youtu.be') ? (
+                  <img
+                    src={`https://img.youtube.com/vi/${getYoutubeVideoId(videoLink.url)}/hqdefault.jpg`}
+                    alt={videoLink.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span>Video Preview</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black bg-opacity-20 hover:bg-opacity-30 transition-opacity flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-white bg-opacity-80 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
                 </div>
+              </div>
+              <div className="p-3">
+                <h4 className="font-medium text-sm line-clamp-2">{videoLink.title}</h4>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {isFullscreen && activeVideoIndex !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClose}
+            className="absolute top-4 right-4 z-20 text-white bg-black/20 hover:bg-black/40 rounded-full"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+          
+          {videoLinks.length > 1 && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePrevious}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/20 hover:bg-black/40 rounded-full"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleNext}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/20 hover:bg-black/40 rounded-full"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </>
+          )}
+          
+          <div className="w-full max-w-5xl mx-auto">
+            <div className="aspect-video bg-black">
+              {videoLinks[activeVideoIndex].url.includes('youtube.com') || videoLinks[activeVideoIndex].url.includes('youtu.be') ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${getYoutubeVideoId(videoLinks[activeVideoIndex].url)}?autoplay=1`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <VideoPlayer
+                  video={createVideoObject(videoLinks[activeVideoIndex])}
+                  autoPlay={true}
+                  showControls={true}
+                  globalAudioEnabled={true}
+                  isFullscreen={true}
+                />
               )}
             </div>
-          ))}
+            
+            {videoLinks[activeVideoIndex].title && (
+              <div className="bg-black/50 p-4 mt-2">
+                <h3 className="text-white text-lg font-medium">{videoLinks[activeVideoIndex].title}</h3>
+              </div>
+            )}
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
