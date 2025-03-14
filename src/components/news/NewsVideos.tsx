@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Video } from '@/types/video';
 
 interface VideoLink {
   title: string;
@@ -50,14 +51,21 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
   };
 
   // Function to create a mock video object for the VideoPlayer component
-  const createVideoObject = (videoLink: VideoLink) => {
+  const createVideoObject = (videoLink: VideoLink): Video => {
     return {
       id: Math.random().toString(),
       title: videoLink.title,
+      description: null,
       video_url: videoLink.url,
       thumbnail_url: videoLink.url.includes('youtube.com') || videoLink.url.includes('youtu.be')
         ? `https://img.youtube.com/vi/${getYoutubeVideoId(videoLink.url)}/hqdefault.jpg`
-        : '',
+        : null,
+      creator_id: null,
+      status: 'published',
+      views_count: 0,
+      likes_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
   };
 
