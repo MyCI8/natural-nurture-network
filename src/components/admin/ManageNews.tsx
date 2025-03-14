@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Video } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -48,9 +48,14 @@ const ManageNews = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Manage News Articles</h2>
-        <Button onClick={() => navigate("/admin/news/new")}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Article
-        </Button>
+        <div className="flex space-x-2">
+          <Button onClick={() => navigate("/admin/videos/new")} variant="outline">
+            <Video className="mr-2 h-4 w-4" /> + Video
+          </Button>
+          <Button onClick={() => navigate("/admin/news/new")}>
+            <Plus className="mr-2 h-4 w-4" /> + News
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-6">
