@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, Video, X, Crop, Trash2 } from "lucide-react";
+import { ArrowLeft, Upload, Video, X, Crop, Trash2, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +40,9 @@ const EditVideo = () => {
   });
   const [cropImageIndex, setCropImageIndex] = useState<number | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const [videoLink, setVideoLink] = useState("");
+  const [isAddingLink, setIsAddingLink] = useState(false);
+  const [isAddLinkDialogOpen, setIsAddLinkDialogOpen] = useState(false);
 
   const sliderSettings = {
     dots: true,
@@ -70,13 +73,24 @@ const EditVideo = () => {
   const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     
-    const newMediaFiles = files.map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      type: file.type.startsWith('video/') ? 'video' as const : 'image' as const
-    }));
-
-    setMediaFiles([...mediaFiles, ...newMediaFiles]);
+    // Only allow one file at a time
+    if (files.length > 0) {
+      const file = files[0];
+      const newMediaFile = {
+        file,
+        preview: URL.createObjectURL(file),
+        type: file.type.startsWith('video/') ? 'video' as const : 'image' as const
+      };
+      
+      // Replace any existing media
+      if (mediaFiles.length > 0) {
+        mediaFiles.forEach(media => URL.revokeObjectURL(media.preview));
+      }
+      
+      setMediaFiles([newMediaFile]);
+      setVideoLink(""); // Clear video link since we're using upload
+      setIsAddingLink(false);
+    }
   };
 
   const handleDeleteMedia = (index: number) => {
@@ -133,12 +147,62 @@ const EditVideo = () => {
     setCropImageIndex(null);
   };
 
+  const openAddLinkDialog = () => {
+    setIsAddLinkDialogOpen(true);
+  };
+
+  const handleAddVideoLink = () => {
+    if (!videoLink.trim()) {
+      toast({
+        title: "Missing link",
+        description: "Please enter a valid video URL",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Clear any uploaded media files
+    if (mediaFiles.length > 0) {
+      mediaFiles.forEach(media => URL.revokeObjectURL(media.preview));
+      setMediaFiles([]);
+    }
+    
+    setIsAddingLink(true);
+    setIsAddLinkDialogOpen(false);
+  };
+
+  const clearVideoLink = () => {
+    setVideoLink("");
+    setIsAddingLink(false);
+  };
+
+  const getYouTubeThumbnail = (url: string): string => {
+    try {
+      // Extract video ID from YouTube URL
+      let videoId = "";
+      if (url.includes("youtube.com/watch")) {
+        const urlParams = new URLSearchParams(new URL(url).search);
+        videoId = urlParams.get("v") || "";
+      } else if (url.includes("youtu.be/")) {
+        videoId = url.split("youtu.be/")[1].split("?")[0];
+      }
+      
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      }
+    } catch (error) {
+      console.error("Error parsing YouTube URL:", error);
+    }
+    
+    return "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || mediaFiles.length === 0) {
+    if (!title.trim() || (mediaFiles.length === 0 && !isAddingLink)) {
       toast({
         title: "Missing fields",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields and provide either a video file or link",
         variant: "destructive",
       });
       return;
@@ -162,29 +226,43 @@ const EditVideo = () => {
         return;
       }
 
-      const uploadedFiles = await Promise.all(mediaFiles.map(async (mediaFile) => {
-        const fileExt = mediaFile.file.name.split('.').pop();
-        const fileName = `${crypto.randomUUID()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('video-media')
-          .upload(fileName, mediaFile.file);
+      let videoUrl;
+      let thumbnailUrl = null;
+      
+      if (isAddingLink) {
+        // Use the provided video link
+        videoUrl = videoLink;
+        // Get YouTube thumbnail if possible
+        thumbnailUrl = getYouTubeThumbnail(videoLink);
+      } else {
+        // Upload files
+        const uploadedFiles = await Promise.all(mediaFiles.map(async (mediaFile) => {
+          const fileExt = mediaFile.file.name.split('.').pop();
+          const fileName = `${crypto.randomUUID()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('video-media')
+            .upload(fileName, mediaFile.file);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-        return supabase.storage
-          .from('video-media')
-          .getPublicUrl(fileName).data.publicUrl;
-      }));
+          return supabase.storage
+            .from('video-media')
+            .getPublicUrl(fileName).data.publicUrl;
+        }));
+
+        videoUrl = uploadedFiles[0]; // First file is main video
+        thumbnailUrl = uploadedFiles.length > 1 ? uploadedFiles[1] : null; // Second file as thumbnail if exists
+      }
 
       const { error: insertError } = await supabase
         .from('videos')
         .insert({
           title,
           description: description.trim() || null,
-          video_url: uploadedFiles[0], // First file is main video
-          thumbnail_url: uploadedFiles.length > 1 ? uploadedFiles[1] : null, // Second file as thumbnail if exists
-          status: 'published', // Changed from 'draft' to 'published'
+          video_url: videoUrl,
+          thumbnail_url: thumbnailUrl,
+          status: 'published',
           creator_id: user.id,
         });
 
@@ -251,10 +329,21 @@ const EditVideo = () => {
                   type="button"
                   variant="outline"
                   onClick={() => document.getElementById('media-upload')?.click()}
-                  className="border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white"
+                  className={`border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white ${isAddingLink ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={isAddingLink}
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Upload Media
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={openAddLinkDialog}
+                  className={`border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white ${mediaFiles.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={mediaFiles.length > 0}
+                >
+                  <Link className="h-4 w-4 mr-2" />
+                  Add Link
                 </Button>
                 <input
                   type="file"
@@ -262,7 +351,6 @@ const EditVideo = () => {
                   accept="image/*,video/*"
                   onChange={handleMediaUpload}
                   className="hidden"
-                  multiple
                 />
               </div>
 
@@ -309,17 +397,34 @@ const EditVideo = () => {
                       </div>
                     ))}
                   </Slider>
-                  {mediaFiles.length > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setMediaFiles([])}
-                      className="mt-4 text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Clear all media
-                    </Button>
-                  )}
+                </div>
+              )}
+
+              {isAddingLink && (
+                <div className="mt-4">
+                  <div className="bg-gray-100 p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-medium">Video Link</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearVideoLink}
+                        className="text-red-600 hover:text-red-700 p-1 h-auto"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground break-all mb-2">{videoLink}</p>
+                    {getYouTubeThumbnail(videoLink) && (
+                      <div className="aspect-video rounded-lg overflow-hidden mt-2">
+                        <img 
+                          src={getYouTubeThumbnail(videoLink)} 
+                          alt="Video thumbnail" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -328,7 +433,7 @@ const EditVideo = () => {
               <Button
                 type="submit"
                 className="bg-[#4CAF50] hover:bg-[#388E3C] text-white min-w-[120px]"
-                disabled={isUploading || !title.trim() || mediaFiles.length === 0}
+                disabled={isUploading || !title.trim() || (mediaFiles.length === 0 && !isAddingLink)}
               >
                 {isUploading ? "Uploading..." : "Create"}
               </Button>
@@ -337,6 +442,7 @@ const EditVideo = () => {
         </div>
       </div>
 
+      {/* Crop Dialog */}
       <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
         <DialogContent className="bg-white max-w-3xl">
           <DialogHeader>
@@ -372,6 +478,43 @@ const EditVideo = () => {
               className="bg-[#4CAF50] hover:bg-[#388E3C] text-white"
             >
               Apply Crop
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Link Dialog */}
+      <Dialog open={isAddLinkDialogOpen} onOpenChange={setIsAddLinkDialogOpen}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle>Add Video Link</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Label htmlFor="video-link">Video URL</Label>
+            <Input
+              id="video-link"
+              placeholder="https://youtube.com/watch?v=..."
+              value={videoLink}
+              onChange={(e) => setVideoLink(e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              Paste a YouTube or other video platform link
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsAddLinkDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAddVideoLink}
+              className="bg-[#4CAF50] hover:bg-[#388E3C] text-white"
+            >
+              Add Link
             </Button>
           </DialogFooter>
         </DialogContent>
