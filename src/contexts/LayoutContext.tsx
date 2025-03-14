@@ -18,7 +18,7 @@ const defaultContext: LayoutContextProps = {
   showRightSection: false,
   setLayoutMode: () => {},
   setShowRightSection: () => {},
-  contentWidth: 'max-w-[700px] mx-auto px-6'
+  contentWidth: 'px-4'
 };
 
 const LayoutContext = createContext<LayoutContextProps>(defaultContext);
@@ -28,47 +28,44 @@ export const useLayout = () => useContext(LayoutContext);
 export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const [showRightSection, setShowRightSection] = useState(false);
-  const [contentWidth, setContentWidth] = useState('max-w-[700px] mx-auto px-6');
+  const [contentWidth, setContentWidth] = useState('px-4');
   const location = useLocation();
-  
-  // Update content width based on layout mode
-  useEffect(() => {
-    switch (layoutMode) {
-      case 'wide':
-        setContentWidth('max-w-[900px] mx-auto px-6');
-        break;
-      case 'full':
-        setContentWidth('news-article-container mx-auto');
-        break;
-      case 'instagram':
-        setContentWidth('w-full mx-auto p-0');
-        break;
-      default:
-        setContentWidth('max-w-[700px] mx-auto px-6');
-    }
-  }, [layoutMode, location.pathname]);
   
   // Update layout based on routes
   useEffect(() => {
     const path = location.pathname;
     
-    // Set layout mode based on route
+    // Set layout mode and right section visibility based on route
     if (path.startsWith('/news/')) {
       setLayoutMode('full');
       setShowRightSection(true);
-    } else if (path.startsWith('/admin')) {
+      setContentWidth('px-4');
+    } 
+    else if (path.startsWith('/explore/')) {
+      setLayoutMode('instagram');
+      setShowRightSection(true);
+      setContentWidth('p-0');
+    }
+    else if (path.startsWith('/symptoms/')) {
+      setLayoutMode('wide');
+      setShowRightSection(true);
+      setContentWidth('px-4');
+    }
+    else if (path.startsWith('/admin')) {
       setLayoutMode('wide');
       setShowRightSection(false);
-    } else if (path === '/explore' || path.startsWith('/explore')) {
+      setContentWidth('px-4 md:px-6');
+    } 
+    else if (path === '/explore') {
       setLayoutMode('instagram');
       setShowRightSection(false);
-    } else if (path === '/') {
-      setLayoutMode('default');
-      setShowRightSection(false);
-    } else {
+      setContentWidth('p-0');
+    } 
+    else {
       // Default for other pages
       setLayoutMode('default');
       setShowRightSection(false);
+      setContentWidth('px-4');
     }
   }, [location]);
   
