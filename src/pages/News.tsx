@@ -46,8 +46,8 @@ const News = () => {
   if (!newsItems?.length) {
     return (
       <div className="pt-6 sm:pt-12 px-4 w-full">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">News</h1>
-        <p className="text-lg sm:text-xl text-text-light mb-6 sm:mb-8">Latest Health News Articles</p>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left">News</h1>
+        <p className="text-lg sm:text-xl text-text-light mb-6 sm:mb-8 text-left">Latest Health News Articles</p>
         <p className="text-center text-text-light py-8 sm:py-12">No news articles available.</p>
       </div>
     );
@@ -56,8 +56,8 @@ const News = () => {
   return (
     <div className="pt-6 sm:pt-12 px-4 w-full">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">News</h1>
-        <p className="text-lg sm:text-xl text-text-light">Latest Health News Articles</p>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left">News</h1>
+        <p className="text-lg sm:text-xl text-text-light text-left">Latest Health News Articles</p>
       </div>
 
       <div className="space-y-4 sm:space-y-6">
@@ -74,10 +74,10 @@ const News = () => {
                     />
                   </div>
                 )}
-                <h3 className="text-lg sm:text-xl font-semibold mb-2">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left">
                   {article.title}
                 </h3>
-                <p className="text-sm sm:text-base text-text-light">
+                <p className="text-sm sm:text-base text-text-light text-left">
                   {article.summary}
                 </p>
               </CardContent>

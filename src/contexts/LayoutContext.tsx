@@ -36,7 +36,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     const path = location.pathname;
     
     // Set layout mode and right section visibility based on route
-    if (path.startsWith('/news/')) {
+    if (path === '/news' || path.startsWith('/news/')) {
       setLayoutMode('full');
       setShowRightSection(true);
       setContentWidth('px-4');

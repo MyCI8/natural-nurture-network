@@ -16,6 +16,7 @@ const LayoutContent = () => {
   
   // Routes that have a right section
   const hasRightSectionRoutes = 
+    location.pathname === '/news' ||
     location.pathname.startsWith('/news/') || 
     location.pathname.startsWith('/explore/') ||
     location.pathname.startsWith('/symptoms/');
