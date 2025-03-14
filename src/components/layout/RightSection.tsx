@@ -1,45 +1,47 @@
 
-import React from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import { NewsVideos } from '@/components/news/NewsVideos';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { NewsVideos } from "@/components/news/NewsVideos";
 
-type VideoLink = { title: string; url: string };
-
-const RightSection: React.FC = () => {
+const RightSection = () => {
   const location = useLocation();
-  const { id } = useParams<{ id?: string }>();
-  const isNewsArticle = location.pathname.startsWith('/news/') && id;
   
-  // Only fetch video data if we're on a news article page
-  const { data: article } = useQuery({
-    queryKey: ["right-section-article", id],
+  // Extract the ID from the URL for news article pages
+  const newsArticleId = location.pathname.startsWith('/news/') 
+    ? location.pathname.split('/news/')[1]
+    : null;
+  
+  // Fetch video data for news articles
+  const { data: articleData } = useQuery({
+    queryKey: ["news-article-videos", newsArticleId],
     queryFn: async () => {
-      if (!isNewsArticle) return null;
+      if (!newsArticleId) return null;
       
       const { data, error } = await supabase
         .from("news_articles")
         .select("video_links, video_description")
-        .eq("id", id)
+        .eq("id", newsArticleId)
         .single();
-
-      if (error) throw error;
+        
+      if (error) {
+        console.error("Error fetching article video data:", error);
+        return null;
+      }
+      
       return data;
     },
-    enabled: !!isNewsArticle,
+    enabled: !!newsArticleId,
   });
   
-  // Process video links if available
-  const videoLinks: VideoLink[] = React.useMemo(() => {
-    if (!article?.video_links) return [];
-    
+  // Process video links
+  const videoLinks = (() => {
     try {
-      if (!Array.isArray(article.video_links)) {
+      if (!articleData?.video_links || !Array.isArray(articleData.video_links)) {
         return [];
       }
       
-      return article.video_links
+      return articleData.video_links
         .filter(link => link && typeof link === 'object')
         .map(link => {
           const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
@@ -53,30 +55,50 @@ const RightSection: React.FC = () => {
       console.error("Error processing video links:", error);
       return [];
     }
-  }, [article]);
+  })();
   
-  // Render based on current page context
-  if (isNewsArticle && videoLinks.length > 0) {
+  // Custom content based on route
+  if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
     return (
-      <div className="h-full py-6 pr-4">
+      <div className="h-full p-4 overflow-y-auto">
         <NewsVideos 
-          videoLinks={videoLinks}
-          videoDescription={article?.video_description}
+          videoLinks={videoLinks} 
+          videoDescription={articleData?.video_description} 
           isDesktop={true}
         />
       </div>
     );
   }
   
-  // Default content for right section when no specific content is available
-  return (
-    <div className="px-4 py-6">
-      <h3 className="text-lg font-medium mb-4">Suggestions For You</h3>
-      <div className="space-y-4">
-        <p className="text-sm text-text-light">
-          Content will appear here based on what you're viewing.
+  if (location.pathname.startsWith('/explore/')) {
+    return (
+      <div className="h-full p-4 overflow-y-auto">
+        <h2 className="text-lg font-semibold mb-4">Explore Details</h2>
+        <p className="text-sm text-muted-foreground">
+          This section shows details about the current explore item.
         </p>
       </div>
+    );
+  }
+  
+  if (location.pathname.startsWith('/symptoms/')) {
+    return (
+      <div className="h-full p-4 overflow-y-auto">
+        <h2 className="text-lg font-semibold mb-4">Related Content</h2>
+        <p className="text-sm text-muted-foreground">
+          This section shows content related to the current symptom.
+        </p>
+      </div>
+    );
+  }
+  
+  // Default content
+  return (
+    <div className="h-full p-4 overflow-y-auto">
+      <h2 className="text-lg font-semibold mb-4">Additional Information</h2>
+      <p className="text-sm text-muted-foreground">
+        This panel displays contextual information related to the current page.
+      </p>
     </div>
   );
 };

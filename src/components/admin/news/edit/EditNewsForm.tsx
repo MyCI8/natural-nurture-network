@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { NewsDetailsSection } from "@/components/admin/news/NewsDetailsSection";
 import { ImageManagementSection } from "@/components/admin/news/ImageManagementSection";
@@ -45,7 +44,6 @@ export const EditNewsForm = ({
   const [videoLinks, setVideoLinks] = useState<VideoLink[]>([]);
   const [videoDescription, setVideoDescription] = useState("");
 
-  // Initialize form data when article is loaded
   useEffect(() => {
     if (article) {
       setHeading(article.title || "");
@@ -81,7 +79,6 @@ export const EditNewsForm = ({
     }
   }, [article, onRelatedLinksChange]);
 
-  // Update form data when any field changes
   useEffect(() => {
     const formData = {
       title: heading,

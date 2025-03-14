@@ -1,12 +1,7 @@
 
-import { useEffect, useState, useRef } from "react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import React from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { ExternalLink } from "lucide-react";
 
 interface VideoLink {
   title: string;
@@ -15,166 +10,73 @@ interface VideoLink {
 
 interface NewsVideosProps {
   videoLinks: VideoLink[];
-  videoDescription?: string;
+  videoDescription?: string | null;
   isDesktop: boolean;
 }
 
-const getYouTubeVideoId = (url: string) => {
-  if (!url || typeof url !== 'string') return null;
-  
-  // Handle various YouTube URL formats
-  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[7].length === 11) ? match[7] : null;
-};
-
 export const NewsVideos = ({ videoLinks, videoDescription, isDesktop }: NewsVideosProps) => {
-  const [validVideoLinks, setValidVideoLinks] = useState<VideoLink[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const videoContainerRef = useRef<HTMLDivElement>(null);
+  if (!videoLinks.length) return null;
 
-  console.log("NewsVideos rendering. isDesktop:", isDesktop, "videoLinks:", videoLinks.length);
+  // Filter out invalid URLs
+  const validVideoLinks = videoLinks.filter(link => link.url && link.url.trim() !== '');
 
-  useEffect(() => {
-    setIsLoading(true);
-    
-    if (!Array.isArray(videoLinks)) {
-      console.log("No valid video links provided");
-      setValidVideoLinks([]);
-      setIsLoading(false);
-      return;
+  if (!validVideoLinks.length) return null;
+
+  const getEmbedUrl = (url: string) => {
+    // Convert YouTube watch URL to embed URL
+    if (url.includes('youtube.com/watch')) {
+      const videoId = new URL(url).searchParams.get('v');
+      return `https://www.youtube.com/embed/${videoId}`;
     }
-
-    const filteredLinks = videoLinks.filter(link => {
-      if (!link || !link.url || typeof link.url !== 'string') {
-        console.log("Filtered out link due to missing or invalid URL:", link);
-        return false;
-      }
-      
-      const videoId = getYouTubeVideoId(link.url);
-      if (!videoId) {
-        console.log("Filtered out non-YouTube URL:", link.url);
-        return false;
-      }
-      
-      return true;
-    });
-    
-    console.log(`Filtered ${filteredLinks.length} valid YouTube videos from ${videoLinks.length} links`);
-    setValidVideoLinks(filteredLinks);
-    setIsLoading(false);
-  }, [videoLinks]);
-
-  const getEmbedUrl = (videoId: string, autoplay = false, mute = true) => {
-    const params = new URLSearchParams();
-    if (autoplay) params.append("autoplay", "1");
-    if (mute) params.append("mute", "1");
-    params.append("enablejsapi", "1");
-    params.append("origin", window.location.origin);
-    params.append("rel", "0");
-    
-    return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+    // Handle YouTube short links
+    else if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1].split('?')[0];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    // Return original URL if it's already an embed or another video service
+    return url;
   };
 
-  if (isLoading) {
-    return (
-      <aside className="w-full text-left">
-        <h2 className="text-xl font-semibold mb-4">Videos</h2>
-        {videoDescription && (
-          <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
-        )}
-        <div className="flex items-center justify-center h-32 border rounded-lg bg-secondary/50">
-          <p className="text-text-light">Loading videos...</p>
-        </div>
-      </aside>
-    );
-  }
-
-  if (validVideoLinks.length === 0) {
-    return (
-      <aside className="w-full text-left">
-        <h2 className="text-xl font-semibold mb-4">Videos</h2>
-        {videoDescription && (
-          <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
-        )}
-        <div className="flex items-center justify-center h-32 border rounded-lg bg-secondary/50">
-          <p className="text-text-light">No videos available</p>
-        </div>
-      </aside>
-    );
-  }
-
   return (
-    <aside ref={videoContainerRef} className="w-full text-left sticky top-4">
-      <h2 className="text-xl font-semibold mb-4">
-        Videos {validVideoLinks.length > 0 ? `(${validVideoLinks.length})` : ''}
-      </h2>
-      {videoDescription && (
-        <p className="text-text-light mb-4 text-sm">{videoDescription}</p>
-      )}
-      
-      {isDesktop ? (
-        <div className="space-y-6">
-          {validVideoLinks.map((video, index) => {
-            const videoId = getYouTubeVideoId(video.url);
-            if (!videoId) {
-              console.log("No video ID extracted for URL:", video.url);
-              return null;
-            }
-            
-            return (
-              <div key={index} className="group hover:opacity-95 transition-opacity">
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg video-thumbnail">
-                  <iframe
-                    src={getEmbedUrl(videoId)}
-                    title={video.title || `Video ${index + 1}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="absolute top-0 left-0 w-full h-full border-0 z-10"
-                    loading="lazy"
-                  />
-                </div>
-                <h3 className="font-medium text-base line-clamp-2 mt-2 group-hover:text-primary transition-colors">
-                  {video.title || `Video ${index + 1}`}
-                </h3>
-              </div>
-            );
-          })}
+    <Card className="border-0 shadow-none">
+      <CardContent className={`p-0 ${isDesktop ? 'px-4' : 'px-0'}`}>
+        <div className="mb-4">
+          <h2 className="text-xl font-bold">Related Videos</h2>
+          {videoDescription && (
+            <p className="text-sm text-muted-foreground mt-1">{videoDescription}</p>
+          )}
         </div>
-      ) : (
-        <Carousel className="w-full">
-          <CarouselContent>
-            {validVideoLinks.map((video, index) => {
-              const videoId = getYouTubeVideoId(video.url);
-              if (!videoId) return null;
+
+        <div className="space-y-4">
+          {validVideoLinks.map((video, index) => (
+            <div key={index} className="space-y-2">
+              <div className="aspect-video w-full overflow-hidden rounded-lg">
+                <iframe
+                  src={getEmbedUrl(video.url)}
+                  title={video.title || `Video ${index + 1}`}
+                  className="w-full h-full"
+                  allowFullScreen
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                />
+              </div>
               
-              return (
-                <CarouselItem key={index} className="pl-1">
-                  <div className="p-1">
-                    <div className="relative aspect-video w-full max-w-[300px] mx-auto overflow-hidden rounded-lg shadow-md">
-                      <iframe
-                        src={getEmbedUrl(videoId, true, true)}
-                        title={video.title || `Video ${index + 1}`}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="absolute top-0 left-0 w-full h-full border-0 z-10"
-                        loading="lazy"
-                      />
-                    </div>
-                    <h3 className="font-medium text-sm text-center line-clamp-1 mt-2">
-                      {video.title || `Video ${index + 1}`}
-                    </h3>
-                  </div>
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
-          <div className="flex justify-center mt-2">
-            <CarouselPrevious className="relative static mr-2 h-8 w-8" />
-            <CarouselNext className="relative static ml-2 h-8 w-8" />
-          </div>
-        </Carousel>
-      )}
-    </aside>
+              {video.title && (
+                <div className="flex items-start">
+                  <h3 className="text-sm font-medium">{video.title}</h3>
+                  <a 
+                    href={video.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:text-primary/80 ml-auto"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
