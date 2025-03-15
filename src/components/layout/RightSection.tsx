@@ -65,29 +65,32 @@ const RightSection = () => {
     enabled: location.pathname === '/news',
   });
   
-  // Process video links - explicitly typed to avoid infinite type instantiation
-  const videoLinks: VideoLink[] = (() => {
-    if (!articleData?.video_links || !Array.isArray(articleData.video_links)) {
-      return [];
+  // Process video links with explicit typing to avoid infinite type instantiation
+  let videoLinks: VideoLink[] = [];
+  
+  if (articleData?.video_links && Array.isArray(articleData.video_links)) {
+    try {
+      videoLinks = articleData.video_links
+        .filter(link => link && typeof link === 'object')
+        .map(link => {
+          try {
+            // Handle either string or object format
+            const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
+            return {
+              title: typeof linkObj.title === 'string' ? linkObj.title : '',
+              url: typeof linkObj.url === 'string' ? linkObj.url : ''
+            };
+          } catch (e) {
+            console.error('Error parsing video link:', e);
+            return { title: '', url: '' };
+          }
+        })
+        .filter(link => link.url && link.url.trim() !== '');
+    } catch (err) {
+      console.error('Error processing video links:', err);
+      videoLinks = [];
     }
-    
-    return articleData.video_links
-      .filter(link => link && typeof link === 'object')
-      .map(link => {
-        try {
-          // Handle either string or object format
-          const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
-          return {
-            title: typeof linkObj.title === 'string' ? linkObj.title : '',
-            url: typeof linkObj.url === 'string' ? linkObj.url : ''
-          };
-        } catch (e) {
-          console.error('Error parsing video link:', e);
-          return { title: '', url: '' };
-        }
-      })
-      .filter(link => link.url && link.url.trim() !== '');
-  })();
+  }
   
   // Custom content based on route
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
