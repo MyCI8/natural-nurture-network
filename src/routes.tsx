@@ -68,6 +68,7 @@ const Routes = () => {
           <Route path="news">
             <Route index element={<ManageNews />} />
             <Route path=":id" element={<EditNews />} />
+            <Route path="videos/:id" element={<EditVideo />} />
           </Route>
           <Route path="videos">
             <Route index element={<ManageVideos />} />

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import type { Video as VideoType } from "@/types/video";
+
+type VideoUsage = "latest" | "article" | "both" | "none";
 
 const ManageNews = () => {
   const navigate = useNavigate();
@@ -23,6 +29,7 @@ const ManageNews = () => {
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
   const [currentTab, setCurrentTab] = useState<"all" | "draft" | "published" | "submitted">("all");
   const [contentType, setContentType] = useState<"articles" | "videos">("articles");
+  const [videoFilter, setVideoFilter] = useState<"all" | "latest" | "article" | "both">("all");
 
   const { data: articles = [], isLoading: isLoadingArticles } = useQuery({
     queryKey: ["admin-news", searchQuery, currentTab, sortBy],
@@ -53,8 +60,22 @@ const ManageNews = () => {
     enabled: contentType === "articles",
   });
 
+  // Fetch all news articles to check which videos are used in articles
+  const { data: allArticles = [] } = useQuery({
+    queryKey: ["all-news-articles-for-videos"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("news_articles")
+        .select("id, video_links");
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: contentType === "videos",
+  });
+
   const { data: videos = [], isLoading: isLoadingVideos } = useQuery({
-    queryKey: ["admin-news-videos", searchQuery, sortBy],
+    queryKey: ["admin-news-videos", searchQuery, videoFilter, sortBy],
     queryFn: async () => {
       let query = supabase
         .from("videos")
@@ -73,17 +94,57 @@ const ManageNews = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      
+      // Process videos to determine their usage
+      const processedVideos = data.map((video) => {
+        const videoUsage = determineVideoUsage(video.id, allArticles);
+        return { ...video, usage: videoUsage };
+      }).filter(video => {
+        if (videoFilter === "all") return true;
+        if (videoFilter === "latest") return video.usage === "latest" || video.usage === "both";
+        if (videoFilter === "article") return video.usage === "article" || video.usage === "both";
+        if (videoFilter === "both") return video.usage === "both";
+        return true;
+      });
+      
+      return processedVideos;
     },
     enabled: contentType === "videos",
   });
+
+  // Determine if a video is used in the latest section, in articles, both, or none
+  const determineVideoUsage = (videoId: string, articles: any[]): VideoUsage => {
+    // Check if used in any article
+    const usedInArticle = articles.some((article) => {
+      const videoLinks = article.video_links || [];
+      return videoLinks.some((link: any) => link.url && link.url.includes(videoId));
+    });
+
+    // For demonstration, we'll consider all news videos as potentially appearing in "Latest Videos"
+    // In a real app, you might have a specific field in the database to track this
+    const usedInLatest = true;
+
+    if (usedInArticle && usedInLatest) return "both";
+    if (usedInArticle) return "article";
+    if (usedInLatest) return "latest";
+    return "none";
+  };
+
+  const handleAddVideo = () => {
+    navigate("/admin/videos/new", { 
+      state: { 
+        returnTo: "/admin/news",
+        videoType: "news" 
+      } 
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Manage News Articles</h2>
         <div className="flex space-x-2">
-          <Button onClick={() => navigate("/admin/videos/new")} variant="outline">
+          <Button onClick={handleAddVideo} variant="outline">
             <Video className="mr-2 h-4 w-4" /> + Video
           </Button>
           <Button onClick={() => navigate("/admin/news/new")}>
@@ -160,6 +221,17 @@ const ManageNews = () => {
         </div>
       ) : (
         <div className="space-y-6">
+          <div className="mb-6">
+            <Tabs defaultValue="all" value={videoFilter} onValueChange={(value: "all" | "latest" | "article" | "both") => setVideoFilter(value)}>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="all">All Videos</TabsTrigger>
+                <TabsTrigger value="latest">Latest Videos</TabsTrigger>
+                <TabsTrigger value="article">In Articles</TabsTrigger>
+                <TabsTrigger value="both">Both</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
           <div className="mt-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="relative">
@@ -246,7 +318,12 @@ const VideoTable = ({ videos, navigate, isLoading }) => {
         <Button 
           variant="outline" 
           className="mt-4"
-          onClick={() => navigate("/admin/videos/new")}
+          onClick={() => navigate("/admin/videos/new", { 
+            state: { 
+              returnTo: "/admin/news",
+              videoType: "news" 
+            } 
+          })}
         >
           <Plus className="mr-2 h-4 w-4" /> Add News Video
         </Button>
@@ -261,6 +338,7 @@ const VideoTable = ({ videos, navigate, isLoading }) => {
           <TableHead>Thumbnail</TableHead>
           <TableHead>Title</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead>Usage</TableHead>
           <TableHead>Views</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
@@ -291,12 +369,23 @@ const VideoTable = ({ videos, navigate, isLoading }) => {
                 {video.status.charAt(0).toUpperCase() + video.status.slice(1)}
               </span>
             </TableCell>
+            <TableCell>
+              {video.usage === "both" ? (
+                <Badge variant="outline" className="bg-purple-100 hover:bg-purple-100 text-purple-800 border-purple-200">Latest & Articles</Badge>
+              ) : video.usage === "latest" ? (
+                <Badge variant="outline" className="bg-blue-100 hover:bg-blue-100 text-blue-800 border-blue-200">Latest Videos</Badge>
+              ) : video.usage === "article" ? (
+                <Badge variant="outline" className="bg-amber-100 hover:bg-amber-100 text-amber-800 border-amber-200">In Articles</Badge>
+              ) : (
+                <Badge variant="outline">Unused</Badge>
+              )}
+            </TableCell>
             <TableCell>{video.views_count || 0}</TableCell>
             <TableCell>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate(`/admin/videos/${video.id}`)}
+                onClick={() => navigate(`/admin/news/videos/${video.id}`)}
               >
                 Edit
               </Button>
