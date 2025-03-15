@@ -14,10 +14,10 @@ interface VideoLink {
   url: string;
 }
 
-// Define a simple interface for news article data
+// Define a simple interface for news article data with explicit types
 interface ArticleData {
-  video_links?: unknown;
-  video_description?: string;
+  video_links?: string | any[] | null; // More specific than unknown to avoid recursion
+  video_description?: string | null;
 }
 
 const RightSection = () => {
@@ -28,7 +28,7 @@ const RightSection = () => {
     ? location.pathname.split('/news/')[1]
     : null;
   
-  // Fetch video data for news articles - using explicit type annotation
+  // Fetch video data for news articles with explicit typing to avoid recursion
   const { data: articleData } = useQuery<ArticleData | null>({
     queryKey: ["news-article-videos", newsArticleId],
     queryFn: async () => {
@@ -50,7 +50,7 @@ const RightSection = () => {
     enabled: !!newsArticleId,
   });
   
-  // Fetch videos for news page (when on /news) - using explicit type annotation
+  // Fetch videos for news page with explicit typing
   const { data: videos } = useQuery<Video[]>({
     queryKey: ["news-videos-sidebar"],
     queryFn: async () => {
@@ -125,7 +125,7 @@ const RightSection = () => {
         <h3 className="text-lg font-semibold mb-4 text-left pl-2">Related Videos</h3>
         <NewsVideos 
           videoLinks={videoLinks} 
-          videoDescription={articleData?.video_description} 
+          videoDescription={articleData?.video_description || undefined} 
           isDesktop={true}
         />
       </div>
