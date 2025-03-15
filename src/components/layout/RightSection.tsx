@@ -1,9 +1,11 @@
+
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { NewsVideos } from "@/components/news/NewsVideos";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const RightSection = () => {
   const location = useLocation();
@@ -43,6 +45,7 @@ const RightSection = () => {
         .from("videos")
         .select("*")
         .eq("status", "published")
+        .eq("video_type", "news") // Filter to only show news videos
         .order("created_at", { ascending: false })
         .limit(8);
         
@@ -96,13 +99,13 @@ const RightSection = () => {
   if (location.pathname === '/news' && videos?.length > 0) {
     return (
       <div className="h-full p-4 overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4 text-left">Latest Videos</h3>
+        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Latest Videos</h3>
         <div className="space-y-4">
           {videos.map((video) => (
-            <Link to={`/explore/${video.id}`} key={video.id}>
+            <Link to={`/news/videos/${video.id}`} key={video.id}>
               <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
                 <CardContent className="p-0">
-                  <div className="aspect-video bg-gray-100">
+                  <AspectRatio ratio={16/9} className="bg-gray-100">
                     {video.thumbnail_url ? (
                       <img
                         src={video.thumbnail_url}
@@ -118,10 +121,10 @@ const RightSection = () => {
                         />
                       )
                     )}
-                  </div>
+                  </AspectRatio>
                   <div className="p-3 text-left">
-                    <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <h4 className="font-medium text-sm line-clamp-2 pl-2">{video.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-1 pl-2">
                       {new Date(video.created_at).toLocaleDateString()}
                     </p>
                   </div>

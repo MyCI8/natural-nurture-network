@@ -6,6 +6,7 @@ import VideoPlayer from '@/components/video/VideoPlayer';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Video } from '@/types/video';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface VideoLink {
   title: string;
@@ -72,7 +73,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
   return (
     <div className="space-y-4">
       {videoDescription && (
-        <p className="text-sm text-muted-foreground mb-4">{videoDescription}</p>
+        <p className="text-sm text-muted-foreground mb-4 text-left pl-2">{videoDescription}</p>
       )}
       
       <div className="grid grid-cols-1 gap-4">
@@ -83,7 +84,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
             onClick={() => handleVideoClick(index)}
           >
             <CardContent className="p-0">
-              <div className="aspect-video bg-gray-100 relative">
+              <AspectRatio ratio={16/9} className="bg-gray-100 relative">
                 {videoLink.url.includes('youtube.com') || videoLink.url.includes('youtu.be') ? (
                   <img
                     src={`https://img.youtube.com/vi/${getYoutubeVideoId(videoLink.url)}/hqdefault.jpg`}
@@ -102,9 +103,9 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
                     </svg>
                   </div>
                 </div>
-              </div>
+              </AspectRatio>
               <div className="p-3">
-                <h4 className="font-medium text-sm line-clamp-2">{videoLink.title}</h4>
+                <h4 className="font-medium text-sm line-clamp-2 text-left pl-2">{videoLink.title}</h4>
               </div>
             </CardContent>
           </Card>
@@ -112,7 +113,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
       </div>
 
       {isFullscreen && activeVideoIndex !== null && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-6">
           <Button
             variant="ghost"
             size="icon"
@@ -166,7 +167,7 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
             
             {videoLinks[activeVideoIndex].title && (
               <div className="bg-black/50 p-4 mt-2">
-                <h3 className="text-white text-lg font-medium">{videoLinks[activeVideoIndex].title}</h3>
+                <h3 className="text-white text-lg font-medium text-left">{videoLinks[activeVideoIndex].title}</h3>
               </div>
             )}
           </div>

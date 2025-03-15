@@ -21,7 +21,7 @@ const NewsSection = () => {
     },
   });
 
-  // Fetch videos for the right column
+  // Fetch videos for the right column - specifically for news, not explore videos
   const { data: videos, isLoading: videosLoading } = useQuery({
     queryKey: ["news-videos"],
     queryFn: async () => {
@@ -29,6 +29,7 @@ const NewsSection = () => {
         .from("videos")
         .select("*")
         .eq("status", "published")
+        .eq("video_type", "news") // Filter to only show news videos
         .order("created_at", { ascending: false })
         .limit(4);
 
@@ -41,7 +42,10 @@ const NewsSection = () => {
     return (
       <section className="py-16 bg-secondary">
         <div className="w-full px-4 sm:px-6">
-          <h2 className="text-3xl font-bold mb-10 text-center">Latest News</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-left">Latest News</h2>
+            <h3 className="text-3xl font-bold text-right">Latest Videos</h3>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-12">
               {[1, 2, 3, 4].map((i) => (
@@ -63,11 +67,10 @@ const NewsSection = () => {
               ))}
             </div>
             <div className="space-y-8">
-              <h3 className="text-xl font-semibold mb-4">Latest Videos</h3>
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden">
                   <CardContent className="p-0">
-                    <Skeleton className="h-40 w-full" />
+                    <Skeleton className="aspect-video w-full" />
                     <div className="p-4 space-y-2">
                       <Skeleton className="h-5 w-full" />
                       <Skeleton className="h-4 w-2/3" />
@@ -85,7 +88,10 @@ const NewsSection = () => {
   return (
     <section className="py-16 bg-secondary">
       <div className="w-full px-4 sm:px-6">
-        <h2 className="text-3xl font-bold mb-10 text-center">Latest News</h2>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-left">Latest News</h2>
+          <h3 className="text-3xl font-bold text-right">Latest Videos</h3>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-12">
             {newsItems?.map((item) => (
@@ -100,14 +106,14 @@ const NewsSection = () => {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="p-6 sm:p-8 md:w-3/5 lg:w-2/3 text-left">
-                        <h3 className="text-xl sm:text-2xl font-semibold text-text mb-3">
+                      <div className="p-6 sm:p-8 md:w-3/5 lg:w-2/3">
+                        <h3 className="text-xl sm:text-2xl font-semibold text-text mb-3 text-left">
                           {item.title}
                         </h3>
-                        <p className="text-base sm:text-lg text-text-light line-clamp-3 sm:line-clamp-4">
+                        <p className="text-base sm:text-lg text-text-light line-clamp-3 sm:line-clamp-4 text-left">
                           {item.summary}
                         </p>
-                        <div className="mt-4 text-sm text-primary font-medium">
+                        <div className="mt-4 text-sm text-primary font-medium text-left">
                           Read more
                         </div>
                       </div>
@@ -119,9 +125,8 @@ const NewsSection = () => {
           </div>
           
           <div className="space-y-6">
-            <h3 className="text-xl font-semibold mb-4 text-left">Latest Videos</h3>
             {videos?.map((video) => (
-              <Link to={`/explore/${video.id}`} key={video.id}>
+              <Link to={`/news/videos/${video.id}`} key={video.id}>
                 <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
                   <CardContent className="p-0">
                     <div className="aspect-video bg-gray-100">
@@ -141,9 +146,9 @@ const NewsSection = () => {
                         )
                       )}
                     </div>
-                    <div className="p-4 text-left">
-                      <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                    <div className="p-4">
+                      <h4 className="font-medium text-sm line-clamp-2 text-left">{video.title}</h4>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1 text-left">
                         {new Date(video.created_at).toLocaleDateString()}
                       </p>
                     </div>
