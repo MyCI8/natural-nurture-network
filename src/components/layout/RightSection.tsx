@@ -13,6 +13,21 @@ interface VideoLink {
   url: string;
 }
 
+// Define a simple interface for article data
+interface ArticleData {
+  video_links?: any[];
+  video_description?: string;
+}
+
+// Define a simple interface for video data
+interface VideoData {
+  id: string;
+  title: string;
+  thumbnail_url: string | null;
+  video_url: string | null;
+  created_at: string;
+}
+
 const RightSection = () => {
   const location = useLocation();
   
@@ -22,7 +37,7 @@ const RightSection = () => {
     : null;
   
   // Fetch video data for news articles
-  const { data: articleData } = useQuery({
+  const { data: articleData } = useQuery<ArticleData | null>({
     queryKey: ["news-article-videos", newsArticleId],
     queryFn: async () => {
       if (!newsArticleId) return null;
@@ -38,13 +53,13 @@ const RightSection = () => {
         return null;
       }
       
-      return data;
+      return data as ArticleData;
     },
     enabled: !!newsArticleId,
   });
   
   // Fetch videos for news page (when on /news)
-  const { data: videos } = useQuery({
+  const { data: videos } = useQuery<VideoData[]>({
     queryKey: ["news-videos-sidebar"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -60,7 +75,7 @@ const RightSection = () => {
         return [];
       }
       
-      return data;
+      return data as VideoData[];
     },
     enabled: location.pathname === '/news',
   });
