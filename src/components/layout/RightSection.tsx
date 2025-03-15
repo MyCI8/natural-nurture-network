@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,15 +6,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
-// Define a simple interface for video links to avoid type recursion
+// Define a simple interface for video links
 interface VideoLink {
   title: string;
   url: string;
 }
 
-// Define a simple interface for article data
+// Define a simple interface for news article data
 interface ArticleData {
-  video_links?: any[];
+  video_links?: unknown; // Use unknown to avoid type recursion
   video_description?: string;
 }
 
@@ -36,7 +35,7 @@ const RightSection = () => {
     ? location.pathname.split('/news/')[1]
     : null;
   
-  // Fetch video data for news articles
+  // Fetch video data for news articles - using explicit type annotation
   const { data: articleData } = useQuery<ArticleData | null>({
     queryKey: ["news-article-videos", newsArticleId],
     queryFn: async () => {
@@ -58,7 +57,7 @@ const RightSection = () => {
     enabled: !!newsArticleId,
   });
   
-  // Fetch videos for news page (when on /news)
+  // Fetch videos for news page (when on /news) - using explicit type annotation
   const { data: videos } = useQuery<VideoData[]>({
     queryKey: ["news-videos-sidebar"],
     queryFn: async () => {
@@ -75,7 +74,7 @@ const RightSection = () => {
         return [];
       }
       
-      return data as VideoData[];
+      return (data || []) as VideoData[];
     },
     enabled: location.pathname === '/news',
   });
@@ -83,25 +82,46 @@ const RightSection = () => {
   // Process video links with a simpler approach to avoid type recursion
   const videoLinks: VideoLink[] = [];
   
-  if (articleData?.video_links && Array.isArray(articleData.video_links)) {
-    for (const link of articleData.video_links) {
-      if (!link || typeof link !== 'object') continue;
-      
-      try {
-        // Handle either string or object format
-        const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
-        
-        // Only add valid links with title and url
-        if (typeof linkObj.url === 'string' && linkObj.url.trim() !== '') {
-          videoLinks.push({
-            title: typeof linkObj.title === 'string' ? linkObj.title : '',
-            url: linkObj.url
-          });
+  if (articleData?.video_links) {
+    // Safely handle the video_links data regardless of its format
+    const linksData = articleData.video_links;
+    
+    try {
+      // Handle string format (JSON string)
+      if (typeof linksData === 'string') {
+        const parsed = JSON.parse(linksData);
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            if (item && typeof item === 'object' && 'url' in item && typeof item.url === 'string') {
+              videoLinks.push({
+                title: typeof item.title === 'string' ? item.title : '',
+                url: item.url
+              });
+            }
+          }
         }
-      } catch (e) {
-        console.error('Error parsing video link:', e);
-        // Skip invalid links
+      } 
+      // Handle array format
+      else if (Array.isArray(linksData)) {
+        for (const item of linksData) {
+          // Skip non-object items
+          if (!item || typeof item !== 'object') continue;
+          
+          // Handle object that might be stringified
+          const linkObj = typeof item === 'string' ? JSON.parse(item) : item;
+          
+          // Check if url exists and is a string
+          if ('url' in linkObj && typeof linkObj.url === 'string' && linkObj.url.trim() !== '') {
+            videoLinks.push({
+              title: typeof linkObj.title === 'string' ? linkObj.title : '',
+              url: linkObj.url
+            });
+          }
+        }
       }
+    } catch (e) {
+      console.error('Error processing video links:', e);
+      // Continue with empty videoLinks array if parsing fails
     }
   }
   
