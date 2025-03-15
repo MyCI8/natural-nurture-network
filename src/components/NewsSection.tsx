@@ -125,6 +125,11 @@ const NewsSection = () => {
                 </Card>
               </Link>
             ))}
+            {newsItems?.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No news articles available
+              </div>
+            )}
           </div>
           
           <div className="space-y-6">

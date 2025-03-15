@@ -49,6 +49,7 @@ const Routes = () => {
         <Route path="symptoms/:id" element={<SymptomDetail />} />
         <Route path="news" element={<News />} />
         <Route path="news/:id" element={<NewsArticle />} />
+        <Route path="news/videos/:id" element={<EditVideo />} />
         <Route path="users/:id" element={<UserProfile />} />
         <Route path="admin" element={<Admin />}>
           <Route index element={<AdminDashboard />} />
