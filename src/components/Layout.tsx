@@ -12,18 +12,8 @@ import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
 const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { layoutMode, showRightSection } = useLayout();
+  const { layoutMode, showRightSection, contentWidth, contentMaxWidth } = useLayout();
   
-  // Routes that have a right section
-  const hasRightSectionRoutes = 
-    location.pathname === '/news' ||
-    location.pathname.startsWith('/news/') || 
-    location.pathname.startsWith('/explore/') ||
-    location.pathname.startsWith('/symptoms/');
-
-  // Determine if we should show the right column
-  const shouldShowRightSection = showRightSection && hasRightSectionRoutes;
-
   // Prevent unwanted redirects
   useEffect(() => {
     const preventUnwantedRedirect = (e: BeforeUnloadEvent) => {
@@ -40,24 +30,30 @@ const LayoutContent = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex justify-center bg-white dark:bg-black w-full overflow-x-hidden">
-      {/* Main container with max width */}
-      <div className="w-full max-w-[1400px] flex relative">
+    <div className="min-h-screen flex bg-white dark:bg-black w-full">
+      {/* Main container with responsive layout */}
+      <div className="w-full flex relative">
         {/* Mobile Top Header - only on mobile */}
         {isMobile && <TopHeader />}
         
         {/* Left Sidebar - Hide on mobile */}
-        <div className={`${isMobile ? 'hidden' : 'block'} sticky top-0 h-screen w-64 shrink-0`}>
-          <MainSidebar />
-        </div>
+        {!isMobile && (
+          <div className="w-64 shrink-0 sticky top-0 h-screen">
+            <MainSidebar />
+          </div>
+        )}
         
         {/* Main Content Area */}
-        <main className={`flex-1 min-h-screen ${shouldShowRightSection ? 'max-w-[calc(100%-350px)]' : 'w-full'} ${isMobile ? 'pb-16' : ''}`}>
-          <Outlet />
+        <main 
+          className={`flex-1 min-h-screen ${contentWidth} ${isMobile ? 'pb-16 pt-14' : ''}`}
+        >
+          <div className={`${contentMaxWidth} mx-auto`}>
+            <Outlet />
+          </div>
         </main>
 
         {/* Right Section - Only shown when enabled and not on mobile */}
-        {!isMobile && shouldShowRightSection && (
+        {!isMobile && showRightSection && (
           <aside className="w-[350px] shrink-0 h-screen sticky top-0 border-l border-border">
             <RightSection />
           </aside>

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const NewsSection = () => {
   const { data: newsItems, isLoading } = useQuery({
@@ -43,8 +44,8 @@ const NewsSection = () => {
       <section className="py-16 bg-secondary">
         <div className="w-full px-4 sm:px-6">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-left">Latest News</h2>
-            <h3 className="text-3xl font-bold text-right">Latest Videos</h3>
+            <h2 className="text-3xl font-bold">Latest News</h2>
+            <h3 className="text-3xl font-bold">Latest Videos</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-12">
@@ -99,12 +100,14 @@ const NewsSection = () => {
                 <Card className="overflow-hidden animate-fadeIn hover:shadow-lg transition-shadow duration-200">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
-                      <div className="w-full md:w-2/5 lg:w-1/3 h-64 sm:h-72 md:h-80">
-                        <img
-                          src={item.image_url || "/placeholder.svg"}
-                          alt={item.thumbnail_description || ""}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="w-full md:w-2/5 lg:w-1/3">
+                        <AspectRatio ratio={16/9} className="bg-gray-100">
+                          <img
+                            src={item.image_url || "/placeholder.svg"}
+                            alt={item.thumbnail_description || ""}
+                            className="w-full h-full object-cover"
+                          />
+                        </AspectRatio>
                       </div>
                       <div className="p-6 sm:p-8 md:w-3/5 lg:w-2/3">
                         <h3 className="text-xl sm:text-2xl font-semibold text-text mb-3 text-left">
@@ -129,7 +132,7 @@ const NewsSection = () => {
               <Link to={`/news/videos/${video.id}`} key={video.id}>
                 <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
                   <CardContent className="p-0">
-                    <div className="aspect-video bg-gray-100">
+                    <AspectRatio ratio={16/9} className="bg-gray-100">
                       {video.thumbnail_url ? (
                         <img
                           src={video.thumbnail_url}
@@ -145,10 +148,10 @@ const NewsSection = () => {
                           />
                         )
                       )}
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-medium text-sm line-clamp-2 text-left">{video.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1 text-left">
+                    </AspectRatio>
+                    <div className="p-4 text-left">
+                      <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
                         {new Date(video.created_at).toLocaleDateString()}
                       </p>
                     </div>

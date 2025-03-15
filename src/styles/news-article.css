@@ -4,14 +4,14 @@
 /* Container widths that match x.com constraints */
 .x-container {
   width: 100%;
-  max-width: var(--layout-max-width);
+  max-width: var(--layout-max-width, 1200px);
   margin: 0 auto;
   padding: 0;
 }
 
 /* Content widths */
 .x-content {
-  max-width: var(--content-max-width);
+  max-width: var(--content-max-width, 768px);
   padding: 0 1.5rem;
 }
 
@@ -100,21 +100,29 @@ aside {
 /* News article specific layout */
 .news-article-container {
   padding: 0 1rem;
-  max-width: var(--content-max-width);
+  max-width: var(--content-max-width, 768px);
 }
 
 .news-article-content {
   padding-right: 1.5rem;
 }
 
+/* Layout variables for consistent spacing */
+:root {
+  --sidebar-width: 256px;      /* 64 * 4 = 256px */
+  --rightsection-width: 350px; /* Right column width */
+  --content-max-width: 768px;  /* Max width for content */
+  --layout-max-width: 1400px;  /* Max width for entire layout */
+}
+
 /* Fixed width for side sections */
 .news-sidebar {
-  width: var(--sidebar-width);
+  width: var(--sidebar-width, 256px);
   flex-shrink: 0;
 }
 
 .news-right-section {
-  width: var(--rightsection-width);
+  width: var(--rightsection-width, 350px);
   flex-shrink: 0;
   padding-left: 1.5rem;
   border-left: 1px solid #eaeaea;

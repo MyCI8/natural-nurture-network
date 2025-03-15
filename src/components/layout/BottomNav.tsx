@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Home, Play, Newspaper, Activity, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const BottomNav = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -61,8 +62,8 @@ const BottomNav = () => {
       return;
     }
     
-    // Navigate to upload page or open upload modal
-    window.location.href = '/admin/videos/new';
+    // Navigate to upload page
+    navigate('/admin/videos/new');
   };
   
   return (

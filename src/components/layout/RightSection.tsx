@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,6 +6,7 @@ import { NewsVideos } from "@/components/news/NewsVideos";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Video } from "@/types/video";
 
 // Define a simple interface for video links
 interface VideoLink {
@@ -16,15 +18,6 @@ interface VideoLink {
 interface ArticleData {
   video_links?: unknown; // Use unknown to avoid type recursion
   video_description?: string;
-}
-
-// Define a simple interface for video data
-interface VideoData {
-  id: string;
-  title: string;
-  thumbnail_url: string | null;
-  video_url: string | null;
-  created_at: string;
 }
 
 const RightSection = () => {
@@ -58,7 +51,7 @@ const RightSection = () => {
   });
   
   // Fetch videos for news page (when on /news) - using explicit type annotation
-  const { data: videos } = useQuery<VideoData[]>({
+  const { data: videos } = useQuery<Video[]>({
     queryKey: ["news-videos-sidebar"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -74,12 +67,12 @@ const RightSection = () => {
         return [];
       }
       
-      return (data || []) as VideoData[];
+      return (data || []) as Video[];
     },
     enabled: location.pathname === '/news',
   });
   
-  // Process video links with a simpler approach to avoid type recursion
+  // Process video links from articleData
   const videoLinks: VideoLink[] = [];
   
   if (articleData?.video_links) {
@@ -129,6 +122,7 @@ const RightSection = () => {
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
     return (
       <div className="h-full p-4 overflow-y-auto">
+        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Related Videos</h3>
         <NewsVideos 
           videoLinks={videoLinks} 
           videoDescription={articleData?.video_description} 
@@ -166,8 +160,8 @@ const RightSection = () => {
                     )}
                   </AspectRatio>
                   <div className="p-3 text-left">
-                    <h4 className="font-medium text-sm line-clamp-2 pl-2">{video.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1 pl-2">
+                    <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {new Date(video.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -183,8 +177,8 @@ const RightSection = () => {
   if (location.pathname.startsWith('/explore/')) {
     return (
       <div className="h-full p-4 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4">Explore Details</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Explore Details</h2>
+        <p className="text-sm text-muted-foreground text-left pl-2">
           This section shows details about the current explore item.
         </p>
       </div>
@@ -194,8 +188,8 @@ const RightSection = () => {
   if (location.pathname.startsWith('/symptoms/')) {
     return (
       <div className="h-full p-4 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4">Related Content</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Related Content</h2>
+        <p className="text-sm text-muted-foreground text-left pl-2">
           This section shows content related to the current symptom.
         </p>
       </div>
@@ -205,8 +199,8 @@ const RightSection = () => {
   // Default content
   return (
     <div className="h-full p-4 overflow-y-auto">
-      <h2 className="text-lg font-semibold mb-4">Additional Information</h2>
-      <p className="text-sm text-muted-foreground">
+      <h2 className="text-lg font-semibold mb-4 text-left pl-2">Additional Information</h2>
+      <p className="text-sm text-muted-foreground text-left pl-2">
         This panel displays contextual information related to the current page.
       </p>
     </div>
