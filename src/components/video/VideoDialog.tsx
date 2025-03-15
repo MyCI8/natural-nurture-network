@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface VideoDialogProps {
-  video: Video | null;
+  video: (Video & { creator?: any }) | null;
   isOpen: boolean;
   onClose: () => void;
   globalAudioEnabled?: boolean;

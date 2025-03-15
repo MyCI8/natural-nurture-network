@@ -16,7 +16,7 @@ interface VideoLink {
 
 // Define a simple interface for news article data
 interface ArticleData {
-  video_links?: unknown; // Use unknown to avoid type recursion
+  video_links?: unknown;
   video_description?: string;
 }
 
