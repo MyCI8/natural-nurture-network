@@ -7,6 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
+// Define a simple interface for video links to avoid type recursion
+interface VideoLink {
+  title: string;
+  url: string;
+}
+
 const RightSection = () => {
   const location = useLocation();
   
@@ -59,22 +65,29 @@ const RightSection = () => {
     enabled: location.pathname === '/news',
   });
   
-  // Process video links - simplified to fix infinite type instantiation
-  let videoLinks: { title: string; url: string }[] = [];
-  
-  if (articleData?.video_links && Array.isArray(articleData.video_links)) {
-    videoLinks = articleData.video_links
+  // Process video links - explicitly typed to avoid infinite type instantiation
+  const videoLinks: VideoLink[] = (() => {
+    if (!articleData?.video_links || !Array.isArray(articleData.video_links)) {
+      return [];
+    }
+    
+    return articleData.video_links
       .filter(link => link && typeof link === 'object')
       .map(link => {
-        // Handle either string or object format
-        const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
-        return {
-          title: typeof linkObj.title === 'string' ? linkObj.title : '',
-          url: typeof linkObj.url === 'string' ? linkObj.url : ''
-        };
+        try {
+          // Handle either string or object format
+          const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
+          return {
+            title: typeof linkObj.title === 'string' ? linkObj.title : '',
+            url: typeof linkObj.url === 'string' ? linkObj.url : ''
+          };
+        } catch (e) {
+          console.error('Error parsing video link:', e);
+          return { title: '', url: '' };
+        }
       })
       .filter(link => link.url && link.url.trim() !== '');
-  }
+  })();
   
   // Custom content based on route
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
