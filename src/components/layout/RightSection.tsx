@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,9 +13,9 @@ interface VideoLink {
   url: string;
 }
 
-// Define a simple interface for news article data with explicit types
+// Define a simple interface for news article data with more precise types
 interface ArticleData {
-  video_links?: string | any[] | null; // More specific than unknown to avoid recursion
+  video_links?: string | null;  // Simplified to just string or null
   video_description?: string | null;
 }
 
@@ -91,24 +90,6 @@ const RightSection = () => {
                 url: item.url
               });
             }
-          }
-        }
-      } 
-      // Handle array format
-      else if (Array.isArray(linksData)) {
-        for (const item of linksData) {
-          // Skip non-object items
-          if (!item || typeof item !== 'object') continue;
-          
-          // Handle object that might be stringified
-          const linkObj = typeof item === 'string' ? JSON.parse(item) : item;
-          
-          // Check if url exists and is a string
-          if ('url' in linkObj && typeof linkObj.url === 'string' && linkObj.url.trim() !== '') {
-            videoLinks.push({
-              title: typeof linkObj.title === 'string' ? linkObj.title : '',
-              url: linkObj.url
-            });
           }
         }
       }
