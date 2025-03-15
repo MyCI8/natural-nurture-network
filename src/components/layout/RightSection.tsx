@@ -59,22 +59,22 @@ const RightSection = () => {
     enabled: location.pathname === '/news',
   });
   
-  // Process video links - fixed to avoid infinite type instantiation
-  const videoLinks = articleData?.video_links ? 
-    Array.isArray(articleData.video_links) ? 
-      articleData.video_links
-        .filter(link => link && typeof link === 'object')
-        .map(link => {
-          // Convert string to object if needed
-          const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
-          return {
-            title: typeof linkObj.title === 'string' ? linkObj.title : '',
-            url: typeof linkObj.url === 'string' ? linkObj.url : ''
-          };
-        })
-        .filter(link => link.url.trim() !== '')
-    : [] 
-  : [];
+  // Process video links - simplified to fix infinite type instantiation
+  let videoLinks: { title: string; url: string }[] = [];
+  
+  if (articleData?.video_links && Array.isArray(articleData.video_links)) {
+    videoLinks = articleData.video_links
+      .filter(link => link && typeof link === 'object')
+      .map(link => {
+        // Handle either string or object format
+        const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
+        return {
+          title: typeof linkObj.title === 'string' ? linkObj.title : '',
+          url: typeof linkObj.url === 'string' ? linkObj.url : ''
+        };
+      })
+      .filter(link => link.url && link.url.trim() !== '');
+  }
   
   // Custom content based on route
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
