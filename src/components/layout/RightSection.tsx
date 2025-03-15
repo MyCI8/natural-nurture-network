@@ -59,28 +59,22 @@ const RightSection = () => {
     enabled: location.pathname === '/news',
   });
   
-  // Process video links
-  const videoLinks = (() => {
-    try {
-      if (!articleData?.video_links || !Array.isArray(articleData.video_links)) {
-        return [];
-      }
-      
-      return articleData.video_links
+  // Process video links - fixed to avoid infinite type instantiation
+  const videoLinks = articleData?.video_links ? 
+    Array.isArray(articleData.video_links) ? 
+      articleData.video_links
         .filter(link => link && typeof link === 'object')
         .map(link => {
+          // Convert string to object if needed
           const linkObj = typeof link === 'string' ? JSON.parse(link) : link;
           return {
             title: typeof linkObj.title === 'string' ? linkObj.title : '',
             url: typeof linkObj.url === 'string' ? linkObj.url : ''
           };
         })
-        .filter(link => link.url.trim() !== '');
-    } catch (error) {
-      console.error("Error processing video links:", error);
-      return [];
-    }
-  })();
+        .filter(link => link.url.trim() !== '')
+    : [] 
+  : [];
   
   // Custom content based on route
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
