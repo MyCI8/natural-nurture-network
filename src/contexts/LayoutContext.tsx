@@ -70,7 +70,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setLayoutMode('wide');
       setShowRightSection(false);
       setContentWidth('px-4 md:px-6');
-      setContentMaxWidth('max-w-7xl');
+      setContentMaxWidth('max-w-4xl');
       setIsFullWidth(false);
     } 
     else if (path === '/explore') {
@@ -83,8 +83,8 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     else if (path === '/' || path === '/home') {
       setLayoutMode('default');
       setShowRightSection(false);
-      setContentWidth('px-0');
-      setContentMaxWidth('max-w-7xl');
+      setContentWidth('px-4');
+      setContentMaxWidth('max-w-3xl');
       setIsFullWidth(false);
     }
     else {
@@ -92,7 +92,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setLayoutMode('default');
       setShowRightSection(false);
       setContentWidth('px-4');
-      setContentMaxWidth('max-w-6xl');
+      setContentMaxWidth('max-w-3xl');
       setIsFullWidth(false);
     }
 
