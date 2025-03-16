@@ -57,7 +57,7 @@ const SymptomsMarquee = () => {
   };
 
   return (
-    <section className="py-8 bg-accent overflow-hidden">
+    <section className="py-8 bg-accent overflow-hidden z-0 relative">
       <div className="max-w-7xl mx-auto">
         <div className="group relative">
           <Carousel

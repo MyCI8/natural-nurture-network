@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 
 const Hero = () => {
   return (
-    <div className="relative bg-black pt-24 pb-16 sm:pt-32 lg:overflow-hidden w-full">
+    <div className="relative bg-black pt-24 pb-16 sm:pt-32 lg:overflow-hidden w-full z-0">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <video

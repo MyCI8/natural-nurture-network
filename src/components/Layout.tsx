@@ -38,14 +38,14 @@ const LayoutContent = () => {
         
         {/* Left Sidebar - Hide on mobile */}
         {!isMobile && (
-          <div className="w-64 shrink-0 sticky top-0 h-screen">
+          <div className="w-64 shrink-0 sticky top-0 h-screen z-50">
             <MainSidebar />
           </div>
         )}
         
         {/* Main Content Area */}
         <main 
-          className={`flex-1 min-h-screen ${isMobile ? 'pb-16 pt-14' : ''}`}
+          className={`flex-1 min-h-screen ${isMobile ? 'pb-16 pt-14' : ''} relative z-10`}
         >
           <div 
             className={`
@@ -59,7 +59,7 @@ const LayoutContent = () => {
 
         {/* Right Section - Only shown when enabled and not on mobile */}
         {!isMobile && showRightSection && (
-          <aside className="w-[350px] shrink-0 h-screen sticky top-0 border-l border-border">
+          <aside className="w-[350px] shrink-0 h-screen sticky top-0 border-l border-border z-20">
             <RightSection />
           </aside>
         )}
