@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -60,7 +59,6 @@ const ManageNews = () => {
     enabled: contentType === "articles",
   });
 
-  // Fetch all news articles to check which videos are used in articles
   const { data: allArticles = [] } = useQuery({
     queryKey: ["all-news-articles-for-videos"],
     queryFn: async () => {
@@ -95,7 +93,8 @@ const ManageNews = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Process videos to determine their usage
+      console.log("Raw videos from query:", data); // Debug log
+      
       const processedVideos = data.map((video) => {
         const videoUsage = determineVideoUsage(video.id, allArticles);
         return { ...video, usage: videoUsage };
@@ -107,21 +106,24 @@ const ManageNews = () => {
         return true;
       });
       
+      console.log("Processed videos after filtering:", processedVideos); // Debug log
       return processedVideos;
     },
     enabled: contentType === "videos",
   });
 
-  // Determine if a video is used in the latest section, in articles, both, or none
   const determineVideoUsage = (videoId: string, articles: any[]): VideoUsage => {
-    // Check if used in any article
     const usedInArticle = articles.some((article) => {
       const videoLinks = article.video_links || [];
-      return videoLinks.some((link: any) => link.url && link.url.includes(videoId));
+      return videoLinks.some((link: any) => 
+        (link.url && (
+          link.url === videoId || 
+          link.url.includes(`/videos/${videoId}`) ||
+          (link.url.includes('youtube.com') && link.videoId === videoId)
+        ))
+      );
     });
 
-    // For demonstration, we'll consider all news videos as potentially appearing in "Latest Videos"
-    // In a real app, you might have a specific field in the database to track this
     const usedInLatest = true;
 
     if (usedInArticle && usedInLatest) return "both";
@@ -331,6 +333,24 @@ const VideoTable = ({ videos, navigate, isLoading }) => {
     );
   }
 
+  const getYoutubeThumbnail = (url) => {
+    if (!url || !url.includes('youtube.com')) return null;
+    
+    try {
+      const videoId = url.includes('v=') 
+        ? new URLSearchParams(new URL(url).search).get('v')
+        : url.split('youtu.be/')[1]?.split('?')[0];
+        
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      }
+    } catch (e) {
+      console.error("Error parsing YouTube URL:", e);
+    }
+    
+    return null;
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -350,6 +370,12 @@ const VideoTable = ({ videos, navigate, isLoading }) => {
               {video.thumbnail_url ? (
                 <img 
                   src={video.thumbnail_url} 
+                  alt={video.title} 
+                  className="w-16 h-10 object-cover rounded"
+                />
+              ) : video.video_url && video.video_url.includes('youtube.com') ? (
+                <img 
+                  src={getYoutubeThumbnail(video.video_url)} 
                   alt={video.title} 
                   className="w-16 h-10 object-cover rounded"
                 />

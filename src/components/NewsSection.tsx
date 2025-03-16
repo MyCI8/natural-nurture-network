@@ -35,6 +35,7 @@ const NewsSection = () => {
         .limit(4);
 
       if (error) throw error;
+      console.log("News Videos fetched:", data); // Debug log
       return data;
     },
   });
@@ -147,7 +148,7 @@ const NewsSection = () => {
                       ) : (
                         video.video_url && video.video_url.includes('youtube.com') && (
                           <img
-                            src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
+                            src={`https://img.youtube.com/vi/${getYoutubeVideoId(video.video_url)}/hqdefault.jpg`}
                             alt={video.title}
                             className="w-full h-full object-cover"
                           />
@@ -174,6 +175,25 @@ const NewsSection = () => {
       </div>
     </section>
   );
+};
+
+// Helper function to extract YouTube video ID
+const getYoutubeVideoId = (url) => {
+  if (!url) return '';
+  
+  let videoId = '';
+  try {
+    if (url.includes('youtube.com/watch')) {
+      const urlParams = new URLSearchParams(new URL(url).search);
+      videoId = urlParams.get('v') || '';
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    }
+  } catch (error) {
+    console.error('Error parsing YouTube URL:', error);
+  }
+  
+  return videoId;
 };
 
 export default NewsSection;
