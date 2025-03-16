@@ -5,15 +5,8 @@ import RightSection from "./layout/RightSection";
 import TopHeader from "./layout/TopHeader";
 import BottomNav from "./layout/BottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
-import { 
-  Sheet,
-  SheetContent,
-  SheetTrigger
-} from "@/components/ui/sheet";
-import { PanelRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 // Inner layout component that uses the layout context
 const LayoutContent = () => {
@@ -35,16 +28,6 @@ const LayoutContent = () => {
       window.removeEventListener("beforeunload", preventUnwantedRedirect);
     };
   }, [location]);
-
-  // Determine if mobile right section should be available based on route
-  const showMobileRightTab = isMobile && (
-    location.pathname === '/news' || 
-    location.pathname.startsWith('/news/') ||
-    location.pathname.startsWith('/explore/') ||
-    location.pathname.startsWith('/symptoms/') ||
-    location.pathname === '/' || // Added home page
-    location.pathname === '/index' // Added index page
-  );
 
   return (
     <div className="min-h-screen flex bg-white dark:bg-black w-full">
@@ -73,22 +56,6 @@ const LayoutContent = () => {
           >
             <Outlet />
           </div>
-          
-          {/* Mobile Right Section Trigger - Moved outside the main content div for better positioning */}
-          {showMobileRightTab && (
-            <div className="fixed bottom-20 right-4 z-30">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button size="icon" variant="secondary" className="rounded-full shadow-md">
-                    <PanelRight className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[85%] sm:w-[350px] p-0">
-                  <RightSection />
-                </SheetContent>
-              </Sheet>
-            </div>
-          )}
         </main>
 
         {/* Right Section - Only shown when enabled and not on mobile */}

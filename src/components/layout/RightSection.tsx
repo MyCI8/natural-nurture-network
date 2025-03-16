@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define a simple interface for video links
 interface VideoLink {
@@ -23,7 +21,6 @@ interface ArticleData {
 
 const RightSection = () => {
   const location = useLocation();
-  const isMobile = useIsMobile();
   
   // Extract the ID from the URL for news article pages
   const newsArticleId = location.pathname.startsWith('/news/') 
@@ -71,7 +68,7 @@ const RightSection = () => {
       
       return (data || []) as Video[];
     },
-    enabled: location.pathname === '/news' || location.pathname === '/' || location.pathname === '/index',
+    enabled: location.pathname === '/news',
   });
   
   // Process video links from articleData
@@ -102,61 +99,15 @@ const RightSection = () => {
     }
   }
   
-  // For home/index page
-  if (location.pathname === '/' || location.pathname === '/index') {
-    return (
-      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
-        <h3 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Latest Videos</h3>
-        <div className="space-y-4 px-4">
-          {videos && videos.length > 0 ? (
-            videos.map((video) => (
-              <Link to={`/news/videos/${video.id}`} key={video.id}>
-                <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
-                  <CardContent className="p-0">
-                    <AspectRatio ratio={16/9} className="bg-gray-100">
-                      {video.thumbnail_url ? (
-                        <img
-                          src={video.thumbnail_url}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        video.video_url && video.video_url.includes('youtube.com') && (
-                          <img
-                            src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
-                            alt={video.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )
-                      )}
-                    </AspectRatio>
-                    <div className="p-3 text-left">
-                      <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(video.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))
-          ) : (
-            <p className="text-center text-muted-foreground py-4">No videos available</p>
-          )}
-        </div>
-      </div>
-    );
-  }
-  
   // Custom content based on route
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
     return (
-      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
-        <h3 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Related Videos</h3>
+      <div className="h-full p-4 overflow-y-auto">
+        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Related Videos</h3>
         <NewsVideos 
           videoLinks={videoLinks} 
           videoDescription={articleData?.video_description || undefined} 
-          isDesktop={!isMobile}
+          isDesktop={true}
         />
       </div>
     );
@@ -165,9 +116,9 @@ const RightSection = () => {
   // Show videos when on the main news page
   if (location.pathname === '/news' && videos?.length > 0) {
     return (
-      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
-        <h3 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Latest Videos</h3>
-        <div className="space-y-4 px-4">
+      <div className="h-full p-4 overflow-y-auto">
+        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Latest Videos</h3>
+        <div className="space-y-4">
           {videos.map((video) => (
             <Link to={`/news/videos/${video.id}`} key={video.id}>
               <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -206,9 +157,9 @@ const RightSection = () => {
   
   if (location.pathname.startsWith('/explore/')) {
     return (
-      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
-        <h2 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Explore Details</h2>
-        <p className="text-sm text-muted-foreground text-left px-4">
+      <div className="h-full p-4 overflow-y-auto">
+        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Explore Details</h2>
+        <p className="text-sm text-muted-foreground text-left pl-2">
           This section shows details about the current explore item.
         </p>
       </div>
@@ -217,9 +168,9 @@ const RightSection = () => {
   
   if (location.pathname.startsWith('/symptoms/')) {
     return (
-      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
-        <h2 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Related Content</h2>
-        <p className="text-sm text-muted-foreground text-left px-4">
+      <div className="h-full p-4 overflow-y-auto">
+        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Related Content</h2>
+        <p className="text-sm text-muted-foreground text-left pl-2">
           This section shows content related to the current symptom.
         </p>
       </div>
@@ -228,9 +179,9 @@ const RightSection = () => {
   
   // Default content
   return (
-    <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
-      <h2 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Additional Information</h2>
-      <p className="text-sm text-muted-foreground text-left px-4">
+    <div className="h-full p-4 overflow-y-auto">
+      <h2 className="text-lg font-semibold mb-4 text-left pl-2">Additional Information</h2>
+      <p className="text-sm text-muted-foreground text-left pl-2">
         This panel displays contextual information related to the current page.
       </p>
     </div>
