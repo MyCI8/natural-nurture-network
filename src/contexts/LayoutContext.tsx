@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useBreakpoint } from '@/hooks/use-mobile';
 
 // Define layout modes
 export type LayoutMode = 'default' | 'wide' | 'full' | 'three-column';
@@ -38,38 +38,39 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
   const [isFullWidth, setIsFullWidth] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
   
-  // Update layout based on routes
+  // Update layout based on routes and screen size
   useEffect(() => {
     const path = location.pathname;
     
-    // Set layout mode and right section visibility based on route
+    // Set layout mode and right section visibility based on route and screen size
     if (path === '/news' || path.startsWith('/news/')) {
       setLayoutMode('three-column');
-      setShowRightSection(true);
-      setContentWidth('px-2');
-      setContentMaxWidth('max-w-full');
+      setShowRightSection(!isMobile);
+      setContentWidth('px-2 sm:px-4');
+      setContentMaxWidth('max-w-[900px]');
       setIsFullWidth(false);
     } 
     else if (path.startsWith('/explore/')) {
       setLayoutMode('three-column');
-      setShowRightSection(true);
-      setContentWidth('p-0');
-      setContentMaxWidth('max-w-full');
+      setShowRightSection(!isMobile);
+      setContentWidth('p-0 sm:px-2');
+      setContentMaxWidth('max-w-[900px]');
       setIsFullWidth(false);
     }
     else if (path.startsWith('/symptoms/')) {
       setLayoutMode('three-column');
-      setShowRightSection(true);
-      setContentWidth('px-2');
-      setContentMaxWidth('max-w-full');
+      setShowRightSection(!isMobile);
+      setContentWidth('px-2 sm:px-4');
+      setContentMaxWidth('max-w-[900px]');
       setIsFullWidth(false);
     }
     else if (path.startsWith('/admin')) {
       setLayoutMode('wide');
       setShowRightSection(false);
       setContentWidth('px-4 md:px-6');
-      setContentMaxWidth('max-w-7xl');
+      setContentMaxWidth('max-w-[1200px]');
       setIsFullWidth(false);
     } 
     else if (path === '/explore') {
@@ -91,7 +92,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setLayoutMode('default');
       setShowRightSection(false);
       setContentWidth('px-4');
-      setContentMaxWidth('max-w-3xl');
+      setContentMaxWidth('max-w-[800px]');
       setIsFullWidth(false);
     }
 
@@ -99,7 +100,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     if (isMobile) {
       setShowRightSection(false);
     }
-  }, [location, isMobile]);
+  }, [location, isMobile, breakpoint]);
   
   return (
     <LayoutContext.Provider 

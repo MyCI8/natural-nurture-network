@@ -49,8 +49,9 @@ const LayoutContent = () => {
         >
           <div 
             className={`
-              ${isFullWidth ? 'w-full' : 'max-w-[1400px] mx-auto'} 
+              ${isFullWidth ? 'w-full' : 'mx-auto'} 
               ${contentWidth}
+              ${!isFullWidth && `${contentMaxWidth}`}
             `}
           >
             <Outlet />
