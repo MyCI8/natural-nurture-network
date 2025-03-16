@@ -70,7 +70,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setLayoutMode('wide');
       setShowRightSection(false);
       setContentWidth('px-4 md:px-6');
-      setContentMaxWidth('max-w-[1200px]');
+      setContentMaxWidth('max-w-7xl');
       setIsFullWidth(false);
     } 
     else if (path === '/explore') {
@@ -84,15 +84,15 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setLayoutMode('default');
       setShowRightSection(false);
       setContentWidth('px-0');
-      setContentMaxWidth('max-w-full');
-      setIsFullWidth(true);
+      setContentMaxWidth('max-w-7xl');
+      setIsFullWidth(false);
     }
     else {
       // Default for other pages
       setLayoutMode('default');
       setShowRightSection(false);
       setContentWidth('px-4');
-      setContentMaxWidth('max-w-[800px]');
+      setContentMaxWidth('max-w-6xl');
       setIsFullWidth(false);
     }
 

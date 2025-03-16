@@ -51,7 +51,7 @@ const LayoutContent = () => {
             className={`
               ${isFullWidth ? 'w-full' : 'mx-auto'} 
               ${contentWidth}
-              ${!isFullWidth && `${contentMaxWidth}`}
+              ${!isFullWidth ? contentMaxWidth : ''}
             `}
           >
             <Outlet />
