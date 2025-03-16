@@ -20,7 +20,6 @@ const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth } = useLayout();
-  const [mobileRightOpen, setMobileRightOpen] = useState(false);
   
   // Prevent unwanted redirects
   useEffect(() => {
@@ -42,7 +41,9 @@ const LayoutContent = () => {
     location.pathname === '/news' || 
     location.pathname.startsWith('/news/') ||
     location.pathname.startsWith('/explore/') ||
-    location.pathname.startsWith('/symptoms/')
+    location.pathname.startsWith('/symptoms/') ||
+    location.pathname === '/' || // Added home page
+    location.pathname === '/index' // Added index page
   );
 
   return (
@@ -70,23 +71,24 @@ const LayoutContent = () => {
               ${!isFullWidth && `${contentMaxWidth}`}
             `}
           >
-            {/* Mobile Right Section Trigger */}
-            {showMobileRightTab && (
-              <div className="fixed bottom-20 right-4 z-30">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button size="icon" variant="secondary" className="rounded-full shadow-md">
-                      <PanelRight className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[85%] sm:w-[350px] p-0">
-                    <RightSection />
-                  </SheetContent>
-                </Sheet>
-              </div>
-            )}
             <Outlet />
           </div>
+          
+          {/* Mobile Right Section Trigger - Moved outside the main content div for better positioning */}
+          {showMobileRightTab && (
+            <div className="fixed bottom-20 right-4 z-30">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button size="icon" variant="secondary" className="rounded-full shadow-md">
+                    <PanelRight className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[85%] sm:w-[350px] p-0">
+                  <RightSection />
+                </SheetContent>
+              </Sheet>
+            </div>
+          )}
         </main>
 
         {/* Right Section - Only shown when enabled and not on mobile */}

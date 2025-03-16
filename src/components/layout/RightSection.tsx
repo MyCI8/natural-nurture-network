@@ -71,7 +71,7 @@ const RightSection = () => {
       
       return (data || []) as Video[];
     },
-    enabled: location.pathname === '/news',
+    enabled: location.pathname === '/news' || location.pathname === '/' || location.pathname === '/index',
   });
   
   // Process video links from articleData
@@ -100,6 +100,52 @@ const RightSection = () => {
       console.error('Error processing video links:', e);
       // Continue with empty videoLinks array if parsing fails
     }
+  }
+  
+  // For home/index page
+  if (location.pathname === '/' || location.pathname === '/index') {
+    return (
+      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
+        <h3 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Latest Videos</h3>
+        <div className="space-y-4 px-4">
+          {videos && videos.length > 0 ? (
+            videos.map((video) => (
+              <Link to={`/news/videos/${video.id}`} key={video.id}>
+                <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
+                  <CardContent className="p-0">
+                    <AspectRatio ratio={16/9} className="bg-gray-100">
+                      {video.thumbnail_url ? (
+                        <img
+                          src={video.thumbnail_url}
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        video.video_url && video.video_url.includes('youtube.com') && (
+                          <img
+                            src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )
+                      )}
+                    </AspectRatio>
+                    <div className="p-3 text-left">
+                      <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(video.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))
+          ) : (
+            <p className="text-center text-muted-foreground py-4">No videos available</p>
+          )}
+        </div>
+      </div>
+    );
   }
   
   // Custom content based on route

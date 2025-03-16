@@ -80,9 +80,10 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setContentMaxWidth('max-w-full');
       setIsFullWidth(true);
     } 
-    else if (path === '/' || path === '/home') {
-      setLayoutMode('default');
-      setShowRightSection(false);
+    else if (path === '/' || path === '/home' || path === '/index') {
+      // Update for home/index page
+      setLayoutMode('three-column');
+      setShowRightSection(!isMobile);
       setContentWidth('px-0');
       setContentMaxWidth('max-w-full');
       setIsFullWidth(true);
