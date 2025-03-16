@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define a simple interface for video links
 interface VideoLink {
@@ -21,6 +23,7 @@ interface ArticleData {
 
 const RightSection = () => {
   const location = useLocation();
+  const isMobile = useIsMobile();
   
   // Extract the ID from the URL for news article pages
   const newsArticleId = location.pathname.startsWith('/news/') 
@@ -102,12 +105,12 @@ const RightSection = () => {
   // Custom content based on route
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
     return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Related Videos</h3>
+      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
+        <h3 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Related Videos</h3>
         <NewsVideos 
           videoLinks={videoLinks} 
           videoDescription={articleData?.video_description || undefined} 
-          isDesktop={true}
+          isDesktop={!isMobile}
         />
       </div>
     );
@@ -116,9 +119,9 @@ const RightSection = () => {
   // Show videos when on the main news page
   if (location.pathname === '/news' && videos?.length > 0) {
     return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Latest Videos</h3>
-        <div className="space-y-4">
+      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
+        <h3 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Latest Videos</h3>
+        <div className="space-y-4 px-4">
           {videos.map((video) => (
             <Link to={`/news/videos/${video.id}`} key={video.id}>
               <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -157,9 +160,9 @@ const RightSection = () => {
   
   if (location.pathname.startsWith('/explore/')) {
     return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Explore Details</h2>
-        <p className="text-sm text-muted-foreground text-left pl-2">
+      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
+        <h2 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Explore Details</h2>
+        <p className="text-sm text-muted-foreground text-left px-4">
           This section shows details about the current explore item.
         </p>
       </div>
@@ -168,9 +171,9 @@ const RightSection = () => {
   
   if (location.pathname.startsWith('/symptoms/')) {
     return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Related Content</h2>
-        <p className="text-sm text-muted-foreground text-left pl-2">
+      <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
+        <h2 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Related Content</h2>
+        <p className="text-sm text-muted-foreground text-left px-4">
           This section shows content related to the current symptom.
         </p>
       </div>
@@ -179,9 +182,9 @@ const RightSection = () => {
   
   // Default content
   return (
-    <div className="h-full p-4 overflow-y-auto">
-      <h2 className="text-lg font-semibold mb-4 text-left pl-2">Additional Information</h2>
-      <p className="text-sm text-muted-foreground text-left pl-2">
+    <div className={`h-full overflow-y-auto ${isMobile ? 'pb-12' : 'p-4'}`}>
+      <h2 className="text-lg font-semibold mb-4 text-left px-4 pt-4">Additional Information</h2>
+      <p className="text-sm text-muted-foreground text-left px-4">
         This panel displays contextual information related to the current page.
       </p>
     </div>
