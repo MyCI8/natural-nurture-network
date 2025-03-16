@@ -12,7 +12,7 @@ import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
 const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { layoutMode, showRightSection, contentWidth, contentMaxWidth } = useLayout();
+  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth } = useLayout();
   
   // Prevent unwanted redirects
   useEffect(() => {
@@ -45,9 +45,14 @@ const LayoutContent = () => {
         
         {/* Main Content Area */}
         <main 
-          className={`flex-1 min-h-screen ${contentWidth} ${isMobile ? 'pb-16 pt-14' : ''}`}
+          className={`flex-1 min-h-screen ${isMobile ? 'pb-16 pt-14' : ''}`}
         >
-          <div className={`${contentMaxWidth} mx-auto`}>
+          <div 
+            className={`
+              ${isFullWidth ? 'w-full' : 'max-w-[1400px] mx-auto'} 
+              ${contentWidth}
+            `}
+          >
             <Outlet />
           </div>
         </main>

@@ -42,40 +42,40 @@ const NewsSection = () => {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-secondary">
-        <div className="w-full px-4 sm:px-6">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Latest News</h2>
-            <h3 className="text-3xl font-bold">Latest Videos</h3>
+      <section className="py-12 bg-secondary">
+        <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Latest News</h2>
+            <h3 className="text-2xl font-bold">Latest Videos</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="col-span-1 md:col-span-2 space-y-6">
               {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="overflow-hidden">
+                <Card key={i} className="overflow-hidden shadow-sm">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
-                      <div className="w-full md:w-2/5 lg:w-1/3">
-                        <Skeleton className="h-72 sm:h-80 md:h-64 w-full" />
+                      <div className="w-full md:w-1/3">
+                        <Skeleton className="h-48 md:h-36 w-full" />
                       </div>
-                      <div className="p-8 md:w-3/5 lg:w-2/3 space-y-4">
-                        <Skeleton className="h-8 w-3/4" />
-                        <Skeleton className="h-6 w-full" />
-                        <Skeleton className="h-6 w-full" />
+                      <div className="p-4 md:p-5 md:w-2/3 space-y-3">
                         <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-            <div className="space-y-8">
+            <div className="space-y-4">
               {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="overflow-hidden">
+                <Card key={i} className="overflow-hidden shadow-sm">
                   <CardContent className="p-0">
                     <Skeleton className="aspect-video w-full" />
-                    <div className="p-4 space-y-2">
-                      <Skeleton className="h-5 w-full" />
-                      <Skeleton className="h-4 w-2/3" />
+                    <div className="p-3 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-3 w-2/3" />
                     </div>
                   </CardContent>
                 </Card>
@@ -88,20 +88,20 @@ const NewsSection = () => {
   }
 
   return (
-    <section className="py-16 bg-secondary">
-      <div className="w-full px-4 sm:px-6">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-left">Latest News</h2>
-          <h3 className="text-3xl font-bold text-right">Latest Videos</h3>
+    <section className="py-12 bg-secondary">
+      <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-left">Latest News</h2>
+          <h3 className="text-2xl font-bold text-right">Latest Videos</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="col-span-1 md:col-span-2 lg:col-span-2 space-y-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="col-span-1 md:col-span-2 space-y-6">
             {newsItems?.map((item) => (
               <Link to={`/news/${item.id}`} key={item.id}>
-                <Card className="overflow-hidden animate-fadeIn hover:shadow-lg transition-shadow duration-200">
+                <Card className="overflow-hidden shadow-sm animate-fadeIn hover:shadow-md transition-shadow duration-200">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
-                      <div className="w-full md:w-2/5 lg:w-1/3">
+                      <div className="w-full md:w-1/3">
                         <AspectRatio ratio={16/9} className="bg-gray-100">
                           <img
                             src={item.image_url || "/placeholder.svg"}
@@ -110,14 +110,14 @@ const NewsSection = () => {
                           />
                         </AspectRatio>
                       </div>
-                      <div className="p-6 sm:p-8 md:w-3/5 lg:w-2/3">
-                        <h3 className="text-xl sm:text-2xl font-semibold text-text mb-3 text-left">
+                      <div className="p-4 md:p-5 md:w-2/3">
+                        <h3 className="text-lg font-semibold text-text mb-2 text-left line-clamp-2">
                           {item.title}
                         </h3>
-                        <p className="text-base sm:text-lg text-text-light line-clamp-3 sm:line-clamp-4 text-left">
+                        <p className="text-sm text-text-light line-clamp-2 text-left">
                           {item.summary}
                         </p>
-                        <div className="mt-4 text-sm text-primary font-medium text-left">
+                        <div className="mt-3 text-xs text-primary font-medium text-left">
                           Read more
                         </div>
                       </div>
@@ -133,10 +133,10 @@ const NewsSection = () => {
             )}
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             {videos?.map((video) => (
               <Link to={`/news/videos/${video.id}`} key={video.id}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
+                <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                   <CardContent className="p-0">
                     <AspectRatio ratio={16/9} className="bg-gray-100">
                       {video.thumbnail_url ? (
@@ -155,7 +155,7 @@ const NewsSection = () => {
                         )
                       )}
                     </AspectRatio>
-                    <div className="p-4 text-left">
+                    <div className="p-3 text-left">
                       <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
                       <p className="text-xs text-muted-foreground mt-1">
                         {new Date(video.created_at).toLocaleDateString()}
