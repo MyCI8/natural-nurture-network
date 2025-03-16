@@ -4,14 +4,14 @@
 /* Container widths that match x.com constraints */
 .x-container {
   width: 100%;
-  max-width: var(--layout-max-width, 990px);
+  max-width: var(--layout-max-width, 1200px);
   margin: 0 auto;
   padding: 0;
 }
 
 /* Content widths */
 .x-content {
-  max-width: var(--content-max-width, 600px);
+  max-width: var(--content-max-width, 700px);
   padding: 0 1.5rem;
 }
 
@@ -100,7 +100,7 @@ aside {
 /* News article specific layout */
 .news-article-container {
   padding: 0 1rem;
-  max-width: var(--content-max-width, 600px);
+  max-width: var(--content-max-width, 700px);
 }
 
 .news-article-content {
@@ -111,8 +111,8 @@ aside {
 :root {
   --sidebar-width: 256px;      /* 64 * 4 = 256px */
   --rightsection-width: 350px; /* Right column width */
-  --content-max-width: 600px;  /* Max width for content */
-  --layout-max-width: 990px;   /* Max width for entire layout similar to X.com */
+  --content-max-width: 700px;  /* Max width for content */
+  --layout-max-width: 1200px;  /* Max width for entire layout */
 }
 
 /* Fixed width for side sections */

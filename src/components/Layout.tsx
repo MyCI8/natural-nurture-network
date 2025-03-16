@@ -32,7 +32,7 @@ const LayoutContent = () => {
   return (
     <div className="min-h-screen flex bg-white dark:bg-black w-full">
       {/* Main container with responsive layout */}
-      <div className="w-full max-w-[990px] mx-auto flex relative">
+      <div className="w-full max-w-[1200px] mx-auto flex relative">
         {/* Mobile Top Header - only on mobile */}
         {isMobile && <TopHeader />}
         
