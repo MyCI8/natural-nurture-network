@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useTheme } from "next-themes";
@@ -25,7 +26,9 @@ const MainSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
   const [isExpanded, setIsExpanded] = React.useState(true);
+  const [isCompact, setIsCompact] = React.useState(false);
   const [lastScrollY, setLastScrollY] = React.useState(0);
   const [showMobileHeader, setShowMobileHeader] = React.useState(true);
   const [showSettings, setShowSettings] = React.useState(false);
@@ -71,6 +74,17 @@ const MainSidebar = () => {
     { path: '/news', label: 'News', icon: Newspaper },
     { path: '/symptoms', label: 'Symptoms', icon: Activity },
   ];
+
+  // Check window width and adjust sidebar accordingly
+  useEffect(() => {
+    const checkWidth = () => {
+      setIsCompact(window.innerWidth <= 1280 && window.innerWidth > 768);
+    };
+    
+    checkWidth();
+    window.addEventListener('resize', checkWidth);
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
 
   useEffect(() => {
     if (!isMobile) return;
@@ -290,6 +304,99 @@ const MainSidebar = () => {
     );
   }
 
+  // Compact sidebar for medium screens (icons only)
+  if (isCompact) {
+    return (
+      <nav 
+        role="navigation" 
+        aria-label="Main navigation"
+        className="fixed h-screen flex flex-col py-4 bg-background border-r border-border transition-all duration-300 z-50 w-16"
+      >
+        <div className="px-2">
+          <Link 
+            to="/" 
+            className="flex items-center justify-center mb-8"
+          >
+            <Leaf className="h-8 w-8 text-primary shrink-0" />
+          </Link>
+          
+          <nav className="space-y-2">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center justify-center p-3 rounded-full transition-colors hover:bg-accent/30 ${
+                  location.pathname === item.path ? 'bg-accent/50 text-primary font-bold' : ''
+                }`}
+                title={item.label}
+              >
+                <item.icon className="h-6 w-6 shrink-0" />
+              </Link>
+            ))}
+          </nav>
+
+          <Button
+            className="w-full rounded-full mt-4 mb-6 flex items-center justify-center p-3 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={handlePost}
+            title="Post"
+          >
+            <Upload className="h-5 w-5 shrink-0" />
+          </Button>
+
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              className="w-full flex items-center justify-center p-3 rounded-full mb-4"
+              onClick={() => navigate('/admin')}
+              title="Admin Panel"
+            >
+              <Shield className="h-6 w-6" />
+            </Button>
+          )}
+        </div>
+
+        <div className="mt-auto px-2 space-y-4">
+          <Button
+            variant="ghost"
+            className="w-full flex items-center justify-center p-2 rounded-full"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
+
+          {currentUser ? (
+            <Button
+              variant="ghost"
+              className="w-full flex items-center justify-center rounded-full p-2"
+              onClick={() => navigate(`/users/${currentUser.id}`)}
+              title={profile?.full_name || 'Profile'}
+            >
+              <Avatar className="h-8 w-8 shrink-0">
+                {profile?.avatar_url ? (
+                  <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
+                ) : (
+                  <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
+                )}
+              </Avatar>
+            </Button>
+          ) : (
+            <Button
+              className="w-full rounded-full flex items-center justify-center p-2"
+              onClick={() => navigate('/auth')}
+              title="Sign in"
+            >
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarFallback>?</AvatarFallback>
+              </Avatar>
+            </Button>
+          )}
+        </div>
+      </nav>
+    );
+  }
+
+  // Full sidebar for larger screens
   return (
     <nav 
       role="navigation" 

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Separator } from "@/components/ui/separator";
 
 const NewsSection = () => {
   const { data: newsItems, isLoading } = useQuery({
@@ -44,12 +45,12 @@ const NewsSection = () => {
     return (
       <section className="py-12 bg-secondary">
         <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Latest News</h2>
+          <div className="flex flex-col md:flex-row justify-between items-start mb-6">
+            <h2 className="text-2xl font-bold mb-4 md:mb-0">Latest News</h2>
             <h3 className="text-2xl font-bold">Latest Videos</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="col-span-1 md:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="col-span-1 lg:col-span-2 space-y-6">
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
                   <CardContent className="p-0">
@@ -90,12 +91,12 @@ const NewsSection = () => {
   return (
     <section className="py-12 bg-secondary">
       <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-left">Latest News</h2>
-          <h3 className="text-2xl font-bold text-right">Latest Videos</h3>
+        <div className="flex flex-col lg:flex-row justify-between items-start mb-6">
+          <h2 className="text-2xl font-bold text-left mb-4 lg:mb-0">Latest News</h2>
+          <h3 className="text-2xl font-bold text-left">Latest Videos</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="col-span-1 md:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="col-span-1 lg:col-span-2 space-y-6">
             {newsItems?.map((item) => (
               <Link to={`/news/${item.id}`} key={item.id}>
                 <Card className="overflow-hidden shadow-sm animate-fadeIn hover:shadow-md transition-shadow duration-200">
@@ -131,6 +132,11 @@ const NewsSection = () => {
                 No news articles available
               </div>
             )}
+          </div>
+          
+          {/* Add separator for large screens only */}
+          <div className="hidden lg:block lg:col-span-1 lg:absolute lg:left-2/3 lg:h-full">
+            <Separator orientation="vertical" className="h-full opacity-50" />
           </div>
           
           <div className="space-y-4">
