@@ -94,10 +94,13 @@ const NewsSection = () => {
             </div>
             
             <div className="hidden lg:block lg:col-span-1 lg:relative">
-              <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ height: separatorHeight }}></div>
+              <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
+                height: '300px',
+                maxHeight: '70%'
+              }}></div>
             </div>
             
-            <div className="space-y-4 px-0 lg:px-4">
+            <div className="col-span-1 space-y-4 px-0 lg:px-4">
               <h3 className="text-2xl font-bold mb-4">Latest Videos</h3>
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
@@ -165,10 +168,13 @@ const NewsSection = () => {
           </div>
           
           <div className="hidden lg:block lg:col-span-1 lg:relative">
-            <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ height: separatorHeight }}></div>
+            <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
+              height: '300px',
+              maxHeight: '70%'
+            }}></div>
           </div>
           
-          <div className="space-y-4 px-0 lg:px-4">
+          <div className="col-span-1 space-y-4 px-0 lg:px-4">
             <h3 className="text-2xl font-bold mb-4 text-left">Latest Videos</h3>
             {videos?.map((video) => (
               <Link to={`/news/videos/${video.id}`} key={video.id}>
