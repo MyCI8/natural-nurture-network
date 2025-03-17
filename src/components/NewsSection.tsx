@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,7 +73,7 @@ const NewsSection = () => {
               <Separator orientation="vertical" className="h-full opacity-50" />
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-4 px-0 lg:px-4">
               <h3 className="text-2xl font-bold mb-4">Latest Videos</h3>
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
@@ -145,7 +146,7 @@ const NewsSection = () => {
             <Separator orientation="vertical" className="h-full opacity-50" />
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-4 px-0 lg:px-4">
             <h3 className="text-2xl font-bold mb-4 text-left">Latest Videos</h3>
             {videos?.map((video) => (
               <Link to={`/news/videos/${video.id}`} key={video.id}>
