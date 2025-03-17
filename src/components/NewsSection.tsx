@@ -66,6 +66,12 @@ const NewsSection = () => {
                 </Card>
               ))}
             </div>
+            
+            {/* Add separator for large screens only */}
+            <div className="hidden lg:block lg:col-span-1 lg:absolute lg:left-2/3" style={{ height: 'calc(100% - 600px)', top: '0' }}>
+              <Separator orientation="vertical" className="h-full opacity-50" />
+            </div>
+            
             <div className="space-y-4">
               <h3 className="text-2xl font-bold mb-4">Latest Videos</h3>
               {[1, 2, 3, 4].map((i) => (
@@ -135,7 +141,7 @@ const NewsSection = () => {
           </div>
           
           {/* Add separator for large screens only */}
-          <div className="hidden lg:block lg:col-span-1 lg:absolute lg:left-2/3 lg:h-full">
+          <div className="hidden lg:block lg:col-span-1 lg:absolute lg:left-2/3" style={{ height: 'calc(100% - 600px)', top: '0' }}>
             <Separator orientation="vertical" className="h-full opacity-50" />
           </div>
           
