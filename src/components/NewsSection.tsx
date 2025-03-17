@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,12 +45,9 @@ const NewsSection = () => {
     return (
       <section className="py-12 bg-secondary">
         <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-          <div className="flex flex-col md:flex-row justify-between items-start mb-6">
-            <h2 className="text-2xl font-bold mb-4 md:mb-0">Latest News</h2>
-            <h3 className="text-2xl font-bold text-left">Latest Videos</h3>
-          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="col-span-1 lg:col-span-2 space-y-6">
+              <h2 className="text-2xl font-bold mb-4">Latest News</h2>
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
                   <CardContent className="p-0">
@@ -71,6 +67,7 @@ const NewsSection = () => {
               ))}
             </div>
             <div className="space-y-4">
+              <h3 className="text-2xl font-bold mb-4">Latest Videos</h3>
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
                   <CardContent className="p-0">
@@ -92,12 +89,9 @@ const NewsSection = () => {
   return (
     <section className="py-12 bg-secondary">
       <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-        <div className="flex flex-col lg:flex-row justify-between items-start mb-6">
-          <h2 className="text-2xl font-bold text-left mb-4 lg:mb-0">Latest News</h2>
-          <h3 className="text-2xl font-bold text-left">Latest Videos</h3>
-        </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="col-span-1 lg:col-span-2 space-y-6">
+            <h2 className="text-2xl font-bold mb-4 text-left">Latest News</h2>
             {newsItems?.map((item) => (
               <Link to={`/news/${item.id}`} key={item.id}>
                 <Card className="overflow-hidden shadow-sm animate-fadeIn hover:shadow-md transition-shadow duration-200">
@@ -146,6 +140,7 @@ const NewsSection = () => {
           </div>
           
           <div className="space-y-4">
+            <h3 className="text-2xl font-bold mb-4 text-left">Latest Videos</h3>
             {videos?.map((video) => (
               <Link to={`/news/videos/${video.id}`} key={video.id}>
                 <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
