@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
+import RemediesSection from "./remedies/RemediesSection";
 
 const NewsSection = () => {
   const { data: newsItems, isLoading } = useQuery({
@@ -47,7 +48,7 @@ const NewsSection = () => {
         <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
           <div className="flex flex-col md:flex-row justify-between items-start mb-6">
             <h2 className="text-2xl font-bold mb-4 md:mb-0">Latest News</h2>
-            <h3 className="text-2xl font-bold">Latest Videos</h3>
+            <h3 className="text-2xl font-bold text-left">Latest Videos</h3>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="col-span-1 lg:col-span-2 space-y-6">
@@ -132,6 +133,11 @@ const NewsSection = () => {
                 No news articles available
               </div>
             )}
+            
+            {/* Add Natural Remedies inside the middle column */}
+            <div className="pt-8 mt-8 border-t border-border">
+              <RemediesSection inNewsSection />
+            </div>
           </div>
           
           {/* Add separator for large screens only */}

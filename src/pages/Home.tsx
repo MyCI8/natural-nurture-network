@@ -1,7 +1,7 @@
+
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import NewsSection from "@/components/NewsSection";
-import RemediesSection from "@/components/RemediesSection";
 import SymptomsMarquee from "@/components/SymptomsMarquee";
 
 const Home = () => {
@@ -10,7 +10,6 @@ const Home = () => {
       <Hero />
       <SymptomsMarquee />
       <NewsSection />
-      <RemediesSection />
       <Features />
     </div>
   );
