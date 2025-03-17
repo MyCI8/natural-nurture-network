@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,8 +6,12 @@ import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
 import RemediesSection from "./remedies/RemediesSection";
+import { useRef, useEffect, useState } from "react";
 
 const NewsSection = () => {
+  const remediesSectionRef = useRef<HTMLDivElement>(null);
+  const [separatorHeight, setSeparatorHeight] = useState("40%");
+  
   const { data: newsItems, isLoading } = useQuery({
     queryKey: ["news-articles"],
     queryFn: async () => {
@@ -24,7 +27,6 @@ const NewsSection = () => {
     },
   });
 
-  // Fetch videos for the right column - specifically for news, not explore videos
   const { data: videos, isLoading: videosLoading } = useQuery({
     queryKey: ["news-videos"],
     queryFn: async () => {
@@ -32,19 +34,42 @@ const NewsSection = () => {
         .from("videos")
         .select("*")
         .eq("status", "published")
-        .eq("video_type", "news") // Filter to only show news videos
+        .eq("video_type", "news")
         .order("created_at", { ascending: false })
         .limit(4);
 
       if (error) throw error;
-      console.log("News Videos fetched:", data); // Debug log
+      console.log("News Videos fetched:", data);
       return data;
     },
   });
 
+  useEffect(() => {
+    const updateSeparatorHeight = () => {
+      if (remediesSectionRef.current) {
+        const newsSection = document.querySelector('section.news-section');
+        if (newsSection) {
+          const sectionTop = newsSection.getBoundingClientRect().top;
+          const remediesTop = remediesSectionRef.current.getBoundingClientRect().top;
+          const headerHeight = 80;
+          
+          const height = remediesTop - sectionTop - headerHeight;
+          if (height > 0) {
+            setSeparatorHeight(`${height}px`);
+          }
+        }
+      }
+    };
+    
+    updateSeparatorHeight();
+    window.addEventListener('resize', updateSeparatorHeight);
+    
+    return () => window.removeEventListener('resize', updateSeparatorHeight);
+  }, []);
+
   if (isLoading) {
     return (
-      <section className="py-12 bg-secondary">
+      <section className="py-12 bg-secondary news-section">
         <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="col-span-1 lg:col-span-2 space-y-6">
@@ -68,9 +93,8 @@ const NewsSection = () => {
               ))}
             </div>
             
-            {/* Add separator for large screens only */}
-            <div className="hidden lg:block lg:col-span-1 lg:absolute lg:left-2/3" style={{ height: 'calc(100% - 600px)', top: '0' }}>
-              <Separator orientation="vertical" className="h-full opacity-50" />
+            <div className="hidden lg:block lg:col-span-1 lg:relative">
+              <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ height: separatorHeight }}></div>
             </div>
             
             <div className="space-y-4 px-0 lg:px-4">
@@ -94,7 +118,7 @@ const NewsSection = () => {
   }
 
   return (
-    <section className="py-12 bg-secondary">
+    <section className="py-12 bg-secondary news-section">
       <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="col-span-1 lg:col-span-2 space-y-6">
@@ -135,15 +159,13 @@ const NewsSection = () => {
               </div>
             )}
             
-            {/* Add Natural Remedies inside the middle column */}
-            <div className="pt-8 mt-8 border-t border-border">
+            <div ref={remediesSectionRef} className="pt-8 mt-8 border-t border-border">
               <RemediesSection inNewsSection />
             </div>
           </div>
           
-          {/* Add separator for large screens only */}
-          <div className="hidden lg:block lg:col-span-1 lg:absolute lg:left-2/3" style={{ height: 'calc(100% - 600px)', top: '0' }}>
-            <Separator orientation="vertical" className="h-full opacity-50" />
+          <div className="hidden lg:block lg:col-span-1 lg:relative">
+            <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ height: separatorHeight }}></div>
           </div>
           
           <div className="space-y-4 px-0 lg:px-4">
@@ -191,7 +213,6 @@ const NewsSection = () => {
   );
 };
 
-// Helper function to extract YouTube video ID
 const getYoutubeVideoId = (url) => {
   if (!url) return '';
   
