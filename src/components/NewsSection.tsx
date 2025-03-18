@@ -46,8 +46,8 @@ const NewsSection = () => {
   if (isLoading) {
     return (
       <section className="py-12 bg-secondary news-section">
-        <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8">
             {/* News column */}
             <div className="col-span-1 lg:col-span-2 space-y-6">
               <h2 className="text-2xl font-bold mb-4">Latest News</h2>
@@ -93,8 +93,8 @@ const NewsSection = () => {
 
   return (
     <section className="py-12 bg-secondary news-section">
-      <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8">
           {/* News column */}
           <div className="col-span-1 lg:col-span-2 space-y-6">
             <h2 className="text-2xl font-bold mb-4 text-left">Latest News</h2>
