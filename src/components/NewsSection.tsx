@@ -1,16 +1,15 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Separator } from "@/components/ui/separator";
 import RemediesSection from "./remedies/RemediesSection";
-import { useRef, useEffect, useState } from "react";
+import { useRef } from "react";
 
 const NewsSection = () => {
   const remediesSectionRef = useRef<HTMLDivElement>(null);
-  const [separatorHeight, setSeparatorHeight] = useState("40%");
   
   const { data: newsItems, isLoading } = useQuery({
     queryKey: ["news-articles"],
@@ -44,34 +43,12 @@ const NewsSection = () => {
     },
   });
 
-  useEffect(() => {
-    const updateSeparatorHeight = () => {
-      if (remediesSectionRef.current) {
-        const newsSection = document.querySelector('section.news-section');
-        if (newsSection) {
-          const sectionTop = newsSection.getBoundingClientRect().top;
-          const remediesTop = remediesSectionRef.current.getBoundingClientRect().top;
-          const headerHeight = 80;
-          
-          const height = remediesTop - sectionTop - headerHeight;
-          if (height > 0) {
-            setSeparatorHeight(`${height}px`);
-          }
-        }
-      }
-    };
-    
-    updateSeparatorHeight();
-    window.addEventListener('resize', updateSeparatorHeight);
-    
-    return () => window.removeEventListener('resize', updateSeparatorHeight);
-  }, []);
-
   if (isLoading) {
     return (
       <section className="py-12 bg-secondary news-section">
         <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+            {/* News column */}
             <div className="col-span-1 lg:col-span-2 space-y-6">
               <h2 className="text-2xl font-bold mb-4">Latest News</h2>
               {[1, 2, 3, 4].map((i) => (
@@ -93,14 +70,8 @@ const NewsSection = () => {
               ))}
             </div>
             
-            <div className="hidden lg:block lg:col-span-1 lg:relative">
-              <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
-                height: '300px',
-                maxHeight: '70%'
-              }}></div>
-            </div>
-            
-            <div className="col-span-1 space-y-4 px-0 lg:px-4">
+            {/* Videos column with built-in separator for desktop */}
+            <div className="col-span-1 space-y-4 lg:pl-8 lg:border-l lg:border-border">
               <h3 className="text-2xl font-bold mb-4">Latest Videos</h3>
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
@@ -123,7 +94,8 @@ const NewsSection = () => {
   return (
     <section className="py-12 bg-secondary news-section">
       <div className="max-w-[1400px] mx-auto px-2 sm:px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+          {/* News column */}
           <div className="col-span-1 lg:col-span-2 space-y-6">
             <h2 className="text-2xl font-bold mb-4 text-left">Latest News</h2>
             {newsItems?.map((item) => (
@@ -167,14 +139,8 @@ const NewsSection = () => {
             </div>
           </div>
           
-          <div className="hidden lg:block lg:col-span-1 lg:relative">
-            <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
-              height: '300px',
-              maxHeight: '70%'
-            }}></div>
-          </div>
-          
-          <div className="col-span-1 space-y-4 px-0 lg:px-4">
+          {/* Videos column with built-in separator for desktop */}
+          <div className="col-span-1 space-y-4 lg:pl-8 lg:border-l lg:border-border">
             <h3 className="text-2xl font-bold mb-4 text-left">Latest Videos</h3>
             {videos?.map((video) => (
               <Link to={`/news/videos/${video.id}`} key={video.id}>
