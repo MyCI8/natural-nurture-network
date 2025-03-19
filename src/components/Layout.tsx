@@ -59,9 +59,9 @@ const LayoutContent = () => {
         >
           <div 
             className={`
-              ${isFullWidth ? 'w-full' : 'mx-auto'} 
-              ${isHomePage && isMobile ? '' : contentWidth}
-              ${!isFullWidth && !isHomePage ? contentMaxWidth : ''}
+              ${isFullWidth || isHomePage ? 'w-full' : 'mx-auto'} 
+              ${(!isFullWidth && !isHomePage) ? contentWidth : ''}
+              ${(!isFullWidth && !isHomePage) ? contentMaxWidth : ''}
               transition-all duration-300
             `}
           >

@@ -13,6 +13,8 @@ const BottomNav = () => {
   const { toast } = useToast();
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [isHomePage, setIsHomePage] = useState(false);
+  const [initialHideComplete, setInitialHideComplete] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -29,21 +31,55 @@ const BottomNav = () => {
     { path: '/symptoms', label: 'Symptoms', icon: Activity },
   ];
   
+  // Determine if we're on the homepage
+  useEffect(() => {
+    const path = location.pathname;
+    setIsHomePage(path === '/' || path === '/home');
+  }, [location]);
+  
+  // Initial hide on homepage
+  useEffect(() => {
+    if (isHomePage) {
+      setVisible(false);
+      
+      // After 3 seconds, mark the initial hide as complete
+      const timer = setTimeout(() => {
+        setInitialHideComplete(true);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setVisible(true);
+      setInitialHideComplete(true);
+    }
+  }, [isHomePage]);
+  
   // Handle scroll behavior
   useEffect(() => {
+    if (!initialHideComplete) return;
+    
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Show navbar when:
-      // 1. User scrolls up
-      // 2. User is at the top of the page (within first 50px)
-      // 3. User has scrolled to the bottom of the page
-      const isAtBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 50;
-      
-      if (currentScrollY < 50 || currentScrollY < lastScrollY || isAtBottom) {
-        setVisible(true);
+      if (isHomePage) {
+        // On homepage:
+        // Show when user scrolls down
+        if (currentScrollY > lastScrollY && currentScrollY > 50) {
+          setVisible(true);
+        } 
+        // Hide when user scrolls to the top
+        else if (currentScrollY < 50) {
+          setVisible(false);
+        }
       } else {
-        setVisible(false);
+        // Regular behavior for non-homepage (show on scroll up or at bottom, hide on scroll down)
+        const isAtBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 50;
+        
+        if (currentScrollY < 50 || currentScrollY < lastScrollY || isAtBottom) {
+          setVisible(true);
+        } else {
+          setVisible(false);
+        }
       }
       
       setLastScrollY(currentScrollY);
@@ -51,7 +87,7 @@ const BottomNav = () => {
     
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, isHomePage, initialHideComplete]);
   
   const handlePost = () => {
     if (!currentUser) {

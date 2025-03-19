@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Search, Leaf } from "lucide-react";
@@ -8,8 +8,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const TopHeader = () => {
+  const location = useLocation();
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [isHomePage, setIsHomePage] = useState(false);
+  const [initialHideComplete, setInitialHideComplete] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -35,18 +38,52 @@ const TopHeader = () => {
     enabled: !!currentUser?.id,
   });
   
+  // Determine if we're on the homepage
+  useEffect(() => {
+    const path = location.pathname;
+    setIsHomePage(path === '/' || path === '/home');
+  }, [location]);
+  
+  // Initial hide on homepage
+  useEffect(() => {
+    if (isHomePage) {
+      setVisible(false);
+      
+      // After 3 seconds, mark the initial hide as complete
+      const timer = setTimeout(() => {
+        setInitialHideComplete(true);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setVisible(true);
+      setInitialHideComplete(true);
+    }
+  }, [isHomePage]);
+  
   // Handle scroll behavior
   useEffect(() => {
+    if (!initialHideComplete) return;
+    
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Show header when:
-      // 1. User scrolls up
-      // 2. User is at the top of the page (within first 50px)
-      if (currentScrollY < 50 || currentScrollY < lastScrollY) {
-        setVisible(true);
+      if (isHomePage) {
+        // Show header on homepage only when:
+        // 1. User scrolls up
+        // 2. User is at the top of the page (within first 50px)
+        if (currentScrollY < lastScrollY) {
+          setVisible(true);
+        } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+          setVisible(false);
+        }
       } else {
-        setVisible(false);
+        // Regular behavior for non-homepage
+        if (currentScrollY < 50 || currentScrollY < lastScrollY) {
+          setVisible(true);
+        } else {
+          setVisible(false);
+        }
       }
       
       setLastScrollY(currentScrollY);
@@ -54,7 +91,7 @@ const TopHeader = () => {
     
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, isHomePage, initialHideComplete]);
   
   return (
     <header 
