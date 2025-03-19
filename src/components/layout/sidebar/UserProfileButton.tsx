@@ -30,10 +30,11 @@ export const UserProfileButton = ({
   
   if (!userId) {
     return (
-      <Button
-        className={compact ? "w-full rounded-full flex items-center justify-center p-2" : "w-full rounded-full"}
+      <Link
+        className={compact 
+          ? "w-full rounded-full flex items-center justify-center p-2 inline-flex bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium"
+          : "w-full rounded-full inline-flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 text-sm font-medium"}
         onClick={onClick}
-        as={Link}
         to="/auth"
         title={compact ? "Sign in" : undefined}
       >
@@ -44,19 +45,17 @@ export const UserProfileButton = ({
         ) : (
           "Sign in"
         )}
-      </Button>
+      </Link>
     );
   }
 
   return (
-    <Button
-      variant="ghost"
+    <Link
       className={compact 
-        ? "w-full flex items-center justify-center rounded-full p-2" 
-        : "w-full justify-start rounded-full p-4"
+        ? "w-full flex items-center justify-center rounded-full p-2 bg-transparent hover:bg-accent/30 text-sm font-medium transition-colors" 
+        : "w-full justify-start rounded-full p-4 bg-transparent hover:bg-accent/30 text-sm font-medium inline-flex items-center transition-colors"
       }
       onClick={onClick}
-      as={Link}
       to={`/users/${userId}`}
       title={compact ? displayName : undefined}
     >
@@ -74,6 +73,6 @@ export const UserProfileButton = ({
           <span className="text-sm text-muted-foreground">@{username}</span>
         </div>
       )}
-    </Button>
+    </Link>
   );
 };

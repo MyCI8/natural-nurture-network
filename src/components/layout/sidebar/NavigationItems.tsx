@@ -66,26 +66,22 @@ export const NavigationButtons = ({
   return (
     <nav className={`space-y-2 ${className}`}>
       {navigationItems.map((item) => (
-        <Button
+        <Link
           key={item.path}
-          variant="ghost"
-          className={`${
+          to={item.path}
+          onClick={onItemClick}
+          className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 ${
             iconOnly 
               ? "w-full flex items-center justify-center p-3 rounded-full" 
               : "w-full justify-start space-x-4 rounded-full"
           } ${
-            location.pathname === item.path ? 'bg-accent/50 text-primary font-bold' : 'hover:bg-accent/30'
+            location.pathname === item.path ? 'bg-accent/50 text-primary font-bold' : 'hover:bg-accent/30 bg-transparent'
           }`}
-          onClick={() => {
-            if (onItemClick) onItemClick();
-          }}
           title={iconOnly ? item.label : undefined}
-          as={Link}
-          to={item.path}
         >
           <item.icon className="h-6 w-6 shrink-0" />
           {!iconOnly && <span>{item.label}</span>}
-        </Button>
+        </Link>
       ))}
     </nav>
   );
