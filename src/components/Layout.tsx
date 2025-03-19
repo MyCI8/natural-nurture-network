@@ -4,7 +4,7 @@ import MainSidebar from "./layout/MainSidebar";
 import RightSection from "./layout/RightSection";
 import TopHeader from "./layout/TopHeader";
 import BottomNav from "./layout/BottomNav";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useEffect } from "react";
 import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
 
@@ -12,6 +12,7 @@ import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
 const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth } = useLayout();
   
   // Prevent unwanted redirects
@@ -30,7 +31,7 @@ const LayoutContent = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-black w-full">
+    <div className="min-h-screen flex bg-white dark:bg-black w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout */}
       <div className="w-full max-w-[1200px] mx-auto flex relative">
         {/* Mobile Top Header - only on mobile */}
@@ -38,20 +39,21 @@ const LayoutContent = () => {
         
         {/* Left Sidebar - Hide on mobile */}
         {!isMobile && (
-          <div className="w-64 shrink-0 sticky top-0 h-screen z-50">
+          <div className={`${isTablet ? 'w-16' : 'w-64'} shrink-0 sticky top-0 h-screen z-50`}>
             <MainSidebar />
           </div>
         )}
         
         {/* Main Content Area */}
         <main 
-          className={`flex-1 min-h-screen ${isMobile ? 'pb-16 pt-14' : ''} relative z-10`}
+          className={`flex-1 min-h-screen ${isMobile ? 'pb-16 pt-14' : ''} relative z-10 overflow-x-hidden`}
         >
           <div 
             className={`
               ${isFullWidth ? 'w-full' : 'mx-auto'} 
               ${contentWidth}
               ${!isFullWidth ? contentMaxWidth : ''}
+              transition-all duration-300
             `}
           >
             <Outlet />
@@ -60,7 +62,7 @@ const LayoutContent = () => {
 
         {/* Right Section - Only shown when enabled and not on mobile */}
         {!isMobile && showRightSection && (
-          <aside className="w-[350px] shrink-0 h-screen sticky top-0 border-l border-border z-20">
+          <aside className={`${isTablet ? 'w-[300px]' : 'w-[350px]'} shrink-0 h-screen sticky top-0 border-l border-border z-20 overflow-y-auto`}>
             <RightSection />
           </aside>
         )}

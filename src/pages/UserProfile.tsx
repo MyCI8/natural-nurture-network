@@ -46,8 +46,8 @@ const UserProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="pt-12">
-        <div className="max-w-[800px] mx-auto px-2">
+      <div className="pt-6 sm:pt-12">
+        <div className="max-w-[800px] mx-auto px-4">
           <p>Loading profile...</p>
         </div>
       </div>
@@ -56,8 +56,8 @@ const UserProfile = () => {
 
   if (!profile) {
     return (
-      <div className="pt-12">
-        <div className="max-w-[800px] mx-auto px-2">
+      <div className="pt-6 sm:pt-12">
+        <div className="max-w-[800px] mx-auto px-4">
           <p>Profile not found</p>
         </div>
       </div>
@@ -65,43 +65,43 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="pt-12">
-      <div className="max-w-[800px] mx-auto px-2">
+    <div className="pt-6 sm:pt-12">
+      <div className="max-w-[800px] mx-auto px-4">
         {/* Profile Header */}
-        <div className="py-8 text-center">
-          <Avatar className="w-24 h-24 mx-auto mb-4">
+        <div className="py-4 sm:py-8 text-center">
+          <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4">
             {profile.avatar_url ? (
               <AvatarImage 
                 src={profile.avatar_url} 
                 alt={profile.full_name || 'Profile'} 
               />
             ) : (
-              <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+              <AvatarFallback className="bg-primary/10 text-primary text-xl sm:text-2xl">
                 {profile.full_name?.[0] || '?'}
               </AvatarFallback>
             )}
           </Avatar>
           
-          <h1 className="text-2xl font-semibold mb-2">{profile.full_name}</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold mb-2">{profile.full_name}</h1>
           {profile.bio && (
-            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+            <p className="text-sm sm:text-base text-muted-foreground mb-4 max-w-md mx-auto">
               {profile.bio}
             </p>
           )}
 
           {/* Stats */}
-          <div className="flex justify-center space-x-8 mb-6">
+          <div className="flex justify-center space-x-6 sm:space-x-8 mb-6">
             <div className="text-center">
               <div className="font-semibold">{profile.posts_count || 0}</div>
-              <div className="text-sm text-muted-foreground">posts</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">posts</div>
             </div>
             <div className="text-center">
               <div className="font-semibold">{profile.followers_count || 0}</div>
-              <div className="text-sm text-muted-foreground">followers</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">followers</div>
             </div>
             <div className="text-center">
               <div className="font-semibold">{profile.following_count || 0}</div>
-              <div className="text-sm text-muted-foreground">following</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">following</div>
             </div>
           </div>
 
@@ -110,14 +110,14 @@ const UserProfile = () => {
             <Button 
               variant="outline" 
               onClick={() => navigate(`/settings/profile`)}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto py-3 sm:py-2"
             >
               <Edit className="w-4 h-4 mr-2" />
               Edit Profile
             </Button>
           ) : (
             <Button 
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto py-3 sm:py-2"
               onClick={() => {
                 if (!currentUser) {
                   navigate('/auth');
@@ -137,24 +137,24 @@ const UserProfile = () => {
         {/* Content Tabs */}
         <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="posts" className="flex items-center">
+            <TabsTrigger value="posts" className="flex items-center py-3 sm:py-2">
               <Grid className="w-4 h-4 mr-2" />
               Posts
             </TabsTrigger>
             {isOwnProfile && (
-              <TabsTrigger value="saved" className="flex items-center">
+              <TabsTrigger value="saved" className="flex items-center py-3 sm:py-2">
                 <Bookmark className="w-4 h-4 mr-2" />
                 Saved
               </TabsTrigger>
             )}
           </TabsList>
           
-          <TabsContent value="posts" className="mt-6">
+          <TabsContent value="posts" className="mt-4 sm:mt-6">
             <UserVideoGrid userId={profile.id} />
           </TabsContent>
           
           {isOwnProfile && (
-            <TabsContent value="saved" className="mt-6">
+            <TabsContent value="saved" className="mt-4 sm:mt-6">
               <SavedVideos userId={profile.id} />
             </TabsContent>
           )}

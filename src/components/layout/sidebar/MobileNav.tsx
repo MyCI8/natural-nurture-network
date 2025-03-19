@@ -26,6 +26,7 @@ export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
           <Link
             key={item.path}
             to={item.path}
+            aria-label={item.label}
             className={`p-3 rounded-full flex items-center justify-center w-12 h-12 transition-colors ${
               location.pathname === item.path 
                 ? 'bg-accent/50 text-primary font-bold' 
@@ -38,7 +39,8 @@ export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
         <Button
           size="icon"
           onClick={onPostClick}
-          className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+          aria-label="Create post"
+          className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
         >
           <Upload className="h-5 w-5" />
         </Button>

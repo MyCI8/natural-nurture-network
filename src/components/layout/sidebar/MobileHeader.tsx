@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Leaf, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface MobileHeaderProps {
   showMobileHeader: boolean;
@@ -25,8 +26,9 @@ export const MobileHeader = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="rounded-full"
+          className="rounded-full h-10 w-10 flex items-center justify-center"
           onClick={onMenuClick}
+          aria-label="Open menu"
         >
           <Avatar className="h-8 w-8">
             {profile?.avatar_url ? (
@@ -36,10 +38,20 @@ export const MobileHeader = ({
             )}
           </Avatar>
         </Button>
-        <Leaf className="h-6 w-6 text-primary" />
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Search className="h-5 w-5" />
-        </Button>
+        
+        <Link to="/" className="flex items-center" aria-label="Home">
+          <Leaf className="h-6 w-6 text-primary" />
+        </Link>
+        
+        <Link to="/search" aria-label="Search">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full h-10 w-10 flex items-center justify-center"
+          >
+            <Search className="h-5 w-5" />
+          </Button>
+        </Link>
       </div>
     </header>
   );

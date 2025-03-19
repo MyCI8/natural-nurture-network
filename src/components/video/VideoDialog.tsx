@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoDialogProps {
   video: (Video & { creator?: any }) | null;
@@ -41,6 +42,7 @@ const VideoDialog = ({
 }: VideoDialogProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     if (video && isOpen) {
@@ -81,13 +83,13 @@ const VideoDialog = ({
 
   return (
     <div className="w-full bg-white dark:bg-gray-900 min-h-screen">
-      <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto">
+      <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto h-[100dvh]">
         <div className="md:hidden p-4 flex justify-end">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="rounded-full"
+            className="rounded-full h-9 w-9 flex items-center justify-center z-50"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -130,7 +132,7 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        <div className="w-full md:w-[350px] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800">
+        <div className="w-full md:w-[350px] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
           <div className="p-4 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center mb-2">
               <Avatar className="h-8 w-8 mr-3">
@@ -183,33 +185,33 @@ const VideoDialog = ({
                 <span>{video.likes_count || 0} likes</span>
               </div>
               
-              {/* Moved interaction buttons here between likes count and comments */}
-              <div className="flex items-center space-x-4 mb-2">
+              {/* Interaction buttons with improved touch area */}
+              <div className="flex items-center space-x-2 mb-2 py-1">
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
                 >
                   <Heart className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
                 >
                   <MessageCircle className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
                 >
                   <Share2 className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110"
+                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
                 >
                   <Bookmark className="h-5 w-5" />
                 </Button>

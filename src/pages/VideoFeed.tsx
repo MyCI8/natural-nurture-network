@@ -11,12 +11,14 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Comments from '@/components/video/Comments';
 import VideoDialog from '@/components/video/VideoDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const isMobile = useIsMobile();
 
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
@@ -161,21 +163,21 @@ const VideoFeed = () => {
 
   return (
     <div className="min-h-screen bg-background pt-16">
-      <div className="max-w-[600px] mx-auto px-4">
-        <div className="space-y-6 py-6">
+      <div className={`mx-auto px-2 sm:px-4 ${isMobile ? 'max-w-full' : 'max-w-[600px]'}`}>
+        <div className="space-y-4 sm:space-y-6 py-4 sm:py-6">
           {!videos?.length ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8 sm:py-12">
               <p className="text-[#666666] mb-4">No videos available</p>
             </div>
           ) : (
             videos.map((video) => (
               <div 
                 key={video.id} 
-                className="bg-white rounded-xl overflow-hidden shadow-sm"
+                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
               >
                 {/* User Info */}
                 <div 
-                  className="flex items-center space-x-3 p-4 cursor-pointer"
+                  className="flex items-center space-x-3 p-3 sm:p-4 cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (video.profiles?.id) {
@@ -210,7 +212,7 @@ const VideoFeed = () => {
                 </div>
 
                 {/* Video Description */}
-                <div className="p-4">
+                <div className="p-3 sm:p-4">
                   <p className="text-sm text-[#666666] text-left mb-2">
                     {video.description?.substring(0, 100)}
                     {video.description?.length > 100 && '...'}
@@ -221,31 +223,31 @@ const VideoFeed = () => {
                     <span>{video.views_count || 0} views</span>
                   </div>
 
-                  {/* Interaction Buttons - Moved above the comments section */}
-                  <div className="flex items-center space-x-4 mb-3 border-t pt-3">
+                  {/* Interaction Buttons with improved touch targets */}
+                  <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 border-t pt-3">
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className={`transition-transform hover:scale-110 ${
+                      className={`h-11 w-11 transition-transform hover:scale-110 ${
                         userLikes?.includes(video.id) 
                           ? 'text-red-500' 
                           : 'text-[#666666] hover:text-[#4CAF50]'
                       }`}
                       onClick={(e) => handleLike(video.id, e)}
                     >
-                      <Heart className="h-7 w-7" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
+                      <Heart className="h-6 w-6" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
                     </Button>
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className="text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110"
+                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110"
                     >
-                      <MessageCircle className="h-7 w-7" />
+                      <MessageCircle className="h-6 w-6" />
                     </Button>
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className={`transition-transform hover:scale-110 ${
+                      className={`h-11 w-11 transition-transform hover:scale-110 ${
                         userSaves?.includes(video.id) 
                           ? 'text-[#4CAF50]' 
                           : 'text-[#666666] hover:text-[#4CAF50]'
@@ -253,9 +255,16 @@ const VideoFeed = () => {
                       onClick={(e) => handleSave(video.id, e)}
                     >
                       <Bookmark 
-                        className="h-7 w-7" 
+                        className="h-6 w-6" 
                         fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
                       />
+                    </Button>
+                    <Button 
+                      variant="ghost"
+                      size="icon"
+                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 sm:hidden"
+                    >
+                      <Share2 className="h-6 w-6" />
                     </Button>
                   </div>
 

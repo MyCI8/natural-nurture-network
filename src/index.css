@@ -60,6 +60,23 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+  
+  /* Improved touch targets for mobile */
+  @media (max-width: 768px) {
+    button, a, input[type="button"], input[type="submit"] {
+      @apply min-h-[44px] min-w-[44px];
+    }
+    
+    /* Add more padding to buttons on mobile for easier touch */
+    .btn, button:not(.inline), a.btn {
+      @apply px-4 py-3;
+    }
+    
+    /* Increase text size for better readability */
+    body {
+      @apply text-base;
+    }
+  }
 }
 
 @layer base {
@@ -74,5 +91,25 @@
   .instagram-video-container {
     @apply w-full cursor-pointer;
     background: transparent;
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .news-article-container {
+      @apply px-4;
+    }
+    
+    .comments-view-container {
+      max-height: 70vh;
+    }
+    
+    /* Safe area insetting for mobile devices with notches */
+    .safe-area-top {
+      padding-top: env(safe-area-inset-top, 0);
+    }
+    
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
   }
 }

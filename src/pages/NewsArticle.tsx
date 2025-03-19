@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,11 +79,11 @@ const NewsArticle = () => {
 
   if (isLoading) {
     return (
-      <div className="pt-8 lg:pt-12 news-article-container mx-auto">
+      <div className="pt-4 sm:pt-8 lg:pt-12 news-article-container mx-auto">
         <div className="px-4 sm:px-6">
-          <Skeleton className="h-8 w-3/4 mb-4" />
-          <Skeleton className="h-64 w-full mb-6" />
-          <div className="space-y-4">
+          <Skeleton className="h-7 sm:h-8 w-3/4 mb-4" />
+          <Skeleton className="h-48 sm:h-64 w-full mb-6" />
+          <div className="space-y-3 sm:space-y-4">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
@@ -94,9 +95,9 @@ const NewsArticle = () => {
 
   if (!article) {
     return (
-      <div className="pt-8 lg:pt-12 news-article-container mx-auto">
+      <div className="pt-4 sm:pt-8 lg:pt-12 news-article-container mx-auto">
         <div className="px-4 sm:px-6">
-          <h1 className="text-2xl font-bold mb-4">Article not found</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">Article not found</h1>
         </div>
       </div>
     );
@@ -131,33 +132,34 @@ const NewsArticle = () => {
   })();
 
   return (
-    <div className="pt-6 lg:pt-12 news-article-content">
+    <div className="pt-4 sm:pt-6 lg:pt-12 news-article-content">
       <div className="px-4 sm:px-5 lg:px-0">
-        <div className="mb-6 lg:mb-8">
+        <div className="mb-4 sm:mb-6 lg:mb-8">
           <button 
             onClick={() => navigate(-1)} 
-            className="flex items-center text-text-light hover:text-primary mb-4"
+            className="flex items-center text-text-light hover:text-primary mb-3 sm:mb-4"
           >
-            <ArrowLeft className="h-5 w-5 mr-2" />
+            <ArrowLeft className="h-4 sm:h-5 w-4 sm:w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-left">News</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-left">News</h1>
         </div>
 
         <article className="w-full text-left">
-          <h2 className="text-2xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-6 text-left">
+          <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-left">
             {article.title}
           </h2>
           
           {article.main_image_url && (
-            <figure className="mb-8">
+            <figure className="mb-4 sm:mb-8">
               <img
                 src={article.main_image_url}
                 alt={article.main_image_description || ""}
                 className="w-full rounded-lg"
+                loading="lazy"
               />
               {article.main_image_description && (
-                <figcaption className="mt-2 text-sm text-text-light pl-4 italic">
+                <figcaption className="mt-2 text-xs sm:text-sm text-text-light pl-2 sm:pl-4 italic">
                   {article.main_image_description}
                 </figcaption>
               )}
@@ -165,7 +167,7 @@ const NewsArticle = () => {
           )}
 
           <div 
-            className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-10 text-left"
+            className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-6 sm:mb-10 text-left"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
 
@@ -180,7 +182,7 @@ const NewsArticle = () => {
 
         {/* Show videos on mobile - the desktop videos are handled by RightSection */}
         {isMobile && videoLinks.length > 0 && (
-          <div className="block lg:hidden my-6">
+          <div className="block lg:hidden my-4 sm:my-6">
             <NewsVideos 
               videoLinks={videoLinks}
               videoDescription={article.video_description}
