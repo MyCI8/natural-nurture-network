@@ -5,7 +5,7 @@ import RightSection from "./layout/RightSection";
 import TopHeader from "./layout/TopHeader";
 import BottomNav from "./layout/BottomNav";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
 
 // Inner layout component that uses the layout context
@@ -14,6 +14,13 @@ const LayoutContent = () => {
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth } = useLayout();
+  const [isHomePage, setIsHomePage] = useState(false);
+  
+  // Determine if we're on the home page
+  useEffect(() => {
+    const path = location.pathname;
+    setIsHomePage(path === '/' || path === '/home');
+  }, [location]);
   
   // Prevent unwanted redirects
   useEffect(() => {
@@ -46,13 +53,15 @@ const LayoutContent = () => {
         
         {/* Main Content Area */}
         <main 
-          className={`flex-1 min-h-screen ${isMobile ? 'pb-16 pt-14' : ''} relative z-10 overflow-x-hidden`}
+          className={`flex-1 min-h-screen ${
+            isMobile ? `${isHomePage ? 'pt-0' : 'pt-14'} pb-16` : ''
+          } relative z-10 overflow-x-hidden`}
         >
           <div 
             className={`
               ${isFullWidth ? 'w-full' : 'mx-auto'} 
-              ${contentWidth}
-              ${!isFullWidth ? contentMaxWidth : ''}
+              ${isHomePage && isMobile ? '' : contentWidth}
+              ${!isFullWidth && !isHomePage ? contentMaxWidth : ''}
               transition-all duration-300
             `}
           >

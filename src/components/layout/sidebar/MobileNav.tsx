@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
@@ -12,13 +12,70 @@ interface MobileNavProps {
 
 export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
   const location = useLocation();
+  const [isHomePage, setIsHomePage] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  // Determine if we're on the homepage
+  useEffect(() => {
+    const path = location.pathname;
+    setIsHomePage(path === '/' || path === '/home');
+  }, [location]);
+
+  // Handle touch interactions and scrolling
+  useEffect(() => {
+    if (!isHomePage) {
+      setVisible(true);
+      return;
+    }
+
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setVisible(true);
+      } else if (!userInteracted) {
+        setVisible(false);
+      }
+    };
+
+    const handleTouchStart = () => {
+      setUserInteracted(true);
+      setVisible(true);
+      
+      // Hide again after 3 seconds if at the top of the page
+      if (window.scrollY < 100) {
+        setTimeout(() => {
+          if (window.scrollY < 100) {
+            setUserInteracted(false);
+            setVisible(false);
+          }
+        }, 3000);
+      }
+    };
+
+    // Initialize visibility
+    setVisible(window.scrollY > 100);
+
+    // Add event listeners
+    window.addEventListener('scroll', handleScroll);
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('click', handleTouchStart);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('click', handleTouchStart);
+    };
+  }, [isHomePage, userInteracted]);
+
+  // Combine the visibility logic
+  const shouldShowNav = showMobileNav && visible;
 
   return (
     <nav 
       role="navigation" 
       aria-label="Main navigation"
       className={`fixed bottom-0 left-0 right-0 h-16 bg-background border-t z-50 ${
-        showMobileNav ? 'translate-y-0' : 'translate-y-full'
+        shouldShowNav ? 'translate-y-0' : 'translate-y-full'
       } transition-transform duration-300`}
     >
       <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
