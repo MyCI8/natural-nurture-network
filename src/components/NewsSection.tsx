@@ -46,8 +46,8 @@ const NewsSection = () => {
   if (isLoading) {
     return (
       <section className="py-12 bg-secondary news-section">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8">
+        <div className="w-full max-w-[1400px] mx-auto px-[10px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* News column */}
             <div className="col-span-1 lg:col-span-2 space-y-6">
               <h2 className="text-2xl font-bold mb-4">Latest News</h2>
@@ -70,8 +70,16 @@ const NewsSection = () => {
               ))}
             </div>
             
-            {/* Videos column with built-in separator for desktop */}
-            <div className="col-span-1 space-y-4 lg:pl-8 lg:border-l lg:border-border">
+            {/* Update separator */}
+            <div className="hidden lg:block lg:col-span-1 lg:relative">
+              <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
+                height: '300px',
+                maxHeight: '50%'
+              }}></div>
+            </div>
+            
+            {/* Videos column */}
+            <div className="col-span-1 space-y-4 lg:pl-6">
               <h3 className="text-2xl font-bold mb-4">Latest Videos</h3>
               {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
@@ -93,8 +101,8 @@ const NewsSection = () => {
 
   return (
     <section className="py-12 bg-secondary news-section">
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 xl:gap-8">
+      <div className="w-full max-w-[1400px] mx-auto px-[10px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* News column */}
           <div className="col-span-1 lg:col-span-2 space-y-6">
             <h2 className="text-2xl font-bold mb-4 text-left">Latest News</h2>
@@ -139,8 +147,16 @@ const NewsSection = () => {
             </div>
           </div>
           
-          {/* Videos column with built-in separator for desktop */}
-          <div className="col-span-1 space-y-4 lg:pl-8 lg:border-l lg:border-border">
+          {/* Update separator */}
+          <div className="hidden lg:block lg:col-span-1 lg:relative">
+            <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
+              height: '300px',
+              maxHeight: '50%'
+            }}></div>
+          </div>
+          
+          {/* Videos column */}
+          <div className="col-span-1 space-y-4 lg:pl-6">
             <h3 className="text-2xl font-bold mb-4 text-left">Latest Videos</h3>
             {videos?.map((video) => (
               <Link to={`/news/videos/${video.id}`} key={video.id}>
