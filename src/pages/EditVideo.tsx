@@ -1,10 +1,9 @@
-
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Upload, Video, X, Crop, Trash2, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
@@ -21,10 +20,16 @@ interface MediaFile {
   type: 'image' | 'video';
 }
 
+interface LocationState {
+  returnTo?: string;
+  videoType?: string;
+}
+
 const DAILY_UPLOAD_LIMIT = 20;
 
 const EditVideo = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -43,6 +48,14 @@ const EditVideo = () => {
   const [videoLink, setVideoLink] = useState("");
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [isAddLinkDialogOpen, setIsAddLinkDialogOpen] = useState(false);
+  const [videoType, setVideoType] = useState("general");
+
+  useEffect(() => {
+    const state = location.state as LocationState;
+    if (state?.videoType) {
+      setVideoType(state.videoType);
+    }
+  }, [location]);
 
   const sliderSettings = {
     dots: true,
@@ -73,7 +86,6 @@ const EditVideo = () => {
   const handleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     
-    // Only allow one file at a time
     if (files.length > 0) {
       const file = files[0];
       const newMediaFile = {
@@ -82,13 +94,12 @@ const EditVideo = () => {
         type: file.type.startsWith('video/') ? 'video' as const : 'image' as const
       };
       
-      // Replace any existing media
       if (mediaFiles.length > 0) {
         mediaFiles.forEach(media => URL.revokeObjectURL(media.preview));
       }
       
       setMediaFiles([newMediaFile]);
-      setVideoLink(""); // Clear video link since we're using upload
+      setVideoLink("");
       setIsAddingLink(false);
     }
   };
@@ -161,7 +172,6 @@ const EditVideo = () => {
       return;
     }
     
-    // Clear any uploaded media files
     if (mediaFiles.length > 0) {
       mediaFiles.forEach(media => URL.revokeObjectURL(media.preview));
       setMediaFiles([]);
@@ -178,7 +188,6 @@ const EditVideo = () => {
 
   const getYouTubeThumbnail = (url: string): string => {
     try {
-      // Extract video ID from YouTube URL
       let videoId = "";
       if (url.includes("youtube.com/watch")) {
         const urlParams = new URLSearchParams(new URL(url).search);
@@ -214,7 +223,6 @@ const EditVideo = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Must be logged in");
 
-      // Check upload limit
       const canUpload = await checkUploadLimit(user.id);
       if (!canUpload) {
         toast({
@@ -230,12 +238,9 @@ const EditVideo = () => {
       let thumbnailUrl = null;
       
       if (isAddingLink) {
-        // Use the provided video link
         videoUrl = videoLink;
-        // Get YouTube thumbnail if possible
         thumbnailUrl = getYouTubeThumbnail(videoLink);
       } else {
-        // Upload files
         const uploadedFiles = await Promise.all(mediaFiles.map(async (mediaFile) => {
           const fileExt = mediaFile.file.name.split('.').pop();
           const fileName = `${crypto.randomUUID()}.${fileExt}`;
@@ -251,8 +256,8 @@ const EditVideo = () => {
             .getPublicUrl(fileName).data.publicUrl;
         }));
 
-        videoUrl = uploadedFiles[0]; // First file is main video
-        thumbnailUrl = uploadedFiles.length > 1 ? uploadedFiles[1] : null; // Second file as thumbnail if exists
+        videoUrl = uploadedFiles[0];
+        thumbnailUrl = uploadedFiles.length > 1 ? uploadedFiles[1] : null;
       }
 
       const { error: insertError } = await supabase
@@ -264,6 +269,7 @@ const EditVideo = () => {
           thumbnail_url: thumbnailUrl,
           status: 'published',
           creator_id: user.id,
+          video_type: videoType
         });
 
       if (insertError) throw insertError;
@@ -273,7 +279,9 @@ const EditVideo = () => {
         description: "Video published successfully",
       });
 
-      navigate('/admin/videos');
+      const state = location.state as LocationState;
+      const returnPath = state?.returnTo || '/admin/videos';
+      navigate(returnPath);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -298,7 +306,9 @@ const EditVideo = () => {
         </Button>
 
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-2xl font-bold mb-6 text-[#222222]">Create New Video</h1>
+          <h1 className="text-2xl font-bold mb-6 text-[#222222]">
+            Create New {videoType === "news" ? "News " : ""}Video
+          </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -442,7 +452,6 @@ const EditVideo = () => {
         </div>
       </div>
 
-      {/* Crop Dialog */}
       <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
         <DialogContent className="bg-white max-w-3xl">
           <DialogHeader>
@@ -483,7 +492,6 @@ const EditVideo = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Add Link Dialog */}
       <Dialog open={isAddLinkDialogOpen} onOpenChange={setIsAddLinkDialogOpen}>
         <DialogContent className="bg-white">
           <DialogHeader>
