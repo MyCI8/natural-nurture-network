@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 
 const Hero = () => {
   return (
-    <div className="relative bg-black pt-24 pb-16 sm:pt-32 lg:overflow-hidden w-screen -mx-[calc(50vw-50%)] z-0">
+    <div className="relative bg-black pt-24 pb-16 sm:pt-32 overflow-hidden w-full">
       {/* Video Background */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <video
@@ -25,9 +25,9 @@ const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative w-full mx-auto">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-          <div className="mx-auto max-w-md px-4 sm:max-w-2xl sm:px-6 sm:text-center lg:px-6 lg:text-left lg:flex lg:items-center">
+          <div className="mx-auto max-w-md sm:max-w-2xl sm:text-center lg:text-left lg:flex lg:items-center">
             <div className="lg:py-24">
               <h1 className="mt-4 text-4xl tracking-tight font-extrabold text-white sm:mt-5 sm:text-6xl lg:mt-6">
                 <span className="block">Natural Healing</span>
@@ -59,7 +59,7 @@ const Hero = () => {
             <div className="mx-auto max-w-md px-4 sm:max-w-2xl sm:px-6 lg:max-w-none lg:px-0">
               <div className="w-full lg:absolute lg:inset-y-0 lg:left-0 lg:h-full lg:w-auto lg:max-w-none">
                 <div className="relative h-64 w-full sm:h-72 md:h-96 lg:absolute lg:inset-y-0 lg:left-0 lg:h-full lg:w-auto lg:max-w-none">
-                  {/* Removed the gradient background since we now have video */}
+                  {/* Right side content container */}
                 </div>
               </div>
             </div>
