@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,12 +49,13 @@ const NewsSection = () => {
   if (isLoading) {
     return (
       <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-[10px]">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Two-column layout for larger screens, single column for mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* News column */}
-            <div className="col-span-1 lg:col-span-2 space-y-4 sm:space-y-6">
+            <div className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest News</h2>
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2].map((i) => (
                 <Card key={i} className="overflow-hidden shadow-sm">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
@@ -72,19 +74,11 @@ const NewsSection = () => {
               ))}
             </div>
             
-            {/* Update separator */}
-            <div className="hidden lg:block lg:col-span-1 lg:relative">
-              <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
-                height: '300px',
-                maxHeight: '50%'
-              }}></div>
-            </div>
-            
             {/* Videos column */}
-            <div className="col-span-1 space-y-3 sm:space-y-4 lg:pl-6 mt-6 lg:mt-0">
+            <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0">
               <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest Videos</h3>
-              <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-                {[1, 2, 3, 4].map((i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1, 2].map((i) => (
                   <Card key={i} className="overflow-hidden shadow-sm">
                     <CardContent className="p-0">
                       <Skeleton className="aspect-video w-full" />
@@ -105,10 +99,11 @@ const NewsSection = () => {
 
   return (
     <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-[10px]">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Two-column layout for larger screens, single column for mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* News column */}
-          <div className="col-span-1 lg:col-span-2 space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest News</h2>
             {newsItems?.map((item) => (
               <Link to={`/news/${item.id}`} key={item.id}>
@@ -152,18 +147,10 @@ const NewsSection = () => {
             </div>
           </div>
           
-          {/* Update separator */}
-          <div className="hidden lg:block lg:col-span-1 lg:relative">
-            <div className="absolute left-0 top-[80px] w-px bg-border opacity-50" style={{ 
-              height: '300px',
-              maxHeight: '50%'
-            }}></div>
-          </div>
-          
           {/* Videos column */}
-          <div className="col-span-1 space-y-3 sm:space-y-4 lg:pl-6 mt-6 lg:mt-0">
+          <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0">
             <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest Videos</h3>
-            <div className={`grid ${isMobile ? 'grid-cols-1' : isTablet ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {videos?.map((video) => (
                 <Link to={`/news/videos/${video.id}`} key={video.id}>
                   <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
