@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ArrowLeft, User, Mail, UserCheck, Upload, Trash } from "lucide-react";
+import { ArrowLeft, User, Mail, UserCheck, Upload, Trash, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   username: z.string().min(3).max(50),
@@ -21,7 +25,8 @@ const formSchema = z.object({
   firstName: z.string().min(2).max(50),
   lastName: z.string().min(2).max(50),
   bio: z.string().max(500).optional().or(z.literal('')),
-  avatarUrl: z.string().url().optional().or(z.literal(''))
+  avatarUrl: z.string().url().optional().or(z.literal('')),
+  dob: z.date().optional()
 });
 
 type ProfileFormValues = z.infer<typeof formSchema>;
@@ -29,6 +34,7 @@ type ProfileFormValues = z.infer<typeof formSchema>;
 // Define an interface for user settings to properly type the JSON data
 interface UserSettings {
   bio?: string;
+  dob?: string;
   [key: string]: any; // Allow for other settings properties
 }
 
@@ -62,7 +68,8 @@ export default function ProfileSettings() {
       firstName: "",
       lastName: "",
       bio: "",
-      avatarUrl: ""
+      avatarUrl: "",
+      dob: undefined
     }
   });
 
@@ -108,13 +115,29 @@ export default function ProfileSettings() {
           
           setUser(userData);
           
-          // Safely extract bio from settings JSON
+          // Safely extract bio and dob from settings JSON
           let bio = "";
+          let dob: Date | undefined = undefined;
+          
           if (profileData.settings) {
-            // Check if settings is an object and has bio property
+            // Check if settings is an object and has properties
             const settings = profileData.settings as UserSettings;
             if (typeof settings === 'object' && settings !== null) {
               bio = settings.bio || "";
+              
+              // Parse date of birth if it exists
+              if (settings.dob) {
+                try {
+                  dob = new Date(settings.dob);
+                  // Check if date is valid
+                  if (isNaN(dob.getTime())) {
+                    dob = undefined;
+                  }
+                } catch (e) {
+                  console.error("Error parsing date:", e);
+                  dob = undefined;
+                }
+              }
             }
           }
           
@@ -124,7 +147,8 @@ export default function ProfileSettings() {
             firstName: userData.first_name,
             lastName: userData.last_name,
             bio: bio,
-            avatarUrl: userData.avatar_url
+            avatarUrl: userData.avatar_url,
+            dob: dob
           });
         }
       } catch (error) {
@@ -178,7 +202,10 @@ export default function ProfileSettings() {
       }
       
       // Create a proper settings object
-      const settings: UserSettings = { bio: data.bio || "" };
+      const settings: UserSettings = { 
+        bio: data.bio || "",
+        dob: data.dob ? format(data.dob, 'yyyy-MM-dd') : undefined
+      };
       
       const { error: updateProfileError } = await supabase
         .from('profiles')
@@ -415,6 +442,52 @@ export default function ProfileSettings() {
                       )}
                     />
                   </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="dob"
+                    render={({ field }) => (
+                      <FormItem className="text-left">
+                        <FormLabel>Date of Birth</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date > new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                              className="p-3 pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription>
+                          Your date of birth is used for age verification and personalized experiences.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
                   <FormField
                     control={form.control}

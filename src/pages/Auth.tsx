@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,24 +7,78 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+
+// Array of cartoon avatar URLs - these would be replaced with actual URLs to cartoon avatars
+const CARTOON_AVATARS = [
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Felix",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Lily",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Max",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Zoe",
+  "https://api.dicebear.com/7.x/adventurer/svg?seed=Jamie"
+];
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [dob, setDob] = useState<Date | undefined>(undefined);
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Generate username when first or last name changes
+  useEffect(() => {
+    if (firstName && lastName && isSignUp) {
+      // Create a username from first name + last name initial + random numbers
+      const randomNum = Math.floor(Math.random() * 1000);
+      const generatedUsername = `${firstName.toLowerCase()}${lastName[0].toLowerCase()}${randomNum}`;
+      setUsername(generatedUsername);
+    }
+  }, [firstName, lastName, isSignUp]);
+
   const validateForm = () => {
-    if (isSignUp && !fullName.trim()) {
-      toast({
-        title: "Full Name Required",
-        description: "Please enter your full name",
-        variant: "destructive",
-      });
-      return false;
+    if (isSignUp) {
+      if (!firstName.trim()) {
+        toast({
+          title: "First Name Required",
+          description: "Please enter your first name",
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (!lastName.trim()) {
+        toast({
+          title: "Last Name Required",
+          description: "Please enter your last name",
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (!dob) {
+        toast({
+          title: "Date of Birth Required",
+          description: "Please enter your date of birth",
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (!username.trim()) {
+        toast({
+          title: "Username Required",
+          description: "Please enter a username",
+          variant: "destructive",
+        });
+        return false;
+      }
     }
     if (!email.trim()) {
       toast({
@@ -54,16 +108,41 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
+        // Get a random avatar from the cartoon avatars
+        const randomAvatarUrl = CARTOON_AVATARS[Math.floor(Math.random() * CARTOON_AVATARS.length)];
+        
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
-              full_name: fullName,
+              full_name: `${firstName} ${lastName}`,
+              first_name: firstName,
+              last_name: lastName,
+              dob: dob ? format(dob, 'yyyy-MM-dd') : null,
+              username: username
             },
           },
         });
+        
         if (error) throw error;
+        
+        // After successful signup, also update the profiles table with additional info
+        // (The trigger will create the profile, but we need to update it with our additional fields)
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Update the profile with additional info including avatar
+          await supabase
+            .from('profiles')
+            .update({
+              username: username,
+              avatar_url: randomAvatarUrl,
+              settings: { bio: "", dob: dob ? format(dob, 'yyyy-MM-dd') : null }
+            })
+            .eq('id', user.id);
+        }
+        
         toast({
           title: "Success!",
           description: "Account created successfully. You can now sign in.",
@@ -120,17 +199,74 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="Enter your first name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Enter your last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="dob">Date of Birth</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !dob && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dob ? format(dob, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={dob}
+                        onSelect={setDob}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username (Auto-generated)</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
+              </>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
