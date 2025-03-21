@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +25,12 @@ const formSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof formSchema>;
+
+// Define an interface for user settings to properly type the JSON data
+interface UserSettings {
+  bio?: string;
+  [key: string]: any; // Allow for other settings properties
+}
 
 export default function ProfileSettings() {
   const { toast } = useToast();
@@ -101,7 +108,15 @@ export default function ProfileSettings() {
           
           setUser(userData);
           
-          const bio = profileData.settings?.bio || "";
+          // Safely extract bio from settings JSON
+          let bio = "";
+          if (profileData.settings) {
+            // Check if settings is an object and has bio property
+            const settings = profileData.settings as UserSettings;
+            if (typeof settings === 'object' && settings !== null) {
+              bio = settings.bio || "";
+            }
+          }
           
           form.reset({
             username: userData.username,
@@ -162,7 +177,8 @@ export default function ProfileSettings() {
         }
       }
       
-      const settings = { bio: data.bio || "" };
+      // Create a proper settings object
+      const settings: UserSettings = { bio: data.bio || "" };
       
       const { error: updateProfileError } = await supabase
         .from('profiles')
