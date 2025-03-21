@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SettingsModal } from "./SettingsModal";
 
 interface SettingsButtonProps {
@@ -16,23 +16,25 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
 
   return (
     <>
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <Button
-            variant={variant}
-            size={compact ? "icon" : "default"}
-            onClick={() => setOpen(true)}
-            className={compact ? "h-9 w-9 rounded-full" : ""}
-            aria-label="Settings"
-          >
-            <Settings className="h-[1.2rem] w-[1.2rem]" />
-            {!compact && <span className="ml-2">Settings</span>}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          <p>Settings</p>
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            <Button
+              variant={variant}
+              size={compact ? "icon" : "default"}
+              onClick={() => setOpen(true)}
+              className={compact ? "h-9 w-9 rounded-full" : ""}
+              aria-label="Settings"
+            >
+              <Settings className="h-[1.2rem] w-[1.2rem]" />
+              {!compact && <span className="ml-2">Settings</span>}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>Settings</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <SettingsModal
         open={open}
