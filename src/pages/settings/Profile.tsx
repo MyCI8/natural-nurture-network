@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,13 +12,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   username: z.string().min(3).max(50),
   email: z.string().email(),
   firstName: z.string().min(2).max(50),
   lastName: z.string().min(2).max(50),
-  bio: z.string().max(500).optional(),
+  bio: z.string().max(500).optional().or(z.literal('')),
   avatarUrl: z.string().url().optional().or(z.literal(''))
 });
 
@@ -27,53 +27,109 @@ type ProfileFormValues = z.infer<typeof formSchema>;
 
 export default function ProfileSettings() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  
   const [user, setUser] = useState({
-    id: "user-123",
-    username: "zaid",
-    email: "zaidhilali@gmail.com",
-    first_name: "Zaid",
-    last_name: "Hilali",
-    full_name: "Zaid Hilali",
+    id: "",
+    username: "",
+    email: "",
+    first_name: "",
+    last_name: "",
+    full_name: "",
     bio: "",
-    avatar_url: "https://github.com/shadcn.png",
-    created_at: "2023-01-01",
+    avatar_url: "",
+    created_at: "",
     account_status: "active",
     failed_login_attempts: 0,
     last_failed_login_at: "",
-    last_login_at: "2023-06-01",
+    last_login_at: "",
     phone_number: "",
     role: "user",
-    updated_at: "2023-06-01"
+    updated_at: ""
   });
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: user.username,
-      email: user.email,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      bio: user.bio,
-      avatarUrl: user.avatar_url
+      username: "",
+      email: "",
+      firstName: "",
+      lastName: "",
+      bio: "",
+      avatarUrl: ""
     }
   });
 
   useEffect(() => {
-    if (user) {
-      form.reset({
-        username: user.username,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        bio: user.bio,
-        avatarUrl: user.avatar_url
-      });
-    }
-  }, [user, form]);
+    const fetchUserProfile = async () => {
+      setLoading(true);
+      
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (!authUser) {
+          navigate('/auth');
+          return;
+        }
+        
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
+        
+        if (error) {
+          console.error("Error fetching profile:", error);
+          throw error;
+        }
+        
+        if (profileData) {
+          const userData = {
+            id: profileData.id || '',
+            username: profileData.username || '',
+            email: authUser.email || '',
+            first_name: profileData.full_name?.split(' ')[0] || '',
+            last_name: profileData.full_name?.split(' ')[1] || '',
+            full_name: profileData.full_name || '',
+            bio: profileData.bio || '',
+            avatar_url: profileData.avatar_url || '',
+            created_at: profileData.created_at || '',
+            account_status: profileData.account_status || 'active',
+            failed_login_attempts: profileData.failed_login_attempts || 0,
+            last_failed_login_at: profileData.last_failed_login_at || '',
+            last_login_at: profileData.last_login_at || '',
+            phone_number: profileData.phone_number || '',
+            role: profileData.role || 'user',
+            updated_at: profileData.updated_at || ''
+          };
+          
+          setUser(userData);
+          
+          form.reset({
+            username: userData.username,
+            email: userData.email,
+            firstName: userData.first_name,
+            lastName: userData.last_name,
+            bio: userData.bio,
+            avatarUrl: userData.avatar_url
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load user profile:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your profile information.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [navigate, toast, form]);
 
   function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -84,11 +140,71 @@ export default function ProfileSettings() {
     }
   }
 
-  function onSubmit(data: ProfileFormValues) {
+  async function onSubmit(data: ProfileFormValues) {
     setLoading(true);
     
-    setTimeout(() => {
-      console.log("Profile form submitted:", data);
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (!authUser) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to update your profile.",
+          variant: "destructive"
+        });
+        navigate('/auth');
+        return;
+      }
+      
+      if (data.email !== user.email) {
+        const { error: updateEmailError } = await supabase.auth.updateUser({ 
+          email: data.email 
+        });
+        
+        if (updateEmailError) {
+          throw updateEmailError;
+        }
+      }
+      
+      const { error: updateProfileError } = await supabase
+        .from('profiles')
+        .update({
+          username: data.username,
+          full_name: `${data.firstName} ${data.lastName}`,
+          bio: data.bio || "",
+          avatar_url: avatarPreview || data.avatarUrl || ""
+        })
+        .eq('id', authUser.id);
+      
+      if (updateProfileError) {
+        throw updateProfileError;
+      }
+      
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${authUser.id}-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile);
+        
+        if (uploadError) {
+          console.error("Error uploading avatar:", uploadError);
+        } else {
+          const { data: publicUrlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+          
+          if (publicUrlData) {
+            await supabase
+              .from('profiles')
+              .update({
+                avatar_url: publicUrlData.publicUrl
+              })
+              .eq('id', authUser.id);
+          }
+        }
+      }
       
       setUser({
         ...user,
@@ -105,9 +221,16 @@ export default function ProfileSettings() {
         title: "Profile updated",
         description: "Your profile information has been updated successfully."
       });
-      
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Update failed",
+        description: error.message || "An error occurred while updating your profile.",
+        variant: "destructive"
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   }
 
   function removeAvatar() {
@@ -116,10 +239,32 @@ export default function ProfileSettings() {
     form.setValue("avatarUrl", "");
   }
 
+  function goBack() {
+    navigate(-1);
+  }
+
+  if (loading && !user.id) {
+    return (
+      <div className="container max-w-4xl py-6">
+        <div className="flex items-center mb-6">
+          <Button variant="ghost" size="icon" className="mr-2" onClick={goBack}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold">Profile Settings</h1>
+        </div>
+        <Card>
+          <CardContent className="p-8 flex justify-center items-center">
+            <p>Loading profile information...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container max-w-4xl py-6">
       <div className="flex items-center mb-6">
-        <Button variant="ghost" size="icon" className="mr-2">
+        <Button variant="ghost" size="icon" className="mr-2" onClick={goBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-3xl font-bold">Profile Settings</h1>
@@ -139,7 +284,7 @@ export default function ProfileSettings() {
                 <div className="flex flex-col items-center space-y-3">
                   <Avatar className="h-32 w-32">
                     <AvatarImage src={avatarPreview || user.avatar_url} />
-                    <AvatarFallback className="text-2xl">{user.first_name[0]}</AvatarFallback>
+                    <AvatarFallback className="text-2xl">{user.first_name ? user.first_name[0] : ''}</AvatarFallback>
                   </Avatar>
                   
                   <div className="flex flex-col items-center space-y-2">
@@ -187,7 +332,7 @@ export default function ProfileSettings() {
                           <FormControl>
                             <div className="relative">
                               <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input className="pl-9" placeholder="zaid" {...field} />
+                              <Input className="pl-9" placeholder="username" {...field} />
                             </div>
                           </FormControl>
                         </div>
@@ -209,7 +354,7 @@ export default function ProfileSettings() {
                           <FormControl>
                             <div className="relative">
                               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input className="pl-9" type="email" placeholder="zaidhilali@gmail.com" {...field} />
+                              <Input className="pl-9" type="email" placeholder="email@example.com" {...field} />
                             </div>
                           </FormControl>
                         </div>
@@ -232,7 +377,7 @@ export default function ProfileSettings() {
                             <FormControl>
                               <div className="relative">
                                 <UserCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input className="pl-9" placeholder="Zaid" {...field} />
+                                <Input className="pl-9" placeholder="First Name" {...field} />
                               </div>
                             </FormControl>
                           </div>
@@ -249,7 +394,7 @@ export default function ProfileSettings() {
                           <FormLabel>Last Name</FormLabel>
                           <div className="flex items-center space-x-2">
                             <FormControl>
-                              <Input placeholder="Hilali" {...field} />
+                              <Input placeholder="Last Name" {...field} />
                             </FormControl>
                           </div>
                           <FormMessage />
