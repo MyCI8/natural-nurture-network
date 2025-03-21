@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +17,8 @@ import { useToast } from "@/hooks/use-toast";
 const formSchema = z.object({
   username: z.string().min(3).max(50),
   email: z.string().email(),
-  fullName: z.string().min(2).max(100),
+  firstName: z.string().min(2).max(50),
+  lastName: z.string().min(2).max(50),
   bio: z.string().max(500).optional(),
   avatarUrl: z.string().url().optional().or(z.literal(''))
 });
@@ -31,9 +33,11 @@ export default function ProfileSettings() {
   
   const [user, setUser] = useState({
     id: "user-123",
-    username: "johndoe",
-    email: "john.doe@example.com",
-    full_name: "John Doe",
+    username: "zaid",
+    email: "zaidhilali@gmail.com",
+    first_name: "Zaid",
+    last_name: "Hilali",
+    full_name: "Zaid Hilali",
     bio: "",
     avatar_url: "https://github.com/shadcn.png",
     created_at: "2023-01-01",
@@ -51,7 +55,8 @@ export default function ProfileSettings() {
     defaultValues: {
       username: user.username,
       email: user.email,
-      fullName: user.full_name,
+      firstName: user.first_name,
+      lastName: user.last_name,
       bio: user.bio,
       avatarUrl: user.avatar_url
     }
@@ -62,7 +67,8 @@ export default function ProfileSettings() {
       form.reset({
         username: user.username,
         email: user.email,
-        fullName: user.full_name,
+        firstName: user.first_name,
+        lastName: user.last_name,
         bio: user.bio,
         avatarUrl: user.avatar_url
       });
@@ -88,7 +94,9 @@ export default function ProfileSettings() {
         ...user,
         username: data.username,
         email: data.email,
-        full_name: data.fullName,
+        first_name: data.firstName,
+        last_name: data.lastName,
+        full_name: `${data.firstName} ${data.lastName}`,
         bio: data.bio || "",
         avatar_url: avatarPreview || data.avatarUrl || ""
       });
@@ -131,7 +139,7 @@ export default function ProfileSettings() {
                 <div className="flex flex-col items-center space-y-3">
                   <Avatar className="h-32 w-32">
                     <AvatarImage src={avatarPreview || user.avatar_url} />
-                    <AvatarFallback className="text-2xl">{user.full_name[0]}</AvatarFallback>
+                    <AvatarFallback className="text-2xl">{user.first_name[0]}</AvatarFallback>
                   </Avatar>
                   
                   <div className="flex flex-col items-center space-y-2">
@@ -173,13 +181,13 @@ export default function ProfileSettings() {
                     control={form.control}
                     name="username"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="text-left">
                         <FormLabel>Username</FormLabel>
                         <div className="flex items-center space-x-2">
                           <FormControl>
                             <div className="relative">
                               <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input className="pl-9" placeholder="johndoe" {...field} />
+                              <Input className="pl-9" placeholder="zaid" {...field} />
                             </div>
                           </FormControl>
                         </div>
@@ -195,13 +203,13 @@ export default function ProfileSettings() {
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="text-left">
                         <FormLabel>Email</FormLabel>
                         <div className="flex items-center space-x-2">
                           <FormControl>
                             <div className="relative">
                               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input className="pl-9" type="email" placeholder="john.doe@example.com" {...field} />
+                              <Input className="pl-9" type="email" placeholder="zaidhilali@gmail.com" {...field} />
                             </div>
                           </FormControl>
                         </div>
@@ -213,33 +221,48 @@ export default function ProfileSettings() {
                     )}
                   />
                   
-                  <FormField
-                    control={form.control}
-                    name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <div className="flex items-center space-x-2">
-                          <FormControl>
-                            <div className="relative">
-                              <UserCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input className="pl-9" placeholder="John Doe" {...field} />
-                            </div>
-                          </FormControl>
-                        </div>
-                        <FormDescription>
-                          How your name will appear to other users.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem className="text-left">
+                          <FormLabel>First Name</FormLabel>
+                          <div className="flex items-center space-x-2">
+                            <FormControl>
+                              <div className="relative">
+                                <UserCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input className="pl-9" placeholder="Zaid" {...field} />
+                              </div>
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem className="text-left">
+                          <FormLabel>Last Name</FormLabel>
+                          <div className="flex items-center space-x-2">
+                            <FormControl>
+                              <Input placeholder="Hilali" {...field} />
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   <FormField
                     control={form.control}
                     name="bio"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="text-left">
                         <FormLabel>Bio</FormLabel>
                         <FormControl>
                           <Textarea
