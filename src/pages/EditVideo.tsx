@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Upload, Video, X, Crop, Trash2, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface MediaFile {
   file: File;
@@ -23,9 +25,16 @@ interface MediaFile {
 interface LocationState {
   returnTo?: string;
   videoType?: string;
+  articleId?: string;
 }
 
 const DAILY_UPLOAD_LIMIT = 20;
+
+// Available video types for selection
+const VIDEO_TYPES = [
+  { value: "general", label: "General Video" },
+  { value: "news", label: "News Video" }
+];
 
 const EditVideo = () => {
   const navigate = useNavigate();
@@ -49,13 +58,41 @@ const EditVideo = () => {
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [isAddLinkDialogOpen, setIsAddLinkDialogOpen] = useState(false);
   const [videoType, setVideoType] = useState("general");
+  const [relatedArticleId, setRelatedArticleId] = useState<string | null>(null);
+  const [articles, setArticles] = useState<{id: string, title: string}[]>([]);
+  const [showArticleSelect, setShowArticleSelect] = useState(false);
 
   useEffect(() => {
     const state = location.state as LocationState;
+    // Set video type from navigation state if provided
     if (state?.videoType) {
       setVideoType(state.videoType);
     }
-  }, [location]);
+    
+    // Set related article ID if provided
+    if (state?.articleId) {
+      setRelatedArticleId(state.articleId);
+    }
+
+    // Load published articles for selection if this is a news video
+    if (state?.videoType === "news" || videoType === "news") {
+      fetchArticles();
+    }
+  }, [location, videoType]);
+
+  const fetchArticles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news_articles')
+        .select('id, title')
+        .eq('status', 'published');
+        
+      if (error) throw error;
+      setArticles(data || []);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+    }
+  };
 
   const sliderSettings = {
     dots: true,
@@ -102,6 +139,11 @@ const EditVideo = () => {
       setVideoLink("");
       setIsAddingLink(false);
     }
+  };
+
+  const handleVideoTypeChange = (value: string) => {
+    setVideoType(value);
+    setShowArticleSelect(value === "news");
   };
 
   const handleDeleteMedia = (index: number) => {
@@ -260,17 +302,21 @@ const EditVideo = () => {
         thumbnailUrl = uploadedFiles.length > 1 ? uploadedFiles[1] : null;
       }
 
+      // Prepare the video data with proper type and related article if applicable
+      const videoData = {
+        title,
+        description: description.trim() || null,
+        video_url: videoUrl,
+        thumbnail_url: thumbnailUrl,
+        status: 'published',
+        creator_id: user.id,
+        video_type: videoType,
+        related_article_id: relatedArticleId
+      };
+
       const { error: insertError } = await supabase
         .from('videos')
-        .insert({
-          title,
-          description: description.trim() || null,
-          video_url: videoUrl,
-          thumbnail_url: thumbnailUrl,
-          status: 'published',
-          creator_id: user.id,
-          video_type: videoType
-        });
+        .insert(videoData);
 
       if (insertError) throw insertError;
 
@@ -321,6 +367,47 @@ const EditVideo = () => {
                 className="border-gray-300 focus:border-[#4CAF50]"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="videoType">Video Type</Label>
+              <Select
+                value={videoType}
+                onValueChange={handleVideoTypeChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select video type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {VIDEO_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {showArticleSelect && articles.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="relatedArticle">Related Article (Optional)</Label>
+                <Select
+                  value={relatedArticleId || ""}
+                  onValueChange={(value) => setRelatedArticleId(value === "" ? null : value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a related article (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {articles.map((article) => (
+                      <SelectItem key={article.id} value={article.id}>
+                        {article.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>

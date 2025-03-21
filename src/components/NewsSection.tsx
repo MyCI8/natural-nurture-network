@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,9 +49,7 @@ const NewsSection = () => {
     return (
       <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Two-column layout for larger screens, single column for mobile */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* News column */}
             <div className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest News</h2>
               {[1, 2].map((i) => (
@@ -74,7 +71,6 @@ const NewsSection = () => {
               ))}
             </div>
             
-            {/* Videos column */}
             <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0">
               <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest Videos</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -100,9 +96,7 @@ const NewsSection = () => {
   return (
     <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Two-column layout for larger screens, single column for mobile */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* News column */}
           <div className="space-y-4 sm:space-y-6">
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest News</h2>
             {newsItems?.map((item) => (
@@ -147,7 +141,6 @@ const NewsSection = () => {
             </div>
           </div>
           
-          {/* Videos column */}
           <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0">
             <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left">Latest Videos</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

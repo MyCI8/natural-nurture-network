@@ -11,6 +11,8 @@ export interface Video {
   likes_count: number;
   created_at: string;
   updated_at: string;
+  video_type: string;
+  related_article_id?: string | null;
   creator?: {
     id: string;
     username?: string;
