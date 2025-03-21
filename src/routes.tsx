@@ -32,6 +32,12 @@ import UserProfile from "./pages/UserProfile";
 import Symptoms from "./pages/Symptoms";
 import SymptomDetail from "./pages/SymptomDetail";
 
+// Settings pages
+import SettingsProfile from "./pages/settings/Profile";
+import SettingsSecurity from "./pages/settings/Security";
+import SettingsNotifications from "./pages/settings/Notifications";
+import SettingsPrivacy from "./pages/settings/Privacy";
+
 const Routes = () => {
   return (
     <RouterRoutes>
@@ -51,6 +57,15 @@ const Routes = () => {
         <Route path="news/:id" element={<NewsArticle />} />
         <Route path="news/videos/:id" element={<EditVideo />} />
         <Route path="users/:id" element={<UserProfile />} />
+        
+        {/* Settings Routes */}
+        <Route path="settings">
+          <Route path="profile" element={<SettingsProfile />} />
+          <Route path="security" element={<SettingsSecurity />} />
+          <Route path="notifications" element={<SettingsNotifications />} />
+          <Route path="privacy" element={<SettingsPrivacy />} />
+        </Route>
+        
         <Route path="admin" element={<Admin />}>
           <Route index element={<AdminDashboard />} />
           <Route path="users">

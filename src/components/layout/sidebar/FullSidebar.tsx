@@ -9,6 +9,7 @@ import { Leaf, Search, Shield, Upload } from "lucide-react";
 import { NavigationItems } from "./NavigationItems";
 import { UserProfileButton } from "./UserProfileButton";
 import { useTheme } from "next-themes";
+import { SettingsButton } from "@/components/settings/SettingsButton";
 
 interface FullSidebarProps {
   currentUser: any;
@@ -81,10 +82,16 @@ export const FullSidebar = ({
           />
         </div>
 
-        <UserProfileButton 
-          userId={currentUser?.id} 
-          profile={profile} 
-        />
+        <div className="flex items-center justify-between gap-2">
+          <UserProfileButton 
+            userId={currentUser?.id} 
+            profile={profile} 
+          />
+          <SettingsButton 
+            userId={currentUser?.id}
+            compact 
+          />
+        </div>
       </div>
     </nav>
   );

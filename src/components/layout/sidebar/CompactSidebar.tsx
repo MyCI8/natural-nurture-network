@@ -2,10 +2,11 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Leaf, Shield, Settings, Upload } from "lucide-react";
+import { Leaf, Shield, Upload } from "lucide-react";
 import { NavigationItems } from "./NavigationItems";
 import { UserProfileButton } from "./UserProfileButton";
 import { useTheme } from "next-themes";
+import { SettingsButton } from "@/components/settings/SettingsButton";
 
 interface CompactSidebarProps {
   currentUser: any;
@@ -60,14 +61,10 @@ export const CompactSidebar = ({
       </div>
 
       <div className="mt-auto px-2 space-y-4">
-        <Button
-          variant="ghost"
-          className="w-full flex items-center justify-center p-2 rounded-full"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-        >
-          <Settings className="h-5 w-5" />
-        </Button>
+        <SettingsButton 
+          userId={currentUser?.id}
+          compact 
+        />
 
         <UserProfileButton 
           userId={currentUser?.id} 

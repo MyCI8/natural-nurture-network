@@ -2,10 +2,12 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield, Settings, Upload } from "lucide-react";
+import { Shield, Settings, Upload, LogOut } from "lucide-react";
 import { NavigationButtons } from "./NavigationItems";
 import { SettingsPanel } from "./SettingsPanel";
 import { UserProfileButton } from "./UserProfileButton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface MobileSidebarProps {
   isExpanded: boolean;
@@ -26,6 +28,17 @@ export const MobileSidebar = ({
 }: MobileSidebarProps) => {
   const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setIsExpanded(false);
+      navigate("/");
+      toast.success("Signed out successfully");
+    } catch (error) {
+      toast.error("Failed to sign out");
+    }
+  };
 
   return (
     <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${
@@ -50,7 +63,16 @@ export const MobileSidebar = ({
           </div>
 
           {showSettings ? (
-            <SettingsPanel />
+            <div className="px-4 pb-4">
+              <Button 
+                variant="ghost" 
+                className="mb-4 flex items-center"
+                onClick={() => setShowSettings(false)}
+              >
+                ← Back
+              </Button>
+              <SettingsPanel />
+            </div>
           ) : (
             <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
               <NavigationButtons 
@@ -92,6 +114,17 @@ export const MobileSidebar = ({
                 <Settings className="h-5 w-5 mr-2" />
                 <span>Settings</span>
               </Button>
+
+              {currentUser && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-destructive hover:text-destructive rounded-full mt-2 py-3"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  <span>Sign Out</span>
+                </Button>
+              )}
             </nav>
           )}
         </div>
