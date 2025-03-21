@@ -8,6 +8,9 @@ import RecentActivity from "@/components/admin/dashboard/RecentActivity";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AdminUsers from "@/components/admin/dashboard/AdminUsers";
+import AdminVideos from "@/components/admin/dashboard/AdminVideos";
 import type { CommentWithProfile } from "@/types";
 
 const Admin = () => {
@@ -103,10 +106,28 @@ const Admin = () => {
 
         <StatsGrid stats={stats} isLoading={isLoadingStats} />
 
-        <div className="grid gap-6 md:grid-cols-2 mb-6">
-          <RecentNews news={stats?.recentNews || []} isLoading={isLoadingStats} />
-          <RecentActivity activity={recentActivity} isLoading={isLoadingActivity} />
-        </div>
+        <Tabs defaultValue="news" className="w-full mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsTrigger value="news">Recent News</TabsTrigger>
+            <TabsTrigger value="users">Users Management</TabsTrigger>
+            <TabsTrigger value="videos">News Videos</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="news">
+            <div className="grid gap-6 md:grid-cols-2">
+              <RecentNews news={stats?.recentNews || []} isLoading={isLoadingStats} />
+              <RecentActivity activity={recentActivity} isLoading={isLoadingActivity} />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="users">
+            <AdminUsers />
+          </TabsContent>
+          
+          <TabsContent value="videos">
+            <AdminVideos />
+          </TabsContent>
+        </Tabs>
 
         <Card>
           <CardHeader>
