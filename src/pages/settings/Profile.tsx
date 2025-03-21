@@ -38,15 +38,12 @@ export default function ProfileSettings() {
     first_name: "",
     last_name: "",
     full_name: "",
-    bio: "",
     avatar_url: "",
     created_at: "",
     account_status: "active",
     failed_login_attempts: 0,
     last_failed_login_at: "",
     last_login_at: "",
-    phone_number: "",
-    role: "user",
     updated_at: ""
   });
 
@@ -93,26 +90,25 @@ export default function ProfileSettings() {
             first_name: profileData.full_name?.split(' ')[0] || '',
             last_name: profileData.full_name?.split(' ')[1] || '',
             full_name: profileData.full_name || '',
-            bio: profileData.bio || '',
             avatar_url: profileData.avatar_url || '',
             created_at: profileData.created_at || '',
             account_status: profileData.account_status || 'active',
             failed_login_attempts: profileData.failed_login_attempts || 0,
             last_failed_login_at: profileData.last_failed_login_at || '',
             last_login_at: profileData.last_login_at || '',
-            phone_number: profileData.phone_number || '',
-            role: profileData.role || 'user',
             updated_at: profileData.updated_at || ''
           };
           
           setUser(userData);
+          
+          const bio = profileData.settings?.bio || "";
           
           form.reset({
             username: userData.username,
             email: userData.email,
             firstName: userData.first_name,
             lastName: userData.last_name,
-            bio: userData.bio,
+            bio: bio,
             avatarUrl: userData.avatar_url
           });
         }
@@ -166,12 +162,14 @@ export default function ProfileSettings() {
         }
       }
       
+      const settings = { bio: data.bio || "" };
+      
       const { error: updateProfileError } = await supabase
         .from('profiles')
         .update({
           username: data.username,
           full_name: `${data.firstName} ${data.lastName}`,
-          bio: data.bio || "",
+          settings: settings,
           avatar_url: avatarPreview || data.avatarUrl || ""
         })
         .eq('id', authUser.id);
@@ -213,7 +211,6 @@ export default function ProfileSettings() {
         first_name: data.firstName,
         last_name: data.lastName,
         full_name: `${data.firstName} ${data.lastName}`,
-        bio: data.bio || "",
         avatar_url: avatarPreview || data.avatarUrl || ""
       });
       
