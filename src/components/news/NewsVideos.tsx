@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -44,14 +43,12 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
     }
   };
 
-  // Helper function to extract video ID from YouTube URL
   const getYoutubeVideoId = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  // Function to create a mock video object for the VideoPlayer component
   const createVideoObject = (videoLink: VideoLink): Video => {
     return {
       id: Math.random().toString(),
@@ -66,7 +63,8 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
       views_count: 0,
       likes_count: 0,
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      video_type: 'news'
     };
   };
 

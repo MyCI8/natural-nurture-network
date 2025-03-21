@@ -308,7 +308,7 @@ const EditVideo = () => {
         description: description.trim() || null,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
-        status: 'published',
+        status: 'published' as const, // Explicitly type as a literal to match the enum type
         creator_id: user.id,
         video_type: videoType,
         related_article_id: relatedArticleId
