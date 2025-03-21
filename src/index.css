@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -76,6 +75,32 @@
     body {
       @apply text-base;
     }
+  }
+  
+  /* Ensures all popover content has a solid background */
+  [role="dialog"],
+  [role="listbox"],
+  [role="menu"],
+  .popover-content,
+  .select-content,
+  .dropdown-content {
+    @apply bg-popover !important;
+  }
+  
+  /* Make calendar and date picker clickable and visible */
+  .rdp {
+    @apply bg-popover pointer-events-auto;
+  }
+  
+  .rdp-day {
+    @apply pointer-events-auto;
+  }
+  
+  /* Ensure all dropdown selections have solid backgrounds */
+  .select-viewport, 
+  .dropdown-menu-content,
+  .popover-content {
+    @apply bg-popover;
   }
 }
 
