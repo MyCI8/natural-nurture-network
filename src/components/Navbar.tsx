@@ -11,15 +11,16 @@ const Navbar = () => {
   const [session, setSession] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const { data: isAdmin } = useQuery({
+  const { data: isAdmin, isLoading: isCheckingAdmin } = useQuery({
     queryKey: ["userRole"],
     queryFn: async () => {
+      if (!session) return false;
       const { data, error } = await supabase.rpc('check_is_admin');
       if (error) {
         console.error('Error checking admin role:', error);
         return false;
       }
-      return data || false;
+      return !!data; // Ensure boolean
     },
     enabled: !!session,
   });
@@ -90,11 +91,12 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex items-center"
+                className="flex items-center text-primary"
                 onClick={() => navigate("/admin")}
+                title="Admin Dashboard"
               >
-                <Shield className="h-4 w-4" />
-                <span className="sr-only">Admin Dashboard</span>
+                <Shield className="h-5 w-5" />
+                <span className="ml-1 hidden sm:inline">Admin</span>
               </Button>
             )}
             

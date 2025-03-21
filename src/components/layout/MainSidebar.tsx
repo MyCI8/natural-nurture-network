@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -56,9 +55,13 @@ const MainSidebar = () => {
   const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin', currentUser?.id],
     queryFn: async () => {
+      if (!currentUser?.id) return false;
       const { data, error } = await supabase.rpc('check_is_admin');
-      if (error) return false;
-      return data;
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+      return !!data; // Ensure we return a boolean value
     },
     enabled: !!currentUser?.id,
   });
@@ -137,7 +140,7 @@ const MainSidebar = () => {
           setIsExpanded={setIsExpanded}
           currentUser={currentUser}
           profile={profile}
-          isAdmin={isAdmin}
+          isAdmin={!!isAdmin} // Ensure boolean type
           onPostClick={handlePost}
         />
         
@@ -155,7 +158,7 @@ const MainSidebar = () => {
       <CompactSidebar
         currentUser={currentUser}
         profile={profile}
-        isAdmin={isAdmin}
+        isAdmin={!!isAdmin} // Ensure boolean type
         onPostClick={handlePost}
       />
     );
@@ -166,7 +169,7 @@ const MainSidebar = () => {
     <FullSidebar
       currentUser={currentUser}
       profile={profile}
-      isAdmin={isAdmin}
+      isAdmin={!!isAdmin} // Ensure boolean type
       onPostClick={handlePost}
     />
   );
