@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Video } from "lucide-react";
+import { Plus, Search, Video, Trash2, Archive } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,12 +18,26 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { VideoUsageBadge } from "./news/video/VideoUsageBadge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Video as VideoType } from "@/types/video";
 
 type VideoUsage = "latest" | "article" | "both" | "none";
 
 const ManageNews = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
   const [currentTab, setCurrentTab] = useState<"all" | "draft" | "published" | "submitted">("all");
@@ -64,7 +78,7 @@ const ManageNews = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("news_articles")
-        .select("id, video_links");
+        .select("id, title, video_links");
 
       if (error) throw error;
       return data;
@@ -96,8 +110,12 @@ const ManageNews = () => {
       console.log("Raw videos from query:", data); // Debug log
       
       const processedVideos = data.map((video) => {
-        const videoUsage = determineVideoUsage(video.id, allArticles);
-        return { ...video, usage: videoUsage };
+        const videoUsageData = determineVideoUsage(video.id, allArticles);
+        return { 
+          ...video, 
+          usage: videoUsageData.usage,
+          relatedArticleTitle: videoUsageData.articleTitle
+        };
       }).filter(video => {
         if (videoFilter === "all") return true;
         if (videoFilter === "latest") return video.usage === "latest" || video.usage === "both";
@@ -112,25 +130,73 @@ const ManageNews = () => {
     enabled: contentType === "videos",
   });
 
-  const determineVideoUsage = (videoId: string, articles: any[]): VideoUsage => {
+  const determineVideoUsage = (videoId: string, articles: any[]): { usage: VideoUsage, articleTitle?: string } => {
+    let articleTitle;
+    
     const usedInArticle = articles.some((article) => {
       const videoLinks = article.video_links || [];
-      return videoLinks.some((link: any) => 
+      const isUsed = videoLinks.some((link: any) => 
         (link.url && (
           link.url === videoId || 
           link.url.includes(`/videos/${videoId}`) ||
           (link.url.includes('youtube.com') && link.videoId === videoId)
         ))
       );
+      
+      if (isUsed) {
+        articleTitle = article.title;
+      }
+      
+      return isUsed;
     });
 
     const usedInLatest = true;
 
-    if (usedInArticle && usedInLatest) return "both";
-    if (usedInArticle) return "article";
-    if (usedInLatest) return "latest";
-    return "none";
+    if (usedInArticle && usedInLatest) return { usage: "both", articleTitle };
+    if (usedInArticle) return { usage: "article", articleTitle };
+    if (usedInLatest) return { usage: "latest" };
+    return { usage: "none" };
   };
+
+  const deleteVideoMutation = useMutation({
+    mutationFn: async (videoId: string) => {
+      const { error } = await supabase
+        .from("videos")
+        .delete()
+        .eq("id", videoId);
+      
+      if (error) throw error;
+      return videoId;
+    },
+    onSuccess: () => {
+      toast.success("Video deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-news-videos"] });
+    },
+    onError: (error) => {
+      console.error("Error deleting video:", error);
+      toast.error("Failed to delete video");
+    }
+  });
+
+  const archiveVideoMutation = useMutation({
+    mutationFn: async (videoId: string) => {
+      const { error } = await supabase
+        .from("videos")
+        .update({ status: "archived" })
+        .eq("id", videoId);
+      
+      if (error) throw error;
+      return videoId;
+    },
+    onSuccess: () => {
+      toast.success("Video archived successfully");
+      queryClient.invalidateQueries({ queryKey: ["admin-news-videos"] });
+    },
+    onError: (error) => {
+      console.error("Error archiving video:", error);
+      toast.error("Failed to archive video");
+    }
+  });
 
   const handleAddVideo = () => {
     navigate("/admin/videos/new", { 
@@ -261,7 +327,13 @@ const ManageNews = () => {
             </div>
           </div>
 
-          <VideoTable videos={videos} navigate={navigate} isLoading={isLoadingVideos} />
+          <VideoTable 
+            videos={videos} 
+            navigate={navigate} 
+            isLoading={isLoadingVideos} 
+            onDelete={(id) => deleteVideoMutation.mutate(id)}
+            onArchive={(id) => archiveVideoMutation.mutate(id)}
+          />
         </div>
       )}
     </div>
@@ -308,7 +380,15 @@ const ArticleGrid = ({ articles, navigate }) => {
   );
 };
 
-const VideoTable = ({ videos, navigate, isLoading }) => {
+interface VideoTableProps {
+  videos: any[];
+  navigate: (path: string) => void;
+  isLoading: boolean;
+  onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
+}
+
+const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoTableProps) => {
   if (isLoading) {
     return <div>Loading videos...</div>;
   }
@@ -352,74 +432,119 @@ const VideoTable = ({ videos, navigate, isLoading }) => {
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Thumbnail</TableHead>
-          <TableHead>Title</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Usage</TableHead>
-          <TableHead>Views</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {videos.map((video) => (
-          <TableRow key={video.id}>
-            <TableCell>
-              {video.thumbnail_url ? (
-                <img 
-                  src={video.thumbnail_url} 
-                  alt={video.title} 
-                  className="w-16 h-10 object-cover rounded"
-                />
-              ) : video.video_url && video.video_url.includes('youtube.com') ? (
-                <img 
-                  src={getYoutubeThumbnail(video.video_url)} 
-                  alt={video.title} 
-                  className="w-16 h-10 object-cover rounded"
-                />
-              ) : (
-                <div className="w-16 h-10 bg-muted flex items-center justify-center rounded">
-                  <Video className="h-4 w-4 text-muted-foreground" />
-                </div>
-              )}
-            </TableCell>
-            <TableCell className="font-medium">{video.title}</TableCell>
-            <TableCell>
-              <span className={`text-sm px-2 py-1 rounded-full ${
-                video.status === 'published' ? 'bg-green-100 text-green-800' : 
-                video.status === 'archived' ? 'bg-red-100 text-red-800' : 
-                'bg-yellow-100 text-yellow-800'
-              }`}>
-                {video.status.charAt(0).toUpperCase() + video.status.slice(1)}
-              </span>
-            </TableCell>
-            <TableCell>
-              {video.usage === "both" ? (
-                <Badge variant="outline" className="bg-purple-100 hover:bg-purple-100 text-purple-800 border-purple-200">Latest & Articles</Badge>
-              ) : video.usage === "latest" ? (
-                <Badge variant="outline" className="bg-blue-100 hover:bg-blue-100 text-blue-800 border-blue-200">Latest Videos</Badge>
-              ) : video.usage === "article" ? (
-                <Badge variant="outline" className="bg-amber-100 hover:bg-amber-100 text-amber-800 border-amber-200">In Articles</Badge>
-              ) : (
-                <Badge variant="outline">Unused</Badge>
-              )}
-            </TableCell>
-            <TableCell>{video.views_count || 0}</TableCell>
-            <TableCell>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/admin/news/videos/${video.id}`)}
-              >
-                Edit
-              </Button>
-            </TableCell>
+    <TooltipProvider>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Thumbnail</TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Usage</TableHead>
+            <TableHead>Views</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {videos.map((video) => (
+            <TableRow key={video.id}>
+              <TableCell>
+                {video.thumbnail_url ? (
+                  <img 
+                    src={video.thumbnail_url} 
+                    alt={video.title} 
+                    className="w-16 h-10 object-cover rounded"
+                  />
+                ) : video.video_url && video.video_url.includes('youtube.com') ? (
+                  <img 
+                    src={getYoutubeThumbnail(video.video_url)} 
+                    alt={video.title} 
+                    className="w-16 h-10 object-cover rounded"
+                  />
+                ) : (
+                  <div className="w-16 h-10 bg-muted flex items-center justify-center rounded">
+                    <Video className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
+              </TableCell>
+              <TableCell className="font-medium">{video.title}</TableCell>
+              <TableCell>
+                <span className={`text-sm px-2 py-1 rounded-full ${
+                  video.status === 'published' ? 'bg-green-100 text-green-800' : 
+                  video.status === 'archived' ? 'bg-red-100 text-red-800' : 
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {video.status.charAt(0).toUpperCase() + video.status.slice(1)}
+                </span>
+              </TableCell>
+              <TableCell>
+                <VideoUsageBadge 
+                  usage={video.usage} 
+                  articleTitle={video.relatedArticleTitle} 
+                />
+              </TableCell>
+              <TableCell>{video.views_count || 0}</TableCell>
+              <TableCell>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/admin/news/videos/${video.id}`)}
+                  >
+                    Edit
+                  </Button>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onArchive(video.id)}
+                        className="h-8 w-8"
+                        disabled={video.status === 'archived'}
+                      >
+                        <Archive className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Archive Video</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Video</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this video? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => onDelete(video.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TooltipProvider>
   );
 };
 

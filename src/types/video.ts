@@ -19,6 +19,8 @@ export interface Video {
     full_name?: string;
     avatar_url?: string | null;
   };
+  usage?: "latest" | "article" | "both" | "none";
+  relatedArticleTitle?: string;
 }
 
 export interface ProductLink {
