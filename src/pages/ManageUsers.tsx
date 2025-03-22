@@ -80,18 +80,31 @@ const ManageUsers = () => {
         console.log("Raw data from Supabase:", data);
 
         // Fix the mapping to correctly extract the role from user_roles
-        const mappedUsers: User[] = data.map(user => ({
-          id: user.id,
-          full_name: user.full_name || 'N/A',
-          email: user.email || 'N/A',
-          avatar_url: user.avatar_url,
-          // Extract the role from user_roles array correctly
-          role: user.user_roles && user.user_roles.length > 0 
-            ? user.user_roles[0].role as UserRole 
-            : "user",
-          account_status: user.account_status === "active" ? "active" : "inactive",
-          last_login_at: user.last_login_at
-        }));
+        const mappedUsers: User[] = data.map(user => {
+          // Check the structure of user_roles to handle it correctly
+          let userRole: UserRole = "user"; // default role
+          
+          if (user.user_roles) {
+            // If user_roles is an array of objects with role property
+            if (Array.isArray(user.user_roles) && user.user_roles.length > 0) {
+              userRole = user.user_roles[0].role as UserRole;
+            } 
+            // If user_roles is a single object with role property
+            else if (typeof user.user_roles === 'object' && user.user_roles.role) {
+              userRole = user.user_roles.role as UserRole;
+            }
+          }
+          
+          return {
+            id: user.id,
+            full_name: user.full_name || 'N/A',
+            email: user.email || 'N/A',
+            avatar_url: user.avatar_url,
+            role: userRole,
+            account_status: user.account_status === "active" ? "active" : "inactive",
+            last_login_at: user.last_login_at
+          };
+        });
 
         console.log("Mapped users:", mappedUsers);
         return mappedUsers;
