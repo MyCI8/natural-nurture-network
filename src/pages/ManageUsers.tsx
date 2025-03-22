@@ -1,3 +1,4 @@
+
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ const ManageUsers = () => {
             avatar_url,
             account_status,
             last_login_at,
-            user_roles!inner (
+            user_roles(
               role
             )
           `);
@@ -78,12 +79,16 @@ const ManageUsers = () => {
 
         console.log("Raw data from Supabase:", data);
 
+        // Fix the mapping to correctly extract the role from user_roles
         const mappedUsers: User[] = data.map(user => ({
           id: user.id,
           full_name: user.full_name || 'N/A',
           email: user.email || 'N/A',
           avatar_url: user.avatar_url,
-          role: user.user_roles?.[0]?.role as UserRole || "user",
+          // Extract the role from user_roles array correctly
+          role: user.user_roles && user.user_roles.length > 0 
+            ? user.user_roles[0].role as UserRole 
+            : "user",
           account_status: user.account_status === "active" ? "active" : "inactive",
           last_login_at: user.last_login_at
         }));
