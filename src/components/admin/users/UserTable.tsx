@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserCog, UserMinus, CheckCircle, XCircle } from "lucide-react";
 import {
@@ -19,9 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UserTableProps {
   users: User[];
@@ -31,6 +30,7 @@ interface UserTableProps {
 
 export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProps) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     try {
@@ -44,6 +44,9 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
         });
 
       if (error) throw error;
+
+      // Invalidate the users query to refetch the updated data
+      queryClient.invalidateQueries({ queryKey: ["users"] });
 
       toast({
         title: "Success",
@@ -67,6 +70,9 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
         .eq("id", userId);
 
       if (error) throw error;
+
+      // Invalidate the users query to refetch the updated data
+      queryClient.invalidateQueries({ queryKey: ["users"] });
 
       toast({
         title: "Success",
@@ -111,7 +117,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
               <TableCell>{user.email || "N/A"}</TableCell>
               <TableCell>
                 <Select
-                  defaultValue={user.role || "user"}
+                  value={user.role || "user"}
                   onValueChange={(value: UserRole) => handleRoleChange(user.id, value)}
                 >
                   <SelectTrigger className="w-32">
@@ -127,7 +133,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
               <TableCell>{formatLastLogin(user.last_login_at)}</TableCell>
               <TableCell>
                 <Select
-                  defaultValue={user.account_status || "active"}
+                  value={user.account_status || "active"}
                   onValueChange={(value: "active" | "inactive") => handleStatusChange(user.id, value)}
                 >
                   <SelectTrigger className="w-32">
