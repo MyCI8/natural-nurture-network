@@ -1,6 +1,5 @@
 
 import { Badge } from "@/components/ui/badge";
-import { VideoType } from "@/types/video";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { FC } from "react";
 
