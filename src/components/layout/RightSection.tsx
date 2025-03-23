@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,9 +51,10 @@ const RightSection = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("videos")
-        .select("*")
+        .select("*, creator:creator_id(*)")
         .eq("status", "published")
         .eq("video_type", "news")
+        .eq("showInLatest", true) // Filter videos marked to show in Latest Videos
         .order("created_at", { ascending: false })
         .limit(8);
         
