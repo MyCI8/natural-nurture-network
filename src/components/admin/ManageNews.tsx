@@ -114,7 +114,8 @@ const ManageNews = () => {
         return { 
           ...video, 
           usage: videoUsageData.usage,
-          relatedArticleTitle: videoUsageData.articleTitle
+          relatedArticleTitle: videoUsageData.articleTitle,
+          showInLatest: video.show_in_latest
         };
       }).filter(video => {
         if (videoFilter === "all") return true;
@@ -550,3 +551,4 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
 };
 
 export default ManageNews;
+

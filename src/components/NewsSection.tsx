@@ -36,7 +36,7 @@ const NewsSection = () => {
         .select("*")
         .eq("status", "published")
         .eq("video_type", "news")
-        .eq("showInLatest", true)
+        .eq("show_in_latest", true)
         .order("created_at", { ascending: false })
         .limit(4);
 

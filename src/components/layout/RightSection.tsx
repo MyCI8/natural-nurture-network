@@ -54,7 +54,7 @@ const RightSection = () => {
         .select("*, creator:creator_id(*)")
         .eq("status", "published")
         .eq("video_type", "news")
-        .eq("showInLatest", true) // Filter videos marked to show in Latest Videos
+        .eq("show_in_latest", true) // Using the actual column name from the database
         .order("created_at", { ascending: false })
         .limit(8);
         

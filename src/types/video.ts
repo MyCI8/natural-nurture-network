@@ -22,6 +22,7 @@ export interface Video {
   usage?: "latest" | "article" | "both" | "none";
   relatedArticleTitle?: string;
   showInLatest?: boolean; // Field to explicitly control display in Latest Videos section
+  show_in_latest?: boolean; // Actual database column name
 }
 
 export interface ProductLink {

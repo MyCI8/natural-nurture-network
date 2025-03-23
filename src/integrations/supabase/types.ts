@@ -1090,6 +1090,7 @@ export type Database = {
           description: string | null
           id: string
           likes_count: number | null
+          show_in_latest: boolean | null
           status: Database["public"]["Enums"]["video_status"] | null
           thumbnail_url: string | null
           title: string
@@ -1104,6 +1105,7 @@ export type Database = {
           description?: string | null
           id?: string
           likes_count?: number | null
+          show_in_latest?: boolean | null
           status?: Database["public"]["Enums"]["video_status"] | null
           thumbnail_url?: string | null
           title: string
@@ -1118,6 +1120,7 @@ export type Database = {
           description?: string | null
           id?: string
           likes_count?: number | null
+          show_in_latest?: boolean | null
           status?: Database["public"]["Enums"]["video_status"] | null
           thumbnail_url?: string | null
           title?: string

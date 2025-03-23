@@ -1,7 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { FC } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface VideoUsageBadgeProps {
   usage: "latest" | "article" | "both" | "none";
@@ -9,86 +8,43 @@ interface VideoUsageBadgeProps {
   showInLatest?: boolean;
 }
 
-export const VideoUsageBadge: FC<VideoUsageBadgeProps> = ({ usage, articleTitle, showInLatest = false }) => {
-  // If video is explicitly marked to show in latest videos
-  if (showInLatest) {
-    return (
-      <div className="flex gap-1">
-        <Badge className="bg-green-100 hover:bg-green-100 text-green-800 border-green-200 font-bold">
-          LV
-        </Badge>
-        {usage === "article" || usage === "both" ? (
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <Badge className="bg-blue-100 hover:bg-blue-100 text-blue-800 border-blue-200 font-bold cursor-help">
-                AR
-              </Badge>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-80 p-2">
-              <div className="space-y-1">
-                <h4 className="text-sm font-semibold">Related Article</h4>
-                <p className="text-sm">{articleTitle || "Unknown article"}</p>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        ) : null}
-      </div>
-    );
-  }
+export const VideoUsageBadge = ({ usage, articleTitle, showInLatest }: VideoUsageBadgeProps) => {
+  // Determine badge variant and text based on usage
+  let badgeVariant: "outline" | "secondary" | "default" = "outline";
+  let badgeText = "Not Used";
+  let tooltipText = "This video is not being used";
 
-  // Original behavior for backward compatibility
   if (usage === "both") {
-    return (
-      <div className="flex gap-1">
-        <Badge className="bg-green-100 hover:bg-green-100 text-green-800 border-green-200 font-bold">
-          LV
-        </Badge>
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <Badge className="bg-blue-100 hover:bg-blue-100 text-blue-800 border-blue-200 font-bold cursor-help">
-              AR
-            </Badge>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80 p-2">
-            <div className="space-y-1">
-              <h4 className="text-sm font-semibold">Related Article</h4>
-              <p className="text-sm">{articleTitle || "Unknown article"}</p>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      </div>
-    );
+    badgeVariant = "default";
+    badgeText = "Both";
+    tooltipText = `Used in Latest Videos and article: "${articleTitle}"`;
+  } else if (usage === "article") {
+    badgeVariant = "secondary";
+    badgeText = "In Article";
+    tooltipText = `Used in article: "${articleTitle}"`;
+  } else if (usage === "latest") {
+    badgeVariant = "outline";
+    badgeText = "Latest Videos";
+    tooltipText = "Shown in Latest Videos section";
   }
 
-  if (usage === "latest") {
-    return (
-      <Badge className="bg-green-100 hover:bg-green-100 text-green-800 border-green-200 font-bold">
-        LV
-      </Badge>
-    );
-  }
-
-  if (usage === "article") {
-    return (
-      <HoverCard>
-        <HoverCardTrigger asChild>
-          <Badge className="bg-blue-100 hover:bg-blue-100 text-blue-800 border-blue-200 font-bold cursor-help">
-            AR
-          </Badge>
-        </HoverCardTrigger>
-        <HoverCardContent className="w-80 p-2">
-          <div className="space-y-1">
-            <h4 className="text-sm font-semibold">Related Article</h4>
-            <p className="text-sm">{articleTitle || "Unknown article"}</p>
-          </div>
-        </HoverCardContent>
-      </HoverCard>
-    );
+  // If showInLatest is explicitly false, override badge for videos marked "latest" or "both"
+  if (showInLatest === false && (usage === "latest" || usage === "both")) {
+    badgeVariant = "outline";
+    badgeText = "Hidden";
+    tooltipText = "Marked as hidden from Latest Videos section";
   }
 
   return (
-    <Badge variant="outline" className="opacity-50">
-      None
-    </Badge>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge variant={badgeVariant} className="whitespace-nowrap">
+          {badgeText}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{tooltipText}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };
