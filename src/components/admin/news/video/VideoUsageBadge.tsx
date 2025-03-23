@@ -6,9 +6,37 @@ import { FC } from "react";
 interface VideoUsageBadgeProps {
   usage: "latest" | "article" | "both" | "none";
   articleTitle?: string;
+  showInLatest?: boolean;
 }
 
-export const VideoUsageBadge: FC<VideoUsageBadgeProps> = ({ usage, articleTitle }) => {
+export const VideoUsageBadge: FC<VideoUsageBadgeProps> = ({ usage, articleTitle, showInLatest = false }) => {
+  // If video is explicitly marked to show in latest videos
+  if (showInLatest) {
+    return (
+      <div className="flex gap-1">
+        <Badge className="bg-green-100 hover:bg-green-100 text-green-800 border-green-200 font-bold">
+          LV
+        </Badge>
+        {usage === "article" || usage === "both" ? (
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <Badge className="bg-blue-100 hover:bg-blue-100 text-blue-800 border-blue-200 font-bold cursor-help">
+                AR
+              </Badge>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80 p-2">
+              <div className="space-y-1">
+                <h4 className="text-sm font-semibold">Related Article</h4>
+                <p className="text-sm">{articleTitle || "Unknown article"}</p>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        ) : null}
+      </div>
+    );
+  }
+
+  // Original behavior for backward compatibility
   if (usage === "both") {
     return (
       <div className="flex gap-1">

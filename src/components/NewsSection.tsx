@@ -41,7 +41,7 @@ const NewsSection = () => {
 
       if (error) throw error;
       console.log("News Videos fetched:", data);
-      return data;
+      return data || [];
     },
   });
 

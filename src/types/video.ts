@@ -21,6 +21,7 @@ export interface Video {
   };
   usage?: "latest" | "article" | "both" | "none";
   relatedArticleTitle?: string;
+  showInLatest?: boolean; // New field to explicitly control display in Latest Videos section
 }
 
 export interface ProductLink {

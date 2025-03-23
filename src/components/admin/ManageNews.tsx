@@ -480,6 +480,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                 <VideoUsageBadge 
                   usage={video.usage} 
                   articleTitle={video.relatedArticleTitle} 
+                  showInLatest={video.showInLatest}
                 />
               </TableCell>
               <TableCell>{video.views_count || 0}</TableCell>

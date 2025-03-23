@@ -1,10 +1,10 @@
-
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Upload, Video, X, Crop, Trash2, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useRef, useEffect } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
@@ -30,7 +30,6 @@ interface LocationState {
 
 const DAILY_UPLOAD_LIMIT = 20;
 
-// Available video types for selection
 const VIDEO_TYPES = [
   { value: "general", label: "General Video" },
   { value: "news", label: "News Video" }
@@ -61,20 +60,21 @@ const EditVideo = () => {
   const [relatedArticleId, setRelatedArticleId] = useState<string | null>(null);
   const [articles, setArticles] = useState<{id: string, title: string}[]>([]);
   const [showArticleSelect, setShowArticleSelect] = useState(false);
+  const [showInLatest, setShowInLatest] = useState(false);
 
   useEffect(() => {
     const state = location.state as LocationState;
-    // Set video type from navigation state if provided
     if (state?.videoType) {
       setVideoType(state.videoType);
+      if (state.videoType === "news") {
+        setShowInLatest(true);
+      }
     }
     
-    // Set related article ID if provided
     if (state?.articleId) {
       setRelatedArticleId(state.articleId);
     }
 
-    // Load published articles for selection if this is a news video
     if (state?.videoType === "news" || videoType === "news") {
       fetchArticles();
     }
@@ -302,16 +302,16 @@ const EditVideo = () => {
         thumbnailUrl = uploadedFiles.length > 1 ? uploadedFiles[1] : null;
       }
 
-      // Prepare the video data with proper type and related article if applicable
       const videoData = {
         title,
         description: description.trim() || null,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
-        status: 'published' as const, // Explicitly type as a literal to match the enum type
+        status: 'published' as const,
         creator_id: user.id,
         video_type: videoType,
-        related_article_id: relatedArticleId
+        related_article_id: relatedArticleId,
+        showInLatest: videoType === "news" ? showInLatest : false
       };
 
       const { error: insertError } = await supabase
@@ -525,6 +525,22 @@ const EditVideo = () => {
                 </div>
               )}
             </div>
+
+            {videoType === "news" && (
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="showInLatest" 
+                  checked={showInLatest}
+                  onCheckedChange={(checked) => setShowInLatest(checked as boolean)}
+                />
+                <label
+                  htmlFor="showInLatest"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Show in Latest Videos section
+                </label>
+              </div>
+            )}
 
             <div className="flex justify-end pt-4">
               <Button

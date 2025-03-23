@@ -7,27 +7,23 @@ import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
 
-// Define a simple interface for video links
 interface VideoLink {
   title: string;
   url: string;
 }
 
-// Define a simple interface for news article data with more precise types
 interface ArticleData {
-  video_links?: string | null;  // Simplified to just string or null
+  video_links?: string | null;
   video_description?: string | null;
 }
 
 const RightSection = () => {
   const location = useLocation();
   
-  // Extract the ID from the URL for news article pages
   const newsArticleId = location.pathname.startsWith('/news/') 
     ? location.pathname.split('/news/')[1]
     : null;
   
-  // Fetch video data for news articles with explicit typing to avoid recursion
   const { data: articleData } = useQuery<ArticleData | null>({
     queryKey: ["news-article-videos", newsArticleId],
     queryFn: async () => {
@@ -49,7 +45,6 @@ const RightSection = () => {
     enabled: !!newsArticleId,
   });
   
-  // Fetch videos for news page with explicit typing
   const { data: videos } = useQuery<Video[]>({
     queryKey: ["news-videos-sidebar"],
     queryFn: async () => {
@@ -57,7 +52,7 @@ const RightSection = () => {
         .from("videos")
         .select("*")
         .eq("status", "published")
-        .eq("video_type", "news") // Filter to only show news videos
+        .eq("video_type", "news")
         .order("created_at", { ascending: false })
         .limit(8);
         
@@ -71,15 +66,12 @@ const RightSection = () => {
     enabled: location.pathname === '/news',
   });
   
-  // Process video links from articleData
   const videoLinks: VideoLink[] = [];
   
   if (articleData?.video_links) {
-    // Safely handle the video_links data regardless of its format
     const linksData = articleData.video_links;
     
     try {
-      // Handle string format (JSON string)
       if (typeof linksData === 'string') {
         const parsed = JSON.parse(linksData);
         if (Array.isArray(parsed)) {
@@ -95,11 +87,9 @@ const RightSection = () => {
       }
     } catch (e) {
       console.error('Error processing video links:', e);
-      // Continue with empty videoLinks array if parsing fails
     }
   }
   
-  // Custom content based on route
   if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
     return (
       <div className="h-full p-4 overflow-y-auto">
@@ -113,7 +103,6 @@ const RightSection = () => {
     );
   }
   
-  // Show videos when on the main news page
   if (location.pathname === '/news' && videos?.length > 0) {
     return (
       <div className="h-full p-4 overflow-y-auto">
@@ -177,7 +166,6 @@ const RightSection = () => {
     );
   }
   
-  // Default content
   return (
     <div className="h-full p-4 overflow-y-auto">
       <h2 className="text-lg font-semibold mb-4 text-left pl-2">Additional Information</h2>
