@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Plus, Search, Video, Trash2, Archive } from "lucide-react";
@@ -487,11 +487,11 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                 </span>
               </TableCell>
               <TableCell>
-                <VideoUsageBadge
-                  usage={video.usage}
-                  articleTitle={video.relatedArticleTitle}
-                  showInLatest={video.showInLatest}
-                />
+                {React.createElement(VideoUsageBadge, {
+                  usage: video.usage,
+                  articleTitle: video.relatedArticleTitle,
+                  showInLatest: video.showInLatest
+                })}
               </TableCell>
               <TableCell>{video.views_count || 0}</TableCell>
               <TableCell>
