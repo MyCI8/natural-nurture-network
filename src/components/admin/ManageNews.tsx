@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -480,7 +481,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
               <TableCell>
                 <VideoUsageBadge 
                   usage={video.usage} 
-                  articleTitle={video.relatedArticleTitle} 
+                  articleTitle={video.relatedArticleTitle}
                   showInLatest={video.showInLatest}
                 />
               </TableCell>
@@ -551,4 +552,3 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
 };
 
 export default ManageNews;
-
