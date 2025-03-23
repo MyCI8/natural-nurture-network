@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -245,6 +246,107 @@ const ManageNews = () => {
           Videos
         </Button>
       </div>
+
+      {contentType === "articles" ? (
+        <div className="space-y-6">
+          <Tabs defaultValue="all" value={currentTab} onValueChange={(value: "all" | "draft" | "published" | "submitted") => setCurrentTab(value)}>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all">All Articles</TabsTrigger>
+              <TabsTrigger value="draft">Drafts</TabsTrigger>
+              <TabsTrigger value="published">Published</TabsTrigger>
+              <TabsTrigger value="submitted">Submitted</TabsTrigger>
+            </TabsList>
+
+            <div className="mt-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="relative">
+                  <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search articles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+
+                <Select
+                  value={sortBy}
+                  onValueChange={(value: "recent" | "title") => setSortBy(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="recent">Most Recent</SelectItem>
+                    <SelectItem value="title">Title</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <TabsContent value="all" className="mt-6">
+              <ArticleGrid articles={articles} navigate={navigate} />
+            </TabsContent>
+            <TabsContent value="draft" className="mt-6">
+              <ArticleGrid articles={articles} navigate={navigate} />
+            </TabsContent>
+            <TabsContent value="published" className="mt-6">
+              <ArticleGrid articles={articles} navigate={navigate} />
+            </TabsContent>
+            <TabsContent value="submitted" className="mt-6">
+              <ArticleGrid articles={articles} navigate={navigate} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="mb-6">
+            <Tabs defaultValue="all" value={videoFilter} onValueChange={(value: "all" | "latest" | "article" | "both") => setVideoFilter(value)}>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="all">All Videos</TabsTrigger>
+                <TabsTrigger value="latest">Latest Videos</TabsTrigger>
+                <TabsTrigger value="article">In Articles</TabsTrigger>
+                <TabsTrigger value="both">Both</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div className="mt-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search videos..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+
+              <Select
+                value={sortBy}
+                onValueChange={(value: "recent" | "title") => setSortBy(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Most Recent</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <VideoTable 
+            videos={videos} 
+            navigate={navigate} 
+            isLoading={isLoadingVideos} 
+            onDelete={(id) => deleteVideoMutation.mutate(id)}
+            onArchive={(id) => archiveVideoMutation.mutate(id)}
+          />
+        </div>
+      )}
     </div>
   );
 };
