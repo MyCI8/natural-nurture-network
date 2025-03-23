@@ -311,7 +311,7 @@ const EditVideo = () => {
         creator_id: user.id,
         video_type: videoType,
         related_article_id: relatedArticleId,
-        showInLatest: videoType === "news" ? showInLatest : false
+        show_in_latest: videoType === "news" ? showInLatest : false
       };
 
       const { error: insertError } = await supabase
@@ -325,9 +325,13 @@ const EditVideo = () => {
         description: "Video published successfully",
       });
 
-      const state = location.state as LocationState;
-      const returnPath = state?.returnTo || '/admin/videos';
-      navigate(returnPath);
+      if (videoType === "news") {
+        navigate("/admin/news?tab=videos");
+      } else {
+        const state = location.state as LocationState;
+        const returnPath = state?.returnTo || '/admin/videos';
+        navigate(returnPath);
+      }
     } catch (error: any) {
       toast({
         title: "Error",

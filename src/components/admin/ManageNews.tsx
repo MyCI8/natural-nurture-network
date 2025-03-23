@@ -1,7 +1,6 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Plus, Search, Video, Trash2, Archive } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -38,12 +37,21 @@ type VideoUsage = "latest" | "article" | "both" | "none";
 
 const ManageNews = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
   const [currentTab, setCurrentTab] = useState<"all" | "draft" | "published" | "submitted">("all");
   const [contentType, setContentType] = useState<"articles" | "videos">("articles");
   const [videoFilter, setVideoFilter] = useState<"all" | "latest" | "article" | "both">("all");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'videos') {
+      setContentType('videos');
+    }
+  }, [location]);
 
   const { data: articles = [], isLoading: isLoadingArticles } = useQuery({
     queryKey: ["admin-news", searchQuery, currentTab, sortBy],
@@ -203,7 +211,7 @@ const ManageNews = () => {
   const handleAddVideo = () => {
     navigate("/admin/videos/new", { 
       state: { 
-        returnTo: "/admin/news",
+        returnTo: "/admin/news?tab=videos",
         videoType: "news" 
       } 
     });
@@ -404,7 +412,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
           className="mt-4"
           onClick={() => navigate("/admin/videos/new", { 
             state: { 
-              returnTo: "/admin/news",
+              returnTo: "/admin/news?tab=videos",
               videoType: "news" 
             } 
           })}
