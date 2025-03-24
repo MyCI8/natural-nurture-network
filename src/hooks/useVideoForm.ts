@@ -62,10 +62,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
           videoType: videoType
         });
 
-        if (videoType === 'news' && location.state?.returnTo === '/admin/videos') {
-          location.state.returnTo = '/admin/news/videos';
-        }
-
         if (data.video_url && data.video_url.includes('youtube.com')) {
           setIsYoutubeLink(true);
           setMediaPreview(getYouTubeThumbnail(data.video_url));

@@ -20,13 +20,16 @@ const EditVideo = () => {
   
   // Determine video type from location state or default to 'general'
   const videoType = location.state?.videoType || 'general';
-  // Make sure news videos return to the correct path
-  let returnTo = location.state?.returnTo || "/admin/videos";
   
-  // Fix the return path for news videos if it's not already correct
-  if (videoType === 'news' && returnTo === "/admin/videos") {
-    returnTo = "/admin/news/videos";
-  }
+  // Always set the correct return path based on video type
+  const getCorrectReturnPath = () => {
+    if (videoType === 'news') {
+      return "/admin/news/videos";
+    }
+    return "/admin/videos";
+  };
+  
+  const returnTo = location.state?.returnTo || getCorrectReturnPath();
   
   const {
     formState,
@@ -55,17 +58,22 @@ const EditVideo = () => {
     e.preventDefault();
     const result = await saveVideo(false);
     if (result) {
-      console.log("Video saved, navigating to:", returnTo);
+      // Determine the correct return path based on the video type
+      const correctReturnPath = formState.videoType === 'news' 
+        ? "/admin/news/videos" 
+        : "/admin/videos";
+        
+      console.log("Video saved, navigating to:", correctReturnPath);
       
       // Force a refetch of the videos list then navigate
-      if (returnTo.includes("news/videos")) {
+      if (correctReturnPath.includes("news/videos")) {
         window.dispatchEvent(new CustomEvent("refetch-news-videos"));
-        setTimeout(() => {
-          navigate(returnTo);
-        }, 100); // Small delay to ensure event is processed
-      } else {
-        navigate(returnTo);
       }
+      
+      // Add a small delay to ensure event processing before navigation
+      setTimeout(() => {
+        navigate(correctReturnPath);
+      }, 100);
     }
   };
 
@@ -73,11 +81,15 @@ const EditVideo = () => {
     const result = await saveVideo(true);
     if (result) {
       if (!id) {
-        // For new videos, navigate to edit page
+        // For new videos, navigate to edit page with correct returnTo state
+        const correctReturnPath = formState.videoType === 'news' 
+          ? "/admin/news/videos" 
+          : "/admin/videos";
+          
         navigate(`/admin/videos/${result.id}`, {
           state: { 
-            returnTo: returnTo,
-            videoType: videoType 
+            returnTo: correctReturnPath,
+            videoType: formState.videoType 
           }
         });
       } else {
