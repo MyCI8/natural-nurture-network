@@ -55,7 +55,8 @@ export function useVideoForm(videoId?: string) {
           thumbnailUrl: data.thumbnail_url,
           showInLatest: data.show_in_latest ?? true,
           status: data.status as "draft" | "published" | "archived",
-          relatedArticleId: data.related_article_id,
+          // Safely access related_article_id using optional chaining
+          relatedArticleId: data.related_article_id || null,
         });
 
         if (data.video_url && data.video_url.includes('youtube.com')) {
@@ -173,12 +174,14 @@ export function useVideoForm(videoId?: string) {
         thumbnailUrl = getYouTubeThumbnail(formState.videoUrl);
       }
 
+      // Define and type the videoData object properly
       const videoData = {
         title: formState.title,
         description: formState.description,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
-        status: asDraft ? "draft" : "published",
+        // Ensure status is one of the allowed enum values
+        status: (asDraft ? "draft" : "published") as "draft" | "published" | "archived",
         creator_id: user.id,
         video_type: "news",
         related_article_id: formState.relatedArticleId,
