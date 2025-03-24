@@ -173,7 +173,6 @@ export function useVideoForm(videoId?: string) {
         thumbnailUrl = getYouTubeThumbnail(formState.videoUrl);
       }
 
-      // Define the videoData with the correct typing to match database schema
       const videoData = {
         title: formState.title,
         description: formState.description,
@@ -228,7 +227,12 @@ export function useVideoForm(videoId?: string) {
   useEffect(() => {
     // Initialize fetchArticles when component mounts
     fetchArticles();
-  }, []);
+    
+    // If videoId is provided, fetch the video data
+    if (videoId) {
+      fetchVideo();
+    }
+  }, [videoId]);
 
   return {
     formState,
