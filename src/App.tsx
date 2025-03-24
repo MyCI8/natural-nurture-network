@@ -16,6 +16,8 @@ import ManageExperts from "./pages/ManageExperts";
 import EditExpert from "./pages/EditExpert";
 import NotFound from "./pages/NotFound";
 import News from "./pages/News";
+import Explore from "./pages/Explore";
+import ExploreDetail from "./pages/ExploreDetail";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           <Route path="home" element={<Home />} />
           <Route path="auth" element={<Auth />} />
           <Route path="news" element={<News />} />
+          <Route path="explore" element={<Explore />} />
+          <Route path="explore/:id" element={<ExploreDetail />} />
 
           {/* Admin Routes */}
           <Route path="admin/news" element={<ManageNews />} />
