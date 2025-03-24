@@ -1090,6 +1090,7 @@ export type Database = {
           description: string | null
           id: string
           likes_count: number | null
+          related_article_id: string | null
           show_in_latest: boolean | null
           status: Database["public"]["Enums"]["video_status"] | null
           thumbnail_url: string | null
@@ -1105,6 +1106,7 @@ export type Database = {
           description?: string | null
           id?: string
           likes_count?: number | null
+          related_article_id?: string | null
           show_in_latest?: boolean | null
           status?: Database["public"]["Enums"]["video_status"] | null
           thumbnail_url?: string | null
@@ -1120,6 +1122,7 @@ export type Database = {
           description?: string | null
           id?: string
           likes_count?: number | null
+          related_article_id?: string | null
           show_in_latest?: boolean | null
           status?: Database["public"]["Enums"]["video_status"] | null
           thumbnail_url?: string | null
@@ -1135,6 +1138,13 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "videos_related_article_id_fkey"
+            columns: ["related_article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
             referencedColumns: ["id"]
           },
         ]
