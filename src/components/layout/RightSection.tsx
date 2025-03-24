@@ -103,7 +103,7 @@ const RightSection = () => {
       <div className="p-4 overflow-y-auto flex-1">
         {location.pathname.startsWith('/news/') && videoLinks.length > 0 && (
           <>
-            <h3 className="text-lg font-semibold mb-4 text-left pl-2">Related Videos</h3>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>
             <NewsVideos 
               videoLinks={videoLinks} 
               videoDescription={articleData?.video_description || undefined} 
@@ -114,7 +114,7 @@ const RightSection = () => {
         
         {location.pathname === '/news' && videos && videos.length > 0 && (
           <>
-            <h3 className="text-lg font-semibold mb-4 text-left pl-2">Latest Videos</h3>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Latest Videos</h2>
             <div className="space-y-4">
               {videos.map((video) => (
                 <Link to={`/news/videos/${video.id}`} key={video.id}>
@@ -153,7 +153,7 @@ const RightSection = () => {
         
         {location.pathname.startsWith('/explore/') && (
           <>
-            <h2 className="text-lg font-semibold mb-4 text-left pl-2">Explore Details</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Explore Details</h2>
             <p className="text-sm text-muted-foreground text-left pl-2">
               This section shows details about the current explore item.
             </p>
@@ -162,7 +162,7 @@ const RightSection = () => {
         
         {location.pathname.startsWith('/symptoms/') && (
           <>
-            <h2 className="text-lg font-semibold mb-4 text-left pl-2">Related Content</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Content</h2>
             <p className="text-sm text-muted-foreground text-left pl-2">
               This section shows content related to the current symptom.
             </p>
@@ -174,7 +174,7 @@ const RightSection = () => {
          !location.pathname.startsWith('/symptoms/') && 
          location.pathname !== '/news' && (
           <>
-            <h2 className="text-lg font-semibold mb-4 text-left pl-2">Additional Information</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Additional Information</h2>
             <p className="text-sm text-muted-foreground text-left pl-2">
               This panel displays contextual information related to the current page.
             </p>
