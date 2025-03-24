@@ -3,9 +3,9 @@ import React from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import ManageNewsComponent from "@/components/admin/ManageNews";
+import VideoManagement from "@/components/admin/news/videos/VideoManagement";
 
-const ManageNews = () => {
+const ManageNewsVideos = () => {
   const navigate = useNavigate();
 
   return (
@@ -14,15 +14,15 @@ const ManageNews = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/admin/news")}
           className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <ManageNewsComponent />
+        <VideoManagement />
       </div>
     </div>
   );
 };
 
-export default ManageNews;
+export default ManageNewsVideos;

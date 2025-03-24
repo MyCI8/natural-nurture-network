@@ -19,6 +19,9 @@ import Ingredients from "./pages/Ingredients";
 import News from "./pages/News";
 import NewsArticle from "./pages/NewsArticle";
 import ManageNews from "./pages/ManageNews";
+import ManageNewsArticles from "./pages/ManageNewsArticles";
+import ManageNewsVideos from "./pages/ManageNewsVideos";
+import ManageLatestVideos from "./pages/ManageLatestVideos";
 import EditNews from "./pages/EditNews";
 import Auth from "./pages/Auth";
 import ManageUsers from "./pages/ManageUsers";
@@ -83,6 +86,9 @@ const Routes = () => {
           </Route>
           <Route path="news">
             <Route index element={<ManageNews />} />
+            <Route path="articles" element={<ManageNewsArticles />} />
+            <Route path="videos" element={<ManageNewsVideos />} />
+            <Route path="latest" element={<ManageLatestVideos />} />
             <Route path=":id" element={<EditNews />} />
             <Route path="videos/:id" element={<EditVideo />} />
           </Route>
