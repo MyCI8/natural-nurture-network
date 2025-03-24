@@ -1,6 +1,5 @@
 
 import { Route, Routes } from "react-router-dom";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import Layout from "@/components/Layout";
 import Home from "./pages/Home";
@@ -17,11 +16,9 @@ import ManageExperts from "./pages/ManageExperts";
 import EditExpert from "./pages/EditExpert";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
-
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -47,7 +44,7 @@ function App() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </QueryClientProvider>
+    </>
   );
 }
 
