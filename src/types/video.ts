@@ -22,7 +22,7 @@ export interface Video {
   usage?: "latest" | "article" | "both" | "none";
   relatedArticleTitle?: string;
   
-  // Use the database column name
+  // The actual database column - this is the one to use
   show_in_latest?: boolean; // Database column that controls display in Latest Videos section
 }
 

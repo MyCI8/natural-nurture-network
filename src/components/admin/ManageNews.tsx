@@ -559,4 +559,3 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
 };
 
 export default ManageNews;
-
