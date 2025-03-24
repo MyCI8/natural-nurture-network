@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +54,6 @@ const RightSection = () => {
         .from("videos")
         .select("*, creator:creator_id(*)")
         .eq("status", "published")
-        .eq("video_type", "news")
         .eq("show_in_latest", true)
         .order("created_at", { ascending: false })
         .limit(8);
