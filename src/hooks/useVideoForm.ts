@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +54,6 @@ export function useVideoForm(videoId?: string) {
           thumbnailUrl: data.thumbnail_url,
           showInLatest: data.show_in_latest ?? true,
           status: data.status as "draft" | "published" | "archived",
-          // Safely access related_article_id using optional chaining
           relatedArticleId: data.related_article_id || null,
         });
 
