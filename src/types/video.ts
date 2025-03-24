@@ -21,8 +21,9 @@ export interface Video {
   };
   usage?: "latest" | "article" | "both" | "none";
   relatedArticleTitle?: string;
-  showInLatest?: boolean; // Field to explicitly control display in Latest Videos section
-  show_in_latest?: boolean; // Actual database column name
+  
+  // Use the database column name
+  show_in_latest?: boolean; // Database column that controls display in Latest Videos section
 }
 
 export interface ProductLink {

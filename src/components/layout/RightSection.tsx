@@ -67,6 +67,7 @@ const RightSection = () => {
       console.log("Latest videos fetched:", data);
       return (data || []) as Video[];
     },
+    // Enable this query when we're on the main news page
     enabled: location.pathname === '/news',
   });
   
@@ -107,7 +108,7 @@ const RightSection = () => {
     );
   }
   
-  if (location.pathname === '/news' && videos?.length > 0) {
+  if (location.pathname === '/news' && videos && videos.length > 0) {
     return (
       <div className="h-full p-4 overflow-y-auto">
         <h3 className="text-lg font-semibold mb-4 text-left pl-2">Latest Videos</h3>

@@ -123,12 +123,11 @@ const ManageNews = () => {
         return { 
           ...video, 
           usage: videoUsageData.usage,
-          relatedArticleTitle: videoUsageData.articleTitle,
-          showInLatest: video.show_in_latest
+          relatedArticleTitle: videoUsageData.articleTitle
         };
       }).filter(video => {
         if (videoFilter === "all") return true;
-        if (videoFilter === "latest") return video.usage === "latest" || video.usage === "both";
+        if (videoFilter === "latest") return video.show_in_latest && (video.usage === "latest" || video.usage === "both");
         if (videoFilter === "article") return video.usage === "article" || video.usage === "both";
         if (videoFilter === "both") return video.usage === "both";
         return true;
