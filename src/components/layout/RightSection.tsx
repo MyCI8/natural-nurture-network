@@ -68,8 +68,6 @@ const RightSection = () => {
       console.log("Latest videos fetched:", data);
       return (data || []) as Video[];
     },
-    // Enable this query when we're on the main news page
-    enabled: location.pathname === '/news',
   });
   
   const videoLinks: VideoLink[] = [];
@@ -112,42 +110,46 @@ const RightSection = () => {
           </>
         )}
         
-        {location.pathname === '/news' && videos && videos.length > 0 && (
+        {(location.pathname === '/news' || location.pathname === '/news/') && (
           <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Latest Videos</h2>
-            <div className="space-y-4">
-              {videos.map((video) => (
-                <Link to={`/news/videos/${video.id}`} key={video.id}>
-                  <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
-                    <CardContent className="p-0">
-                      <AspectRatio ratio={16/9} className="bg-gray-100">
-                        {video.thumbnail_url ? (
-                          <img
-                            src={video.thumbnail_url}
-                            alt={video.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          video.video_url && video.video_url.includes('youtube.com') && (
+            {videos && videos.length > 0 ? (
+              <div className="space-y-4">
+                {videos.map((video) => (
+                  <Link to={`/news/videos/${video.id}`} key={video.id}>
+                    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
+                      <CardContent className="p-0">
+                        <AspectRatio ratio={16/9} className="bg-gray-100">
+                          {video.thumbnail_url ? (
                             <img
-                              src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
+                              src={video.thumbnail_url}
                               alt={video.title}
                               className="w-full h-full object-cover"
                             />
-                          )
-                        )}
-                      </AspectRatio>
-                      <div className="p-3 text-left">
-                        <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(video.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+                          ) : (
+                            video.video_url && video.video_url.includes('youtube.com') && (
+                              <img
+                                src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
+                                alt={video.title}
+                                className="w-full h-full object-cover"
+                              />
+                            )
+                          )}
+                        </AspectRatio>
+                        <div className="p-3 text-left">
+                          <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(video.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-left pl-2">No videos available</p>
+            )}
           </>
         )}
         
@@ -172,7 +174,8 @@ const RightSection = () => {
         {!location.pathname.startsWith('/news/') && 
          !location.pathname.startsWith('/explore/') && 
          !location.pathname.startsWith('/symptoms/') && 
-         location.pathname !== '/news' && (
+         location.pathname !== '/news' && 
+         location.pathname !== '/news/' && (
           <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Additional Information</h2>
             <p className="text-sm text-muted-foreground text-left pl-2">
