@@ -486,11 +486,11 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                 </span>
               </TableCell>
               <TableCell>
-                {React.createElement(VideoUsageBadge, {
-                  usage: video.usage,
-                  articleTitle: video.relatedArticleTitle,
-                  showInLatest: video.showInLatest
-                })}
+                <VideoUsageBadge
+                  usage={video.usage}
+                  articleTitle={video.relatedArticleTitle}
+                  showInLatest={video.show_in_latest}
+                />
               </TableCell>
               <TableCell>{video.views_count || 0}</TableCell>
               <TableCell>
@@ -559,3 +559,4 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
 };
 
 export default ManageNews;
+
