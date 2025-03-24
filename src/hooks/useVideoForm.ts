@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +49,8 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
       if (error) throw error;
       
       if (data) {
+        const videoType = data.video_type as "news" | "general" | "explore" || defaultVideoType;
+        
         setFormState({
           title: data.title || "",
           description: data.description || "",
@@ -58,8 +59,12 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
           showInLatest: data.show_in_latest ?? true,
           status: data.status as "draft" | "published" | "archived",
           relatedArticleId: data.related_article_id || null,
-          videoType: data.video_type as "news" | "general" | "explore" || defaultVideoType
+          videoType: videoType
         });
+
+        if (videoType === 'news' && location.state?.returnTo === '/admin/videos') {
+          location.state.returnTo = '/admin/news/videos';
+        }
 
         if (data.video_url && data.video_url.includes('youtube.com')) {
           setIsYoutubeLink(true);
@@ -103,7 +108,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
     setIsYoutubeLink(true);
     setMediaFile(null);
     
-    // Try to get YouTube thumbnail
     const thumbnailUrl = getYouTubeThumbnail(url);
     setMediaPreview(thumbnailUrl);
   };
@@ -156,7 +160,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
       let videoUrl = formState.videoUrl;
       let thumbnailUrl = formState.thumbnailUrl;
       
-      // Upload media file if exists
       if (mediaFile) {
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
@@ -191,7 +194,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
       let result;
       
       if (videoId) {
-        // Update existing video
         const { data, error } = await supabase
           .from('videos')
           .update(videoData)
@@ -204,7 +206,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
         
         toast.success(asDraft ? "Draft saved successfully" : "Video updated successfully");
       } else {
-        // Insert new video
         const { data, error } = await supabase
           .from('videos')
           .insert(videoData)
@@ -228,10 +229,8 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
   };
 
   useEffect(() => {
-    // Initialize fetchArticles when component mounts
     fetchArticles();
     
-    // If videoId is provided, fetch the video data
     if (videoId) {
       fetchVideo();
     }

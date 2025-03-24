@@ -20,7 +20,13 @@ const EditVideo = () => {
   
   // Determine video type from location state or default to 'general'
   const videoType = location.state?.videoType || 'general';
-  const returnTo = location.state?.returnTo || "/admin/videos";
+  // Make sure news videos return to the correct path
+  let returnTo = location.state?.returnTo || "/admin/videos";
+  
+  // Fix the return path for news videos if it's not already correct
+  if (videoType === 'news' && returnTo === "/admin/videos") {
+    returnTo = "/admin/news/videos";
+  }
   
   const {
     formState,

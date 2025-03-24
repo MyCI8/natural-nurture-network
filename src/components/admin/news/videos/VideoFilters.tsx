@@ -1,17 +1,16 @@
 
 import React from "react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface VideoFiltersProps {
   searchQuery: string;
-  setSearchQuery: (value: string) => void;
+  setSearchQuery: (query: string) => void;
   sortBy: "recent" | "title";
-  setSortBy: (value: "recent" | "title") => void;
+  setSortBy: (sort: "recent" | "title") => void;
   videoFilter: "all" | "latest" | "article" | "both";
-  setVideoFilter: (value: "all" | "latest" | "article" | "both") => void;
+  setVideoFilter: (filter: "all" | "latest" | "article" | "both") => void;
 }
 
 const VideoFilters = ({
@@ -20,74 +19,42 @@ const VideoFilters = ({
   sortBy,
   setSortBy,
   videoFilter,
-  setVideoFilter
+  setVideoFilter,
 }: VideoFiltersProps) => {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <Button
-          variant={videoFilter === "all" ? "default" : "outline"}
-          onClick={() => setVideoFilter("all")}
-          className="text-sm h-9"
-        >
-          All Videos
-        </Button>
-        <Button
-          variant={videoFilter === "latest" ? "default" : "outline"}
-          onClick={() => setVideoFilter("latest")}
-          className="text-sm h-9"
-        >
-          Latest Videos
-        </Button>
-        <Button
-          variant={videoFilter === "article" ? "default" : "outline"}
-          onClick={() => setVideoFilter("article")}
-          className="text-sm h-9"
-        >
-          In Articles
-        </Button>
-        <Button
-          variant={videoFilter === "both" ? "default" : "outline"}
-          onClick={() => setVideoFilter("both")}
-          className="text-sm h-9"
-        >
-          Both
-        </Button>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="relative">
-          <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+    <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center w-full">
+      <Tabs 
+        value={videoFilter} 
+        onValueChange={(value) => setVideoFilter(value as any)}
+        className="w-full md:w-auto"
+      >
+        <TabsList className="grid w-full md:w-auto grid-cols-4">
+          <TabsTrigger value="latest">Latest Videos</TabsTrigger>
+          <TabsTrigger value="article">In Articles</TabsTrigger>
+          <TabsTrigger value="both">Both</TabsTrigger>
+          <TabsTrigger value="all">All</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
+      <div className="flex gap-3 w-full md:w-auto">
+        <div className="relative w-full md:w-auto">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search videos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 pr-8"
+            className="pl-8 w-full md:w-[250px]"
           />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0 h-10 w-10 p-0"
-              onClick={() => setSearchQuery("")}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
         </div>
-
-        <Select
+        
+        <select
           value={sortBy}
-          onValueChange={(value: "recent" | "title") => setSortBy(value)}
+          onChange={(e) => setSortBy(e.target.value as "recent" | "title")}
+          className="px-3 py-2 rounded-md border text-sm border-input bg-background"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recent">Most Recent</SelectItem>
-            <SelectItem value="title">Title</SelectItem>
-          </SelectContent>
-        </Select>
+          <option value="recent">Most Recent</option>
+          <option value="title">Title (A-Z)</option>
+        </select>
       </div>
     </div>
   );
