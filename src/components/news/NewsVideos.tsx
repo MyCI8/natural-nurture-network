@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -64,7 +65,8 @@ export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: 
       likes_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      video_type: 'news'
+      video_type: 'news',
+      related_article_id: null
     };
   };
 

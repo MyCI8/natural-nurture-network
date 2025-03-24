@@ -60,7 +60,12 @@ const ExploreDetail = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      
+      // Ensure related_article_id is included
+      return {
+        ...data,
+        related_article_id: data.related_article_id || null
+      };
     },
   });
 

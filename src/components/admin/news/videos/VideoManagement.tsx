@@ -55,7 +55,8 @@ const VideoManagement = () => {
         return { 
           ...video, 
           usage: videoUsageData.usage,
-          relatedArticleTitle: videoUsageData.articleTitle
+          relatedArticleTitle: videoUsageData.articleTitle,
+          related_article_id: video.related_article_id || null // Ensure related_article_id is always defined
         };
       }).filter(video => {
         if (videoFilter === "all") return true;

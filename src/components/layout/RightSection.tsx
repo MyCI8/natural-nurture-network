@@ -64,7 +64,10 @@ const RightSection = () => {
       }
       
       console.log("Latest videos fetched:", data);
-      return (data || []) as Video[];
+      return (data || []).map(video => ({
+        ...video,
+        related_article_id: video.related_article_id || null
+      })) as Video[];
     },
   });
   
