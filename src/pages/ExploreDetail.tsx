@@ -8,7 +8,7 @@ import Comments from '@/components/video/Comments';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, Bookmark, X, Send, Loader } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ExploreDetail = () => {
@@ -164,7 +164,6 @@ const ExploreDetail = () => {
       <div className="flex flex-col md:flex-row">
         <div className="md:flex-1">
           <div className="comments-view-container w-full p-4">
-            {/* Added small padding (8px) top and bottom to the video container */}
             <div className="instagram-dialog-video py-2">
               <VideoPlayer 
                 video={video} 
@@ -197,7 +196,6 @@ const ExploreDetail = () => {
               <p>{video.likes_count || 0} likes</p>
             </div>
 
-            {/* Moved interaction buttons here between likes count and comments */}
             <div className="flex items-center space-x-4 mb-3">
               <Button 
                 variant="ghost" 

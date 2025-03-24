@@ -1,0 +1,72 @@
+
+.instagram-feed-item {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 20px;
+  background-color: white;
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.instagram-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+}
+
+.instagram-username {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.instagram-username:hover {
+  text-decoration: underline;
+}
+
+.instagram-video-container {
+  width: 100%;
+  background-color: black;
+}
+
+.instagram-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+
+.instagram-likes {
+  padding: 0 12px 4px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: left;
+}
+
+.instagram-description {
+  padding: 0 12px 8px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.instagram-view-comments {
+  padding: 0 12px 8px;
+  font-size: 14px;
+  color: #8e8e8e;
+  cursor: pointer;
+  text-align: left;
+}
+
+.instagram-comment-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-top: 1px solid #dbdbdb;
+}
+
+@media (min-width: 768px) {
+  .instagram-feed-item {
+    margin-bottom: 28px;
+  }
+}
