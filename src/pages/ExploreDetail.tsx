@@ -49,6 +49,7 @@ const ExploreDetail = () => {
         .from('videos')
         .select(`
           *,
+          related_article_id,
           creator:creator_id (
             id,
             username,

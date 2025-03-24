@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,7 +53,7 @@ const RightSection = () => {
       console.log("Fetching latest videos for sidebar");
       const { data, error } = await supabase
         .from("videos")
-        .select("*, creator:creator_id(*)")
+        .select("*, creator:creator_id(*), related_article_id")
         .eq("status", "published")
         .eq("show_in_latest", true)
         .order("created_at", { ascending: false })

@@ -41,7 +41,7 @@ export function useVideoForm(videoId?: string) {
     try {
       const { data, error } = await supabase
         .from("videos")
-        .select("*")
+        .select("*, related_article_id")
         .eq("id", videoId)
         .single();
         

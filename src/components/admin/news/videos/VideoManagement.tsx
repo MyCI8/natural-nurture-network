@@ -34,7 +34,7 @@ const VideoManagement = () => {
     queryFn: async () => {
       let query = supabase
         .from("videos")
-        .select("*")
+        .select("*, related_article_id")
         .eq("video_type", "news");
 
       if (searchQuery) {
