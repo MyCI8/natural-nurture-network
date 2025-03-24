@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Video } from "lucide-react";
+import { Plus, Video, Archive, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import VideoTable from "./VideoTable";
@@ -157,7 +157,7 @@ const VideoManagement = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Manage News Videos</h2>
         <Button onClick={handleAddVideo}>
-          <Video className="mr-2 h-4 w-4" /> Create Video
+          <Video className="mr-2 h-4 w-4" /> Create News Video
         </Button>
       </div>
 

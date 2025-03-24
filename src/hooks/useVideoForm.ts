@@ -13,9 +13,10 @@ type VideoFormState = {
   showInLatest: boolean;
   status: "draft" | "published" | "archived";
   relatedArticleId: string | null;
+  videoType: "news" | "general" | "explore";
 };
 
-export function useVideoForm(videoId?: string) {
+export function useVideoForm(videoId?: string, defaultVideoType: "news" | "general" | "explore" = "general") {
   const navigate = useNavigate();
   const location = useLocation();
   const [formState, setFormState] = useState<VideoFormState>({
@@ -26,6 +27,7 @@ export function useVideoForm(videoId?: string) {
     showInLatest: true,
     status: "draft",
     relatedArticleId: null,
+    videoType: defaultVideoType
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,6 +58,7 @@ export function useVideoForm(videoId?: string) {
           showInLatest: data.show_in_latest ?? true,
           status: data.status as "draft" | "published" | "archived",
           relatedArticleId: data.related_article_id || null,
+          videoType: data.video_type as "news" | "general" | "explore" || defaultVideoType
         });
 
         if (data.video_url && data.video_url.includes('youtube.com')) {
@@ -180,7 +183,7 @@ export function useVideoForm(videoId?: string) {
         thumbnail_url: thumbnailUrl,
         status: (asDraft ? "draft" : "published") as "draft" | "published" | "archived",
         creator_id: user.id,
-        video_type: "news",
+        video_type: formState.videoType,
         related_article_id: formState.relatedArticleId,
         show_in_latest: formState.showInLatest
       };

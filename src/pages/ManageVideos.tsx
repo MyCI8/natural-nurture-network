@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +24,7 @@ const ManageVideos = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "views">("recent");
   const [currentTab, setCurrentTab] = useState<"all" | "draft" | "published" | "archived">("all");
-  const [videoType, setVideoType] = useState<"all" | "general" | "news">("all");
+  const [videoType, setVideoType] = useState<"all" | "general" | "news" | "explore">("all");
   const [deleteVideoId, setDeleteVideoId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -46,6 +45,8 @@ const ManageVideos = () => {
 
       if (videoType !== "all") {
         query = query.eq("video_type", videoType);
+      } else {
+        query = query.not('video_type', 'eq', 'news');
       }
 
       if (sortBy === "views") {
@@ -86,6 +87,16 @@ const ManageVideos = () => {
     }
   };
 
+  const handleAddVideo = () => {
+    const videoTypeParam = videoType !== 'all' ? videoType : 'general';
+    navigate("/admin/videos/new", { 
+      state: { 
+        returnTo: "/admin/videos",
+        videoType: videoTypeParam
+      } 
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -93,7 +104,7 @@ const ManageVideos = () => {
         <div className="flex gap-2">
           <Select 
             value={videoType} 
-            onValueChange={(value: "all" | "general" | "news") => setVideoType(value)}
+            onValueChange={(value: "all" | "general" | "news" | "explore") => setVideoType(value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Video Type" />
@@ -101,11 +112,11 @@ const ManageVideos = () => {
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="general">General Videos</SelectItem>
-              <SelectItem value="news">News Videos</SelectItem>
+              <SelectItem value="explore">Explore Videos</SelectItem>
             </SelectContent>
           </Select>
           
-          <Button onClick={() => navigate("/admin/videos/new")}>
+          <Button onClick={handleAddVideo}>
             <Plus className="mr-2 h-4 w-4" /> Add New Video
           </Button>
         </div>

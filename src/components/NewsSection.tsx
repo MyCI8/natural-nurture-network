@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +36,7 @@ const NewsSection = () => {
         .from("videos")
         .select("*")
         .eq("status", "published")
-        .eq("video_type", "news")
+        .eq("video_type", "news")  // Explicitly filter for news videos only
         .eq("show_in_latest", true)
         .order("created_at", { ascending: false })
         .limit(4);

@@ -65,6 +65,7 @@ const Explore = () => {
           comments:video_comments(count)
         `)
         .eq('status', 'published')
+        .not('video_type', 'eq', 'news') // Exclude news videos
         .order('created_at', { ascending: false });
       
       if (error) throw error;

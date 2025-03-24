@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,11 @@ import { toast } from "sonner";
 const EditVideo = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
+  
+  // Determine video type from location state or default to 'general'
+  const videoType = location.state?.videoType || 'general';
+  
   const {
     formState,
     isLoading,
@@ -30,7 +35,7 @@ const EditVideo = () => {
     handleVideoLinkChange,
     clearMediaFile,
     saveVideo
-  } = useVideoForm(id);
+  } = useVideoForm(id, videoType);
 
   useEffect(() => {
     if (id) {
@@ -43,7 +48,12 @@ const EditVideo = () => {
     e.preventDefault();
     const result = await saveVideo(false);
     if (result) {
-      navigate("/admin/news/videos");
+      // Redirect based on video type
+      if (formState.videoType === 'news') {
+        navigate("/admin/news/videos");
+      } else {
+        navigate("/admin/videos");
+      }
     }
   };
 
@@ -65,6 +75,11 @@ const EditVideo = () => {
       </div>
     );
   }
+  
+  // Determine page title based on video type
+  const pageTitle = id 
+    ? `Edit ${formState.videoType === 'news' ? 'News' : ''} Video` 
+    : `Create New ${formState.videoType === 'news' ? 'News' : ''} Video`;
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -82,7 +97,7 @@ const EditVideo = () => {
           <form onSubmit={handleSubmit}>
             <CardContent className="pt-6 space-y-6">
               <h1 className="text-2xl font-bold text-[#222222]">
-                {id ? "Edit Video" : "Create New Video"}
+                {pageTitle}
               </h1>
 
               <div className="space-y-2">
@@ -96,25 +111,27 @@ const EditVideo = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="relatedArticle">Related Article (Optional)</Label>
-                <Select
-                  value={formState.relatedArticleId || undefined}
-                  onValueChange={(value) => handleInputChange("relatedArticleId", value === "none" ? null : value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a related article (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {articles.map((article) => (
-                      <SelectItem key={article.id} value={article.id}>
-                        {article.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {formState.videoType === 'news' && (
+                <div className="space-y-2">
+                  <Label htmlFor="relatedArticle">Related Article (Optional)</Label>
+                  <Select
+                    value={formState.relatedArticleId || undefined}
+                    onValueChange={(value) => handleInputChange("relatedArticleId", value === "none" ? null : value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a related article (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      {articles.map((article) => (
+                        <SelectItem key={article.id} value={article.id}>
+                          {article.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
@@ -136,19 +153,21 @@ const EditVideo = () => {
                 onClearMedia={clearMediaFile}
               />
 
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="showInLatest" 
-                  checked={formState.showInLatest}
-                  onCheckedChange={(checked) => handleInputChange("showInLatest", checked)}
-                />
-                <label
-                  htmlFor="showInLatest"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Show in Latest Videos section
-                </label>
-              </div>
+              {formState.videoType === 'news' && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="showInLatest" 
+                    checked={formState.showInLatest}
+                    onCheckedChange={(checked) => handleInputChange("showInLatest", checked)}
+                  />
+                  <label
+                    htmlFor="showInLatest"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Show in Latest Videos section
+                  </label>
+                </div>
+              )}
             </CardContent>
             
             <CardFooter className="flex justify-between border-t px-6 py-4">
