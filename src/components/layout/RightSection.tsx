@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
+import { Separator } from "@/components/ui/separator";
 
 interface VideoLink {
   title: string;
@@ -95,88 +96,91 @@ const RightSection = () => {
     }
   }
   
-  if (location.pathname.startsWith('/news/') && videoLinks.length > 0) {
-    return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Related Videos</h3>
-        <NewsVideos 
-          videoLinks={videoLinks} 
-          videoDescription={articleData?.video_description || undefined} 
-          isDesktop={true}
-        />
-      </div>
-    );
-  }
-  
-  if (location.pathname === '/news' && videos && videos.length > 0) {
-    return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4 text-left pl-2">Latest Videos</h3>
-        <div className="space-y-4">
-          {videos.map((video) => (
-            <Link to={`/news/videos/${video.id}`} key={video.id}>
-              <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
-                <CardContent className="p-0">
-                  <AspectRatio ratio={16/9} className="bg-gray-100">
-                    {video.thumbnail_url ? (
-                      <img
-                        src={video.thumbnail_url}
-                        alt={video.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      video.video_url && video.video_url.includes('youtube.com') && (
-                        <img
-                          src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                      )
-                    )}
-                  </AspectRatio>
-                  <div className="p-3 text-left">
-                    <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(video.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  
-  if (location.pathname.startsWith('/explore/')) {
-    return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Explore Details</h2>
-        <p className="text-sm text-muted-foreground text-left pl-2">
-          This section shows details about the current explore item.
-        </p>
-      </div>
-    );
-  }
-  
-  if (location.pathname.startsWith('/symptoms/')) {
-    return (
-      <div className="h-full p-4 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4 text-left pl-2">Related Content</h2>
-        <p className="text-sm text-muted-foreground text-left pl-2">
-          This section shows content related to the current symptom.
-        </p>
-      </div>
-    );
-  }
-  
   return (
-    <div className="h-full p-4 overflow-y-auto">
-      <h2 className="text-lg font-semibold mb-4 text-left pl-2">Additional Information</h2>
-      <p className="text-sm text-muted-foreground text-left pl-2">
-        This panel displays contextual information related to the current page.
-      </p>
+    <div className="h-full flex flex-col">
+      <Separator orientation="vertical" className="absolute left-0 top-0 h-full" />
+      
+      <div className="p-4 overflow-y-auto flex-1">
+        {location.pathname.startsWith('/news/') && videoLinks.length > 0 && (
+          <>
+            <h3 className="text-lg font-semibold mb-4 text-left pl-2">Related Videos</h3>
+            <NewsVideos 
+              videoLinks={videoLinks} 
+              videoDescription={articleData?.video_description || undefined} 
+              isDesktop={true}
+            />
+          </>
+        )}
+        
+        {location.pathname === '/news' && videos && videos.length > 0 && (
+          <>
+            <h3 className="text-lg font-semibold mb-4 text-left pl-2">Latest Videos</h3>
+            <div className="space-y-4">
+              {videos.map((video) => (
+                <Link to={`/news/videos/${video.id}`} key={video.id}>
+                  <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
+                    <CardContent className="p-0">
+                      <AspectRatio ratio={16/9} className="bg-gray-100">
+                        {video.thumbnail_url ? (
+                          <img
+                            src={video.thumbnail_url}
+                            alt={video.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          video.video_url && video.video_url.includes('youtube.com') && (
+                            <img
+                              src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
+                              alt={video.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )
+                        )}
+                      </AspectRatio>
+                      <div className="p-3 text-left">
+                        <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(video.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+        
+        {location.pathname.startsWith('/explore/') && (
+          <>
+            <h2 className="text-lg font-semibold mb-4 text-left pl-2">Explore Details</h2>
+            <p className="text-sm text-muted-foreground text-left pl-2">
+              This section shows details about the current explore item.
+            </p>
+          </>
+        )}
+        
+        {location.pathname.startsWith('/symptoms/') && (
+          <>
+            <h2 className="text-lg font-semibold mb-4 text-left pl-2">Related Content</h2>
+            <p className="text-sm text-muted-foreground text-left pl-2">
+              This section shows content related to the current symptom.
+            </p>
+          </>
+        )}
+        
+        {!location.pathname.startsWith('/news/') && 
+         !location.pathname.startsWith('/explore/') && 
+         !location.pathname.startsWith('/symptoms/') && 
+         location.pathname !== '/news' && (
+          <>
+            <h2 className="text-lg font-semibold mb-4 text-left pl-2">Additional Information</h2>
+            <p className="text-sm text-muted-foreground text-left pl-2">
+              This panel displays contextual information related to the current page.
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 };
