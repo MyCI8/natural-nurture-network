@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -172,13 +173,12 @@ export function useVideoForm(videoId?: string) {
         thumbnailUrl = getYouTubeThumbnail(formState.videoUrl);
       }
 
-      // Define and type the videoData object properly
+      // Define the videoData with the correct typing to match database schema
       const videoData = {
         title: formState.title,
         description: formState.description,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
-        // Ensure status is one of the allowed enum values
         status: (asDraft ? "draft" : "published") as "draft" | "published" | "archived",
         creator_id: user.id,
         video_type: "news",
@@ -224,6 +224,11 @@ export function useVideoForm(videoId?: string) {
       setIsSaving(false);
     }
   };
+
+  useEffect(() => {
+    // Initialize fetchArticles when component mounts
+    fetchArticles();
+  }, []);
 
   return {
     formState,

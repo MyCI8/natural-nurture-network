@@ -99,14 +99,14 @@ const EditVideo = () => {
               <div className="space-y-2">
                 <Label htmlFor="relatedArticle">Related Article (Optional)</Label>
                 <Select
-                  value={formState.relatedArticleId || ""}
-                  onValueChange={(value) => handleInputChange("relatedArticleId", value === "" ? null : value)}
+                  value={formState.relatedArticleId || undefined}
+                  onValueChange={(value) => handleInputChange("relatedArticleId", value === "none" ? null : value)}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a related article (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {articles.map((article) => (
                       <SelectItem key={article.id} value={article.id}>
                         {article.title}
