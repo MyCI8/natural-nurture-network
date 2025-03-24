@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +15,21 @@ const VideoManagement = () => {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"recent" | "title">("recent");
-  const [videoFilter, setVideoFilter] = useState<"all" | "latest" | "article" | "both">("all");
+  const [videoFilter, setVideoFilter] = useState<"all" | "latest" | "article" | "both">("latest");
+
+  // Setup event listener for refetch
+  useEffect(() => {
+    const handleRefetch = () => {
+      console.log("Refetching news videos from event");
+      refetch();
+    };
+    
+    window.addEventListener("refetch-news-videos", handleRefetch);
+    
+    return () => {
+      window.removeEventListener("refetch-news-videos", handleRefetch);
+    };
+  }, []);
 
   const { data: allArticles = [] } = useQuery({
     queryKey: ["all-news-articles-for-videos"],

@@ -50,12 +50,15 @@ const EditVideo = () => {
     const result = await saveVideo(false);
     if (result) {
       console.log("Video saved, navigating to:", returnTo);
-      // Redirect based on return path or video type
-      navigate(returnTo);
       
-      // Force a refetch of the videos list
+      // Force a refetch of the videos list then navigate
       if (returnTo.includes("news/videos")) {
         window.dispatchEvent(new CustomEvent("refetch-news-videos"));
+        setTimeout(() => {
+          navigate(returnTo);
+        }, 100); // Small delay to ensure event is processed
+      } else {
+        navigate(returnTo);
       }
     }
   };

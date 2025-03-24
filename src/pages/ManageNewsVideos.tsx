@@ -8,6 +8,11 @@ import VideoManagement from "@/components/admin/news/videos/VideoManagement";
 const ManageNewsVideos = () => {
   const navigate = useNavigate();
 
+  // When the component mounts, dispatch an event to force videos to refresh
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent("refetch-news-videos"));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6">
