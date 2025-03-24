@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Video, Archive, Trash2 } from "lucide-react";
+import { Video, Archive, Trash2, Plus } from "lucide-react";
 import {
   Table,
   TableBody,
