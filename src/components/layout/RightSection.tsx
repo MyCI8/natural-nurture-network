@@ -97,7 +97,7 @@ const RightSection = () => {
   }
   
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
       <Separator orientation="vertical" className="absolute left-0 top-0 h-full" />
       
       <div className="p-4 overflow-y-auto flex-1">
