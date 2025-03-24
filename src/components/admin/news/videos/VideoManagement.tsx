@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -29,9 +28,11 @@ const VideoManagement = () => {
     },
   });
 
-  const { data: videos = [], isLoading } = useQuery({
+  const { data: videos = [], isLoading, refetch } = useQuery({
     queryKey: ["admin-news-videos", searchQuery, videoFilter, sortBy],
     queryFn: async () => {
+      console.log("Fetching news videos with filter:", videoFilter);
+      
       let query = supabase
         .from("videos")
         .select("*, related_article_id")
@@ -48,7 +49,12 @@ const VideoManagement = () => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching videos:", error);
+        throw error;
+      }
+      
+      console.log("Fetched videos:", data);
       
       const processedVideos = data.map((video) => {
         const videoUsageData = determineVideoUsage(video.id, allArticles, video);
@@ -66,8 +72,12 @@ const VideoManagement = () => {
         return true;
       });
       
+      console.log("Processed videos:", processedVideos);
       return processedVideos;
     },
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 10000 // Short stale time to ensure fresh data
   });
 
   const determineVideoUsage = (

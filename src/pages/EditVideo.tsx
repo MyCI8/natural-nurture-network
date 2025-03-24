@@ -20,6 +20,7 @@ const EditVideo = () => {
   
   // Determine video type from location state or default to 'general'
   const videoType = location.state?.videoType || 'general';
+  const returnTo = location.state?.returnTo || "/admin/videos";
   
   const {
     formState,
@@ -48,19 +49,32 @@ const EditVideo = () => {
     e.preventDefault();
     const result = await saveVideo(false);
     if (result) {
-      // Redirect based on video type
-      if (formState.videoType === 'news') {
-        navigate("/admin/news/videos");
-      } else {
-        navigate("/admin/videos");
+      console.log("Video saved, navigating to:", returnTo);
+      // Redirect based on return path or video type
+      navigate(returnTo);
+      
+      // Force a refetch of the videos list
+      if (returnTo.includes("news/videos")) {
+        window.dispatchEvent(new CustomEvent("refetch-news-videos"));
       }
     }
   };
 
   const handleSaveDraft = async () => {
     const result = await saveVideo(true);
-    if (result && !id) {
-      navigate(`/admin/videos/${result.id}`);
+    if (result) {
+      if (!id) {
+        // For new videos, navigate to edit page
+        navigate(`/admin/videos/${result.id}`, {
+          state: { 
+            returnTo: returnTo,
+            videoType: videoType 
+          }
+        });
+      } else {
+        // Stay on the same page with toast notification
+        toast.success("Draft saved");
+      }
     }
   };
 
@@ -87,7 +101,7 @@ const EditVideo = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(returnTo)}
           className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -115,7 +129,7 @@ const EditVideo = () => {
                 <div className="space-y-2">
                   <Label htmlFor="relatedArticle">Related Article (Optional)</Label>
                   <Select
-                    value={formState.relatedArticleId || undefined}
+                    value={formState.relatedArticleId || "none"}
                     onValueChange={(value) => handleInputChange("relatedArticleId", value === "none" ? null : value)}
                   >
                     <SelectTrigger className="w-full">
