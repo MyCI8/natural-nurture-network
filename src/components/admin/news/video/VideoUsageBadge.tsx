@@ -28,13 +28,6 @@ export const VideoUsageBadge = ({ usage, articleTitle, showInLatest }: VideoUsag
     tooltipText = "Shown in Latest Videos section";
   }
 
-  // If showInLatest is explicitly false, override badge for videos marked "latest" or "both"
-  if (showInLatest === false && (usage === "latest" || usage === "both")) {
-    badgeVariant = "outline";
-    badgeText = "Hidden";
-    tooltipText = "Marked as hidden from Latest Videos section";
-  }
-
   return (
     <Tooltip>
       <TooltipTrigger asChild>

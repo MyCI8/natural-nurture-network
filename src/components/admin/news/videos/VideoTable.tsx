@@ -47,12 +47,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
         <Button 
           variant="outline" 
           className="mt-4"
-          onClick={() => navigate("/admin/videos/new", { 
-            state: { 
-              returnTo: "/admin/news/videos",
-              videoType: "news" 
-            } 
-          })}
+          onClick={() => navigate("/admin/videos/new?type=news")}
         >
           <Plus className="mr-2 h-4 w-4" /> Add News Video
         </Button>

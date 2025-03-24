@@ -51,7 +51,7 @@ const VideoManagement = () => {
       if (error) throw error;
       
       const processedVideos = data.map((video) => {
-        const videoUsageData = determineVideoUsage(video.id, allArticles);
+        const videoUsageData = determineVideoUsage(video.id, allArticles, video);
         return { 
           ...video, 
           usage: videoUsageData.usage,
@@ -59,7 +59,7 @@ const VideoManagement = () => {
         };
       }).filter(video => {
         if (videoFilter === "all") return true;
-        if (videoFilter === "latest") return video.show_in_latest && (video.usage === "latest" || video.usage === "both");
+        if (videoFilter === "latest") return video.show_in_latest;
         if (videoFilter === "article") return video.usage === "article" || video.usage === "both";
         if (videoFilter === "both") return video.usage === "both";
         return true;
@@ -69,7 +69,11 @@ const VideoManagement = () => {
     },
   });
 
-  const determineVideoUsage = (videoId: string, articles: any[]): { usage: "latest" | "article" | "both" | "none", articleTitle?: string } => {
+  const determineVideoUsage = (
+    videoId: string, 
+    articles: any[], 
+    video: any
+  ): { usage: "latest" | "article" | "both" | "none", articleTitle?: string } => {
     let articleTitle;
     
     const usedInArticle = articles.some((article) => {
@@ -90,8 +94,7 @@ const VideoManagement = () => {
     });
 
     // Check if it's marked to show in latest videos section
-    const video = videos.find(v => v.id === videoId);
-    const usedInLatest = video ? video.show_in_latest : false;
+    const usedInLatest = video.show_in_latest;
 
     if (usedInArticle && usedInLatest) return { usage: "both", articleTitle };
     if (usedInArticle) return { usage: "article", articleTitle };
