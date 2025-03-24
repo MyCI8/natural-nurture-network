@@ -49,12 +49,13 @@ const RightSection = () => {
   const { data: videos } = useQuery<Video[]>({
     queryKey: ["news-videos-sidebar"],
     queryFn: async () => {
+      console.log("Fetching latest videos for sidebar");
       const { data, error } = await supabase
         .from("videos")
         .select("*, creator:creator_id(*)")
         .eq("status", "published")
         .eq("video_type", "news")
-        .eq("show_in_latest", true) // Using the actual column name from the database
+        .eq("show_in_latest", true)
         .order("created_at", { ascending: false })
         .limit(8);
         
@@ -63,6 +64,7 @@ const RightSection = () => {
         return [];
       }
       
+      console.log("Latest videos fetched:", data);
       return (data || []) as Video[];
     },
     enabled: location.pathname === '/news',
