@@ -126,7 +126,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <video
         ref={videoRef}
         src={video.video_url}
-        className="max-w-full max-h-full object-contain"
+        className="w-full object-contain"
         loop
         muted={isMuted}
         playsInline
