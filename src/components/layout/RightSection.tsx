@@ -168,16 +168,7 @@ const RightSection = () => {
         )}
         
         {location.pathname.startsWith('/explore/') && (
-          <>
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Comments</h2>
-            {id ? (
-              <Comments videoId={id} currentUser={currentUser} />
-            ) : (
-              <p className="text-sm text-muted-foreground text-left pl-2">
-                No comments available.
-              </p>
-            )}
-          </>
+          <Comments videoId={id} currentUser={currentUser} />
         )}
         
         {location.pathname.startsWith('/symptoms/') && (
