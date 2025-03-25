@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -43,11 +44,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [videoAspectRatio, setVideoAspectRatio] = useState<number | null>(null);
   const { ref: inViewRef, inView } = useInView({
-    threshold: 0.6,
+    threshold: 0.1,
+    triggerOnce: false,
   });
 
+  // Force isMuted state to sync with globalAudioEnabled prop
   useEffect(() => {
     setIsMuted(!globalAudioEnabled);
+    if (videoRef.current) {
+      videoRef.current.muted = !globalAudioEnabled;
+    }
   }, [globalAudioEnabled]);
 
   useEffect(() => {
@@ -67,31 +73,61 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
+  // Play the video when it's visible or when autoPlay is explicitly set true
   useEffect(() => {
-    const handleVideoVisibility = async () => {
+    const playVideo = async () => {
       if (!videoRef.current) return;
-
+      
+      console.log("Play video attempt. inView:", inView, "autoPlay:", autoPlay);
+      
       if (inView && autoPlay) {
         try {
-          await videoRef.current.play();
-          const viewSessionKey = `video_${video.id}_viewed`;
-          if (!sessionStorage.getItem(viewSessionKey)) {
-            const { error } = await supabase.rpc('increment_video_views', { 
-              video_id: video.id 
+          console.log("Attempting to play video...");
+          const playPromise = videoRef.current.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(() => {
+              console.log("Video playback started successfully");
+              logVideoView();
+            }).catch(error => {
+              console.error("Auto-play was prevented:", error);
+              // We won't force unmute here, as that would be a poor user experience
             });
-            if (error) console.error('Error incrementing views:', error);
-            sessionStorage.setItem(viewSessionKey, 'true');
           }
         } catch (error) {
-          console.log('Autoplay prevented:', error);
+          console.error("Error during video play:", error);
         }
-      } else {
+      } else if (!inView) {
         videoRef.current.pause();
+        console.log("Video paused because not in view");
       }
     };
-
-    handleVideoVisibility();
+    
+    playVideo();
   }, [inView, autoPlay, video.id]);
+  
+  // Special handling for immediate play when used in a modal
+  useEffect(() => {
+    if (videoRef.current && autoPlay) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error("Modal autoplay error:", error);
+        });
+      }
+    }
+  }, [autoPlay]);
+
+  const logVideoView = async () => {
+    const viewSessionKey = `video_${video.id}_viewed`;
+    if (!sessionStorage.getItem(viewSessionKey)) {
+      const { error } = await supabase.rpc('increment_video_views', { 
+        video_id: video.id 
+      });
+      if (error) console.error('Error incrementing views:', error);
+      sessionStorage.setItem(viewSessionKey, 'true');
+    }
+  };
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -206,7 +242,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             playsInline
             controls={showControls}
             poster={video.thumbnail_url || undefined}
-            preload="metadata"
+            preload="auto"
           />
         </AspectRatio>
       ) : (
@@ -220,7 +256,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           playsInline
           controls={showControls}
           poster={video.thumbnail_url || undefined}
-          preload="metadata"
+          preload="auto"
         />
       )}
       

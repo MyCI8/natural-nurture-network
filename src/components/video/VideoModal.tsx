@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { 
   Dialog, 
   DialogContent,
@@ -21,6 +21,16 @@ const VideoModal: React.FC<VideoModalProps> = ({
   isOpen, 
   onClose 
 }) => {
+  const didMountRef = useRef(false);
+
+  useEffect(() => {
+    // Only run effect when the modal opens (not on component mount)
+    if (isOpen && didMountRef.current) {
+      console.log("Modal opened, video should autoplay");
+    }
+    didMountRef.current = true;
+  }, [isOpen]);
+
   if (!video) return null;
 
   return (
