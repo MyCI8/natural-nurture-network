@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
@@ -37,12 +38,12 @@ const CustomDialogContent = React.forwardRef<
         variant="ghost" 
         size="icon" 
         onClick={onCloseClick}
-        className="absolute top-2 right-2 z-50 text-white hover:bg-transparent h-8 w-8 p-0"
+        className="absolute top-1 right-1 z-50 text-white hover:bg-transparent h-10 w-10 p-0"
         aria-label="Close video"
       >
         <div className="relative">
           <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse"></div>
-          <X className="h-5 w-5 relative z-10 opacity-70 hover:opacity-100" />
+          <X className="h-6 w-6 relative z-10 opacity-70 hover:opacity-100" />
         </div>
       </Button>
       {children}
