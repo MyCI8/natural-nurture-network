@@ -21,8 +21,10 @@ interface VideoModalProps {
 // Create a fully custom dialog content without the default close button
 const CustomDialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    onCloseClick?: () => void;
+  }
+>(({ className, children, onCloseClick, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay className="bg-black/90" />
     <DialogPrimitive.Content
@@ -36,11 +38,7 @@ const CustomDialogContent = React.forwardRef<
       <Button 
         variant="ghost" 
         size="icon" 
-        onClick={() => {
-          if (typeof props.onOpenChange === 'function') {
-            props.onOpenChange(false);
-          }
-        }}
+        onClick={onCloseClick}
         className="absolute top-4 right-4 z-50 text-white hover:bg-black/50 rounded-full"
         aria-label="Close video"
       >
@@ -71,7 +69,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <CustomDialogContent onOpenChange={(open: boolean) => !open && onClose()}>
+      <CustomDialogContent onCloseClick={onClose}>
         <div className="w-full h-full flex items-center justify-center">
           <VideoPlayer
             video={video}
