@@ -305,7 +305,7 @@ const RightSection = () => {
           <div className="w-full">
             {videoDetails ? (
               <div className="flex flex-col h-full">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+                <div className="p-3 border-b border-gray-200 dark:border-gray-800">
                   <div className="flex items-center mb-2">
                     <Avatar className="h-8 w-8 mr-3">
                       {videoDetails.creator?.avatar_url ? (
@@ -331,8 +331,8 @@ const RightSection = () => {
                       <span>{videoDetails.likes_count || 0} likes</span>
                     </div>
                     
-                    {/* Interaction buttons */}
-                    <div className="flex items-center space-x-2 mb-2 py-1">
+                    {/* Interaction buttons with no separator below */}
+                    <div className="flex items-center space-x-2 mb-0 py-1">
                       <Button 
                         variant="ghost" 
                         size="icon"
