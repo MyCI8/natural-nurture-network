@@ -109,8 +109,8 @@ const VideoDialog = ({
         </div>
         
         <div className="comments-view-container relative md:flex-1 flex items-center justify-center">
-          {/* Use entire container height for video in dialog view */}
-          <div className="instagram-dialog-video w-full h-full flex items-center justify-center">
+          {/* Add padding to top and bottom, and use object-cover to remove black bars in dialog view */}
+          <div className="instagram-dialog-video w-full h-full flex items-center justify-center py-3">
             <VideoPlayer
               video={video}
               autoPlay={true}
@@ -119,6 +119,7 @@ const VideoDialog = ({
               onAudioStateChange={onAudioStateChange}
               isFullscreen={false}
               className="w-full h-full"
+              objectFit="cover" // Use cover for dialog view to remove black bars
             />
           </div>
           

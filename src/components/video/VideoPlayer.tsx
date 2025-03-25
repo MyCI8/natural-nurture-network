@@ -20,6 +20,7 @@ interface VideoPlayerProps {
   onClose?: () => void;
   onClick?: () => void;
   aspectRatio?: number;
+  objectFit?: 'contain' | 'cover'; // Add objectFit prop
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -33,7 +34,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   className,
   onClose,
   onClick,
-  aspectRatio
+  aspectRatio,
+  objectFit = 'contain' // Default to contain to show the full video
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -134,7 +136,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <video
           ref={videoRef}
           src={video.video_url}
-          className="max-h-screen w-auto max-w-full object-contain"
+          className={`max-h-screen w-auto max-w-full object-${objectFit}`}
           loop
           muted={isMuted}
           playsInline
@@ -178,7 +180,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <video
           ref={videoRef}
           src={video.video_url}
-          className="w-full h-full object-contain"
+          className={`w-full h-full object-${objectFit}`}
           loop
           muted={isMuted}
           playsInline

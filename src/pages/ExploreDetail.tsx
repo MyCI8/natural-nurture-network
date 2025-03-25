@@ -66,6 +66,7 @@ const ExploreDetail = () => {
         onClose={handleClose}
         isFullscreen={true}
         className="h-screen"
+        objectFit="contain" // Explicitly set to contain for fullscreen view
       />
     </div>
   );
