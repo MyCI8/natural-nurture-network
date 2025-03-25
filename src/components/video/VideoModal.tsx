@@ -21,6 +21,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   isOpen, 
   onClose 
 }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const didMountRef = useRef(false);
 
   useEffect(() => {
@@ -36,8 +37,8 @@ const VideoModal: React.FC<VideoModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogOverlay className="bg-black/90" />
-      <DialogContent className="max-w-4xl p-0 bg-black border-none overflow-hidden">
-        <div className="relative w-full h-full">
+      <DialogContent className="max-w-5xl p-0 bg-black border-none overflow-hidden flex items-center justify-center">
+        <div className="relative w-full h-full flex items-center justify-center">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -47,14 +48,16 @@ const VideoModal: React.FC<VideoModalProps> = ({
             <X className="h-5 w-5" />
           </Button>
           
-          <VideoPlayer
-            video={video}
-            autoPlay={true}
-            globalAudioEnabled={true}
-            showControls={true}
-            className="w-full aspect-video"
-            objectFit="contain"
-          />
+          <div className="w-full flex items-center justify-center">
+            <VideoPlayer
+              video={video}
+              autoPlay={true}
+              globalAudioEnabled={true}
+              showControls={true}
+              className="w-full aspect-video"
+              objectFit="contain"
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -43,6 +43,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [videoAspectRatio, setVideoAspectRatio] = useState<number | null>(null);
+  const [playAttempted, setPlayAttempted] = useState(false);
+  
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.1,
     triggerOnce: false,
@@ -80,9 +82,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       console.log("Play video attempt. inView:", inView, "autoPlay:", autoPlay);
       
-      if (inView && autoPlay) {
+      if ((inView && autoPlay) || (autoPlay && isFullscreen)) {
         try {
           console.log("Attempting to play video...");
+          setPlayAttempted(true);
           const playPromise = videoRef.current.play();
           
           if (playPromise !== undefined) {
@@ -91,32 +94,52 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               logVideoView();
             }).catch(error => {
               console.error("Auto-play was prevented:", error);
-              // We won't force unmute here, as that would be a poor user experience
+              // Auto-play was prevented, let's try again with sound off
+              if (videoRef.current) {
+                videoRef.current.muted = true;
+                setIsMuted(true);
+                videoRef.current.play().catch(e => {
+                  console.error("Second play attempt failed:", e);
+                });
+              }
             });
           }
         } catch (error) {
           console.error("Error during video play:", error);
         }
-      } else if (!inView) {
+      } else if (!inView && !isFullscreen && videoRef.current) {
         videoRef.current.pause();
         console.log("Video paused because not in view");
       }
     };
     
     playVideo();
-  }, [inView, autoPlay, video.id]);
+  }, [inView, autoPlay, video.id, isFullscreen]);
   
-  // Special handling for immediate play when used in a modal
+  // Special handling for modal/dialog scenarios - force play attempt
   useEffect(() => {
-    if (videoRef.current && autoPlay) {
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.error("Modal autoplay error:", error);
-        });
-      }
+    if (showControls && autoPlay && videoRef.current && !playAttempted) {
+      console.log("Modal detected. Forcing play attempt");
+      setTimeout(() => {
+        if (videoRef.current) {
+          const playPromise = videoRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(error => {
+              console.error("Modal autoplay error:", error);
+              // Auto-play was prevented, let's try again with sound off
+              if (videoRef.current) {
+                videoRef.current.muted = true;
+                setIsMuted(true);
+                videoRef.current.play().catch(e => {
+                  console.error("Second modal play attempt failed:", e);
+                });
+              }
+            });
+          }
+        }
+      }, 300); // Small delay to ensure the modal is fully visible
     }
-  }, [autoPlay]);
+  }, [autoPlay, showControls, playAttempted]);
 
   const logVideoView = async () => {
     const viewSessionKey = `video_${video.id}_viewed`;
@@ -243,6 +266,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             controls={showControls}
             poster={video.thumbnail_url || undefined}
             preload="auto"
+            autoPlay={autoPlay}
           />
         </AspectRatio>
       ) : (
@@ -257,6 +281,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           controls={showControls}
           poster={video.thumbnail_url || undefined}
           preload="auto"
+          autoPlay={autoPlay}
         />
       )}
       
