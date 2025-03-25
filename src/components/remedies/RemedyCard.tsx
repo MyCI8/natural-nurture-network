@@ -18,7 +18,7 @@ const RemedyCard = ({
         <div className="h-48">
           <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
         </div>
-        <div className="p-6 py-[4px] px-[20px]">
+        <div className="p-6 px-[20px] py-[8px]">
           <h3 className="text-lg font-semibold text-text mb-2">
             {name}
           </h3>
