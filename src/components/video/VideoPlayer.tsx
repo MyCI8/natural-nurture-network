@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface VideoPlayerProps {
   video: Video;
@@ -18,24 +19,26 @@ interface VideoPlayerProps {
   className?: string;
   onClose?: () => void;
   onClick?: () => void;
+  aspectRatio?: number;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
   video, 
   productLinks = [], 
   autoPlay = true,
-  showControls = true,
+  showControls = false,
   globalAudioEnabled = false,
   onAudioStateChange,
   isFullscreen = false,
   className,
   onClose,
-  onClick
+  onClick,
+  aspectRatio
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
-  const [aspectRatio, setAspectRatio] = useState<number | null>(null);
+  const [videoAspectRatio, setVideoAspectRatio] = useState<number | null>(null);
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.6,
   });
@@ -50,7 +53,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     const handleMetadata = () => {
       const ratio = video.videoWidth / video.videoHeight;
-      setAspectRatio(ratio);
+      setVideoAspectRatio(ratio);
       console.log(`Video dimensions: ${video.videoWidth}x${video.videoHeight}, Aspect ratio: ${ratio}`);
     };
 
@@ -96,6 +99,69 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     onAudioStateChange?.(newMutedState);
   };
 
+  // For feed view (non-fullscreen), use either provided aspect ratio or default 4/5
+  const feedAspectRatio = aspectRatio || 4/5;
+
+  if (isFullscreen) {
+    // Fullscreen view
+    return (
+      <div 
+        ref={(node) => {
+          inViewRef(node);
+          if (node) containerRef.current = node;
+        }}
+        className={cn(
+          "relative overflow-hidden flex items-center justify-center bg-black", 
+          "h-screen w-full",
+          className
+        )}
+        onClick={() => onClick?.()}
+      >
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="absolute top-4 right-4 z-20 text-white bg-black/20 hover:bg-black/40 rounded-full"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        )}
+        
+        <video
+          ref={videoRef}
+          src={video.video_url}
+          className="max-h-screen w-auto max-w-full object-contain"
+          loop
+          muted={isMuted}
+          playsInline
+          controls={showControls}
+          poster={video.thumbnail_url || undefined}
+          preload="metadata"
+        />
+        
+        {!showControls && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleMute}
+            className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center"
+          >
+            {isMuted ? (
+              <VolumeX className="h-4 w-4 text-white" />
+            ) : (
+              <Volume2 className="h-4 w-4 text-white" />
+            )}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // Feed view with aspect ratio
   return (
     <div 
       ref={(node) => {
@@ -103,40 +169,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         if (node) containerRef.current = node;
       }}
       className={cn(
-        "relative overflow-hidden flex items-center justify-center bg-black", 
-        isFullscreen ? "h-screen w-full" : "h-auto",
+        "relative overflow-hidden bg-black", 
         className
       )}
       onClick={() => onClick?.()}
     >
-      {onClose && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
-          className="absolute top-4 right-4 z-20 text-white bg-black/20 hover:bg-black/40 rounded-full"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      )}
-      
-      <video
-        ref={videoRef}
-        src={video.video_url}
-        className={cn(
-          "object-contain",
-          isFullscreen ? "max-h-screen w-auto max-w-full" : "w-full"
-        )}
-        loop
-        muted={isMuted}
-        playsInline
-        controls={showControls}
-        poster={video.thumbnail_url || undefined}
-        preload="metadata"
-      />
+      <AspectRatio ratio={feedAspectRatio} className="w-full">
+        <video
+          ref={videoRef}
+          src={video.video_url}
+          className="w-full h-full object-cover"
+          loop
+          muted={isMuted}
+          playsInline
+          controls={showControls}
+          poster={video.thumbnail_url || undefined}
+          preload="metadata"
+        />
+      </AspectRatio>
       
       {!showControls && (
         <Button
@@ -153,7 +203,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         </Button>
       )}
 
-      {productLinks.length > 0 && !isFullscreen && (
+      {productLinks.length > 0 && (
         <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none">
           {productLinks.map((link) => (
             <div
