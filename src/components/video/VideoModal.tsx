@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
@@ -18,7 +17,6 @@ interface VideoModalProps {
   onClose: () => void;
 }
 
-// Create a fully custom dialog content without the default close button
 const CustomDialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
@@ -39,10 +37,13 @@ const CustomDialogContent = React.forwardRef<
         variant="ghost" 
         size="icon" 
         onClick={onCloseClick}
-        className="absolute top-2 right-2 z-50 text-white hover:bg-black/20 h-6 w-6 p-0.5 rounded-full"
+        className="absolute top-2 right-2 z-50 text-white hover:bg-transparent h-8 w-8 p-0"
         aria-label="Close video"
       >
-        <X className="h-4 w-4 opacity-70 hover:opacity-100" />
+        <div className="relative">
+          <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse"></div>
+          <X className="h-5 w-5 relative z-10 opacity-70 hover:opacity-100" />
+        </div>
       </Button>
       {children}
     </DialogPrimitive.Content>
