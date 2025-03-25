@@ -37,7 +37,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogOverlay className="bg-black/90" />
       <DialogContent className="max-w-6xl w-[90vw] p-0 bg-black border-none overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
-        <div className="flex justify-end p-4 bg-black/50 w-full">
+        <div className="flex justify-end p-2 bg-black/80 w-full">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -60,6 +60,10 @@ const VideoModal: React.FC<VideoModalProps> = ({
               useAspectRatio={false}
             />
           </div>
+        </div>
+
+        <div className="flex justify-end p-2 bg-black/80 w-full">
+          {/* Bottom bar for visual balance */}
         </div>
       </DialogContent>
     </Dialog>
