@@ -273,9 +273,7 @@ const RightSection = () => {
                   <div className="flex flex-col space-y-2">
                     <div>
                       <p className="text-sm text-left">{videoDetails.description}</p>
-                      <p className="text-xs text-gray-500 mt-1 text-left">
-                        {new Date(videoDetails.created_at || '').toLocaleDateString()}
-                      </p>
+                      
                     </div>
                     
                     <div className="text-sm text-gray-500 mb-2">
@@ -283,7 +281,7 @@ const RightSection = () => {
                     </div>
                     
                     {/* Interaction buttons with no separator below */}
-                    <div className="flex items-center space-x-2 mb-0 py-1">
+                    <div className="flex items-center space-x-2 mb-0 py-0">
                       <Button variant="ghost" size="icon" className={`text-gray-500 hover:text-[#4CAF50] transition-colors ${userLikeStatus ? 'text-red-500' : ''}`} onClick={handleLike}>
                         <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
                       </Button>
