@@ -1,5 +1,4 @@
 import { Card, CardContent } from "@/components/ui/card";
-
 interface RemedyCardProps {
   id: string;
   name: string;
@@ -7,22 +6,19 @@ interface RemedyCardProps {
   imageUrl: string;
   onClick: (id: string) => void;
 }
-
-const RemedyCard = ({ id, name, summary, imageUrl, onClick }: RemedyCardProps) => {
-  return (
-    <Card 
-      className="overflow-hidden hover:shadow-lg transition-shadow duration-300 animate-fadeIn cursor-pointer"
-      onClick={() => onClick(id)}
-    >
+const RemedyCard = ({
+  id,
+  name,
+  summary,
+  imageUrl,
+  onClick
+}: RemedyCardProps) => {
+  return <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 animate-fadeIn cursor-pointer" onClick={() => onClick(id)}>
       <CardContent className="p-0">
         <div className="h-48">
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
+          <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
         </div>
-        <div className="p-6">
+        <div className="p-6 py-[4px] px-[20px]">
           <h3 className="text-lg font-semibold text-text mb-2">
             {name}
           </h3>
@@ -31,8 +27,6 @@ const RemedyCard = ({ id, name, summary, imageUrl, onClick }: RemedyCardProps) =
           </p>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default RemedyCard;
