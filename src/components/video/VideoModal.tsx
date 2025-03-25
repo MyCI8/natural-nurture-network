@@ -39,10 +39,10 @@ const CustomDialogContent = React.forwardRef<
         variant="ghost" 
         size="icon" 
         onClick={onCloseClick}
-        className="absolute top-4 right-4 z-50 text-white hover:bg-black/50 rounded-full"
+        className="absolute top-4 right-4 z-50 text-white hover:bg-transparent rounded-full p-1"
         aria-label="Close video"
       >
-        <X className="h-5 w-5" />
+        <X className="h-6 w-6 opacity-70 hover:opacity-100" />
       </Button>
       {children}
     </DialogPrimitive.Content>
