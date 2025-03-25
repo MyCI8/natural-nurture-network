@@ -9,6 +9,11 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
 import { Separator } from "@/components/ui/separator";
 import Comments from "@/components/video/Comments";
+import { Heart, MessageCircle, Share2, Bookmark } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface VideoLink {
   title: string;
@@ -23,6 +28,8 @@ interface ArticleData {
 const RightSection = () => {
   const location = useLocation();
   const { id } = useParams();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Get current user for comments
   const { data: currentUser } = useQuery({
@@ -83,6 +90,133 @@ const RightSection = () => {
       })) as Video[];
     },
   });
+  
+  // Fetch video details for explore page
+  const { data: videoDetails } = useQuery({
+    queryKey: ['video-details', id],
+    queryFn: async () => {
+      if (!id || !location.pathname.startsWith('/explore/')) return null;
+      
+      const { data, error } = await supabase
+        .from('videos')
+        .select(`
+          *,
+          creator:creator_id (
+            id,
+            username,
+            avatar_url,
+            full_name
+          )
+        `)
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching video details:", error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!id && location.pathname.startsWith('/explore/'),
+  });
+  
+  // Check if current user has liked this video
+  const { data: userLikeStatus } = useQuery({
+    queryKey: ['video-like-status', id, currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser || !id) return false;
+      
+      const { data } = await supabase
+        .from('video_likes')
+        .select('id')
+        .eq('video_id', id)
+        .eq('user_id', currentUser.id)
+        .single();
+        
+      return !!data;
+    },
+    enabled: !!currentUser && !!id && location.pathname.startsWith('/explore/')
+  });
+  
+  // Like mutation
+  const likeMutation = useMutation({
+    mutationFn: async () => {
+      if (!currentUser) {
+        throw new Error('You must be logged in to like a video');
+      }
+      
+      if (userLikeStatus) {
+        const { error } = await supabase
+          .from('video_likes')
+          .delete()
+          .eq('video_id', id)
+          .eq('user_id', currentUser.id);
+          
+        if (error) throw error;
+        return { liked: false };
+      } else {
+        const { error } = await supabase
+          .from('video_likes')
+          .insert([
+            { video_id: id, user_id: currentUser.id }
+          ]);
+          
+        if (error) throw error;
+        return { liked: true };
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['video-like-status', id, currentUser?.id] });
+      queryClient.invalidateQueries({ queryKey: ['video-details', id] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update like",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  const handleLike = () => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to like videos",
+      });
+      return;
+    }
+    
+    likeMutation.mutate();
+  };
+  
+  const handleShare = async () => {
+    if (!videoDetails) return;
+    
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: videoDetails.title,
+          text: videoDetails.description,
+          url,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({
+          title: "Success",
+          description: "Link copied to clipboard!"
+        });
+      } catch (err) {
+        console.error('Error copying link:', err);
+      }
+    }
+  };
   
   const videoLinks: VideoLink[] = [];
   
@@ -168,7 +302,77 @@ const RightSection = () => {
         )}
         
         {location.pathname.startsWith('/explore/') && (
-          <Comments videoId={id} currentUser={currentUser} />
+          <div className="w-full">
+            {videoDetails ? (
+              <div className="flex flex-col h-full">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center mb-2">
+                    <Avatar className="h-8 w-8 mr-3">
+                      {videoDetails.creator?.avatar_url ? (
+                        <AvatarImage src={videoDetails.creator.avatar_url} alt={videoDetails.creator.username || ''} />
+                      ) : (
+                        <AvatarFallback>{(videoDetails.creator?.username || '?')[0]}</AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-sm">{videoDetails.creator?.username || 'Anonymous'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col space-y-2">
+                    <div>
+                      <p className="text-sm text-left">{videoDetails.description}</p>
+                      <p className="text-xs text-gray-500 mt-1 text-left">
+                        {new Date(videoDetails.created_at || '').toLocaleDateString()}
+                      </p>
+                    </div>
+                    
+                    <div className="text-sm text-gray-500 mb-2">
+                      <span>{videoDetails.likes_count || 0} likes</span>
+                    </div>
+                    
+                    {/* Interaction buttons */}
+                    <div className="flex items-center space-x-2 mb-2 py-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className={`text-gray-500 hover:text-[#4CAF50] transition-colors ${userLikeStatus ? 'text-red-500' : ''}`}
+                        onClick={handleLike}
+                      >
+                        <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-gray-500 hover:text-[#4CAF50] transition-colors"
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-gray-500 hover:text-[#4CAF50] transition-colors"
+                        onClick={handleShare}
+                      >
+                        <Share2 className="h-5 w-5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-gray-500 hover:text-[#4CAF50] transition-colors"
+                      >
+                        <Bookmark className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <Comments videoId={id} currentUser={currentUser} />
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-left pl-2">Video details not available</p>
+            )}
+          </div>
         )}
         
         {location.pathname.startsWith('/symptoms/') && (
