@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { NewsVideos } from "@/components/news/NewsVideos";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
 import { Separator } from "@/components/ui/separator";
@@ -32,7 +31,6 @@ const RightSection = () => {
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
-  // Get current user for comments
   const {
     data: currentUser
   } = useQuery({

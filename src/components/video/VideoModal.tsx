@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Dialog, 
   DialogContent,
@@ -21,8 +21,6 @@ const VideoModal: React.FC<VideoModalProps> = ({
   isOpen, 
   onClose 
 }) => {
-  const [muted, setMuted] = useState(false); // Initialize with audio on
-
   if (!video) return null;
 
   return (
@@ -42,8 +40,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
           <VideoPlayer
             video={video}
             autoPlay={true}
-            globalAudioEnabled={!muted}
-            onAudioStateChange={setMuted}
+            globalAudioEnabled={true}
             showControls={true}
             className="w-full aspect-video"
             objectFit="contain"
