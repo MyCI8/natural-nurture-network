@@ -60,13 +60,14 @@ const ExploreDetail = () => {
   return (
     <div className="max-w-[1200px] mx-auto min-h-screen bg-white dark:bg-gray-900">
       <div className="flex flex-col">
-        <div className="w-full p-4">
-          <div className="instagram-dialog-video py-2 max-w-[600px] mx-auto">
+        <div className="w-full p-4 sm:p-2">
+          <div className="instagram-dialog-video py-2 max-w-[400px] mx-auto">
             <VideoPlayer 
               video={video} 
               autoPlay={false} 
               showControls 
               onClose={handleClose}
+              className="rounded-lg"
             />
           </div>
         </div>
