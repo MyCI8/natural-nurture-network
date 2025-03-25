@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -144,7 +145,7 @@ const NewsSection = () => {
           
           <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0">
             <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left">Latest Videos</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {videos?.map((video) => (
                 <Link to={`/news/videos/${video.id}`} key={video.id}>
                   <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
