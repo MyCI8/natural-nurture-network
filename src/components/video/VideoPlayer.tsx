@@ -51,6 +51,20 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     triggerOnce: false,
   });
 
+  // Check if the video URL is a YouTube link
+  const isYoutubeVideo = () => {
+    if (!video.video_url) return false;
+    return video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be');
+  };
+
+  // Extract the YouTube video ID from a YouTube URL
+  const getYoutubeVideoId = (url: string) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
   // Force isMuted state to sync with globalAudioEnabled prop
   useEffect(() => {
     setIsMuted(!globalAudioEnabled);
@@ -61,7 +75,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || isYoutubeVideo()) return;
 
     const handleMetadata = () => {
       const ratio = video.videoWidth / video.videoHeight;
@@ -78,7 +92,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // More aggressive play attempt specifically for modal scenarios
   useEffect(() => {
-    if (!videoRef.current || !autoPlay || playbackStarted) return;
+    if (isYoutubeVideo() || !videoRef.current || !autoPlay || playbackStarted) return;
     
     if (isOpen(videoRef.current)) {
       console.log("VideoPlayer: Component is visible, attempting modal-specific play");
@@ -109,7 +123,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   // Play the video when it's visible or when autoPlay is explicitly set true
   useEffect(() => {
-    if (!videoRef.current) return;
+    if (isYoutubeVideo() || !videoRef.current) return;
     
     console.log("Play video attempt. inView:", inView, "autoPlay:", autoPlay, "isFullscreen:", isFullscreen);
     
@@ -183,7 +197,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!videoRef.current) return;
+    if (!videoRef.current || isYoutubeVideo()) return;
     const newMutedState = !videoRef.current.muted;
     videoRef.current.muted = newMutedState;
     setIsMuted(newMutedState);
@@ -210,6 +224,81 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     
     return baseStyle;
   };
+
+  if (isYoutubeVideo()) {
+    const youtubeId = getYoutubeVideoId(video.video_url || '');
+    
+    if (isFullscreen) {
+      return (
+        <div 
+          ref={(node) => {
+            inViewRef(node);
+            if (node) containerRef.current = node;
+          }}
+          className={cn(
+            "relative overflow-hidden flex items-center justify-center bg-black", 
+            "h-screen w-full",
+            className
+          )}
+          onClick={() => onClick?.()}
+        >
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="absolute top-4 right-4 z-20 text-white bg-black/20 hover:bg-black/40 rounded-full"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
+          
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=1&playsinline=1`}
+            className="w-auto h-auto max-w-full max-h-screen"
+            style={{ aspectRatio: '16/9' }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={video.title}
+          ></iframe>
+        </div>
+      );
+    }
+
+    return (
+      <div 
+        ref={(node) => {
+          inViewRef(node);
+          if (node) containerRef.current = node;
+        }}
+        className={cn("relative overflow-hidden bg-black", className)}
+        onClick={() => onClick?.()}
+      >
+        {useAspectRatio ? (
+          <AspectRatio ratio={feedAspectRatio} className="w-full">
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=${showControls ? 1 : 0}&playsinline=1`}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title={video.title}
+            ></iframe>
+          </AspectRatio>
+        ) : (
+          <iframe
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=${showControls ? 1 : 0}&playsinline=1`}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={video.title}
+          ></iframe>
+        )}
+      </div>
+    );
+  }
 
   if (isFullscreen) {
     return (
@@ -241,7 +330,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         
         <video
           ref={videoRef}
-          src={video.video_url}
+          src={video.video_url || undefined}
           className="max-h-screen w-auto max-w-full"
           style={getVideoStyle()}
           loop
@@ -286,7 +375,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <AspectRatio ratio={feedAspectRatio} className="w-full">
           <video
             ref={videoRef}
-            src={video.video_url}
+            src={video.video_url || undefined}
             className="w-full h-full"
             style={getVideoStyle()}
             loop
@@ -301,7 +390,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ) : (
         <video
           ref={videoRef}
-          src={video.video_url}
+          src={video.video_url || undefined}
           className="w-full h-full"
           style={getVideoStyle()}
           loop
