@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -105,11 +104,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const feedAspectRatio = aspectRatio || 4/5;
 
-  // Force object-fit style to apply with !important via inline style
-  const videoStyle = {
-    objectFit: objectFit as 'cover' | 'contain',
-    width: '100%',
-    height: '100%',
+  const getVideoStyle = () => {
+    const baseStyle: React.CSSProperties = {
+      objectFit: objectFit,
+      width: '100%',
+      height: '100%',
+    };
+    
+    if (isFullscreen) {
+      return {
+        ...baseStyle,
+        maxHeight: '100vh',
+        width: 'auto',
+        maxWidth: '100%',
+      };
+    }
+    
+    return baseStyle;
   };
 
   if (isFullscreen) {
@@ -143,8 +154,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <video
           ref={videoRef}
           src={video.video_url}
-          className={`max-h-screen w-auto max-w-full`}
-          style={videoStyle}
+          className="max-h-screen w-auto max-w-full"
+          style={getVideoStyle()}
           loop
           muted={isMuted}
           playsInline
@@ -189,7 +200,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             ref={videoRef}
             src={video.video_url}
             className="w-full h-full"
-            style={videoStyle}
+            style={getVideoStyle()}
             loop
             muted={isMuted}
             playsInline
@@ -203,7 +214,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           ref={videoRef}
           src={video.video_url}
           className="w-full h-full"
-          style={videoStyle}
+          style={getVideoStyle()}
           loop
           muted={isMuted}
           playsInline

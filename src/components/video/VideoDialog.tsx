@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
@@ -108,8 +107,8 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="comments-view-container relative md:flex-1 flex items-center justify-center overflow-hidden bg-black h-[60vh] md:h-full">
-          <div className="instagram-dialog-video">
+        <div className="video-container flex-1 flex items-center justify-center bg-black h-[60vh] md:h-full relative overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center">
             <VideoPlayer
               video={video}
               autoPlay={true}
