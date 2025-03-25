@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { useLayout } from '@/contexts/LayoutContext';
-import Comments from '@/components/video/Comments';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -46,23 +45,6 @@ const ExploreDetail = () => {
     },
   });
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-        
-      if (error) throw error;
-      return { ...data, id: user.id };
-    },
-  });
-
   const handleClose = () => {
     navigate('/explore');
   };
@@ -76,19 +58,15 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="max-w-screen-sm mx-auto min-h-screen bg-white dark:bg-gray-900">
-      <div className="overflow-hidden rounded-lg">
-        <VideoPlayer 
-          video={video} 
-          autoPlay={false} 
-          showControls 
-          onClose={handleClose}
-        />
-      </div>
-      
-      <div className="mt-2">
-        <Comments videoId={id || ''} currentUser={currentUser} />
-      </div>
+    <div className="w-full h-screen bg-black">
+      <VideoPlayer 
+        video={video} 
+        autoPlay={false} 
+        showControls 
+        onClose={handleClose}
+        isFullscreen={true}
+        className="h-screen"
+      />
     </div>
   );
 };

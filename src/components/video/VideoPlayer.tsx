@@ -104,7 +104,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       }}
       className={cn(
         "relative overflow-hidden flex items-center justify-center bg-black", 
-        isFullscreen ? "h-screen" : "h-auto",
+        isFullscreen ? "h-screen w-full" : "h-auto",
         className
       )}
       onClick={() => onClick?.()}
@@ -126,7 +126,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <video
         ref={videoRef}
         src={video.video_url}
-        className="w-full object-contain"
+        className={cn(
+          "object-contain",
+          isFullscreen ? "max-h-screen w-auto max-w-full" : "w-full"
+        )}
         loop
         muted={isMuted}
         playsInline
