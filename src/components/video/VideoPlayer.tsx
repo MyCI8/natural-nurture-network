@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -20,7 +19,8 @@ interface VideoPlayerProps {
   onClose?: () => void;
   onClick?: () => void;
   aspectRatio?: number;
-  objectFit?: 'contain' | 'cover'; // Add objectFit prop
+  objectFit?: 'contain' | 'cover';
+  useAspectRatio?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -35,7 +35,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onClose,
   onClick,
   aspectRatio,
-  objectFit = 'contain' // Default to contain to show the full video
+  objectFit = 'contain',
+  useAspectRatio = true
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,11 +102,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     onAudioStateChange?.(newMutedState);
   };
 
-  // For feed view (non-fullscreen), use either provided aspect ratio or default 4/5
   const feedAspectRatio = aspectRatio || 4/5;
 
   if (isFullscreen) {
-    // Fullscreen view
     return (
       <div 
         ref={(node) => {
@@ -163,7 +162,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
   }
 
-  // Feed view with aspect ratio
   return (
     <div 
       ref={(node) => {
@@ -176,7 +174,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       )}
       onClick={() => onClick?.()}
     >
-      <AspectRatio ratio={feedAspectRatio} className="w-full">
+      {useAspectRatio ? (
+        <AspectRatio ratio={feedAspectRatio} className="w-full">
+          <video
+            ref={videoRef}
+            src={video.video_url}
+            className={`w-full h-full object-${objectFit}`}
+            loop
+            muted={isMuted}
+            playsInline
+            controls={showControls}
+            poster={video.thumbnail_url || undefined}
+            preload="metadata"
+          />
+        </AspectRatio>
+      ) : (
         <video
           ref={videoRef}
           src={video.video_url}
@@ -188,7 +200,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           poster={video.thumbnail_url || undefined}
           preload="metadata"
         />
-      </AspectRatio>
+      )}
       
       {!showControls && (
         <Button
