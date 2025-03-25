@@ -1,4 +1,5 @@
-import { useLocation } from "react-router-dom";
+
+import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { NewsVideos } from "@/components/news/NewsVideos";
@@ -7,6 +8,7 @@ import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
 import { Separator } from "@/components/ui/separator";
+import Comments from "@/components/video/Comments";
 
 interface VideoLink {
   title: string;
@@ -20,6 +22,16 @@ interface ArticleData {
 
 const RightSection = () => {
   const location = useLocation();
+  const { id } = useParams();
+  
+  // Get current user for comments
+  const { data: currentUser } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      return data.user;
+    },
+  });
   
   const newsArticleId = location.pathname.startsWith('/news/') 
     ? location.pathname.split('/news/')[1]
@@ -157,10 +169,14 @@ const RightSection = () => {
         
         {location.pathname.startsWith('/explore/') && (
           <>
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Explore Details</h2>
-            <p className="text-sm text-muted-foreground text-left pl-2">
-              This section shows details about the current explore item.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Comments</h2>
+            {id ? (
+              <Comments videoId={id} currentUser={currentUser} />
+            ) : (
+              <p className="text-sm text-muted-foreground text-left pl-2">
+                No comments available.
+              </p>
+            )}
           </>
         )}
         
