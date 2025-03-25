@@ -28,11 +28,20 @@ const CustomDialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-6xl translate-x-[-50%] translate-y-[-50%] gap-0 border-none bg-black p-0 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg overflow-hidden h-[90vh]",
         className
       )}
       {...props}
     >
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={() => props.onOpenChange?.(false)}
+        className="absolute top-4 right-4 z-50 text-white hover:bg-black/50 rounded-full"
+        aria-label="Close video"
+      >
+        <X className="h-5 w-5" />
+      </Button>
       {children}
     </DialogPrimitive.Content>
   </DialogPortal>
@@ -58,35 +67,18 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <CustomDialogContent className="max-w-6xl w-[90vw] p-0 bg-black border-none overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
-        <div className="flex justify-end p-2 bg-black/80 w-full">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onClose}
-            className="text-white hover:bg-black/50 rounded-full"
-            aria-label="Close video"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <div className="relative w-full h-full flex items-center justify-center flex-1 overflow-hidden">
-          <div className="w-full h-full flex items-center justify-center">
-            <VideoPlayer
-              video={video}
-              autoPlay={true}
-              globalAudioEnabled={true}
-              showControls={true}
-              className="w-full h-full"
-              objectFit="contain"
-              useAspectRatio={false}
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end p-2 bg-black/80 w-full">
-          {/* Bottom bar for visual balance */}
+      <CustomDialogContent>
+        <div className="w-full h-full flex items-center justify-center">
+          <VideoPlayer
+            video={video}
+            autoPlay={true}
+            globalAudioEnabled={true}
+            showControls={true}
+            className="w-full h-full"
+            objectFit="contain"
+            useAspectRatio={false}
+            isFullscreen={true}
+          />
         </div>
       </CustomDialogContent>
     </Dialog>
@@ -94,3 +86,4 @@ const VideoModal: React.FC<VideoModalProps> = ({
 };
 
 export default VideoModal;
+
