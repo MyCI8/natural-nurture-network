@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
@@ -51,13 +50,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     triggerOnce: false,
   });
 
-  // Check if the video URL is a YouTube link
   const isYoutubeVideo = () => {
     if (!video.video_url) return false;
     return video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be');
   };
 
-  // Extract the YouTube video ID from a YouTube URL
   const getYoutubeVideoId = (url: string) => {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -65,7 +62,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  // Force isMuted state to sync with globalAudioEnabled prop
   useEffect(() => {
     setIsMuted(!globalAudioEnabled);
     if (videoRef.current) {
@@ -90,7 +86,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
-  // More aggressive play attempt specifically for modal scenarios
   useEffect(() => {
     if (isYoutubeVideo() || !videoRef.current || !autoPlay || playbackStarted) return;
     
@@ -99,7 +94,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       attemptPlay();
     }
     
-    // Try playing after a short delay to ensure the modal is fully visible
     const timer = setTimeout(() => {
       if (!playbackStarted && videoRef.current) {
         console.log("VideoPlayer: Delayed play attempt");
@@ -110,7 +104,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return () => clearTimeout(timer);
   }, [autoPlay, showControls]);
 
-  // Check if an element is visible in the viewport
   const isOpen = (element: HTMLElement): boolean => {
     const rect = element.getBoundingClientRect();
     return (
@@ -121,7 +114,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     );
   };
 
-  // Play the video when it's visible or when autoPlay is explicitly set true
   useEffect(() => {
     if (isYoutubeVideo() || !videoRef.current) return;
     
@@ -142,7 +134,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setPlayAttempted(true);
     
     try {
-      // First try with current audio settings
       const playPromise = videoRef.current.play();
       
       if (playPromise !== undefined) {
@@ -153,7 +144,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }).catch(error => {
           console.error("First play attempt failed:", error);
           
-          // If failed, try with muted audio
           if (videoRef.current && !videoRef.current.muted) {
             console.log("Trying again with muted audio");
             videoRef.current.muted = true;
@@ -166,7 +156,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             }).catch(secondError => {
               console.error("Second play attempt failed:", secondError);
               
-              // Last resort: try after user interaction simulation
               setTimeout(() => {
                 if (videoRef.current && !playbackStarted) {
                   console.log("Final play attempt");
@@ -237,7 +226,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           }}
           className={cn(
             "relative overflow-hidden flex items-center justify-center bg-black", 
-            "h-screen w-full",
+            "h-full w-full",
             className
           )}
           onClick={() => onClick?.()}
@@ -250,16 +239,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 e.stopPropagation();
                 onClose();
               }}
-              className="absolute top-4 right-4 z-20 text-white bg-black/20 hover:bg-black/40 rounded-full"
+              className="absolute top-2 right-2 z-20 text-white bg-black/20 hover:bg-black/40 h-6 w-6 p-0.5 rounded-full"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </Button>
           )}
           
           <iframe
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=1&playsinline=1`}
-            className="w-auto h-auto max-w-full max-h-screen"
-            style={{ aspectRatio: '16/9' }}
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=${isMuted ? 1 : 0}&controls=1&playsinline=1&rel=0&showinfo=0&modestbranding=1&color=white&iv_load_policy=3`}
+            className="w-full h-full"
+            style={{ aspectRatio: 'auto' }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             title={video.title}
@@ -280,7 +269,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         {useAspectRatio ? (
           <AspectRatio ratio={feedAspectRatio} className="w-full">
             <iframe
-              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=${showControls ? 1 : 0}&playsinline=1`}
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=${showControls ? 1 : 0}&playsinline=1&rel=0&showinfo=0&modestbranding=1&color=white&iv_load_policy=3`}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -289,7 +278,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           </AspectRatio>
         ) : (
           <iframe
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=${showControls ? 1 : 0}&playsinline=1`}
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&mute=${isMuted ? 1 : 0}&controls=${showControls ? 1 : 0}&playsinline=1&rel=0&showinfo=0&modestbranding=1&color=white&iv_load_policy=3`}
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -309,7 +298,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         }}
         className={cn(
           "relative overflow-hidden flex items-center justify-center bg-black", 
-          "h-screen w-full",
+          "h-full w-full",
           className
         )}
         onClick={() => onClick?.()}
@@ -322,9 +311,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
               e.stopPropagation();
               onClose();
             }}
-            className="absolute top-4 right-4 z-20 text-white bg-black/20 hover:bg-black/40 rounded-full"
+            className="absolute top-2 right-2 z-20 text-white bg-black/20 hover:bg-black/40 h-6 w-6 p-0.5 rounded-full"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </Button>
         )}
         
