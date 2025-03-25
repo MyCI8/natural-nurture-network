@@ -58,7 +58,7 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="w-full h-screen bg-black">
+    <div className="w-full h-screen bg-black overflow-hidden">
       <VideoPlayer 
         video={video} 
         autoPlay={true} 

@@ -108,9 +108,8 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="comments-view-container relative md:flex-1 flex items-center justify-center overflow-hidden">
-          {/* Remove padding completely, make container full height */}
-          <div className="instagram-dialog-video w-full h-full flex items-center justify-center overflow-hidden bg-black">
+        <div className="comments-view-container relative md:flex-1 flex items-center justify-center overflow-hidden bg-black h-[60vh] md:h-full">
+          <div className="instagram-dialog-video">
             <VideoPlayer
               video={video}
               autoPlay={true}
