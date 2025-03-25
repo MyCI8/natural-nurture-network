@@ -44,6 +44,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [videoAspectRatio, setVideoAspectRatio] = useState<number | null>(null);
   const [playAttempted, setPlayAttempted] = useState(false);
+  const [playbackStarted, setPlaybackStarted] = useState(false);
   
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.1,
@@ -75,72 +76,100 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
+  // More aggressive play attempt specifically for modal scenarios
+  useEffect(() => {
+    if (!videoRef.current || !autoPlay || playbackStarted) return;
+    
+    if (isOpen(videoRef.current)) {
+      console.log("VideoPlayer: Component is visible, attempting modal-specific play");
+      attemptPlay();
+    }
+    
+    // Try playing after a short delay to ensure the modal is fully visible
+    const timer = setTimeout(() => {
+      if (!playbackStarted && videoRef.current) {
+        console.log("VideoPlayer: Delayed play attempt");
+        attemptPlay();
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [autoPlay, showControls]);
+
+  // Check if an element is visible in the viewport
+  const isOpen = (element: HTMLElement): boolean => {
+    const rect = element.getBoundingClientRect();
+    return (
+      rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+  };
+
   // Play the video when it's visible or when autoPlay is explicitly set true
   useEffect(() => {
-    const playVideo = async () => {
-      if (!videoRef.current) return;
-      
-      console.log("Play video attempt. inView:", inView, "autoPlay:", autoPlay);
-      
-      if ((inView && autoPlay) || (autoPlay && isFullscreen)) {
-        try {
-          console.log("Attempting to play video...");
-          setPlayAttempted(true);
-          const playPromise = videoRef.current.play();
-          
-          if (playPromise !== undefined) {
-            playPromise.then(() => {
-              console.log("Video playback started successfully");
-              logVideoView();
-            }).catch(error => {
-              console.error("Auto-play was prevented:", error);
-              // Auto-play was prevented, let's try again with sound off
-              if (videoRef.current) {
-                videoRef.current.muted = true;
-                setIsMuted(true);
-                videoRef.current.play().catch(e => {
-                  console.error("Second play attempt failed:", e);
-                });
-              }
-            });
-          }
-        } catch (error) {
-          console.error("Error during video play:", error);
-        }
-      } else if (!inView && !isFullscreen && videoRef.current) {
-        videoRef.current.pause();
-        console.log("Video paused because not in view");
-      }
-    };
+    if (!videoRef.current) return;
     
-    playVideo();
-  }, [inView, autoPlay, video.id, isFullscreen]);
-  
-  // Special handling for modal/dialog scenarios - force play attempt
-  useEffect(() => {
-    if (showControls && autoPlay && videoRef.current && !playAttempted) {
-      console.log("Modal detected. Forcing play attempt");
-      setTimeout(() => {
-        if (videoRef.current) {
-          const playPromise = videoRef.current.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(error => {
-              console.error("Modal autoplay error:", error);
-              // Auto-play was prevented, let's try again with sound off
-              if (videoRef.current) {
-                videoRef.current.muted = true;
-                setIsMuted(true);
-                videoRef.current.play().catch(e => {
-                  console.error("Second modal play attempt failed:", e);
-                });
-              }
+    console.log("Play video attempt. inView:", inView, "autoPlay:", autoPlay, "isFullscreen:", isFullscreen);
+    
+    if ((inView && autoPlay) || (autoPlay && isFullscreen) || (autoPlay && showControls)) {
+      attemptPlay();
+    } else if (!inView && !isFullscreen && videoRef.current && !showControls) {
+      videoRef.current.pause();
+      console.log("Video paused because not in view");
+    }
+  }, [inView, autoPlay, video.id, isFullscreen, showControls]);
+
+  const attemptPlay = async () => {
+    if (!videoRef.current) return;
+    
+    console.log("Attempting to play video...");
+    setPlayAttempted(true);
+    
+    try {
+      // First try with current audio settings
+      const playPromise = videoRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          console.log("Video playback started successfully");
+          setPlaybackStarted(true);
+          logVideoView();
+        }).catch(error => {
+          console.error("First play attempt failed:", error);
+          
+          // If failed, try with muted audio
+          if (videoRef.current && !videoRef.current.muted) {
+            console.log("Trying again with muted audio");
+            videoRef.current.muted = true;
+            setIsMuted(true);
+            
+            videoRef.current.play().then(() => {
+              console.log("Video playback started with muted audio");
+              setPlaybackStarted(true);
+              logVideoView();
+            }).catch(secondError => {
+              console.error("Second play attempt failed:", secondError);
+              
+              // Last resort: try after user interaction simulation
+              setTimeout(() => {
+                if (videoRef.current && !playbackStarted) {
+                  console.log("Final play attempt");
+                  videoRef.current.play().catch(e => 
+                    console.error("Final play attempt failed:", e)
+                  );
+                }
+              }, 1000);
             });
           }
-        }
-      }, 300); // Small delay to ensure the modal is fully visible
+        });
+      }
+    } catch (error) {
+      console.error("Error during video play:", error);
     }
-  }, [autoPlay, showControls, playAttempted]);
-
+  };
+  
   const logVideoView = async () => {
     const viewSessionKey = `video_${video.id}_viewed`;
     if (!sessionStorage.getItem(viewSessionKey)) {

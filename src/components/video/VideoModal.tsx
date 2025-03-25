@@ -25,7 +25,6 @@ const VideoModal: React.FC<VideoModalProps> = ({
   const didMountRef = useRef(false);
 
   useEffect(() => {
-    // Only run effect when the modal opens (not on component mount)
     if (isOpen && didMountRef.current) {
       console.log("Modal opened, video should autoplay");
     }
@@ -37,7 +36,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogOverlay className="bg-black/90" />
-      <DialogContent className="max-w-5xl p-0 bg-black border-none overflow-hidden flex items-center justify-center">
+      <DialogContent className="max-w-6xl w-[90vw] p-0 bg-black border-none overflow-hidden flex items-center justify-center h-[90vh] max-h-[90vh]">
         <div className="relative w-full h-full flex items-center justify-center">
           <Button 
             variant="ghost" 
@@ -48,14 +47,15 @@ const VideoModal: React.FC<VideoModalProps> = ({
             <X className="h-5 w-5" />
           </Button>
           
-          <div className="w-full flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center">
             <VideoPlayer
               video={video}
               autoPlay={true}
               globalAudioEnabled={true}
               showControls={true}
-              className="w-full aspect-video"
+              className="w-full h-full"
               objectFit="contain"
+              useAspectRatio={false}
             />
           </div>
         </div>
