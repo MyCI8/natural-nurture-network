@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import VideoModal from "@/components/video/VideoModal";
+
 interface VideoLink {
   title: string;
   url: string;
@@ -21,15 +24,13 @@ interface ArticleData {
   video_links?: string | null;
   video_description?: string | null;
 }
+
 const RightSection = () => {
   const location = useLocation();
-  const {
-    id
-  } = useParams();
-  const {
-    toast
-  } = useToast();
+  const { id } = useParams();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   // Get current user for comments
   const {
@@ -43,6 +44,7 @@ const RightSection = () => {
       return data.user;
     }
   });
+
   const newsArticleId = location.pathname.startsWith('/news/') ? location.pathname.split('/news/')[1] : null;
   const {
     data: articleData
@@ -62,6 +64,7 @@ const RightSection = () => {
     },
     enabled: !!newsArticleId
   });
+
   const {
     data: videos
   } = useQuery<Video[]>({
@@ -86,7 +89,6 @@ const RightSection = () => {
     }
   });
 
-  // Fetch video details for explore page
   const {
     data: videoDetails
   } = useQuery({
@@ -114,7 +116,6 @@ const RightSection = () => {
     enabled: !!id && location.pathname.startsWith('/explore/')
   });
 
-  // Check if current user has liked this video
   const {
     data: userLikeStatus
   } = useQuery({
@@ -129,7 +130,6 @@ const RightSection = () => {
     enabled: !!currentUser && !!id && location.pathname.startsWith('/explore/')
   });
 
-  // Like mutation
   const likeMutation = useMutation({
     mutationFn: async () => {
       if (!currentUser) {
@@ -172,6 +172,7 @@ const RightSection = () => {
       });
     }
   });
+
   const handleLike = () => {
     if (!currentUser) {
       toast({
@@ -182,6 +183,7 @@ const RightSection = () => {
     }
     likeMutation.mutate();
   };
+
   const handleShare = async () => {
     if (!videoDetails) return;
     const url = window.location.href;
@@ -207,6 +209,11 @@ const RightSection = () => {
       }
     }
   };
+
+  const handleVideoClick = (video: Video) => {
+    setSelectedVideo(video);
+  };
+
   const videoLinks: VideoLink[] = [];
   if (articleData?.video_links) {
     const linksData = articleData.video_links;
@@ -228,6 +235,7 @@ const RightSection = () => {
       console.error('Error processing video links:', e);
     }
   }
+
   return <div className="h-full flex flex-col relative">
       <Separator orientation="vertical" className="absolute left-0 top-0 h-full" />
       
@@ -240,11 +248,28 @@ const RightSection = () => {
         {(location.pathname === '/news' || location.pathname === '/news/') && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Latest Videos</h2>
             {videos && videos.length > 0 ? <div className="space-y-4">
-                {videos.map(video => <Link to={`/news/videos/${video.id}`} key={video.id}>
+                {videos.map(video => (
+                  <div 
+                    key={video.id} 
+                    onClick={() => handleVideoClick(video)}
+                    className="cursor-pointer"
+                  >
                     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
                       <CardContent className="p-0">
                         <AspectRatio ratio={16 / 9} className="bg-gray-100">
-                          {video.thumbnail_url ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : video.video_url && video.video_url.includes('youtube.com') && <img src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" />}
+                          {video.thumbnail_url ? (
+                            <img 
+                              src={video.thumbnail_url} 
+                              alt={video.title} 
+                              className="w-full h-full object-cover" 
+                            />
+                          ) : video.video_url && video.video_url.includes('youtube.com') && (
+                            <img 
+                              src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} 
+                              alt={video.title} 
+                              className="w-full h-full object-cover" 
+                            />
+                          )}
                         </AspectRatio>
                         <div className="p-3 text-left">
                           <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
@@ -254,7 +279,8 @@ const RightSection = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  </Link>)}
+                  </div>
+                ))}
               </div> : <p className="text-muted-foreground text-left pl-2">No videos available</p>}
           </>}
         
@@ -280,7 +306,6 @@ const RightSection = () => {
                       <span>{videoDetails.likes_count || 0} likes</span>
                     </div>
                     
-                    {/* Interaction buttons with no separator below */}
                     <div className="flex items-center space-x-2 mb-0 py-0">
                       <Button variant="ghost" size="icon" className={`text-gray-500 hover:text-[#4CAF50] transition-colors ${userLikeStatus ? 'text-red-500' : ''}`} onClick={handleLike}>
                         <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
@@ -316,6 +341,13 @@ const RightSection = () => {
             </p>
           </>}
       </div>
+
+      <VideoModal
+        video={selectedVideo}
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+      />
     </div>;
 };
+
 export default RightSection;
