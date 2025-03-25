@@ -61,7 +61,7 @@ const ExploreDetail = () => {
     <div className="w-full h-screen bg-black">
       <VideoPlayer 
         video={video} 
-        autoPlay={false} 
+        autoPlay={true} 
         showControls 
         onClose={handleClose}
         isFullscreen={true}

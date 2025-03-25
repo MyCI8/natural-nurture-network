@@ -109,16 +109,16 @@ const VideoDialog = ({
         </div>
         
         <div className="comments-view-container relative md:flex-1 flex items-center justify-center">
-          {/* Added small padding (8px) top and bottom to the video container */}
-          <div className="instagram-dialog-video w-full flex items-center justify-center py-2">
+          {/* Use entire container height for video in dialog view */}
+          <div className="instagram-dialog-video w-full h-full flex items-center justify-center">
             <VideoPlayer
               video={video}
               autoPlay={true}
-              showControls={true}
+              showControls={false}
               globalAudioEnabled={globalAudioEnabled}
               onAudioStateChange={onAudioStateChange}
               isFullscreen={false}
-              className="w-full"
+              className="w-full h-full"
             />
           </div>
           
