@@ -36,17 +36,19 @@ const VideoModal: React.FC<VideoModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogOverlay className="bg-black/90" />
-      <DialogContent className="max-w-6xl w-[90vw] p-0 bg-black border-none overflow-hidden flex items-center justify-center h-[90vh] max-h-[90vh]">
-        <div className="relative w-full h-full flex items-center justify-center">
+      <DialogContent className="max-w-6xl w-[90vw] p-0 bg-black border-none overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
+        <div className="flex justify-end p-4 bg-black/50 w-full">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 text-white hover:bg-black/50 rounded-full"
+            className="text-white hover:bg-black/50 rounded-full"
           >
             <X className="h-5 w-5" />
           </Button>
-          
+        </div>
+        
+        <div className="relative w-full h-full flex items-center justify-center flex-1 overflow-hidden">
           <div className="w-full h-full flex items-center justify-center">
             <VideoPlayer
               video={video}
