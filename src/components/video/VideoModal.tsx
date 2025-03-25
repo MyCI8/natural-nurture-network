@@ -36,7 +36,11 @@ const CustomDialogContent = React.forwardRef<
       <Button 
         variant="ghost" 
         size="icon" 
-        onClick={() => props.onOpenChange?.(false)}
+        onClick={() => {
+          if (typeof props.onOpenChange === 'function') {
+            props.onOpenChange(false);
+          }
+        }}
         className="absolute top-4 right-4 z-50 text-white hover:bg-black/50 rounded-full"
         aria-label="Close video"
       >
@@ -67,7 +71,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <CustomDialogContent>
+      <CustomDialogContent onOpenChange={(open: boolean) => !open && onClose()}>
         <div className="w-full h-full flex items-center justify-center">
           <VideoPlayer
             video={video}
@@ -86,4 +90,3 @@ const VideoModal: React.FC<VideoModalProps> = ({
 };
 
 export default VideoModal;
-
