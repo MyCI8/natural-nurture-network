@@ -108,9 +108,9 @@ const VideoDialog = ({
           </div>
         </div>
         
-        <div className="comments-view-container relative md:flex-1 flex items-center justify-center">
-          {/* Increase padding and disable AspectRatio to ensure no black bars */}
-          <div className="instagram-dialog-video w-full h-full flex items-center justify-center py-6">
+        <div className="comments-view-container relative md:flex-1 flex items-center justify-center overflow-hidden">
+          {/* Remove padding completely, make container full height */}
+          <div className="instagram-dialog-video w-full h-full flex items-center justify-center overflow-hidden bg-black">
             <VideoPlayer
               video={video}
               autoPlay={true}
@@ -119,8 +119,8 @@ const VideoDialog = ({
               onAudioStateChange={onAudioStateChange}
               isFullscreen={false}
               className="w-full h-full"
-              objectFit="cover" // Use cover for dialog view to remove black bars
-              useAspectRatio={false} // Don't use AspectRatio in dialog view
+              objectFit="cover" 
+              useAspectRatio={false} 
             />
           </div>
           
