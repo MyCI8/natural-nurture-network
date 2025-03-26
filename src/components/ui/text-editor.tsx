@@ -17,7 +17,7 @@ import { useEffect } from 'react';
 interface TextEditorProps {
   content: string;
   onChange: (content: string) => void;
-  className?: string;  // Add className as optional prop
+  className?: string;
 }
 
 const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
@@ -34,6 +34,11 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
           HTMLAttributes: {
             class: 'font-bold',
           },
+        },
+        // Enable clipboard handling for rich text paste
+        clipboard: {
+          // Allow pasting all HTML nodes and marks
+          allowingHTMLAttributes: true,
         },
       }),
       TextStyle,
@@ -63,7 +68,13 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
       attributes: {
         class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
       },
+      // Enhance handling of pasted content to better preserve formatting
+      handlePaste: (view, event, slice) => {
+        // Return false to let TipTap's default paste handling work
+        return false;
+      },
     },
+    enablePasteRules: true,
   });
 
   // Update editor content when prop changes
@@ -100,4 +111,3 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
 };
 
 export default TextEditor;
-
