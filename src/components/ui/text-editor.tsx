@@ -63,9 +63,6 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
       attributes: {
         class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
       },
-      parseHTML: {
-        preserveWhitespace: 'full',
-      },
     },
     // These are valid top-level properties
     editable: true,
@@ -84,7 +81,7 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
   }
 
   // Override paste event to better handle rich content
-  editor.on('paste', ({ event, editor, slice }) => {
+  editor.on('paste', () => {
     // Allow default paste behavior which includes rich text
     return false;
   });
