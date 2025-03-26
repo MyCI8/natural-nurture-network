@@ -63,8 +63,7 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
       attributes: {
         class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
       },
-      // Add parse options inside editorProps to handle pasting rich text
-      parseOptions: {
+      parseHTML: {
         preserveWhitespace: 'full',
       },
     },
