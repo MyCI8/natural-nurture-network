@@ -34,7 +34,8 @@ export const UserProfileButton = ({
   
   // Validate avatar URL
   useEffect(() => {
-    const checkUrl = () => {
+    const checkUrl = async () => {
+      // Check if avatar URL is valid and set state accordingly
       const isValid = isValidStorageUrl(avatarSrc);
       console.log("Checking avatar URL validity:", avatarSrc, isValid);
       setIsValidAvatar(isValid);
@@ -64,17 +65,20 @@ export const UserProfileButton = ({
     );
   }
 
+  // Add a touch-friendly ripple effect
+  const touchRippleClasses = "relative overflow-hidden transform active:scale-95 transition-transform";
+
   return (
     <Link
-      className={compact 
+      className={`${touchRippleClasses} ${compact 
         ? "w-full flex items-center justify-center rounded-full p-2 bg-transparent hover:bg-accent/30 text-sm font-medium transition-colors" 
         : "w-full justify-start rounded-full p-4 bg-transparent hover:bg-accent/30 text-sm font-medium inline-flex items-center transition-colors"
-      }
+      }`}
       onClick={onClick}
       to={`/users/${userId}`}
       title={compact ? displayName : undefined}
     >
-      <Avatar className="h-8 w-8 shrink-0 mr-3">
+      <Avatar className="h-8 w-8 shrink-0 mr-3 touch-manipulation">
         {isValidAvatar && avatarSrc ? (
           <AvatarImage 
             src={avatarSrc} 

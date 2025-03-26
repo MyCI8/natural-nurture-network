@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
@@ -19,6 +20,7 @@ const MainSidebar = () => {
   const isMobile = useIsMobile();
   const breakpoint = useBreakpoint();
   const { theme } = useTheme();
+  const queryClient = useQueryClient();
   
   // State
   const [isExpanded, setIsExpanded] = useState(true);
@@ -50,7 +52,17 @@ const MainSidebar = () => {
       return data;
     },
     enabled: !!currentUser?.id,
+    // Adding this to ensure data is refreshed when returning to the page
+    refetchOnWindowFocus: true,
+    staleTime: 30000, // Consider data stale after 30 seconds
   });
+
+  // Force refetch profile when location changes to ensure latest data
+  useEffect(() => {
+    if (currentUser?.id) {
+      queryClient.invalidateQueries({ queryKey: ['userProfile', currentUser.id] });
+    }
+  }, [location.pathname, currentUser?.id, queryClient]);
 
   const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin', currentUser?.id],
