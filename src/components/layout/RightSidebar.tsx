@@ -11,14 +11,39 @@ const RightSidebar = () => {
   const { data: comments, isLoading } = useQuery({
     queryKey: ['comments'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch the comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select('*, profile:profiles(id, full_name)')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
       
-      if (error) throw error;
-      return data as CommentWithProfile[];
+      if (commentsError) throw commentsError;
+      
+      // For each comment, fetch the associated profile separately
+      const commentsWithProfiles = await Promise.all(
+        commentsData.map(async (comment) => {
+          if (!comment.user_id) {
+            return {
+              ...comment,
+              profile: null
+            };
+          }
+          
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .eq('id', comment.user_id)
+            .single();
+          
+          return {
+            ...comment,
+            profile: profileData || null
+          };
+        })
+      );
+      
+      return commentsWithProfiles as CommentWithProfile[];
     }
   });
 
