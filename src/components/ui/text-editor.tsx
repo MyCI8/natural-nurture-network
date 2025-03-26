@@ -63,19 +63,14 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
       attributes: {
         class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
       },
-      // Enhanced paste handling for rich text
-      handlePaste: (view, event, slice) => {
-        // This allows TipTap to handle paste events with its default handlers
-        // which will maintain rich text formatting from external sources
-        return false;
-      },
-      // This ensures all HTML attributes are preserved during paste
-      parseOptions: {
-        preserveWhitespace: true,
-      },
     },
-    // Enable paste rules to maintain formatting when pasting
-    enablePasteRules: true,
+    // Enable advanced paste rules to maintain formatting
+    editable: true,
+    injectCSS: true,
+    // These settings help ensure rich text formatting is maintained during paste
+    parseOptions: {
+      preserveWhitespace: 'full',
+    },
   });
 
   // Update editor content when prop changes
@@ -88,6 +83,12 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
   if (!editor) {
     return null;
   }
+
+  // Override paste event to better handle rich content
+  editor.on('paste', ({ event, view, chain }) => {
+    // Allow default paste behavior which includes rich text
+    return false;
+  });
 
   return (
     <div className="border rounded-lg">
