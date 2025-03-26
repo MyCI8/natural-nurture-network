@@ -23,7 +23,7 @@ const MainSidebar = () => {
   const queryClient = useQueryClient();
   
   // State
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false); // Default to closed on mobile
   const [isCompact, setIsCompact] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showMobileHeader, setShowMobileHeader] = useState(true);
@@ -95,6 +95,8 @@ const MainSidebar = () => {
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      
+      // Show header when at top or scrolling up
       setShowMobileHeader(
         currentScrollY < 50 || currentScrollY < lastScrollY
       );

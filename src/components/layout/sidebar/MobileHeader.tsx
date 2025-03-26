@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Leaf, Search } from "lucide-react";
+import { Leaf, Search, Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface MobileHeaderProps {
@@ -85,7 +85,7 @@ export const MobileHeader = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="rounded-full h-10 w-10 flex items-center justify-center"
+          className="rounded-full h-10 w-10 flex items-center justify-center touch-manipulation active:scale-95 transition-transform"
           onClick={onMenuClick}
           aria-label="Open menu"
         >
@@ -106,7 +106,7 @@ export const MobileHeader = ({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="rounded-full h-10 w-10 flex items-center justify-center"
+            className="rounded-full h-10 w-10 flex items-center justify-center touch-manipulation active:scale-95 transition-transform"
           >
             <Search className="h-5 w-5" />
           </Button>
