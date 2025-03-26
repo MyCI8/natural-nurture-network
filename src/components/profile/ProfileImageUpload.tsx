@@ -43,7 +43,9 @@ export function ProfileImageUpload({
       setIsUploading(true);
       
       // Upload to Supabase storage
+      console.log('Starting file upload', { file, userId });
       const publicUrl = await uploadProfileImage(file, userId);
+      console.log('Upload result:', publicUrl);
       
       if (publicUrl) {
         onImageUpdate(publicUrl);
@@ -61,6 +63,8 @@ export function ProfileImageUpload({
         description: "Failed to upload profile image. Please try again.",
         variant: "destructive",
       });
+      // Reset the preview on error
+      setPreviewUrl(avatarUrl);
     } finally {
       setIsUploading(false);
     }
@@ -83,10 +87,13 @@ export function ProfileImageUpload({
           className="h-32 w-32 cursor-pointer" 
           onClick={handleFileInput}
         >
-          <AvatarImage src={previewUrl || ''} alt={fullName || 'User'} />
-          <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-            {getInitials()}
-          </AvatarFallback>
+          {previewUrl ? (
+            <AvatarImage src={previewUrl} alt={fullName || 'User'} />
+          ) : (
+            <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+              {getInitials()}
+            </AvatarFallback>
+          )}
           
           {/* Hover overlay with upload icon */}
           <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity">

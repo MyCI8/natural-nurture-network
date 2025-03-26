@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -44,6 +45,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
     },
   });
 
+  // Set avatar URL in form when it changes
   useEffect(() => {
     setValue("avatar_url", avatarUrl);
   }, [avatarUrl, setValue]);
@@ -133,6 +135,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
   });
 
   const onSubmit = (data: UserFormData) => {
+    console.log("Submitting form with data:", data);
     updateUserMutation.mutate(data);
   };
 

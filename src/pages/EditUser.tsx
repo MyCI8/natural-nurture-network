@@ -1,4 +1,5 @@
 
+import React from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,8 @@ const EditUser = () => {
         .single();
 
       if (error) throw error;
+
+      console.log("Fetched user profile:", profile);
 
       return {
         ...profile,

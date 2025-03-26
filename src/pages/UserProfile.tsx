@@ -38,6 +38,7 @@ const UserProfile = () => {
         .single();
 
       if (error) throw error;
+      console.log("Fetched user profile:", data);
       return data as User;
     },
   });
@@ -70,14 +71,14 @@ const UserProfile = () => {
         {/* Profile Header */}
         <div className="py-4 sm:py-8 text-center">
           <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4">
-            {profile.avatar_url ? (
+            {profile?.avatar_url ? (
               <AvatarImage 
                 src={profile.avatar_url} 
                 alt={profile.full_name || 'Profile'} 
               />
             ) : (
               <AvatarFallback className="bg-primary/10 text-primary text-xl sm:text-2xl">
-                {profile.full_name?.[0] || '?'}
+                {profile?.full_name?.[0] || '?'}
               </AvatarFallback>
             )}
           </Avatar>
