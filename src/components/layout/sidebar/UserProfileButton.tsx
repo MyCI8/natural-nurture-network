@@ -37,7 +37,6 @@ export const UserProfileButton = ({
     const checkUrl = async () => {
       // Check if avatar URL is valid and set state accordingly
       const isValid = isValidStorageUrl(avatarSrc);
-      console.log("Checking avatar URL validity:", avatarSrc, isValid);
       setIsValidAvatar(isValid);
     };
     
@@ -49,7 +48,7 @@ export const UserProfileButton = ({
       <Link
         className={compact 
           ? "w-full rounded-full flex items-center justify-center p-2 inline-flex bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium touch-manipulation active:scale-95 transition-transform"
-          : "w-full rounded-full inline-flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 text-sm font-medium touch-manipulation active:scale-95 transition-transform"}
+          : "w-full rounded-lg inline-flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 text-sm font-medium touch-manipulation active:scale-95 transition-transform"}
         onClick={onClick}
         to="/auth"
         title={compact ? "Sign in" : undefined}
@@ -69,13 +68,13 @@ export const UserProfileButton = ({
     <Link
       className={`relative overflow-hidden transform active:scale-95 transition-transform ${compact 
         ? "w-full flex items-center justify-center rounded-full p-2 bg-transparent hover:bg-accent/30 text-sm font-medium transition-colors" 
-        : "w-full justify-start rounded-full p-4 bg-transparent hover:bg-accent/30 text-sm font-medium inline-flex items-center transition-colors"
+        : "w-full justify-start rounded-lg p-4 bg-transparent hover:bg-accent/30 text-sm font-medium inline-flex items-center transition-colors"
       }`}
       onClick={onClick}
       to={`/users/${userId}`}
       title={compact ? displayName : undefined}
     >
-      <Avatar className="h-8 w-8 shrink-0 mr-3 touch-manipulation">
+      <Avatar className="h-10 w-10 shrink-0 mr-3 touch-manipulation">
         {isValidAvatar && avatarSrc ? (
           <AvatarImage 
             src={avatarSrc} 

@@ -56,6 +56,7 @@
   }
   html, body {
     @apply overflow-x-hidden w-full;
+    -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -80,11 +81,25 @@
     /* Better touch feedback */
     .touch-manipulation {
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     
-    /* Improved tap highlight for mobile */
-    a, button {
-      -webkit-tap-highlight-color: transparent;
+    /* Add visual feedback for touch */
+    a:active, button:active {
+      opacity: 0.7;
+    }
+    
+    /* Mobile navigation drawer */
+    .mobile-drawer {
+      height: 100svh; /* Use svh for better mobile height handling */
+      width: 85vw;
+      max-width: 320px;
+      z-index: 100;
+    }
+    
+    /* Enable smooth scrolling behavior */
+    .smooth-scroll {
+      scroll-behavior: smooth;
     }
   }
   
@@ -159,5 +174,55 @@
     .home-page-layout {
       @apply pt-0;
     }
+    
+    /* Mobile drawer animations */
+    .drawer-enter {
+      transform: translateX(-100%);
+    }
+    
+    .drawer-enter-active {
+      transform: translateX(0);
+      transition: transform 300ms ease-out;
+    }
+    
+    .drawer-exit {
+      transform: translateX(0);
+    }
+    
+    .drawer-exit-active {
+      transform: translateX(-100%);
+      transition: transform 300ms ease-in;
+    }
+    
+    /* Drawer overlay */
+    .drawer-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+    }
+    
+    /* Add swipe gesture detection area */
+    .swipe-area {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 20px;
+      z-index: 40;
+    }
   }
+}
+
+/* Mobile drawer with swipe gestures */
+.mobile-drawer {
+  will-change: transform;
+  overscroll-behavior: contain;
+}
+
+/* Utility class for touch feedback */
+.active-scale {
+  transition: transform 0.2s ease;
+}
+
+.active-scale:active {
+  transform: scale(0.95);
 }
