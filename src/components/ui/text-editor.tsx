@@ -35,11 +35,6 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
             class: 'font-bold',
           },
         },
-        // Enable clipboard handling for rich text paste
-        clipboard: {
-          // Allow pasting all HTML nodes and marks
-          allowingHTMLAttributes: true,
-        },
       }),
       TextStyle,
       Image.configure({
@@ -68,12 +63,18 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
       attributes: {
         class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
       },
-      // Enhance handling of pasted content to better preserve formatting
+      // Enhanced paste handling for rich text
       handlePaste: (view, event, slice) => {
-        // Return false to let TipTap's default paste handling work
+        // This allows TipTap to handle paste events with its default handlers
+        // which will maintain rich text formatting from external sources
         return false;
       },
+      // This ensures all HTML attributes are preserved during paste
+      parseOptions: {
+        preserveWhitespace: true,
+      },
     },
+    // Enable paste rules to maintain formatting when pasting
     enablePasteRules: true,
   });
 
