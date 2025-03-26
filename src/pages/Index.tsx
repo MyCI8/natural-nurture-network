@@ -14,10 +14,38 @@ const Index = () => {
       '--webkit-overflow-scrolling', 'touch'
     );
     
+    // Add invisible swipe detection area for the mobile menu
+    const addSwipeArea = () => {
+      // Check if we're on mobile
+      if (window.innerWidth <= 768) {
+        // Check if swipe area already exists
+        if (!document.querySelector('.swipe-detection-area')) {
+          const swipeArea = document.createElement('div');
+          swipeArea.className = 'swipe-detection-area';
+          swipeArea.setAttribute('aria-hidden', 'true');
+          document.body.appendChild(swipeArea);
+        }
+      } else {
+        // Remove if exists and we're not on mobile
+        const existingSwipeArea = document.querySelector('.swipe-detection-area');
+        if (existingSwipeArea) {
+          existingSwipeArea.remove();
+        }
+      }
+    };
+    
+    addSwipeArea();
+    window.addEventListener('resize', addSwipeArea);
+    
     return () => {
       document.documentElement.style.removeProperty(
         '--webkit-overflow-scrolling'
       );
+      window.removeEventListener('resize', addSwipeArea);
+      const swipeArea = document.querySelector('.swipe-detection-area');
+      if (swipeArea) {
+        swipeArea.remove();
+      }
     };
   }, []);
 

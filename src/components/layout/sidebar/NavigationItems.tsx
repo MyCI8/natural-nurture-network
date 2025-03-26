@@ -77,7 +77,7 @@ export const NavigationButtons = ({
             location.pathname === item.path 
               ? 'bg-accent/50 text-primary font-bold' 
               : 'hover:bg-accent/30 bg-transparent active:bg-accent/70'
-          } touch-manipulation active:scale-95 transition-transform`}
+          } touch-manipulation active:scale-95 transition-transform min-h-[48px]`}
           title={iconOnly ? item.label : undefined}
         >
           <item.icon className="h-6 w-6 shrink-0" />

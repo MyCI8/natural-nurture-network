@@ -101,6 +101,18 @@
     .smooth-scroll {
       scroll-behavior: smooth;
     }
+    
+    /* Swipe detection area for sidebar */
+    .swipe-detection-area {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 100%;
+      z-index: 40;
+      opacity: 0;
+      pointer-events: auto;
+    }
   }
   
   /* Ensures all popover content has a solid background */
@@ -199,16 +211,6 @@
       background-color: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(2px);
     }
-    
-    /* Add swipe gesture detection area */
-    .swipe-area {
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 20px;
-      z-index: 40;
-    }
   }
 }
 
@@ -216,6 +218,7 @@
 .mobile-drawer {
   will-change: transform;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Utility class for touch feedback */
@@ -225,4 +228,9 @@
 
 .active-scale:active {
   transform: scale(0.95);
+}
+
+/* Safari specific for smooth inertial scrolling */
+.safari-scroll {
+  -webkit-overflow-scrolling: touch;
 }

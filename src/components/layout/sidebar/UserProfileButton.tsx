@@ -48,7 +48,7 @@ export const UserProfileButton = ({
       <Link
         className={compact 
           ? "w-full rounded-full flex items-center justify-center p-2 inline-flex bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium touch-manipulation active:scale-95 transition-transform"
-          : "w-full rounded-lg inline-flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 text-sm font-medium touch-manipulation active:scale-95 transition-transform"}
+          : "w-full rounded-lg inline-flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 text-sm font-medium touch-manipulation active:scale-95 transition-transform min-h-[48px]"}
         onClick={onClick}
         to="/auth"
         title={compact ? "Sign in" : undefined}
