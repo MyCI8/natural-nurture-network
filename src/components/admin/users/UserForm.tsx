@@ -1,4 +1,4 @@
-
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/types/user";
-import { useState } from "react";
-import { uploadProfileImage, dataURLtoFile } from "@/utils/imageUtils";
 import { ProfileImageUpload } from "@/components/profile/ProfileImageUpload";
 
 interface UserFormData {
@@ -46,8 +44,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
     },
   });
 
-  // Set the avatar URL in the form data
-  React.useEffect(() => {
+  useEffect(() => {
     setValue("avatar_url", avatarUrl);
   }, [avatarUrl, setValue]);
 
@@ -55,9 +52,6 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
     mutationFn: async (data: UserFormData) => {
       try {
         if (userId) {
-          // Update existing user
-          
-          // Update profile data
           const { error: profileError } = await supabase
             .from("profiles")
             .update({
@@ -70,7 +64,6 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
 
           if (profileError) throw profileError;
 
-          // Update role if provided
           if (data.role) {
             const { error: roleError } = await supabase
               .from("user_roles")
@@ -84,10 +77,9 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
             if (roleError) throw roleError;
           }
         } else {
-          // Create new user with email signup
           const { error: signUpError, data: authData } = await supabase.auth.signUp({
             email: data.email,
-            password: crypto.randomUUID(), // Generate a random password
+            password: crypto.randomUUID(),
           });
 
           if (signUpError) throw signUpError;
@@ -95,7 +87,6 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
           const newUserId = authData.user?.id;
           if (!newUserId) throw new Error("Failed to create user");
 
-          // Update profile for the new user
           const { error: profileError } = await supabase
             .from("profiles")
             .update({
@@ -108,7 +99,6 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
 
           if (profileError) throw profileError;
 
-          // Add role if provided
           if (data.role) {
             const { error: roleError } = await supabase
               .from("user_roles")
