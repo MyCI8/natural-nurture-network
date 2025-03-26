@@ -17,6 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/types/user";
 import { useState } from "react";
+import { uploadProfileImage, dataURLtoFile } from "@/utils/imageUtils";
 
 interface UserFormData {
   email: string;
@@ -37,6 +38,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [imageUrl, setImageUrl] = useState(initialData?.avatar_url || "");
+  const [isUploading, setIsUploading] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<UserFormData>({
     defaultValues: initialData || {
@@ -46,101 +48,93 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
 
   const updateUserMutation = useMutation({
     mutationFn: async (data: UserFormData) => {
-      if (userId) {
-        // Update existing user
-        const avatarPath = imageUrl ? `${userId}/${crypto.randomUUID()}` : null;
-        
-        if (imageUrl && imageUrl.startsWith('data:')) {
-          // Upload new avatar
-          const { data: file, error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(avatarPath!, await (await fetch(imageUrl)).blob());
+      setIsUploading(true);
+      try {
+        if (userId) {
+          // Update existing user
+          let avatarUrl = imageUrl;
+          
+          // Only process new image upload if image has changed and is a data URL
+          if (imageUrl && imageUrl !== initialData?.avatar_url && imageUrl.startsWith('data:')) {
+            const file = await dataURLtoFile(imageUrl, `profile-image-${userId}.png`);
+            if (file) {
+              const newAvatarUrl = await uploadProfileImage(file, userId);
+              if (newAvatarUrl) {
+                avatarUrl = newAvatarUrl;
+              }
+            }
+          }
 
-          if (uploadError) throw uploadError;
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update({
+              full_name: data.full_name,
+              username: data.username,
+              avatar_url: avatarUrl,
+              account_status: data.account_status,
+            })
+            .eq("id", userId);
 
-          // Get public URL
-          const { data: { publicUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(avatarPath!);
+          if (profileError) throw profileError;
 
-          data.avatar_url = publicUrl;
+          if (data.role) {
+            const { error: roleError } = await supabase
+              .from("user_roles")
+              .upsert({
+                user_id: userId,
+                role: data.role,
+              }, {
+                onConflict: "user_id",
+              });
+
+            if (roleError) throw roleError;
+          }
+        } else {
+          // Create new user with email signup
+          const { error: signUpError, data: authData } = await supabase.auth.signUp({
+            email: data.email,
+            password: crypto.randomUUID(), // Generate a random password
+          });
+
+          if (signUpError) throw signUpError;
+
+          const newUserId = authData.user?.id;
+          if (!newUserId) throw new Error("Failed to create user");
+
+          // Upload avatar if provided
+          let avatarUrl = null;
+          if (imageUrl && imageUrl.startsWith('data:')) {
+            const file = await dataURLtoFile(imageUrl, `profile-image-${newUserId}.png`);
+            if (file) {
+              avatarUrl = await uploadProfileImage(file, newUserId);
+            }
+          }
+
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update({
+              full_name: data.full_name,
+              username: data.username,
+              avatar_url: avatarUrl,
+              account_status: data.account_status,
+            })
+            .eq("id", newUserId);
+
+          if (profileError) throw profileError;
+
+          if (data.role) {
+            const { error: roleError } = await supabase
+              .from("user_roles")
+              .insert({
+                user_id: newUserId,
+                role: data.role,
+              });
+
+            if (roleError) throw roleError;
+          }
         }
-
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({
-            full_name: data.full_name,
-            username: data.username,
-            avatar_url: data.avatar_url || imageUrl, // Use existing URL if no new upload
-            account_status: data.account_status,
-          })
-          .eq("id", userId);
-
-        if (profileError) throw profileError;
-
-        if (data.role) {
-          const { error: roleError } = await supabase
-            .from("user_roles")
-            .upsert({
-              user_id: userId,
-              role: data.role,
-            }, {
-              onConflict: "user_id",
-            });
-
-          if (roleError) throw roleError;
-        }
-      } else {
-        // Create new user with email signup
-        const { error: signUpError, data: authData } = await supabase.auth.signUp({
-          email: data.email,
-          password: crypto.randomUUID(), // Generate a random password
-        });
-
-        if (signUpError) throw signUpError;
-
-        const newUserId = authData.user?.id;
-        if (!newUserId) throw new Error("Failed to create user");
-
-        // Upload avatar if provided
-        let avatarUrl = null;
-        if (imageUrl) {
-          const avatarPath = `${newUserId}/${crypto.randomUUID()}`;
-          const { error: uploadError } = await supabase.storage
-            .from('avatars')
-            .upload(avatarPath, await (await fetch(imageUrl)).blob());
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(avatarPath);
-
-          avatarUrl = publicUrl;
-        }
-
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({
-            full_name: data.full_name,
-            username: data.username,
-            avatar_url: avatarUrl,
-            account_status: data.account_status,
-          })
-          .eq("id", newUserId);
-
-        if (profileError) throw profileError;
-
-        if (data.role) {
-          const { error: roleError } = await supabase
-            .from("user_roles")
-            .insert({
-              user_id: newUserId,
-              role: data.role,
-            });
-
-          if (roleError) throw roleError;
-        }
+      } finally {
+        setIsUploading(false);
       }
     },
     onSuccess: () => {
@@ -249,8 +243,8 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={updateUserMutation.isPending}>
-          {updateUserMutation.isPending ? 
+        <Button type="submit" disabled={updateUserMutation.isPending || isUploading}>
+          {updateUserMutation.isPending || isUploading ? 
             "Saving..." : 
             (userId ? "Update User" : "Create User")
           }

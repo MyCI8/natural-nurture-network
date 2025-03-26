@@ -142,6 +142,9 @@ const TopHeader = () => {
         <Avatar 
           className="h-8 w-8 cursor-pointer" 
           onClick={() => setIsMenuOpen(true)}
+          role="button"
+          aria-label="Open menu"
+          tabIndex={0}
         >
           {profile?.avatar_url ? (
             <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />

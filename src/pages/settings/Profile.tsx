@@ -4,12 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ArrowLeft, User, Mail, UserCheck, Upload, Trash, CalendarIcon } from "lucide-react";
+import { ArrowLeft, User, Mail, UserCheck, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { ProfileImageUpload } from "@/components/profile/ProfileImageUpload";
 
 const formSchema = z.object({
   username: z.string().min(3).max(50),
@@ -42,8 +42,6 @@ export default function ProfileSettings() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [user, setUser] = useState({
     id: "",
     username: "",
@@ -166,14 +164,13 @@ export default function ProfileSettings() {
     fetchUserProfile();
   }, [navigate, toast, form]);
 
-  function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (file) {
-      setAvatarFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setAvatarPreview(previewUrl);
-    }
-  }
+  const handleAvatarUpdate = (url: string) => {
+    setUser({
+      ...user,
+      avatar_url: url
+    });
+    form.setValue("avatarUrl", url);
+  };
 
   async function onSubmit(data: ProfileFormValues) {
     setLoading(true);
@@ -213,38 +210,12 @@ export default function ProfileSettings() {
           username: data.username,
           full_name: `${data.firstName} ${data.lastName}`,
           settings: settings,
-          avatar_url: avatarPreview || data.avatarUrl || ""
+          avatar_url: data.avatarUrl
         })
         .eq('id', authUser.id);
       
       if (updateProfileError) {
         throw updateProfileError;
-      }
-      
-      if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `${authUser.id}-${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, avatarFile);
-        
-        if (uploadError) {
-          console.error("Error uploading avatar:", uploadError);
-        } else {
-          const { data: publicUrlData } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(fileName);
-          
-          if (publicUrlData) {
-            await supabase
-              .from('profiles')
-              .update({
-                avatar_url: publicUrlData.publicUrl
-              })
-              .eq('id', authUser.id);
-          }
-        }
       }
       
       setUser({
@@ -254,7 +225,7 @@ export default function ProfileSettings() {
         first_name: data.firstName,
         last_name: data.lastName,
         full_name: `${data.firstName} ${data.lastName}`,
-        avatar_url: avatarPreview || data.avatarUrl || ""
+        avatar_url: data.avatarUrl || ""
       });
       
       toast({
@@ -271,12 +242,6 @@ export default function ProfileSettings() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function removeAvatar() {
-    setAvatarFile(null);
-    setAvatarPreview(null);
-    form.setValue("avatarUrl", "");
   }
 
   function goBack() {
@@ -321,45 +286,12 @@ export default function ProfileSettings() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col md:flex-row gap-8">
-                <div className="flex flex-col items-center space-y-3">
-                  <Avatar className="h-32 w-32">
-                    <AvatarImage src={avatarPreview || user.avatar_url} />
-                    <AvatarFallback className="text-2xl">{user.first_name ? user.first_name[0] : ''}</AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex flex-col items-center space-y-2">
-                    <div className="flex gap-2">
-                      <Button type="button" variant="outline" size="sm" className="flex gap-1" asChild>
-                        <label>
-                          <Upload className="h-4 w-4" />
-                          <span>Change</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="sr-only"
-                            onChange={handleAvatarChange}
-                          />
-                        </label>
-                      </Button>
-                      
-                      {(avatarPreview || user.avatar_url) && (
-                        <Button 
-                          type="button"
-                          variant="outline" 
-                          size="sm"
-                          className="flex gap-1 text-destructive"
-                          onClick={removeAvatar}
-                        >
-                          <Trash className="h-4 w-4" />
-                          <span>Remove</span>
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      JPG, GIF or PNG. Max size 3MB.
-                    </p>
-                  </div>
-                </div>
+                <ProfileImageUpload
+                  userId={user.id}
+                  avatarUrl={user.avatar_url}
+                  fullName={user.full_name}
+                  onImageUpdate={handleAvatarUpdate}
+                />
                 
                 <div className="flex-1 space-y-4">
                   <FormField
