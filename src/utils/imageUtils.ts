@@ -48,12 +48,14 @@ export const uploadProfileImage = async (file: File, userId: string): Promise<st
   if (!file || !userId) return null;
   
   try {
+    console.log(`Starting profile image upload for user ${userId}`, file);
+    
     // Create a unique file name
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}-${Date.now()}.${fileExt}`;
     
     // Upload the file to the avatars bucket
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError, data } = await supabase.storage
       .from('avatars')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -64,11 +66,15 @@ export const uploadProfileImage = async (file: File, userId: string): Promise<st
       console.error('Error uploading profile image:', uploadError);
       return null;
     }
+
+    console.log('Profile image uploaded successfully', data);
     
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('avatars')
       .getPublicUrl(fileName);
+    
+    console.log('Generated public URL:', publicUrl);
     
     return publicUrl;
   } catch (error) {
@@ -80,8 +86,15 @@ export const uploadProfileImage = async (file: File, userId: string): Promise<st
 // Convert base64 data URL to a File object
 export const dataURLtoFile = async (dataUrl: string, filename: string): Promise<File | null> => {
   try {
+    if (!dataUrl.startsWith('data:')) {
+      // If it's already a URL, not a data URL, return null
+      console.log('Not a data URL, skipping conversion:', dataUrl.substring(0, 20) + '...');
+      return null;
+    }
+    
     const res = await fetch(dataUrl);
     const blob = await res.blob();
+    console.log('Successfully converted data URL to file:', filename, blob.type, blob.size);
     return new File([blob], filename, { type: blob.type });
   } catch (error) {
     console.error('Error converting data URL to file:', error);

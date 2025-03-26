@@ -24,11 +24,10 @@ export function ProfileImageUpload({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Handle touch events for mobile
-  const handleTouchStart = () => {
-    // This allows the actual click/touch handler to work on mobile
+  const handleFileInput = () => {
+    // Trigger the hidden file input when the button or avatar is clicked
     if (fileInputRef.current) {
-      fileInputRef.current.focus();
+      fileInputRef.current.click();
     }
   };
 
@@ -72,26 +71,53 @@ export function ProfileImageUpload({
     onImageUpdate('');
   };
 
+  // Get the first letter of the name for the avatar fallback
+  const getInitials = () => {
+    return fullName ? fullName[0].toUpperCase() : '?';
+  };
+
   return (
     <div className="flex flex-col items-center space-y-3">
-      <Avatar className="h-32 w-32 relative group">
-        <AvatarImage src={previewUrl || ''} />
-        <AvatarFallback className="text-2xl">{fullName?.[0] || '?'}</AvatarFallback>
+      <div className="relative">
+        <Avatar 
+          className="h-32 w-32 cursor-pointer" 
+          onClick={handleFileInput}
+        >
+          <AvatarImage src={previewUrl || ''} alt={fullName || 'User'} />
+          <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+            {getInitials()}
+          </AvatarFallback>
+          
+          {/* Hover overlay with upload icon */}
+          <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity">
+            <Upload className="h-8 w-8 text-white" />
+          </div>
+        </Avatar>
         
-        {/* Hover overlay with edit button */}
-        <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+        {/* File input (hidden) */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+          disabled={isUploading}
+        />
+        
+        {/* Remove button (visible when image exists) */}
+        {previewUrl && (
           <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-white" 
+            type="button"
+            variant="destructive" 
+            size="icon"
+            className="absolute -top-2 -right-2 h-8 w-8 rounded-full"
+            onClick={handleRemoveImage}
             disabled={isUploading}
-            onClick={() => fileInputRef.current?.click()}
-            onTouchStart={handleTouchStart}
           >
-            <Upload className="h-5 w-5" />
+            <Trash className="h-4 w-4" />
           </Button>
-        </div>
-      </Avatar>
+        )}
+      </div>
       
       <div className="flex gap-2">
         <Button 
@@ -100,38 +126,11 @@ export function ProfileImageUpload({
           size="sm" 
           className="flex gap-1" 
           disabled={isUploading}
-          asChild
+          onClick={handleFileInput}
         >
-          <label 
-            className="cursor-pointer"
-            onTouchStart={handleTouchStart}
-          >
-            <Upload className="h-4 w-4" />
-            <span>{isUploading ? "Uploading..." : "Change"}</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={handleFileChange}
-              disabled={isUploading}
-            />
-          </label>
+          <Upload className="h-4 w-4" />
+          <span>{isUploading ? "Uploading..." : "Change Photo"}</span>
         </Button>
-        
-        {previewUrl && (
-          <Button 
-            type="button"
-            variant="outline" 
-            size="sm"
-            className="flex gap-1 text-destructive"
-            onClick={handleRemoveImage}
-            disabled={isUploading}
-          >
-            <Trash className="h-4 w-4" />
-            <span>Remove</span>
-          </Button>
-        )}
       </div>
       <p className="text-xs text-muted-foreground">
         JPG, GIF or PNG. Max size 3MB.

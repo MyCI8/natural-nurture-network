@@ -12,12 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { ImageManagementSection } from "../experts/ImageManagementSection";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole } from "@/types/user";
 import { useState } from "react";
 import { uploadProfileImage, dataURLtoFile } from "@/utils/imageUtils";
+import { ProfileImageUpload } from "@/components/profile/ProfileImageUpload";
 
 interface UserFormData {
   email: string;
@@ -37,46 +37,40 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [imageUrl, setImageUrl] = useState(initialData?.avatar_url || "");
+  const [avatarUrl, setAvatarUrl] = useState(initialData?.avatar_url || "");
   const [isUploading, setIsUploading] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<UserFormData>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<UserFormData>({
     defaultValues: initialData || {
       account_status: "active",
     },
   });
 
+  // Set the avatar URL in the form data
+  React.useEffect(() => {
+    setValue("avatar_url", avatarUrl);
+  }, [avatarUrl, setValue]);
+
   const updateUserMutation = useMutation({
     mutationFn: async (data: UserFormData) => {
-      setIsUploading(true);
       try {
         if (userId) {
           // Update existing user
-          let avatarUrl = imageUrl;
           
-          // Only process new image upload if image has changed and is a data URL
-          if (imageUrl && imageUrl !== initialData?.avatar_url && imageUrl.startsWith('data:')) {
-            const file = await dataURLtoFile(imageUrl, `profile-image-${userId}.png`);
-            if (file) {
-              const newAvatarUrl = await uploadProfileImage(file, userId);
-              if (newAvatarUrl) {
-                avatarUrl = newAvatarUrl;
-              }
-            }
-          }
-
+          // Update profile data
           const { error: profileError } = await supabase
             .from("profiles")
             .update({
               full_name: data.full_name,
               username: data.username,
-              avatar_url: avatarUrl,
+              avatar_url: data.avatar_url,
               account_status: data.account_status,
             })
             .eq("id", userId);
 
           if (profileError) throw profileError;
 
+          // Update role if provided
           if (data.role) {
             const { error: roleError } = await supabase
               .from("user_roles")
@@ -101,27 +95,20 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
           const newUserId = authData.user?.id;
           if (!newUserId) throw new Error("Failed to create user");
 
-          // Upload avatar if provided
-          let avatarUrl = null;
-          if (imageUrl && imageUrl.startsWith('data:')) {
-            const file = await dataURLtoFile(imageUrl, `profile-image-${newUserId}.png`);
-            if (file) {
-              avatarUrl = await uploadProfileImage(file, newUserId);
-            }
-          }
-
+          // Update profile for the new user
           const { error: profileError } = await supabase
             .from("profiles")
             .update({
               full_name: data.full_name,
               username: data.username,
-              avatar_url: avatarUrl,
+              avatar_url: data.avatar_url,
               account_status: data.account_status,
             })
             .eq("id", newUserId);
 
           if (profileError) throw profileError;
 
+          // Add role if provided
           if (data.role) {
             const { error: roleError } = await supabase
               .from("user_roles")
@@ -159,14 +146,24 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
     updateUserMutation.mutate(data);
   };
 
+  const handleAvatarUpdate = (url: string) => {
+    console.log("Avatar URL updated:", url);
+    setAvatarUrl(url);
+    setValue("avatar_url", url);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-8">
-          <ImageManagementSection
-            imageUrl={imageUrl}
-            setImageUrl={setImageUrl}
-          />
+          {userId && (
+            <ProfileImageUpload
+              userId={userId}
+              avatarUrl={avatarUrl}
+              fullName={initialData?.full_name}
+              onImageUpdate={handleAvatarUpdate}
+            />
+          )}
 
           <div className="space-y-4">
             <div>
