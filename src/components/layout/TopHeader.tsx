@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserProfileButton } from "./sidebar/UserProfileButton";
 import { NavigationButtons } from "./sidebar/NavigationItems";
 import { SettingsPanel } from "./sidebar/SettingsPanel";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 const TopHeader = () => {
   const location = useLocation();
@@ -19,7 +18,7 @@ const TopHeader = () => {
   const [isHomePage, setIsHomePage] = useState(false);
   const [initialHideComplete, setInitialHideComplete] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -118,6 +117,20 @@ const TopHeader = () => {
     }
     navigate('/admin/videos/new');
   };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // If the menu is open and the click is outside the menu
+      if (isMenuOpen && !target.closest('[data-menu="sidebar"]')) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
   
   return (
     <header 
@@ -126,100 +139,100 @@ const TopHeader = () => {
       }`}
     >
       <div className="flex items-center gap-2">
-        <div 
-          className="relative"
-          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+        <Avatar 
+          className="h-8 w-8 cursor-pointer" 
+          onClick={() => setIsMenuOpen(true)}
         >
-          <Avatar className="h-8 w-8 cursor-pointer">
-            {profile?.avatar_url ? (
-              <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
-            ) : (
-              <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
-            )}
-          </Avatar>
-        </div>
-        
-        {isDrawerOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setIsDrawerOpen(false)}
-          />
-        )}
-        
-        <div 
-          className={`fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50 p-4 transition-transform duration-300 ${
-            isDrawerOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
-          <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
-              <UserProfileButton 
-                userId={currentUser?.id}
-                profile={profile}
-                onClick={() => {
-                  navigate(currentUser ? `/users/${currentUser.id}` : '/auth');
-                  setIsDrawerOpen(false);
+          {profile?.avatar_url ? (
+            <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
+          ) : (
+            <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
+          )}
+        </Avatar>
+      </div>
+      
+      {/* Sliding Menu */}
+      <div 
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+          isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsMenuOpen(false)}
+      />
+      
+      <div 
+        data-menu="sidebar"
+        className={`fixed top-0 left-0 bottom-0 w-[280px] bg-background border-r z-50 transition-transform duration-300 p-4 ${
+          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          <div className="p-4 border-b">
+            <UserProfileButton 
+              userId={currentUser?.id}
+              profile={profile}
+              onClick={() => {
+                navigate(currentUser ? `/users/${currentUser.id}` : '/auth');
+                setIsMenuOpen(false);
+              }}
+            />
+          </div>
+          
+          {showSettingsPanel ? (
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mb-4"
+                  onClick={() => setShowSettingsPanel(false)}
+                >
+                  ← Back
+                </Button>
+                <SettingsPanel />
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto py-4">
+              <NavigationButtons 
+                onItemClick={() => {
+                  setIsMenuOpen(false);
                 }}
               />
-            </div>
-            
-            {showSettingsPanel ? (
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-4">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="mb-4"
-                    onClick={() => setShowSettingsPanel(false)}
-                  >
-                    ← Back
-                  </Button>
-                  <SettingsPanel />
-                </div>
-              </div>
-            ) : (
-              <div className="flex-1 overflow-y-auto py-4">
-                <NavigationButtons 
-                  onItemClick={() => {
-                    setIsDrawerOpen(false);
+              
+              <div className="px-4 mt-6">
+                <Button
+                  className="w-full rounded-full mb-6 bg-primary text-primary-foreground hover:bg-primary/90 py-5"
+                  onClick={() => {
+                    handlePost();
+                    setIsMenuOpen(false);
                   }}
-                />
+                >
+                  Post
+                </Button>
                 
-                <div className="px-4 mt-6">
-                  <Button
-                    className="w-full rounded-full mb-6 bg-primary text-primary-foreground hover:bg-primary/90 py-5"
-                    onClick={() => {
-                      handlePost();
-                      setIsDrawerOpen(false);
-                    }}
-                  >
-                    Post
-                  </Button>
-                  
-                  {isAdmin && (
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start rounded-full py-3 mb-2"
-                      onClick={() => {
-                        navigate('/admin');
-                        setIsDrawerOpen(false);
-                      }}
-                    >
-                      Admin Panel
-                    </Button>
-                  )}
-                  
+                {isAdmin && (
                   <Button
                     variant="ghost"
-                    className="w-full justify-start rounded-full py-3"
-                    onClick={() => setShowSettingsPanel(true)}
+                    className="w-full justify-start rounded-full py-3 mb-2"
+                    onClick={() => {
+                      navigate('/admin');
+                      setIsMenuOpen(false);
+                    }}
                   >
-                    Settings
+                    Admin Panel
                   </Button>
-                </div>
+                )}
+                
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start rounded-full py-3"
+                  onClick={() => setShowSettingsPanel(true)}
+                >
+                  Settings
+                </Button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
       
