@@ -50,12 +50,12 @@ export const uploadProfileImage = async (file: File, userId: string): Promise<st
   try {
     console.log(`Starting profile image upload for user ${userId}`, file);
     
-    // Create a unique file name
+    // Create a unique file name with user ID and timestamp
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}-${Date.now()}.${fileExt}`;
     
     // Upload the file to the avatars bucket
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(fileName, file, {
         cacheControl: '3600',
@@ -66,15 +66,13 @@ export const uploadProfileImage = async (file: File, userId: string): Promise<st
       console.error('Error uploading profile image:', uploadError);
       return null;
     }
-
-    console.log('Profile image uploaded successfully', data);
     
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('avatars')
       .getPublicUrl(fileName);
     
-    console.log('Generated public URL:', publicUrl);
+    console.log('Profile image uploaded successfully. Public URL:', publicUrl);
     
     return publicUrl;
   } catch (error) {
@@ -107,7 +105,8 @@ export const isValidStorageUrl = (url: string | null): boolean => {
   if (!url) return false;
   
   // Check if it's a Supabase storage URL
-  const isSupabaseUrl = url.includes('.supabase.co') && url.includes('/storage/v1/object/public/');
+  const isSupabaseUrl = url.includes('.supabase.co') && 
+                        url.includes('/storage/v1/object/public/');
   
   // Check if it's an HTTP/HTTPS URL
   const isHttpUrl = url.startsWith('http://') || url.startsWith('https://');
@@ -115,7 +114,7 @@ export const isValidStorageUrl = (url: string | null): boolean => {
   return isSupabaseUrl && isHttpUrl;
 };
 
-// Fix URL if it's a blob URL or other temporary URL
+// Handle temporary URLs like blob URLs and convert them to valid storage URLs if possible
 export const ensureValidAvatarUrl = async (userId: string, currentUrl: string | null): Promise<string | null> => {
   // If URL is null or empty, return null
   if (!currentUrl) return null;
