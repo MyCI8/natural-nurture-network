@@ -1,4 +1,3 @@
-
 import { User, UserRole } from "@/types/user";
 import {
   Table,
@@ -21,6 +20,7 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface UserTableProps {
   users: User[];
@@ -45,7 +45,6 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
 
       if (error) throw error;
 
-      // Invalidate the users query to refetch the updated data
       queryClient.invalidateQueries({ queryKey: ["users"] });
 
       toast({
@@ -71,7 +70,6 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
 
       if (error) throw error;
 
-      // Invalidate the users query to refetch the updated data
       queryClient.invalidateQueries({ queryKey: ["users"] });
 
       toast({
@@ -102,7 +100,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Full Name</TableHead>
+            <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Last Login</TableHead>
@@ -113,7 +111,18 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
         <TableBody>
           {users.map((user) => (
             <TableRow key={user.id}>
-              <TableCell>{user.full_name || "N/A"}</TableCell>
+              <TableCell>
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-8 w-8">
+                    {user.avatar_url ? (
+                      <AvatarImage src={user.avatar_url} alt={user.full_name || ''} />
+                    ) : (
+                      <AvatarFallback>{user.full_name?.[0] || '?'}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span>{user.full_name || "N/A"}</span>
+                </div>
+              </TableCell>
               <TableCell>{user.email || "N/A"}</TableCell>
               <TableCell>
                 <Select

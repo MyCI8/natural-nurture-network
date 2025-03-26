@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +23,7 @@ import {
 import { UserPlus, PencilIcon, UserX, Search } from 'lucide-react';
 import { UserRole } from '@/types/user';
 import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const AdminUsers = () => {
   const navigate = useNavigate();
@@ -167,7 +167,18 @@ const AdminUsers = () => {
               ) : users && users.length > 0 ? (
                 users.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.full_name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-8 w-8">
+                          {user.avatar_url ? (
+                            <AvatarImage src={user.avatar_url} alt={user.full_name || ''} />
+                          ) : (
+                            <AvatarFallback>{user.full_name?.[0] || '?'}</AvatarFallback>
+                          )}
+                        </Avatar>
+                        <span>{user.full_name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Select

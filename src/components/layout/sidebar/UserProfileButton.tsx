@@ -59,7 +59,7 @@ export const UserProfileButton = ({
       to={`/users/${userId}`}
       title={compact ? displayName : undefined}
     >
-      <Avatar className="h-8 w-8 shrink-0">
+      <Avatar className="h-8 w-8 shrink-0 mr-3">
         {avatarSrc ? (
           <AvatarImage src={avatarSrc} alt={displayName} />
         ) : (
@@ -68,7 +68,7 @@ export const UserProfileButton = ({
       </Avatar>
       
       {!compact && (
-        <div className="flex flex-col items-start ml-3">
+        <div className="flex flex-col items-start">
           <span className="font-semibold">{displayName}</span>
           <span className="text-sm text-muted-foreground">@{username}</span>
         </div>
