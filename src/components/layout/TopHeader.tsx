@@ -151,7 +151,7 @@ const TopHeader = () => {
         </Avatar>
       </div>
       
-      {/* Sliding Menu */}
+      {/* Overlay Background */}
       <div 
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
           isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -159,9 +159,10 @@ const TopHeader = () => {
         onClick={() => setIsMenuOpen(false)}
       />
       
+      {/* Sliding Menu - Updated for better desktop & mobile experience */}
       <div 
         data-menu="sidebar"
-        className={`fixed top-0 left-0 bottom-0 w-[280px] bg-background border-r z-50 transition-transform duration-300 p-4 ${
+        className={`fixed top-0 left-0 bottom-0 w-[280px] bg-background border-r z-50 transition-all duration-300 ease-in-out p-4 ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
