@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Search, Leaf } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { UserProfileButton } from "./sidebar/UserProfileButton";
 import { NavigationButtons } from "./sidebar/NavigationItems";
 import { SettingsPanel } from "./sidebar/SettingsPanel";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 const TopHeader = () => {
   const location = useLocation();
@@ -19,6 +19,7 @@ const TopHeader = () => {
   const [isHomePage, setIsHomePage] = useState(false);
   const [initialHideComplete, setInitialHideComplete] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -124,23 +125,32 @@ const TopHeader = () => {
         visible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full"
-          >
-            <Avatar className="h-8 w-8">
-              {profile?.avatar_url ? (
-                <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
-              ) : (
-                <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
-              )}
-            </Avatar>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-[85%] p-0 max-w-[300px]">
+      <div className="flex items-center gap-2">
+        <div 
+          className="relative"
+          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+        >
+          <Avatar className="h-8 w-8 cursor-pointer">
+            {profile?.avatar_url ? (
+              <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
+            ) : (
+              <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
+            )}
+          </Avatar>
+        </div>
+        
+        {isDrawerOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsDrawerOpen(false)}
+          />
+        )}
+        
+        <div 
+          className={`fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50 p-4 transition-transform duration-300 ${
+            isDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
           <div className="flex flex-col h-full">
             <div className="p-4 border-b">
               <UserProfileButton 
@@ -148,6 +158,7 @@ const TopHeader = () => {
                 profile={profile}
                 onClick={() => {
                   navigate(currentUser ? `/users/${currentUser.id}` : '/auth');
+                  setIsDrawerOpen(false);
                 }}
               />
             </div>
@@ -169,13 +180,18 @@ const TopHeader = () => {
             ) : (
               <div className="flex-1 overflow-y-auto py-4">
                 <NavigationButtons 
-                  onItemClick={() => {}}
+                  onItemClick={() => {
+                    setIsDrawerOpen(false);
+                  }}
                 />
                 
                 <div className="px-4 mt-6">
                   <Button
                     className="w-full rounded-full mb-6 bg-primary text-primary-foreground hover:bg-primary/90 py-5"
-                    onClick={handlePost}
+                    onClick={() => {
+                      handlePost();
+                      setIsDrawerOpen(false);
+                    }}
                   >
                     Post
                   </Button>
@@ -186,6 +202,7 @@ const TopHeader = () => {
                       className="w-full justify-start rounded-full py-3 mb-2"
                       onClick={() => {
                         navigate('/admin');
+                        setIsDrawerOpen(false);
                       }}
                     >
                       Admin Panel
@@ -203,8 +220,8 @@ const TopHeader = () => {
               </div>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </div>
+      </div>
       
       <Link to="/" className="flex items-center">
         <Leaf className="h-6 w-6 text-primary" />
