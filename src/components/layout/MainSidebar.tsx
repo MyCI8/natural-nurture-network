@@ -144,9 +144,7 @@ const MainSidebar = () => {
         <MobileHeader 
           showMobileHeader={showMobileHeader} 
           profile={profile} 
-          onMenuClick={() => {
-            setIsExpanded(true);
-          }}
+          onMenuClick={() => setIsExpanded(true)}
         />
         
         <MobileSidebar

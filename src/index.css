@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -74,6 +75,16 @@
     /* Increase text size for better readability */
     body {
       @apply text-base;
+    }
+    
+    /* Better touch feedback */
+    .touch-manipulation {
+      touch-action: manipulation;
+    }
+    
+    /* Improved tap highlight for mobile */
+    a, button {
+      -webkit-tap-highlight-color: transparent;
     }
   }
   

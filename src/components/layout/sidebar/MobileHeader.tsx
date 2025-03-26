@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Leaf, Search, Menu } from "lucide-react";
+import { Leaf, Search } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 interface MobileHeaderProps {
@@ -77,7 +77,7 @@ export const MobileHeader = ({
 
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 h-14 bg-background border-b z-50 transition-transform duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 h-14 bg-background/80 backdrop-blur-sm border-b z-50 transition-transform duration-300 ease-in-out ${
         shouldShowHeader ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
