@@ -63,14 +63,14 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
       attributes: {
         class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
       },
+      // Add parse options inside editorProps to handle pasting rich text
+      parseOptions: {
+        preserveWhitespace: 'full',
+      },
     },
-    // Enable advanced paste rules to maintain formatting
+    // These are valid top-level properties
     editable: true,
     injectCSS: true,
-    // These settings help ensure rich text formatting is maintained during paste
-    parseOptions: {
-      preserveWhitespace: 'full',
-    },
   });
 
   // Update editor content when prop changes
@@ -85,7 +85,7 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
   }
 
   // Override paste event to better handle rich content
-  editor.on('paste', ({ event, view, chain }) => {
+  editor.on('paste', ({ event, editor, slice }) => {
     // Allow default paste behavior which includes rich text
     return false;
   });
