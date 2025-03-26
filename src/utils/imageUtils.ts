@@ -101,3 +101,31 @@ export const dataURLtoFile = async (dataUrl: string, filename: string): Promise<
     return null;
   }
 };
+
+// Check if a URL is a valid Supabase storage URL
+export const isValidStorageUrl = (url: string | null): boolean => {
+  if (!url) return false;
+  
+  // Check if it's a Supabase storage URL
+  const isSupabaseUrl = url.includes('.supabase.co') && url.includes('/storage/v1/object/public/');
+  
+  // Check if it's an HTTP/HTTPS URL
+  const isHttpUrl = url.startsWith('http://') || url.startsWith('https://');
+  
+  return isSupabaseUrl && isHttpUrl;
+};
+
+// Fix URL if it's a blob URL or other temporary URL
+export const ensureValidAvatarUrl = async (userId: string, currentUrl: string | null): Promise<string | null> => {
+  // If URL is null or empty, return null
+  if (!currentUrl) return null;
+  
+  // If it's already a valid storage URL, return it
+  if (isValidStorageUrl(currentUrl)) return currentUrl;
+  
+  console.log(`Avatar URL for user ${userId} is not a valid storage URL:`, currentUrl);
+  
+  // If it's a blob URL or other temporary URL, we can't fix it directly
+  // We should return null so the UI can show the fallback avatar
+  return null;
+};

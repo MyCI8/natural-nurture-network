@@ -1,9 +1,9 @@
 
-import React, { useState, useRef, ChangeEvent } from 'react';
+import React, { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Upload, Trash } from "lucide-react";
-import { uploadProfileImage, dataURLtoFile } from '@/utils/imageUtils';
+import { uploadProfileImage, dataURLtoFile, isValidStorageUrl, ensureValidAvatarUrl } from '@/utils/imageUtils';
 import { useToast } from "@/components/ui/use-toast";
 
 interface ProfileImageUploadProps {
@@ -20,9 +20,35 @@ export function ProfileImageUpload({
   onImageUpdate 
 }: ProfileImageUploadProps) {
   const { toast } = useToast();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(avatarUrl || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Validate and set the avatar URL
+  useEffect(() => {
+    const validateUrl = async () => {
+      setIsLoading(true);
+      try {
+        // Check if the avatar URL is valid
+        if (avatarUrl) {
+          console.log("Validating avatar URL:", avatarUrl);
+          const validUrl = await ensureValidAvatarUrl(userId, avatarUrl);
+          console.log("Valid URL result:", validUrl);
+          setPreviewUrl(validUrl);
+        } else {
+          setPreviewUrl(null);
+        }
+      } catch (error) {
+        console.error("Error validating avatar URL:", error);
+        setPreviewUrl(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    validateUrl();
+  }, [avatarUrl, userId]);
 
   const handleFileInput = () => {
     // Trigger the hidden file input when the button or avatar is clicked
@@ -87,8 +113,19 @@ export function ProfileImageUpload({
           className="h-32 w-32 cursor-pointer" 
           onClick={handleFileInput}
         >
-          {previewUrl ? (
-            <AvatarImage src={previewUrl} alt={fullName || 'User'} />
+          {isLoading ? (
+            <AvatarFallback className="bg-accent animate-pulse">
+              <span className="sr-only">Loading</span>
+            </AvatarFallback>
+          ) : previewUrl ? (
+            <AvatarImage 
+              src={previewUrl} 
+              alt={fullName || 'User'} 
+              onError={() => {
+                console.error("Failed to load avatar image:", previewUrl);
+                setPreviewUrl(null);
+              }} 
+            />
           ) : (
             <AvatarFallback className="text-2xl bg-primary/10 text-primary">
               {getInitials()}

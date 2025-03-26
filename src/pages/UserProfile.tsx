@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +12,7 @@ import { UserVideoGrid } from '@/components/profile/UserVideoGrid';
 import { SavedVideos } from '@/components/profile/SavedVideos';
 import type { User } from '@/types/user';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { isValidStorageUrl } from '@/utils/imageUtils';
 
 const UserProfile = () => {
   const { id } = useParams();
@@ -19,6 +20,7 @@ const UserProfile = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = React.useState('posts');
   const isMobile = useIsMobile();
+  const [isValidAvatar, setIsValidAvatar] = useState<boolean>(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -42,6 +44,17 @@ const UserProfile = () => {
       return data as User;
     },
   });
+  
+  // Validate the avatar URL
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      const isValid = isValidStorageUrl(profile.avatar_url);
+      console.log("Profile avatar validity check:", profile.avatar_url, isValid);
+      setIsValidAvatar(isValid);
+    } else {
+      setIsValidAvatar(false);
+    }
+  }, [profile]);
 
   const isOwnProfile = currentUser?.id === id;
 
@@ -71,10 +84,11 @@ const UserProfile = () => {
         {/* Profile Header */}
         <div className="py-4 sm:py-8 text-center">
           <Avatar className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4">
-            {profile?.avatar_url ? (
+            {isValidAvatar && profile.avatar_url ? (
               <AvatarImage 
                 src={profile.avatar_url} 
                 alt={profile.full_name || 'Profile'} 
+                onError={() => setIsValidAvatar(false)}
               />
             ) : (
               <AvatarFallback className="bg-primary/10 text-primary text-xl sm:text-2xl">

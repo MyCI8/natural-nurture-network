@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tables } from "@/integrations/supabase/types";
+import { isValidStorageUrl } from '@/utils/imageUtils';
+import { useState, useEffect } from 'react';
 
 interface ProfileData {
   full_name?: string | null;
@@ -27,6 +29,19 @@ export const UserProfileButton = ({
   const username = profile?.username || 'user';
   const avatarSrc = profile?.avatar_url;
   const initials = displayName?.[0] || '?';
+  
+  const [isValidAvatar, setIsValidAvatar] = useState<boolean>(false);
+  
+  // Validate avatar URL
+  useEffect(() => {
+    const checkUrl = () => {
+      const isValid = isValidStorageUrl(avatarSrc);
+      console.log("Checking avatar URL validity:", avatarSrc, isValid);
+      setIsValidAvatar(isValid);
+    };
+    
+    checkUrl();
+  }, [avatarSrc]);
   
   if (!userId) {
     return (
@@ -60,8 +75,12 @@ export const UserProfileButton = ({
       title={compact ? displayName : undefined}
     >
       <Avatar className="h-8 w-8 shrink-0 mr-3">
-        {avatarSrc ? (
-          <AvatarImage src={avatarSrc} alt={displayName} />
+        {isValidAvatar && avatarSrc ? (
+          <AvatarImage 
+            src={avatarSrc} 
+            alt={displayName} 
+            onError={() => setIsValidAvatar(false)}
+          />
         ) : (
           <AvatarFallback>{initials}</AvatarFallback>
         )}
