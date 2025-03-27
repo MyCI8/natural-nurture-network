@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, PlayCircle, Video, Clock, ArrowRight } from "lucide-react";
+import { ArrowLeft, PlayCircle, Video, Clock, ArrowRight, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -14,50 +14,9 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
-
-interface RelatedRemedy {
-  id: string;
-  name: string;
-  summary: string;
-  image_url: string | null;
-}
-
-interface RelatedExpert {
-  id: string;
-  full_name: string;
-  title: string;
-  image_url: string | null;
-}
-
-interface RelatedArticle {
-  id: string;
-  title: string;
-  image_url: string | null;
-}
-
-interface RelatedLink {
-  id: string;
-  title: string;
-  url: string;
-  description: string | null;
-}
-
-interface SymptomContent {
-  related_remedies: RelatedRemedy[];
-  related_experts: RelatedExpert[];
-  related_articles: RelatedArticle[];
-  related_links: RelatedLink[];
-}
-
-interface GetSymptomRelatedContentResponse {
-  related_remedies: RelatedRemedy[];
-  related_experts: RelatedExpert[];
-  related_articles: RelatedArticle[];
-  related_links: RelatedLink[];
-  related_ingredients: any[]; // Added this to match the RPC function's response
-}
 
 interface VideoLink {
   title: string;
@@ -69,7 +28,6 @@ const SymptomDetail = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { setShowRightSection } = useLayout();
-  const [currentSymptom, setCurrentSymptom] = useState<SymptomType | null>(null);
   const { toast } = useToast();
 
   // Set the right section to be visible when this component mounts
@@ -78,55 +36,39 @@ const SymptomDetail = () => {
     return () => setShowRightSection(false);
   }, [setShowRightSection]);
 
-  // Logic to map between URL param and actual symptom type
-  useEffect(() => {
-    const allSymptoms: SymptomType[] = [
-      'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
-      'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
-      'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
-      'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
-    ];
-    
-    if (symptom) {
-      // Try to fetch by ID first (for when navigating from admin)
-      const fetchSymptomById = async () => {
-        try {
-          const { data: symptomData, error } = await supabase
-            .from('symptom_details')
-            .select('symptom')
-            .eq('id', symptom)
-            .single();
-            
-          if (symptomData?.symptom) {
-            setCurrentSymptom(symptomData.symptom as SymptomType);
-          } else {
-            // If no match by ID, try to match by slug
-            const foundSymptom = allSymptoms.find(
-              s => s.toLowerCase().replace(/\s+/g, '-') === symptom
-            );
-            
-            if (foundSymptom) {
-              setCurrentSymptom(foundSymptom);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching symptom:", error);
-          toast({
-            title: "Error",
-            description: "Could not retrieve symptom details",
-            variant: "destructive"
-          });
-        }
-      };
-      
-      fetchSymptomById();
-    }
-  }, [symptom, toast]);
-
-  const { data: relatedContent } = useQuery<SymptomContent>({
-    queryKey: ['symptom-content', currentSymptom],
+  // Fetch symptom details by ID
+  const { data: symptomDetails, isLoading, error } = useQuery({
+    queryKey: ['symptom-details', symptom],
     queryFn: async () => {
-      if (!currentSymptom) return {
+      if (!symptom) return null;
+      
+      const { data, error } = await supabase
+        .from('symptom_details')
+        .select('*')
+        .eq('id', symptom)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Error fetching symptom details:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load symptom details",
+          variant: "destructive"
+        });
+        throw error;
+      }
+      
+      console.log("Fetched symptom details:", data);
+      return data;
+    },
+    enabled: !!symptom
+  });
+
+  // Fetch related content for this symptom
+  const { data: relatedContent } = useQuery({
+    queryKey: ['symptom-content', symptomDetails?.symptom],
+    queryFn: async () => {
+      if (!symptomDetails?.symptom) return {
         related_remedies: [],
         related_experts: [],
         related_articles: [],
@@ -134,78 +76,65 @@ const SymptomDetail = () => {
       };
       
       const { data, error } = await supabase
-        .rpc('get_symptom_related_content', { p_symptom: currentSymptom });
+        .rpc('get_symptom_related_content', { p_symptom: symptomDetails.symptom });
       
       if (error) throw error;
       
-      // Properly cast the response data using type assertion
-      const rawContent = data[0] as unknown as GetSymptomRelatedContentResponse;
-      return {
-        related_remedies: (rawContent?.related_remedies || []) as RelatedRemedy[],
-        related_experts: (rawContent?.related_experts || []) as RelatedExpert[],
-        related_articles: (rawContent?.related_articles || []) as RelatedArticle[],
-        related_links: (rawContent?.related_links || []) as RelatedLink[]
+      console.log("Related content:", data);
+      
+      return data[0] || {
+        related_remedies: [],
+        related_experts: [],
+        related_articles: [],
+        related_links: []
       };
     },
-    enabled: !!currentSymptom
-  });
-
-  const { data: symptomDetails } = useQuery({
-    queryKey: ['symptom-details', currentSymptom, symptom],
-    queryFn: async () => {
-      if (!symptom) return null;
-      
-      let query = supabase
-        .from('symptom_details')
-        .select('*');
-
-      // Check if symptom is a UUID
-      if (symptom.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        query = query.eq('id', symptom);
-      } else if (currentSymptom) {
-        query = query.eq('symptom', currentSymptom);
-      }
-      
-      const { data, error } = await query.maybeSingle();
-      
-      if (error) {
-        console.error("Error fetching symptom details:", error);
-        throw error;
-      }
-      
-      return data;
-    },
-    enabled: !!symptom || !!currentSymptom
+    enabled: !!symptomDetails?.symptom
   });
 
   // Extract video links from symptom details for the right sidebar
   useEffect(() => {
     if (symptomDetails?.video_links) {
       try {
-        // Parse the video links from the database
-        const videoLinksString = typeof symptomDetails.video_links === 'string' 
-          ? symptomDetails.video_links 
-          : JSON.stringify(symptomDetails.video_links);
-          
-        const parsedLinks = JSON.parse(videoLinksString);
-          
+        let parsedLinks: VideoLink[] = [];
+        
+        // Handle different formats of video_links from the database
+        if (typeof symptomDetails.video_links === 'string') {
+          try {
+            parsedLinks = JSON.parse(symptomDetails.video_links);
+          } catch (e) {
+            console.error('Error parsing video links string:', e);
+          }
+        } else if (Array.isArray(symptomDetails.video_links)) {
+          parsedLinks = symptomDetails.video_links;
+        }
+        
+        // Make sure all links have a title and url
+        parsedLinks = parsedLinks.filter(link => 
+          link && typeof link === 'object' && 
+          'url' in link && typeof link.url === 'string' && link.url.trim() !== '' &&
+          'title' in link && typeof link.title === 'string'
+        );
+        
+        console.log("Sending video links to right section:", parsedLinks);
+        
         // Pass the video links data to the right column
         window.dispatchEvent(new CustomEvent('symptom-videos', { 
           detail: {
             videoLinks: parsedLinks,
-            videoDescription: symptomDetails.video_description || `Videos related to ${currentSymptom}`
+            videoDescription: symptomDetails.video_description || `Videos related to ${symptomDetails.symptom}`
           }
         }));
       } catch (e) {
-        console.error('Error parsing video links:', e);
+        console.error('Error processing video links:', e);
       }
     }
-  }, [symptomDetails, currentSymptom]);
+  }, [symptomDetails]);
 
-  if (!symptomDetails && !currentSymptom) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background pt-16">
-        <div className="container mx-auto p-6">
+        <div className="container mx-auto p-4 sm:p-6">
           <Button
             variant="ghost"
             size="icon"
@@ -214,6 +143,39 @@ const SymptomDetail = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
+          <div className="h-64 w-full animate-pulse rounded-lg bg-muted"></div>
+          <div className="mt-8 space-y-4">
+            <div className="h-8 w-1/2 animate-pulse rounded bg-muted"></div>
+            <div className="h-4 w-full animate-pulse rounded bg-muted"></div>
+            <div className="h-4 w-full animate-pulse rounded bg-muted"></div>
+            <div className="h-4 w-2/3 animate-pulse rounded bg-muted"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !symptomDetails) {
+    return (
+      <div className="min-h-screen bg-background pt-16">
+        <div className="container mx-auto p-4 sm:p-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              We couldn't find this symptom. It may have been removed or doesn't exist.
+            </AlertDescription>
+          </Alert>
+          
           <div className="bg-accent/30 rounded-lg p-8 text-center">
             <h1 className="text-2xl font-bold">Symptom not found</h1>
             <p className="mt-2 text-muted-foreground">
@@ -267,18 +229,42 @@ const SymptomDetail = () => {
         </Button>
 
         <div className="space-y-8">
-          {/* Header Section with Badge */}
-          <div className="bg-gradient-to-r from-accent to-accent/30 rounded-lg p-6 md:p-8">
-            <div className="flex flex-col gap-2">
-              <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
-                Symptom
-              </Badge>
-              <h1 className="text-3xl md:text-4xl font-bold">{symptomDetails?.symptom || currentSymptom}</h1>
-              <p className="text-lg text-muted-foreground mt-2">
-                {symptomDetails?.brief_description || 
-                  `Explore natural remedies and expert advice for ${currentSymptom?.toLowerCase() || 'this symptom'}.`}
-              </p>
-            </div>
+          {/* Hero Section with Image and Title */}
+          <div className="relative rounded-lg overflow-hidden">
+            {symptomDetails.image_url ? (
+              <div>
+                <AspectRatio ratio={16/9} className="bg-muted">
+                  <img 
+                    src={symptomDetails.image_url} 
+                    alt={symptomDetails.symptom} 
+                    className="w-full h-full object-cover"
+                  />
+                </AspectRatio>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 md:p-8">
+                  <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
+                    Symptom
+                  </Badge>
+                  <h1 className="text-3xl md:text-4xl font-bold text-white">{symptomDetails.symptom}</h1>
+                  <p className="text-lg text-white/90 mt-2 max-w-2xl">
+                    {symptomDetails.brief_description || 
+                      `Learn about ${symptomDetails.symptom?.toLowerCase() || 'this symptom'} and natural remedies.`}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-accent to-accent/30 rounded-lg p-6 md:p-8">
+                <div className="flex flex-col gap-2">
+                  <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
+                    Symptom
+                  </Badge>
+                  <h1 className="text-3xl md:text-4xl font-bold">{symptomDetails.symptom}</h1>
+                  <p className="text-lg text-muted-foreground mt-2">
+                    {symptomDetails.brief_description || 
+                      `Explore natural remedies and expert advice for ${symptomDetails.symptom?.toLowerCase() || 'this symptom'}.`}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Main Content and Description */}
@@ -304,24 +290,46 @@ const SymptomDetail = () => {
               
               <div className="grid grid-cols-1 gap-4">
                 {videoLinks.slice(0, 3).map((video, index) => (
-                  <Card 
-                    key={index} 
-                    className="overflow-hidden hover:shadow-md transition-shadow touch-manipulation"
-                    onClick={() => window.open(video.url, '_blank')}
+                  <a 
+                    key={index}
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block touch-manipulation"
                   >
-                    <CardContent className="p-0">
-                      <AspectRatio ratio={16/9} className="bg-muted relative">
-                        {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <PlayCircle className="h-12 w-12 text-primary opacity-90" />
-                          </div>
-                        ) : null}
-                      </AspectRatio>
-                      <div className="p-4">
-                        <h3 className="font-medium text-sm line-clamp-2">{video.title}</h3>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
+                      <CardContent className="p-0">
+                        <AspectRatio ratio={16/9} className="bg-muted relative">
+                          {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
+                            <>
+                              <img 
+                                src={getYoutubeVideoId(video.url) ? 
+                                  `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/hqdefault.jpg` : 
+                                  ''
+                                } 
+                                alt={video.title} 
+                                className="w-full h-full object-cover" 
+                              />
+                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
+                                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="w-full h-full bg-accent flex items-center justify-center">
+                              <span className="text-muted-foreground">Video Preview</span>
+                            </div>
+                          )}
+                        </AspectRatio>
+                        <div className="p-3 text-left">
+                          <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </a>
                 ))}
                 
                 {videoLinks.length > 3 && (
@@ -476,24 +484,42 @@ const SymptomDetail = () => {
               
               <div className="grid grid-cols-1 gap-4">
                 {videoLinks.map((video, index) => (
-                  <Card 
+                  <a 
                     key={index} 
-                    className="overflow-hidden hover:shadow-md transition-shadow touch-manipulation"
-                    onClick={() => window.open(video.url, '_blank')}
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block touch-manipulation"
                   >
-                    <CardContent className="p-0">
-                      <AspectRatio ratio={16/9} className="bg-muted relative">
-                        {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <PlayCircle className="h-12 w-12 text-primary opacity-90" />
-                          </div>
-                        ) : null}
-                      </AspectRatio>
-                      <div className="p-4">
-                        <h3 className="font-medium">{video.title}</h3>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardContent className="p-0">
+                        <AspectRatio ratio={16/9} className="bg-muted relative">
+                          {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
+                            <>
+                              <img 
+                                src={getYoutubeVideoId(video.url) ? 
+                                  `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/hqdefault.jpg` : 
+                                  ''
+                                }
+                                alt={video.title} 
+                                className="w-full h-full object-cover" 
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <PlayCircle className="h-12 w-12 text-primary opacity-90" />
+                              </div>
+                            </>
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Video className="h-12 w-12 text-primary opacity-90" />
+                            </div>
+                          )}
+                        </AspectRatio>
+                        <div className="p-4">
+                          <h3 className="font-medium">{video.title}</h3>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </a>
                 ))}
               </div>
             </section>
@@ -503,5 +529,12 @@ const SymptomDetail = () => {
     </div>
   );
 };
+
+function getYoutubeVideoId(url: string): string | null {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
 
 export default SymptomDetail;
