@@ -20,7 +20,7 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" enableSystem>
         <App />
-      </QueryClientProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   </BrowserRouter>
 );
