@@ -43,7 +43,7 @@ export const FullSidebar = ({
       <div className="px-4">
         <Link 
           to="/" 
-          className="flex items-center space-x-2 mb-8"
+          className="flex items-center space-x-2 mb-8 touch-manipulation"
         >
           <Leaf className="h-8 w-8 text-primary shrink-0" />
           <span className="text-xl font-semibold">BetterTogether</span>
@@ -52,7 +52,7 @@ export const FullSidebar = ({
         <NavigationItems className="mb-4" />
 
         <Button
-          className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90 active-scale touch-manipulation"
+          className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] touch-manipulation"
           onClick={onPostClick}
         >
           <Upload className="h-4 w-4 shrink-0" />
@@ -80,7 +80,7 @@ export const FullSidebar = ({
           />
         </div>
 
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between px-2 touch-manipulation">
           <Label htmlFor="theme-toggle" className="cursor-pointer">Dark Mode</Label>
           <Switch
             id="theme-toggle"
@@ -95,10 +95,12 @@ export const FullSidebar = ({
           <UserProfileButton 
             userId={currentUser?.id} 
             profile={profile} 
+            className="touch-manipulation"
           />
           <SettingsButton 
             userId={currentUser?.id}
             compact 
+            className="touch-manipulation"
           />
         </div>
       </div>

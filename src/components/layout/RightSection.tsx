@@ -1,4 +1,3 @@
-
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +7,12 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Video } from "@/types/video";
 import { Separator } from "@/components/ui/separator";
 import Comments from "@/components/video/Comments";
-import { Heart, MessageCircle, Share2, Bookmark } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, Video as VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import VideoModal from "@/components/video/VideoModal";
 
 interface VideoLink {
@@ -25,12 +24,38 @@ interface ArticleData {
   video_description?: string | null;
 }
 
+interface SymptomVideoData {
+  videoLinks: VideoLink[];
+  videoDescription: string;
+}
+
 const RightSection = () => {
   const location = useLocation();
   const { id } = useParams();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [symptomVideos, setSymptomVideos] = useState<SymptomVideoData | null>(null);
+
+  useEffect(() => {
+    const handleSymptomVideos = (event: CustomEvent) => {
+      if (event.detail) {
+        setSymptomVideos(event.detail);
+      }
+    };
+    
+    window.addEventListener('symptom-videos' as any, handleSymptomVideos as any);
+    
+    return () => {
+      window.removeEventListener('symptom-videos' as any, handleSymptomVideos as any);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!location.pathname.startsWith('/symptoms/')) {
+      setSymptomVideos(null);
+    }
+  }, [location]);
 
   const {
     data: currentUser
@@ -252,7 +277,7 @@ const RightSection = () => {
                   <div 
                     key={video.id} 
                     onClick={() => handleVideoClick(video)}
-                    className="cursor-pointer"
+                    className="cursor-pointer touch-manipulation"
                   >
                     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
                       <CardContent className="p-0">
@@ -328,10 +353,65 @@ const RightSection = () => {
           </div>}
         
         {location.pathname.startsWith('/symptoms/') && <>
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Content</h2>
-            <p className="text-sm text-muted-foreground text-left pl-2">
-              This section shows content related to the current symptom.
-            </p>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2 flex items-center gap-2">
+              <VideoIcon className="h-5 w-5 text-primary" />
+              Symptom Videos
+            </h2>
+            
+            {symptomVideos ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground mb-3 text-left pl-2">
+                  {symptomVideos.videoDescription}
+                </p>
+                
+                {symptomVideos.videoLinks.map((video, index) => (
+                  <a 
+                    key={index}
+                    href={video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block touch-manipulation"
+                  >
+                    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
+                      <CardContent className="p-0">
+                        <AspectRatio ratio={16 / 9} className="bg-gray-100 relative">
+                          {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
+                            <>
+                              <img 
+                                src={getYoutubeVideoId(video.url) ? 
+                                  `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/hqdefault.jpg` : 
+                                  ''
+                                } 
+                                alt={video.title} 
+                                className="w-full h-full object-cover" 
+                              />
+                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
+                                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="w-full h-full bg-accent flex items-center justify-center">
+                              <span className="text-muted-foreground">Video Preview</span>
+                            </div>
+                          )}
+                        </AspectRatio>
+                        <div className="p-3 text-left">
+                          <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 text-center bg-accent/50 rounded-lg">
+                <p className="text-muted-foreground">No videos available for this symptom.</p>
+              </div>
+            )}
           </>}
         
         {!location.pathname.startsWith('/news/') && !location.pathname.startsWith('/explore/') && !location.pathname.startsWith('/symptoms/') && location.pathname !== '/news' && location.pathname !== '/news/' && <>
@@ -349,5 +429,11 @@ const RightSection = () => {
       />
     </div>;
 };
+
+function getYoutubeVideoId(url: string) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
 
 export default RightSection;

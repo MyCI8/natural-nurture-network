@@ -2,11 +2,17 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft, PlayCircle, Video, Clock, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { useLayout } from "@/contexts/LayoutContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Separator } from "@/components/ui/separator";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
@@ -52,10 +58,23 @@ interface GetSymptomRelatedContentResponse {
   related_ingredients: any[]; // Added this to match the RPC function's response
 }
 
+interface VideoLink {
+  title: string;
+  url: string;
+}
+
 const SymptomDetail = () => {
   const { symptom } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { setShowRightSection } = useLayout();
   const [currentSymptom, setCurrentSymptom] = useState<SymptomType | null>(null);
+
+  // Set the right section to be visible when this component mounts
+  useEffect(() => {
+    setShowRightSection(true);
+    return () => setShowRightSection(false);
+  }, [setShowRightSection]);
 
   useEffect(() => {
     const allSymptoms: SymptomType[] = [
@@ -65,12 +84,29 @@ const SymptomDetail = () => {
       'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
     ];
     
-    const foundSymptom = allSymptoms.find(
-      s => s.toLowerCase().replace(/\s+/g, '-') === symptom
-    );
-    
-    if (foundSymptom) {
-      setCurrentSymptom(foundSymptom);
+    // Check if we have a valid symptom in the URL
+    if (symptom) {
+      // First try to match by ID (for when navigating from admin)
+      const { data: symptomData } = supabase
+        .from('symptom_details')
+        .select('symptom')
+        .eq('id', symptom)
+        .single();
+        
+      symptomData?.then(result => {
+        if (result?.symptom) {
+          setCurrentSymptom(result.symptom as SymptomType);
+        } else {
+          // If no match by ID, try to match by slug
+          const foundSymptom = allSymptoms.find(
+            s => s.toLowerCase().replace(/\s+/g, '-') === symptom
+          );
+          
+          if (foundSymptom) {
+            setCurrentSymptom(foundSymptom);
+          }
+        }
+      });
     }
   }, [symptom]);
 
@@ -118,105 +154,247 @@ const SymptomDetail = () => {
     enabled: !!currentSymptom
   });
 
+  // Extract video links from symptom details for the right sidebar
+  useEffect(() => {
+    if (symptomDetails?.video_links) {
+      try {
+        // Pass the video links data to the right column
+        // This data will be picked up by the RightSection component
+        window.dispatchEvent(new CustomEvent('symptom-videos', { 
+          detail: {
+            videoLinks: JSON.parse(symptomDetails.video_links),
+            videoDescription: symptomDetails.video_description || `Videos related to ${currentSymptom}`
+          }
+        }));
+      } catch (e) {
+        console.error('Error parsing video links:', e);
+      }
+    }
+  }, [symptomDetails, currentSymptom]);
+
   if (!currentSymptom) {
     return (
       <div className="min-h-screen bg-background pt-16">
         <div className="container mx-auto p-6">
-          <h1 className="text-2xl font-bold">Symptom not found</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="bg-accent/30 rounded-lg p-8 text-center">
+            <h1 className="text-2xl font-bold">Symptom not found</h1>
+            <p className="mt-2 text-muted-foreground">
+              The symptom you're looking for doesn't exist or has been moved.
+            </p>
+            <Button 
+              onClick={() => navigate('/symptoms')} 
+              className="mt-4 touch-manipulation"
+            >
+              Browse All Symptoms
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
+  const videoLinks: VideoLink[] = [];
+  if (symptomDetails?.video_links) {
+    try {
+      const parsedLinks = JSON.parse(symptomDetails.video_links);
+      if (Array.isArray(parsedLinks)) {
+        parsedLinks.forEach(link => {
+          if (link && typeof link === 'object' && 'url' in link && 'title' in link) {
+            videoLinks.push({
+              title: link.title,
+              url: link.url
+            });
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error parsing video links:', e);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background pt-16">
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4 sm:p-6">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
-        <div className="space-y-12">
-          <div>
-            <h1 className="text-4xl font-bold mb-4">{currentSymptom}</h1>
-            <p className="text-lg text-muted-foreground">
-              Explore natural remedies and expert advice for {currentSymptom.toLowerCase()}.
-            </p>
+        <div className="space-y-8">
+          {/* Header Section with Badge */}
+          <div className="bg-gradient-to-r from-accent to-accent/30 rounded-lg p-6 md:p-8">
+            <div className="flex flex-col gap-2">
+              <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
+                Symptom
+              </Badge>
+              <h1 className="text-3xl md:text-4xl font-bold">{currentSymptom}</h1>
+              <p className="text-lg text-muted-foreground mt-2">
+                {symptomDetails?.brief_description || 
+                  `Explore natural remedies and expert advice for ${currentSymptom.toLowerCase()}.`}
+              </p>
+            </div>
           </div>
 
-          {/* Related Remedies */}
+          {/* Main Content and Description */}
+          {symptomDetails?.description && (
+            <Card className="overflow-hidden">
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-semibold mb-4">About This Symptom</h2>
+                <div 
+                  className="prose max-w-none dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: symptomDetails.description }}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Videos Section - Only visible on mobile */}
+          {isMobile && videoLinks.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <Video className="h-5 w-5 text-primary" />
+                Helpful Videos
+              </h2>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {videoLinks.slice(0, 3).map((video, index) => (
+                  <Card 
+                    key={index} 
+                    className="overflow-hidden hover:shadow-md transition-shadow touch-manipulation"
+                    onClick={() => window.open(video.url, '_blank')}
+                  >
+                    <CardContent className="p-0">
+                      <AspectRatio ratio={16/9} className="bg-muted relative">
+                        {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <PlayCircle className="h-12 w-12 text-primary opacity-90" />
+                          </div>
+                        ) : null}
+                      </AspectRatio>
+                      <div className="p-4">
+                        <h3 className="font-medium text-sm line-clamp-2">{video.title}</h3>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                {videoLinks.length > 3 && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center justify-center gap-2 touch-manipulation"
+                    onClick={() => {
+                      const videoSection = document.getElementById('mobile-videos');
+                      videoSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    See All Videos
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Related Remedies Section */}
           {relatedContent?.related_remedies && relatedContent.related_remedies.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-6">Natural Remedies</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <h2 className="text-2xl font-semibold mb-4">Natural Remedies</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {relatedContent.related_remedies.map((remedy) => (
-                  <Card key={remedy.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
+                  <Card 
+                    key={remedy.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer touch-manipulation"
+                    onClick={() => navigate(`/remedies/${remedy.id}`)}
+                  >
                     {remedy.image_url && (
-                      <img
-                        src={remedy.image_url}
-                        alt={remedy.name}
-                        className="w-full h-48 object-cover rounded-md mb-4"
-                      />
+                      <AspectRatio ratio={16/9}>
+                        <img
+                          src={remedy.image_url}
+                          alt={remedy.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </AspectRatio>
                     )}
-                    <h3 className="text-xl font-medium mb-2">{remedy.name}</h3>
-                    <p className="text-muted-foreground">{remedy.summary}</p>
+                    <CardContent className="p-4">
+                      <h3 className="text-xl font-medium mb-2">{remedy.name}</h3>
+                      <p className="text-muted-foreground text-sm line-clamp-3">{remedy.summary}</p>
+                    </CardContent>
                   </Card>
                 ))}
               </div>
             </section>
           )}
 
-          {/* Related Experts */}
+          {/* Expert Recommendations */}
           {relatedContent?.related_experts && relatedContent.related_experts.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-6">Expert Recommendations</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <h2 className="text-2xl font-semibold mb-4">Expert Recommendations</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {relatedContent.related_experts.map((expert) => (
-                  <Card key={expert.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
-                    <div className="flex items-center gap-4">
-                      {expert.image_url ? (
-                        <img
-                          src={expert.image_url}
-                          alt={expert.full_name}
-                          className="w-16 h-16 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                          <span className="text-xl font-semibold text-primary">
-                            {expert.full_name[0]}
-                          </span>
+                  <Card 
+                    key={expert.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer touch-manipulation"
+                    onClick={() => navigate(`/experts/${expert.id}`)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16 border-2 border-primary/20">
+                          {expert.image_url ? (
+                            <AvatarImage src={expert.image_url} alt={expert.full_name} />
+                          ) : (
+                            <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
+                              {expert.full_name[0]}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div>
+                          <h3 className="font-medium">{expert.full_name}</h3>
+                          <p className="text-sm text-muted-foreground">{expert.title}</p>
                         </div>
-                      )}
-                      <div>
-                        <h3 className="font-medium">{expert.full_name}</h3>
-                        <p className="text-sm text-muted-foreground">{expert.title}</p>
                       </div>
-                    </div>
+                    </CardContent>
                   </Card>
                 ))}
               </div>
             </section>
           )}
 
-          {/* Related Articles */}
+          {/* Related Articles - Grid on desktop, carousel on mobile */}
           {relatedContent?.related_articles && relatedContent.related_articles.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-6">Related Articles</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <h2 className="text-2xl font-semibold mb-4">Related Articles</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {relatedContent.related_articles.map((article) => (
-                  <Card key={article.id} className="p-4">
+                  <Card 
+                    key={article.id} 
+                    className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer touch-manipulation"
+                    onClick={() => navigate(`/news/${article.id}`)}
+                  >
                     {article.image_url && (
-                      <img
-                        src={article.image_url}
-                        alt={article.title}
-                        className="w-full h-32 object-cover rounded mb-4"
-                      />
+                      <AspectRatio ratio={4/3}>
+                        <img
+                          src={article.image_url}
+                          alt={article.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </AspectRatio>
                     )}
-                    <h3 className="font-medium line-clamp-2">{article.title}</h3>
+                    <CardContent className="p-3">
+                      <h3 className="font-medium line-clamp-2 text-sm">{article.title}</h3>
+                    </CardContent>
                   </Card>
                 ))}
               </div>
@@ -226,21 +404,62 @@ const SymptomDetail = () => {
           {/* Related Links */}
           {relatedContent?.related_links && relatedContent.related_links.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-6">Related Links</h2>
-              <div className="grid gap-4">
+              <h2 className="text-2xl font-semibold mb-4">Related Resources</h2>
+              <div className="grid gap-3">
                 {relatedContent.related_links.map((link) => (
                   <a
                     key={link.id}
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-4 bg-accent rounded-lg hover:bg-accent/80 transition-colors"
+                    className="block p-4 bg-accent/50 hover:bg-accent/70 rounded-lg transition-colors touch-manipulation"
                   >
-                    <h3 className="font-medium">{link.title}</h3>
-                    {link.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{link.description}</p>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <div className="bg-background rounded-full p-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{link.title}</h3>
+                        {link.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{link.description}</p>
+                        )}
+                      </div>
+                    </div>
                   </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Full Video Section for Mobile (all videos) */}
+          {isMobile && videoLinks.length > 0 && (
+            <section id="mobile-videos" className="mt-10 pt-4">
+              <Separator className="mb-8" />
+              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                <Video className="h-5 w-5 text-primary" />
+                All Videos
+              </h2>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {videoLinks.map((video, index) => (
+                  <Card 
+                    key={index} 
+                    className="overflow-hidden hover:shadow-md transition-shadow touch-manipulation"
+                    onClick={() => window.open(video.url, '_blank')}
+                  >
+                    <CardContent className="p-0">
+                      <AspectRatio ratio={16/9} className="bg-muted relative">
+                        {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <PlayCircle className="h-12 w-12 text-primary opacity-90" />
+                          </div>
+                        ) : null}
+                      </AspectRatio>
+                      <div className="p-4">
+                        <h3 className="font-medium">{video.title}</h3>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </section>
