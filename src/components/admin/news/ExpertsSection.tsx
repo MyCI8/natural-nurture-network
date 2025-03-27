@@ -16,9 +16,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -67,7 +68,7 @@ export const ExpertsSection = ({
 
       setIsDialogOpen(false);
       setNewExpert({ full_name: "", title: "", bio: "" });
-      onExpertAdded();
+      onExpertAdded(); // This will trigger a refresh of the experts list
     } catch (error) {
       toast({
         title: "Error",
@@ -77,18 +78,33 @@ export const ExpertsSection = ({
     }
   };
 
+  const handleExpertSelect = (value: string) => {
+    if (!selectedExperts.includes(value)) {
+      setSelectedExperts([...selectedExperts, value]);
+    }
+  };
+
+  const removeExpert = (expertId: string) => {
+    setSelectedExperts(selectedExperts.filter(id => id !== expertId));
+  };
+
+  const getExpertName = (id: string) => {
+    const expert = experts.find(e => e.id === id);
+    return expert ? expert.full_name : "Unknown Expert";
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Related Experts</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="touch-manipulation">
               <Plus className="h-4 w-4 mr-2" />
               Add Expert
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-background">
             <DialogHeader>
               <DialogTitle>Add New Expert</DialogTitle>
             </DialogHeader>
@@ -127,14 +143,11 @@ export const ExpertsSection = ({
       </div>
 
       <div className="relative">
-        <Select
-          value={selectedExperts[0]}
-          onValueChange={(value) => setSelectedExperts([value])}
-        >
+        <Select onValueChange={handleExpertSelect}>
           <SelectTrigger className="bg-background">
             <SelectValue placeholder="Select an expert" />
           </SelectTrigger>
-          <SelectContent className="bg-background z-50">
+          <SelectContent className="bg-background z-50 max-h-60 overflow-y-auto">
             {experts.map((expert) => (
               <SelectItem key={expert.id} value={expert.id}>
                 {expert.full_name} - {expert.title}
@@ -142,6 +155,22 @@ export const ExpertsSection = ({
             ))}
           </SelectContent>
         </Select>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {selectedExperts.map((expertId) => (
+            <Badge 
+              key={expertId} 
+              variant="secondary"
+              className="flex items-center gap-1 px-3 py-1 touch-manipulation"
+            >
+              {getExpertName(expertId)}
+              <X
+                className="h-3 w-3 cursor-pointer ml-1"
+                onClick={() => removeExpert(expertId)}
+              />
+            </Badge>
+          ))}
+        </div>
       </div>
     </div>
   );

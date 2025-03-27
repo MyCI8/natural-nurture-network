@@ -29,7 +29,9 @@ export const FullSidebar = ({
   const isDarkMode = theme === 'dark';
 
   const handleThemeToggle = () => {
-    setTheme(isDarkMode ? 'light' : 'dark');
+    const newTheme = isDarkMode ? 'light' : 'dark';
+    console.log(`Switching theme from ${theme} to ${newTheme}`);
+    setTheme(newTheme);
   };
 
   return (
@@ -50,7 +52,7 @@ export const FullSidebar = ({
         <NavigationItems className="mb-4" />
 
         <Button
-          className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90 active-scale"
+          className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90 active-scale touch-manipulation"
           onClick={onPostClick}
         >
           <Upload className="h-4 w-4 shrink-0" />
@@ -60,7 +62,7 @@ export const FullSidebar = ({
         {isAdmin && (
           <Button
             variant="ghost"
-            className="w-full justify-start space-x-4 rounded-full mb-4"
+            className="w-full justify-start space-x-4 rounded-full mb-4 touch-manipulation"
             onClick={() => navigate('/admin')}
           >
             <Shield className="h-6 w-6" />
@@ -79,12 +81,13 @@ export const FullSidebar = ({
         </div>
 
         <div className="flex items-center justify-between px-2">
-          <Label htmlFor="theme-toggle">Dark Mode</Label>
+          <Label htmlFor="theme-toggle" className="cursor-pointer">Dark Mode</Label>
           <Switch
             id="theme-toggle"
             checked={isDarkMode}
             onCheckedChange={handleThemeToggle}
             aria-label="Toggle dark mode"
+            className="touch-manipulation"
           />
         </div>
 

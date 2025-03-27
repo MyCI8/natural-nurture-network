@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +38,7 @@ export const useExpertManagement = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Query for experts with immediate refresh
   const { data: experts = [], isLoading } = useQuery({
     queryKey: ["admin-experts", searchQuery, sortBy, expertiseFilter],
     queryFn: async () => {
@@ -72,6 +74,7 @@ export const useExpertManagement = ({
     },
   });
 
+  // Query for expertise fields
   const { data: expertiseFields = [] } = useQuery({
     queryKey: ["expertise-fields"],
     queryFn: async () => {
@@ -89,6 +92,7 @@ export const useExpertManagement = ({
     },
   });
 
+  // Mutation for deleting experts with automatic invalidation
   const deleteExpertMutation = useMutation({
     mutationFn: async (expertId: string) => {
       // First delete expert's remedies
@@ -112,7 +116,10 @@ export const useExpertManagement = ({
         title: "Success",
         description: "Expert deleted successfully",
       });
+      // Invalidate the relevant queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ["admin-experts"] });
+      queryClient.invalidateQueries({ queryKey: ["expertise-fields"] });
+      queryClient.invalidateQueries({ queryKey: ["experts"] });
     },
     onError: (error) => {
       console.error("Error deleting expert:", error);
