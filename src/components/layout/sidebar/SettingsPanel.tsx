@@ -23,6 +23,10 @@ export const SettingsPanel = () => {
 
   const isDarkMode = theme === 'dark';
   
+  const handleThemeToggle = () => {
+    setTheme(isDarkMode ? 'light' : 'dark');
+  };
+  
   return (
     <div className="px-4 space-y-6">
       <h2 className="text-lg font-semibold mb-4">Settings</h2>
@@ -40,7 +44,8 @@ export const SettingsPanel = () => {
         <Switch
           id="dark-mode-toggle"
           checked={isDarkMode}
-          onCheckedChange={() => setTheme(isDarkMode ? 'light' : 'dark')}
+          onCheckedChange={handleThemeToggle}
+          aria-label="Toggle dark mode"
           className="data-[state=checked]:bg-primary"
         />
       </div>

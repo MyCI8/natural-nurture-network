@@ -30,6 +30,10 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
     navigate("/");
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   return (
     <TooltipProvider>
       <Tooltip delayDuration={300}>
@@ -39,7 +43,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
               <Button
                 variant={variant}
                 size={compact ? "icon" : "default"}
-                className={compact ? "h-9 w-9 rounded-full" : ""}
+                className={compact ? "h-9 w-9 rounded-full active-scale" : "active-scale"}
                 aria-label="Settings"
               >
                 <Settings className="h-[1.2rem] w-[1.2rem]" />
@@ -52,7 +56,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm" 
+                  className="w-full justify-start text-sm active-scale" 
                   onClick={() => handleNavigate('/settings/profile')}
                 >
                   <User className="h-4 w-4 mr-2" />
@@ -61,7 +65,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm" 
+                  className="w-full justify-start text-sm active-scale" 
                   onClick={() => handleNavigate('/settings/security')}
                 >
                   <Shield className="h-4 w-4 mr-2" />
@@ -72,7 +76,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm" 
+                  className="w-full justify-start text-sm active-scale" 
                   onClick={() => handleNavigate('/settings/notifications')}
                 >
                   <Bell className="h-4 w-4 mr-2" />
@@ -81,7 +85,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm" 
+                  className="w-full justify-start text-sm active-scale" 
                   onClick={() => handleNavigate('/settings/privacy')}
                 >
                   <Eye className="h-4 w-4 mr-2" />
@@ -90,8 +94,8 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm" 
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="w-full justify-start text-sm active-scale" 
+                  onClick={toggleTheme}
                 >
                   {theme === 'dark' ? (
                     <Sun className="h-4 w-4 mr-2" />
@@ -105,7 +109,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm" 
+                  className="w-full justify-start text-sm active-scale" 
                   onClick={() => window.open('mailto:support@bettertogether.com')}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
@@ -115,7 +119,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm text-destructive hover:text-destructive" 
+                  className="w-full justify-start text-sm text-destructive hover:text-destructive active-scale" 
                   onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4 mr-2" />

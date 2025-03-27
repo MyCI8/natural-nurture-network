@@ -26,6 +26,11 @@ export const FullSidebar = ({
 }: FullSidebarProps) => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
+  const handleThemeToggle = () => {
+    setTheme(isDarkMode ? 'light' : 'dark');
+  };
 
   return (
     <nav 
@@ -45,7 +50,7 @@ export const FullSidebar = ({
         <NavigationItems className="mb-4" />
 
         <Button
-          className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
+          className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90 active-scale"
           onClick={onPostClick}
         >
           <Upload className="h-4 w-4 shrink-0" />
@@ -77,8 +82,9 @@ export const FullSidebar = ({
           <Label htmlFor="theme-toggle">Dark Mode</Label>
           <Switch
             id="theme-toggle"
-            checked={theme === 'dark'}
-            onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            checked={isDarkMode}
+            onCheckedChange={handleThemeToggle}
+            aria-label="Toggle dark mode"
           />
         </div>
 

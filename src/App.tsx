@@ -1,7 +1,6 @@
 
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
-import { ThemeProvider } from "@/components/theme-provider";
 import Layout from "@/components/Layout";
 import Home from "./pages/Home";
 import ManageNews from "./pages/ManageNews";
@@ -46,7 +45,7 @@ import SettingsPrivacy from "./pages/settings/Privacy";
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <>
       <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -129,7 +128,7 @@ function App() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </ThemeProvider>
+    </>
   );
 }
 

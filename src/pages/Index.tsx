@@ -5,7 +5,6 @@ import NewsSection from "../components/NewsSection";
 import RemediesSection from "../components/RemediesSection";
 import SymptomsMarquee from "../components/SymptomsMarquee";
 import { useEffect } from "react";
-import { ThemeProvider } from "../components/theme-provider";
 
 const Index = () => {
   // Enable smooth scrolling and proper touch handling on mobile
@@ -35,6 +34,9 @@ const Index = () => {
       }
     };
     
+    // Add dark-mode-transition class to body for smooth transitions
+    document.body.classList.add('dark-mode-transition');
+    
     addSwipeArea();
     window.addEventListener('resize', addSwipeArea);
     
@@ -51,7 +53,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background overflow-hidden transition-colors duration-300">
+    <div className="min-h-screen bg-background dark:bg-background overflow-hidden dark-mode-transition">
       <Hero />
       <SymptomsMarquee />
       <NewsSection />

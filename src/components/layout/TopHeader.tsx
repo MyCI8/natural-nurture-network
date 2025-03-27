@@ -128,6 +128,10 @@ const TopHeader = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
   const isDarkMode = mounted ? theme === 'dark' : false;
   
   return (
@@ -138,7 +142,7 @@ const TopHeader = () => {
     >
       <div className="flex items-center gap-2">
         <Avatar 
-          className="h-8 w-8 cursor-pointer" 
+          className="h-8 w-8 cursor-pointer active-scale" 
           onClick={() => setIsMenuOpen(true)}
           role="button"
           aria-label="Open menu"
@@ -161,7 +165,7 @@ const TopHeader = () => {
       
       <div 
         data-menu="sidebar"
-        className={`fixed top-0 left-0 bottom-0 w-[280px] bg-background border-r z-50 transition-all duration-300 ease-in-out p-4 ${
+        className={`fixed top-0 left-0 bottom-0 w-[280px] bg-background border-r z-50 transition-all duration-300 ease-in-out p-4 mobile-drawer ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -186,7 +190,7 @@ const TopHeader = () => {
           </div>
           
           {showSettingsPanel ? (
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto safari-scroll">
               <div className="p-4">
                 <Button 
                   variant="ghost" 
@@ -200,7 +204,7 @@ const TopHeader = () => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto py-4">
+            <div className="flex-1 overflow-y-auto safari-scroll py-4">
               <NavigationButtons 
                 onItemClick={() => {
                   setIsMenuOpen(false);
@@ -209,7 +213,7 @@ const TopHeader = () => {
               
               <div className="px-4 mt-6">
                 <Button
-                  className="w-full rounded-full mb-6 bg-primary text-primary-foreground hover:bg-primary/90 py-5"
+                  className="w-full rounded-full mb-6 bg-primary text-primary-foreground hover:bg-primary/90 py-5 active-scale"
                   onClick={() => {
                     handlePost();
                     setIsMenuOpen(false);
@@ -250,8 +254,8 @@ const TopHeader = () => {
                   </div>
                   <Switch
                     checked={isDarkMode}
-                    onCheckedChange={() => setTheme(isDarkMode ? 'light' : 'dark')}
-                    className="data-[state=checked]:bg-primary"
+                    onCheckedChange={toggleTheme}
+                    aria-label="Toggle dark mode"
                   />
                 </div>
               </div>
