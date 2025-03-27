@@ -95,12 +95,10 @@ export const FullSidebar = ({
           <UserProfileButton 
             userId={currentUser?.id} 
             profile={profile} 
-            className="touch-manipulation"
           />
           <SettingsButton 
             userId={currentUser?.id}
             compact 
-            className="touch-manipulation"
           />
         </div>
       </div>

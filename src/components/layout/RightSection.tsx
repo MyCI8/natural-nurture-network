@@ -1,3 +1,4 @@
+
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,9 +39,10 @@ const RightSection = () => {
   const [symptomVideos, setSymptomVideos] = useState<SymptomVideoData | null>(null);
 
   useEffect(() => {
-    const handleSymptomVideos = (event: CustomEvent) => {
+    const handleSymptomVideos = (event: CustomEvent<SymptomVideoData>) => {
       if (event.detail) {
         setSymptomVideos(event.detail);
+        console.log("Received symptom videos:", event.detail);
       }
     };
     
@@ -358,7 +360,7 @@ const RightSection = () => {
               Symptom Videos
             </h2>
             
-            {symptomVideos ? (
+            {symptomVideos && symptomVideos.videoLinks && symptomVideos.videoLinks.length > 0 ? (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground mb-3 text-left pl-2">
                   {symptomVideos.videoDescription}

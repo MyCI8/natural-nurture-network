@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
@@ -69,6 +70,7 @@ const SymptomDetail = () => {
   const isMobile = useIsMobile();
   const { setShowRightSection } = useLayout();
   const [currentSymptom, setCurrentSymptom] = useState<SymptomType | null>(null);
+  const { toast } = useToast();
 
   // Set the right section to be visible when this component mounts
   useEffect(() => {
@@ -76,6 +78,7 @@ const SymptomDetail = () => {
     return () => setShowRightSection(false);
   }, [setShowRightSection]);
 
+  // Logic to map between URL param and actual symptom type
   useEffect(() => {
     const allSymptoms: SymptomType[] = [
       'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
@@ -84,31 +87,41 @@ const SymptomDetail = () => {
       'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
     ];
     
-    // Check if we have a valid symptom in the URL
     if (symptom) {
-      // First try to match by ID (for when navigating from admin)
-      const { data: symptomData } = supabase
-        .from('symptom_details')
-        .select('symptom')
-        .eq('id', symptom)
-        .single();
-        
-      symptomData?.then(result => {
-        if (result?.symptom) {
-          setCurrentSymptom(result.symptom as SymptomType);
-        } else {
-          // If no match by ID, try to match by slug
-          const foundSymptom = allSymptoms.find(
-            s => s.toLowerCase().replace(/\s+/g, '-') === symptom
-          );
-          
-          if (foundSymptom) {
-            setCurrentSymptom(foundSymptom);
+      // Try to fetch by ID first (for when navigating from admin)
+      const fetchSymptomById = async () => {
+        try {
+          const { data: symptomData, error } = await supabase
+            .from('symptom_details')
+            .select('symptom')
+            .eq('id', symptom)
+            .single();
+            
+          if (symptomData?.symptom) {
+            setCurrentSymptom(symptomData.symptom as SymptomType);
+          } else {
+            // If no match by ID, try to match by slug
+            const foundSymptom = allSymptoms.find(
+              s => s.toLowerCase().replace(/\s+/g, '-') === symptom
+            );
+            
+            if (foundSymptom) {
+              setCurrentSymptom(foundSymptom);
+            }
           }
+        } catch (error) {
+          console.error("Error fetching symptom:", error);
+          toast({
+            title: "Error",
+            description: "Could not retrieve symptom details",
+            variant: "destructive"
+          });
         }
-      });
+      };
+      
+      fetchSymptomById();
     }
-  }, [symptom]);
+  }, [symptom, toast]);
 
   const { data: relatedContent } = useQuery<SymptomContent>({
     queryKey: ['symptom-content', currentSymptom],
@@ -128,41 +141,58 @@ const SymptomDetail = () => {
       // Properly cast the response data using type assertion
       const rawContent = data[0] as unknown as GetSymptomRelatedContentResponse;
       return {
-        related_remedies: (rawContent.related_remedies || []) as RelatedRemedy[],
-        related_experts: (rawContent.related_experts || []) as RelatedExpert[],
-        related_articles: (rawContent.related_articles || []) as RelatedArticle[],
-        related_links: (rawContent.related_links || []) as RelatedLink[]
+        related_remedies: (rawContent?.related_remedies || []) as RelatedRemedy[],
+        related_experts: (rawContent?.related_experts || []) as RelatedExpert[],
+        related_articles: (rawContent?.related_articles || []) as RelatedArticle[],
+        related_links: (rawContent?.related_links || []) as RelatedLink[]
       };
     },
     enabled: !!currentSymptom
   });
 
   const { data: symptomDetails } = useQuery({
-    queryKey: ['symptom-details', currentSymptom],
+    queryKey: ['symptom-details', currentSymptom, symptom],
     queryFn: async () => {
-      if (!currentSymptom) return null;
+      if (!symptom) return null;
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('symptom_details')
-        .select('*')
-        .eq('symptom', currentSymptom)
-        .maybeSingle();
+        .select('*');
+
+      // Check if symptom is a UUID
+      if (symptom.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        query = query.eq('id', symptom);
+      } else if (currentSymptom) {
+        query = query.eq('symptom', currentSymptom);
+      }
       
-      if (error) throw error;
+      const { data, error } = await query.maybeSingle();
+      
+      if (error) {
+        console.error("Error fetching symptom details:", error);
+        throw error;
+      }
+      
       return data;
     },
-    enabled: !!currentSymptom
+    enabled: !!symptom || !!currentSymptom
   });
 
   // Extract video links from symptom details for the right sidebar
   useEffect(() => {
     if (symptomDetails?.video_links) {
       try {
+        // Parse the video links from the database
+        const videoLinksString = typeof symptomDetails.video_links === 'string' 
+          ? symptomDetails.video_links 
+          : JSON.stringify(symptomDetails.video_links);
+          
+        const parsedLinks = JSON.parse(videoLinksString);
+          
         // Pass the video links data to the right column
-        // This data will be picked up by the RightSection component
         window.dispatchEvent(new CustomEvent('symptom-videos', { 
           detail: {
-            videoLinks: JSON.parse(symptomDetails.video_links),
+            videoLinks: parsedLinks,
             videoDescription: symptomDetails.video_description || `Videos related to ${currentSymptom}`
           }
         }));
@@ -172,7 +202,7 @@ const SymptomDetail = () => {
     }
   }, [symptomDetails, currentSymptom]);
 
-  if (!currentSymptom) {
+  if (!symptomDetails && !currentSymptom) {
     return (
       <div className="min-h-screen bg-background pt-16">
         <div className="container mx-auto p-6">
@@ -204,19 +234,23 @@ const SymptomDetail = () => {
   const videoLinks: VideoLink[] = [];
   if (symptomDetails?.video_links) {
     try {
-      const parsedLinks = JSON.parse(symptomDetails.video_links);
-      if (Array.isArray(parsedLinks)) {
-        parsedLinks.forEach(link => {
+      // Handle different formats of video_links from the database
+      const linksValue = typeof symptomDetails.video_links === 'string' 
+        ? JSON.parse(symptomDetails.video_links)
+        : symptomDetails.video_links;
+        
+      if (Array.isArray(linksValue)) {
+        linksValue.forEach(link => {
           if (link && typeof link === 'object' && 'url' in link && 'title' in link) {
             videoLinks.push({
-              title: link.title,
-              url: link.url
+              title: link.title as string,
+              url: link.url as string
             });
           }
         });
       }
     } catch (e) {
-      console.error('Error parsing video links:', e);
+      console.error('Error processing video links:', e);
     }
   }
 
@@ -239,10 +273,10 @@ const SymptomDetail = () => {
               <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
                 Symptom
               </Badge>
-              <h1 className="text-3xl md:text-4xl font-bold">{currentSymptom}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold">{symptomDetails?.symptom || currentSymptom}</h1>
               <p className="text-lg text-muted-foreground mt-2">
                 {symptomDetails?.brief_description || 
-                  `Explore natural remedies and expert advice for ${currentSymptom.toLowerCase()}.`}
+                  `Explore natural remedies and expert advice for ${currentSymptom?.toLowerCase() || 'this symptom'}.`}
               </p>
             </div>
           </div>
