@@ -1,24 +1,31 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Search, Leaf } from "lucide-react";
+import { Search, Leaf, Sun, Moon, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileButton } from "./sidebar/UserProfileButton";
 import { NavigationButtons } from "./sidebar/NavigationItems";
 import { SettingsPanel } from "./sidebar/SettingsPanel";
+import { useTheme } from "next-themes";
+import { Switch } from "@/components/ui/switch";
 
 const TopHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
   const [isHomePage, setIsHomePage] = useState(false);
   const [initialHideComplete, setInitialHideComplete] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -54,18 +61,15 @@ const TopHeader = () => {
     enabled: !!currentUser?.id,
   });
   
-  // Determine if we're on the homepage
   useEffect(() => {
     const path = location.pathname;
     setIsHomePage(path === '/' || path === '/home');
   }, [location]);
   
-  // Initial hide on homepage
   useEffect(() => {
     if (isHomePage) {
       setVisible(false);
       
-      // After 3 seconds, mark the initial hide as complete
       const timer = setTimeout(() => {
         setInitialHideComplete(true);
       }, 3000);
@@ -77,7 +81,6 @@ const TopHeader = () => {
     }
   }, [isHomePage]);
   
-  // Handle scroll behavior
   useEffect(() => {
     if (!initialHideComplete) return;
     
@@ -85,16 +88,12 @@ const TopHeader = () => {
       const currentScrollY = window.scrollY;
       
       if (isHomePage) {
-        // Show header on homepage only when:
-        // 1. User scrolls up
-        // 2. User is at the top of the page (within first 50px)
         if (currentScrollY < lastScrollY) {
           setVisible(true);
         } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
           setVisible(false);
         }
       } else {
-        // Regular behavior for non-homepage
         if (currentScrollY < 50 || currentScrollY < lastScrollY) {
           setVisible(true);
         } else {
@@ -108,8 +107,7 @@ const TopHeader = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY, isHomePage, initialHideComplete]);
-
-  // Handle post button click
+  
   const handlePost = () => {
     if (!currentUser) {
       navigate('/auth');
@@ -118,11 +116,9 @@ const TopHeader = () => {
     navigate('/admin/videos/new');
   };
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      // If the menu is open and the click is outside the menu
       if (isMenuOpen && !target.closest('[data-menu="sidebar"]')) {
         setIsMenuOpen(false);
       }
@@ -131,6 +127,8 @@ const TopHeader = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
+
+  const isDarkMode = mounted ? theme === 'dark' : false;
   
   return (
     <header 
@@ -154,15 +152,13 @@ const TopHeader = () => {
         </Avatar>
       </div>
       
-      {/* Overlay Background */}
       <div 
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${
           isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMenuOpen(false)}
       />
       
-      {/* Sliding Menu - Updated for better desktop & mobile experience */}
       <div 
         data-menu="sidebar"
         className={`fixed top-0 left-0 bottom-0 w-[280px] bg-background border-r z-50 transition-all duration-300 ease-in-out p-4 ${
@@ -170,7 +166,7 @@ const TopHeader = () => {
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="p-4 border-b">
+          <div className="flex justify-between items-center p-4 border-b">
             <UserProfileButton 
               userId={currentUser?.id}
               profile={profile}
@@ -179,6 +175,14 @@ const TopHeader = () => {
                 setIsMenuOpen(false);
               }}
             />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
           
           {showSettingsPanel ? (
@@ -229,11 +233,27 @@ const TopHeader = () => {
                 
                 <Button
                   variant="ghost"
-                  className="w-full justify-start rounded-full py-3"
+                  className="w-full justify-start rounded-full py-3 mb-2"
                   onClick={() => setShowSettingsPanel(true)}
                 >
                   Settings
                 </Button>
+                
+                <div className="flex items-center justify-between px-3 py-2 rounded-lg mt-4">
+                  <div className="flex items-center gap-2">
+                    {isDarkMode ? (
+                      <Moon className="h-5 w-5" />
+                    ) : (
+                      <Sun className="h-5 w-5" />
+                    )}
+                    <span>Dark Mode</span>
+                  </div>
+                  <Switch
+                    checked={isDarkMode}
+                    onCheckedChange={() => setTheme(isDarkMode ? 'light' : 'dark')}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                </div>
               </div>
             </div>
           )}

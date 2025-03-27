@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -37,6 +37,12 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("account");
+  const [mounted, setMounted] = useState(false);
+
+  // Only show the correct theme UI after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Get user profile data
   const { data: profile } = useQuery({
@@ -72,6 +78,9 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
     onOpenChange(false);
     navigate("/");
   };
+
+  // Get the right value for dark mode
+  const isDarkMode = mounted ? theme === 'dark' : false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -162,7 +171,7 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
           <TabsContent value="preferences" className="space-y-4">
             <div className="border rounded-lg p-4 space-y-3">
               <h3 className="font-medium flex items-center gap-2">
-                {theme === 'dark' ? (
+                {isDarkMode ? (
                   <Moon className="h-4 w-4" />
                 ) : (
                   <Sun className="h-4 w-4" />
@@ -170,11 +179,12 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
                 Appearance
               </h3>
               <div className="flex items-center justify-between">
-                <Label htmlFor="dark-mode">Dark Mode</Label>
+                <Label htmlFor="settings-dark-mode">Dark Mode</Label>
                 <Switch
-                  id="dark-mode"
-                  checked={theme === 'dark'}
+                  id="settings-dark-mode"
+                  checked={isDarkMode}
                   onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                  className="data-[state=checked]:bg-primary"
                 />
               </div>
             </div>

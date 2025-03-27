@@ -38,7 +38,7 @@ const LayoutContent = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-black w-full max-w-[100vw] overflow-x-hidden">
+    <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden transition-colors duration-300">
       {/* Main container with responsive layout - increased max-width to 1400px */}
       <div className="w-full max-w-[1400px] mx-auto flex relative">
         {/* Mobile Top Header - only on mobile */}

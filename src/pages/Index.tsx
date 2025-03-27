@@ -5,6 +5,7 @@ import NewsSection from "../components/NewsSection";
 import RemediesSection from "../components/RemediesSection";
 import SymptomsMarquee from "../components/SymptomsMarquee";
 import { useEffect } from "react";
+import { ThemeProvider } from "../components/theme-provider";
 
 const Index = () => {
   // Enable smooth scrolling and proper touch handling on mobile
@@ -50,7 +51,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white overflow-hidden">
+    <div className="min-h-screen bg-background dark:bg-background overflow-hidden transition-colors duration-300">
       <Hero />
       <SymptomsMarquee />
       <NewsSection />
