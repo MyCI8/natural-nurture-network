@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Json } from "@/integrations/supabase/types";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
@@ -22,6 +23,43 @@ interface VideoLink {
   title: string;
   url: string;
 }
+
+// Helper function to safely convert Json to VideoLink array
+const parseVideoLinks = (links: Json | null): VideoLink[] => {
+  if (!links) return [];
+  
+  try {
+    // Handle string that needs to be parsed
+    if (typeof links === 'string') {
+      try {
+        links = JSON.parse(links);
+      } catch (e) {
+        console.error('Error parsing video links string:', e);
+        return [];
+      }
+    }
+    
+    // Ensure links is an array
+    if (!Array.isArray(links)) {
+      console.error('Video links is not an array:', links);
+      return [];
+    }
+    
+    // Filter and validate each link
+    return links
+      .filter((link): link is Record<string, any> => 
+        typeof link === 'object' && link !== null)
+      .map(link => ({
+        title: typeof link.title === 'string' ? link.title : '',
+        url: typeof link.url === 'string' ? link.url : ''
+      }))
+      .filter(link => link.url.trim() !== '');
+      
+  } catch (e) {
+    console.error('Error processing video links:', e);
+    return [];
+  }
+};
 
 const SymptomDetail = () => {
   const { symptom } = useParams();
@@ -96,25 +134,7 @@ const SymptomDetail = () => {
   useEffect(() => {
     if (symptomDetails?.video_links) {
       try {
-        let parsedLinks: VideoLink[] = [];
-        
-        // Handle different formats of video_links from the database
-        if (typeof symptomDetails.video_links === 'string') {
-          try {
-            parsedLinks = JSON.parse(symptomDetails.video_links);
-          } catch (e) {
-            console.error('Error parsing video links string:', e);
-          }
-        } else if (Array.isArray(symptomDetails.video_links)) {
-          parsedLinks = symptomDetails.video_links;
-        }
-        
-        // Make sure all links have a title and url
-        parsedLinks = parsedLinks.filter(link => 
-          link && typeof link === 'object' && 
-          'url' in link && typeof link.url === 'string' && link.url.trim() !== '' &&
-          'title' in link && typeof link.title === 'string'
-        );
+        const parsedLinks = parseVideoLinks(symptomDetails.video_links);
         
         console.log("Sending video links to right section:", parsedLinks);
         
@@ -193,28 +213,14 @@ const SymptomDetail = () => {
     );
   }
 
-  const videoLinks: VideoLink[] = [];
-  if (symptomDetails?.video_links) {
-    try {
-      // Handle different formats of video_links from the database
-      const linksValue = typeof symptomDetails.video_links === 'string' 
-        ? JSON.parse(symptomDetails.video_links)
-        : symptomDetails.video_links;
-        
-      if (Array.isArray(linksValue)) {
-        linksValue.forEach(link => {
-          if (link && typeof link === 'object' && 'url' in link && 'title' in link) {
-            videoLinks.push({
-              title: link.title as string,
-              url: link.url as string
-            });
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error processing video links:', e);
-    }
-  }
+  // Use parseVideoLinks to safely convert video_links to array of VideoLink objects
+  const videoLinks = parseVideoLinks(symptomDetails.video_links);
+
+  // Safely check if related arrays exist and are arrays
+  const hasRelatedRemedies = Array.isArray(relatedContent?.related_remedies) && relatedContent.related_remedies.length > 0;
+  const hasRelatedExperts = Array.isArray(relatedContent?.related_experts) && relatedContent.related_experts.length > 0;
+  const hasRelatedArticles = Array.isArray(relatedContent?.related_articles) && relatedContent.related_articles.length > 0;
+  const hasRelatedLinks = Array.isArray(relatedContent?.related_links) && relatedContent.related_links.length > 0;
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -350,11 +356,11 @@ const SymptomDetail = () => {
           )}
 
           {/* Related Remedies Section */}
-          {relatedContent?.related_remedies && relatedContent.related_remedies.length > 0 && (
+          {hasRelatedRemedies && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Natural Remedies</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {relatedContent.related_remedies.map((remedy) => (
+                {relatedContent.related_remedies.map((remedy: any) => (
                   <Card 
                     key={remedy.id} 
                     className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer touch-manipulation"
@@ -380,11 +386,11 @@ const SymptomDetail = () => {
           )}
 
           {/* Expert Recommendations */}
-          {relatedContent?.related_experts && relatedContent.related_experts.length > 0 && (
+          {hasRelatedExperts && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Expert Recommendations</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {relatedContent.related_experts.map((expert) => (
+                {relatedContent.related_experts.map((expert: any) => (
                   <Card 
                     key={expert.id} 
                     className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer touch-manipulation"
@@ -414,11 +420,11 @@ const SymptomDetail = () => {
           )}
 
           {/* Related Articles - Grid on desktop, carousel on mobile */}
-          {relatedContent?.related_articles && relatedContent.related_articles.length > 0 && (
+          {hasRelatedArticles && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Related Articles</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {relatedContent.related_articles.map((article) => (
+                {relatedContent.related_articles.map((article: any) => (
                   <Card 
                     key={article.id} 
                     className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer touch-manipulation"
@@ -444,11 +450,11 @@ const SymptomDetail = () => {
           )}
 
           {/* Related Links */}
-          {relatedContent?.related_links && relatedContent.related_links.length > 0 && (
+          {hasRelatedLinks && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Related Resources</h2>
               <div className="grid gap-3">
-                {relatedContent.related_links.map((link) => (
+                {relatedContent.related_links.map((link: any) => (
                   <a
                     key={link.id}
                     href={link.url}
