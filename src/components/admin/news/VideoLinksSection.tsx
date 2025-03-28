@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Video, AlertCircle, HelpCircle, ExternalLink } from "lucide-react";
 import { VideoDescriptionInput } from "./video/VideoDescriptionInput";

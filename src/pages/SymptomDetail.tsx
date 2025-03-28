@@ -81,6 +81,8 @@ const SymptomDetail = () => {
   const { toast } = useToast();
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
+  console.log("Symptom ID from params:", symptom);
+
   // Set the right section to be visible when this component mounts
   useEffect(() => {
     setShowRightSection(true);
@@ -93,25 +95,52 @@ const SymptomDetail = () => {
     queryFn: async () => {
       if (!symptom) return null;
       
-      const { data, error } = await supabase
+      console.log("Fetching symptom details for ID:", symptom);
+      
+      // First attempt - try to get by ID
+      const { data: dataById, error: errorById } = await supabase
         .from('symptom_details')
         .select('*')
         .eq('id', symptom)
         .maybeSingle();
       
-      if (error) {
-        console.error("Error fetching symptom details:", error);
+      if (errorById) {
+        console.error("Error fetching symptom details by ID:", errorById);
+      }
+      
+      if (dataById) {
+        console.log("Found symptom by ID:", dataById);
+        return dataById;
+      }
+      
+      // Second attempt - try to find by symptom name
+      console.log("Attempting to find symptom by name:", symptom);
+      const { data: dataByName, error: errorByName } = await supabase
+        .from('symptom_details')
+        .select('*')
+        .ilike('symptom', symptom)
+        .maybeSingle();
+      
+      if (errorByName) {
+        console.error("Error fetching symptom details by name:", errorByName);
         toast({
           title: "Error",
           description: "Failed to load symptom details",
           variant: "destructive"
         });
-        throw error;
+        throw errorByName;
       }
       
-      console.log("Fetched symptom details:", data);
-      return data;
+      if (dataByName) {
+        console.log("Found symptom by name:", dataByName);
+        return dataByName;
+      }
+      
+      console.log("No symptom found by ID or name");
+      return null;
     },
+    retry: 2,
+    retryDelay: 1000,
     enabled: !!symptom
   });
 
@@ -126,10 +155,15 @@ const SymptomDetail = () => {
         related_links: []
       };
       
+      console.log("Fetching related content for symptom:", symptomDetails.symptom);
+      
       const { data, error } = await supabase
         .rpc('get_symptom_related_content', { p_symptom: symptomDetails.symptom });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching related content:", error);
+        throw error;
+      }
       
       console.log("Related content:", data);
       
@@ -219,6 +253,15 @@ const SymptomDetail = () => {
             >
               Browse All Symptoms
             </Button>
+          </div>
+          
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Debug Information</h2>
+            <div className="bg-muted p-4 rounded overflow-x-auto">
+              <pre className="text-xs">
+                {JSON.stringify({ params: symptom, error: error?.message }, null, 2)}
+              </pre>
+            </div>
           </div>
         </div>
       </div>
@@ -566,6 +609,22 @@ const SymptomDetail = () => {
           )}
         </div>
       </div>
+
+      {/* Fullscreen Image Dialog */}
+      <Dialog 
+        open={!!fullscreenImage} 
+        onOpenChange={(open) => !open && setFullscreenImage(null)}
+      >
+        <DialogContent className="max-w-[90vw] p-0 bg-background/80 backdrop-blur-sm">
+          <div className="w-full h-[calc(100vh-8rem)]">
+            <ZoomableImage 
+              src={fullscreenImage || ''} 
+              alt="Fullscreen view" 
+              className="w-full h-full"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </Swipeable>
   );
 };
