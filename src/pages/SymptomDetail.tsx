@@ -16,12 +16,18 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Json } from "@/integrations/supabase/types";
+import { Swipeable } from "@/components/ui/swipeable";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
 interface VideoLink {
   title: string;
   url: string;
+}
+
+interface RelatedItem {
+  id: string;
+  [key: string]: any;
 }
 
 // Helper function to safely convert Json to VideoLink array
@@ -59,6 +65,14 @@ const parseVideoLinks = (links: Json | null): VideoLink[] => {
     console.error('Error processing video links:', e);
     return [];
   }
+};
+
+// Safely ensure the data is an array
+const ensureArray = <T extends unknown>(data: any): T[] => {
+  if (Array.isArray(data)) {
+    return data as T[];
+  }
+  return [];
 };
 
 const SymptomDetail = () => {
@@ -216,14 +230,27 @@ const SymptomDetail = () => {
   // Use parseVideoLinks to safely convert video_links to array of VideoLink objects
   const videoLinks = parseVideoLinks(symptomDetails.video_links);
 
-  // Safely check if related arrays exist and are arrays
-  const hasRelatedRemedies = Array.isArray(relatedContent?.related_remedies) && relatedContent.related_remedies.length > 0;
-  const hasRelatedExperts = Array.isArray(relatedContent?.related_experts) && relatedContent.related_experts.length > 0;
-  const hasRelatedArticles = Array.isArray(relatedContent?.related_articles) && relatedContent.related_articles.length > 0;
-  const hasRelatedLinks = Array.isArray(relatedContent?.related_links) && relatedContent.related_links.length > 0;
+  // Process related content to ensure they are arrays
+  const relatedRemedies = ensureArray<RelatedItem>(relatedContent?.related_remedies || []);
+  const relatedExperts = ensureArray<RelatedItem>(relatedContent?.related_experts || []);
+  const relatedArticles = ensureArray<RelatedItem>(relatedContent?.related_articles || []);
+  const relatedLinks = ensureArray<RelatedItem>(relatedContent?.related_links || []);
+
+  // Safely check if arrays have items
+  const hasRelatedRemedies = relatedRemedies.length > 0;
+  const hasRelatedExperts = relatedExperts.length > 0;
+  const hasRelatedArticles = relatedArticles.length > 0;
+  const hasRelatedLinks = relatedLinks.length > 0;
 
   return (
-    <div className="min-h-screen bg-background pt-16">
+    <Swipeable 
+      className="min-h-screen bg-background pt-16"
+      onSwipe={(direction) => {
+        if (direction === 'right') {
+          navigate(-1);
+        }
+      }}
+    >
       <div className="container mx-auto p-4 sm:p-6">
         <Button
           variant="ghost"
@@ -360,7 +387,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">Natural Remedies</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {relatedContent.related_remedies.map((remedy: any) => (
+                {relatedRemedies.map((remedy) => (
                   <Card 
                     key={remedy.id} 
                     className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer touch-manipulation"
@@ -390,7 +417,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">Expert Recommendations</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {relatedContent.related_experts.map((expert: any) => (
+                {relatedExperts.map((expert) => (
                   <Card 
                     key={expert.id} 
                     className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer touch-manipulation"
@@ -424,7 +451,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">Related Articles</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {relatedContent.related_articles.map((article: any) => (
+                {relatedArticles.map((article) => (
                   <Card 
                     key={article.id} 
                     className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer touch-manipulation"
@@ -454,7 +481,7 @@ const SymptomDetail = () => {
             <section>
               <h2 className="text-2xl font-semibold mb-4">Related Resources</h2>
               <div className="grid gap-3">
-                {relatedContent.related_links.map((link: any) => (
+                {relatedLinks.map((link) => (
                   <a
                     key={link.id}
                     href={link.url}
@@ -532,7 +559,7 @@ const SymptomDetail = () => {
           )}
         </div>
       </div>
-    </div>
+    </Swipeable>
   );
 };
 
