@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Json } from "@/integrations/supabase/types";
 import { Swipeable } from "@/components/ui/swipeable";
+import { ZoomableImage } from "@/components/ui/zoomable-image";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
@@ -35,7 +36,6 @@ const parseVideoLinks = (links: Json | null): VideoLink[] => {
   if (!links) return [];
   
   try {
-    // Handle string that needs to be parsed
     if (typeof links === 'string') {
       try {
         links = JSON.parse(links);
@@ -45,13 +45,11 @@ const parseVideoLinks = (links: Json | null): VideoLink[] => {
       }
     }
     
-    // Ensure links is an array
     if (!Array.isArray(links)) {
       console.error('Video links is not an array:', links);
       return [];
     }
     
-    // Filter and validate each link
     return links
       .filter((link): link is Record<string, any> => 
         typeof link === 'object' && link !== null)
@@ -81,6 +79,7 @@ const SymptomDetail = () => {
   const isMobile = useIsMobile();
   const { setShowRightSection } = useLayout();
   const { toast } = useToast();
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   // Set the right section to be visible when this component mounts
   useEffect(() => {
@@ -152,7 +151,6 @@ const SymptomDetail = () => {
         
         console.log("Sending video links to right section:", parsedLinks);
         
-        // Pass the video links data to the right column
         window.dispatchEvent(new CustomEvent('symptom-videos', { 
           detail: {
             videoLinks: parsedLinks,
@@ -242,6 +240,10 @@ const SymptomDetail = () => {
   const hasRelatedArticles = relatedArticles.length > 0;
   const hasRelatedLinks = relatedLinks.length > 0;
 
+  const handleOpenFullscreen = (imageUrl: string) => {
+    setFullscreenImage(imageUrl);
+  };
+
   return (
     <Swipeable 
       className="min-h-screen bg-background pt-16"
@@ -266,13 +268,18 @@ const SymptomDetail = () => {
           <div className="relative rounded-lg overflow-hidden">
             {symptomDetails.image_url ? (
               <div>
-                <AspectRatio ratio={16/9} className="bg-muted">
-                  <img 
-                    src={symptomDetails.image_url} 
-                    alt={symptomDetails.symptom} 
-                    className="w-full h-full object-cover"
-                  />
-                </AspectRatio>
+                <div 
+                  className="cursor-pointer"
+                  onClick={() => handleOpenFullscreen(symptomDetails.image_url!)}
+                >
+                  <AspectRatio ratio={16/9} className="bg-muted">
+                    <img 
+                      src={symptomDetails.image_url} 
+                      alt={symptomDetails.symptom} 
+                      className="w-full h-full object-cover"
+                    />
+                  </AspectRatio>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 md:p-8">
                   <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
                     Symptom
