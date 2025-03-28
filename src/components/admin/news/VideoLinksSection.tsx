@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Video, AlertCircle, HelpCircle, ExternalLink } from "lucide-react";
 import { VideoDescriptionInput } from "./video/VideoDescriptionInput";
@@ -40,17 +39,14 @@ export const VideoLinksSection = ({
     const newLinks = [...videoLinks];
     newLinks[index] = { ...newLinks[index], [field]: value };
     
-    // Validate links
     const hasInvalid = newLinks.some(link => {
       if (!link.url || !link.title) return false; // Empty fields are not considered invalid
       
-      // Check for valid YouTube URL format
       if (link.url.includes('youtube.com') || link.url.includes('youtu.be')) {
         const videoId = getYoutubeVideoId(link.url);
         return !videoId; // Invalid if no video ID can be extracted
       }
       
-      // For now, only validate YouTube URLs
       return false;
     });
     
@@ -58,7 +54,6 @@ export const VideoLinksSection = ({
     setVideoLinks(newLinks);
   };
   
-  // Helper function to extract YouTube video ID
   const getYoutubeVideoId = (url: string): string | null => {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -66,7 +61,6 @@ export const VideoLinksSection = ({
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  // Check for any incomplete links (empty URL or title)
   const hasIncompleteLinks = videoLinks.some(link => 
     (link.url && !link.title) || (!link.url && link.title)
   );
@@ -115,7 +109,7 @@ export const VideoLinksSection = ({
       )}
 
       {hasIncompleteLinks && (
-        <Alert variant="warning" className="py-2 border-yellow-500">
+        <Alert variant="default" className="py-2 border-yellow-500">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Some video links are incomplete. Please provide both title and URL for each video.

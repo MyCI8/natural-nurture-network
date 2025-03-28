@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Swipeable } from './swipeable';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,7 @@ export function ZoomableImage({
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isZooming, setIsZooming] = useState(false);
+  const lastTouchRef = useRef<{ x: number, y: number } | null>(null);
 
   const handlePinch = useCallback((newScale: number) => {
     setScale(newScale);
@@ -42,12 +43,32 @@ export function ZoomableImage({
     if (isZooming && e.touches.length === 1) {
       e.stopPropagation();
       const touch = e.touches[0];
-      setPosition(prev => ({
-        x: prev.x + touch.movementX,
-        y: prev.y + touch.movementY
-      }));
+      const currentTouch = { x: touch.clientX, y: touch.clientY };
+      
+      if (lastTouchRef.current) {
+        const deltaX = currentTouch.x - lastTouchRef.current.x;
+        const deltaY = currentTouch.y - lastTouchRef.current.y;
+        
+        setPosition(prev => ({
+          x: prev.x + deltaX,
+          y: prev.y + deltaY
+        }));
+      }
+      
+      lastTouchRef.current = currentTouch;
     }
   }, [isZooming]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (isZooming && e.touches.length === 1) {
+      const touch = e.touches[0];
+      lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+    }
+  }, [isZooming]);
+
+  const handleTouchEnd = useCallback(() => {
+    lastTouchRef.current = null;
+  }, []);
 
   return (
     <Swipeable
@@ -58,6 +79,8 @@ export function ZoomableImage({
       <div 
         className="relative w-full h-full"
         onTouchMove={handleTouchMove}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         onDoubleClick={handleDoubleTap}
         style={{
           aspectRatio: aspectRatio ? `${aspectRatio}` : 'auto',
