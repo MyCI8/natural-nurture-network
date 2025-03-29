@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -105,7 +106,7 @@ const SymptomDetail = () => {
         
         if (directError) {
           console.error("Error in RPC lookup:", directError);
-          throw directError;
+          throw new Error(`RPC lookup failed: ${directError.message}`);
         }
         
         console.log("RPC function response:", directData);
@@ -123,7 +124,7 @@ const SymptomDetail = () => {
         
         if (tableError) {
           console.error("Error in table lookup:", tableError);
-          throw tableError;
+          throw new Error(`Table lookup failed: ${tableError.message}`);
         }
 
         console.log("Direct table query response:", tableData);
@@ -140,7 +141,7 @@ const SymptomDetail = () => {
           
         if (nameError) {
           console.error("Error in name lookup:", nameError);
-          throw nameError;
+          throw new Error(`Name lookup failed: ${nameError.message}`);
         }
 
         console.log("Name lookup response:", nameData);
@@ -149,7 +150,7 @@ const SymptomDetail = () => {
           return nameData;
         }
 
-        return null;
+        throw new Error("Symptom not found");
       } catch (error) {
         console.error("Error fetching symptom details:", error);
         throw error;
@@ -177,7 +178,7 @@ const SymptomDetail = () => {
       
       if (error) {
         console.error("Error fetching related content:", error);
-        throw error;
+        throw new Error(`Related content lookup failed: ${error.message}`);
       }
       
       console.log("Related content:", data);
@@ -252,7 +253,7 @@ const SymptomDetail = () => {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
-              We couldn't find this symptom. It may have been removed or doesn't exist.
+              {error ? error.message : "An unknown error occurred while fetching symptom details."}
             </AlertDescription>
           </Alert>
           
