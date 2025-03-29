@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,6 @@ interface RelatedItem {
   [key: string]: any;
 }
 
-// Helper function to safely convert Json to VideoLink array
 const parseVideoLinks = (links: Json | null): VideoLink[] => {
   if (!links) return [];
   
@@ -67,7 +65,6 @@ const parseVideoLinks = (links: Json | null): VideoLink[] => {
   }
 };
 
-// Safely ensure the data is an array
 const ensureArray = <T extends unknown>(data: any): T[] => {
   if (Array.isArray(data)) {
     return data as T[];
@@ -85,13 +82,11 @@ const SymptomDetail = () => {
 
   console.log("Symptom ID from params:", symptom);
 
-  // Set the right section to be visible when this component mounts
   useEffect(() => {
     setShowRightSection(true);
     return () => setShowRightSection(false);
   }, [setShowRightSection]);
 
-  // Fetch symptom details by ID
   const { data: symptomDetails, isLoading, error } = useQuery({
     queryKey: ['symptom-details', symptom],
     queryFn: async () => {
@@ -102,66 +97,69 @@ const SymptomDetail = () => {
       
       console.log("Fetching symptom details for ID:", symptom);
       
-      // Direct attempt to get by UUID
-      const { data: dataById, error: errorById } = await supabase
-        .from('symptom_details')
-        .select('*')
-        .eq('id', symptom)
-        .maybeSingle();
-      
-      if (errorById) {
-        console.error("Error fetching symptom details by ID:", errorById);
-      }
-      
-      if (dataById) {
-        console.log("Found symptom by ID:", dataById);
-        return dataById;
-      }
-      
-      // Try to find by symptom name (case insensitive)
-      console.log("Attempting to find symptom by name:", symptom);
-      const { data: dataByName, error: errorByName } = await supabase
-        .from('symptom_details')
-        .select('*')
-        .ilike('symptom', symptom)
-        .maybeSingle();
-      
-      if (errorByName) {
-        console.error("Error fetching symptom details by name:", errorByName);
-      }
-      
-      if (dataByName) {
-        console.log("Found symptom by name:", dataByName);
-        return dataByName;
-      }
-      
-      // Last attempt - use the RPC function for exact UUID match
       try {
-        console.log("Trying direct symptom lookup via RPC function");
         const { data: directData, error: directError } = await supabase
-          .rpc('get_symptom_by_id', { id_param: symptom });
-          
+          .rpc('get_symptom_by_id', { 
+            id_param: symptom 
+          });
+        
         if (directError) {
-          console.error("Error in direct symptom lookup:", directError);
+          console.error("Error in RPC lookup:", directError);
+          throw directError;
         }
-          
+        
+        console.log("RPC function response:", directData);
+        
         if (directData && directData.length > 0) {
-          console.log("Found symptom via direct ID lookup:", directData[0]);
+          console.log("Found symptom via RPC:", directData[0]);
           return directData[0];
         }
-      } catch (directLookupError) {
-        console.error("Exception in direct symptom lookup:", directLookupError);
+
+        const { data: tableData, error: tableError } = await supabase
+          .from('symptom_details')
+          .select('*')
+          .eq('id', symptom)
+          .maybeSingle();
+        
+        if (tableError) {
+          console.error("Error in table lookup:", tableError);
+          throw tableError;
+        }
+
+        console.log("Direct table query response:", tableData);
+        
+        if (tableData) {
+          return tableData;
+        }
+
+        const { data: nameData, error: nameError } = await supabase
+          .from('symptom_details')
+          .select('*')
+          .ilike('symptom', symptom)
+          .maybeSingle();
+          
+        if (nameError) {
+          console.error("Error in name lookup:", nameError);
+          throw nameError;
+        }
+
+        console.log("Name lookup response:", nameData);
+        
+        if (nameData) {
+          return nameData;
+        }
+
+        return null;
+      } catch (error) {
+        console.error("Error fetching symptom details:", error);
+        throw error;
       }
-      
-      console.log("No symptom found by ID or name");
-      return null;
     },
     retry: 1,
     retryDelay: 1000,
     enabled: !!symptom
   });
 
-  // Fetch related content for this symptom
   const { data: relatedContent } = useQuery({
     queryKey: ['symptom-content', symptomDetails?.symptom],
     queryFn: async () => {
@@ -194,7 +192,6 @@ const SymptomDetail = () => {
     enabled: !!symptomDetails?.symptom
   });
 
-  // Extract video links from symptom details for the right sidebar
   useEffect(() => {
     if (symptomDetails?.video_links) {
       try {
@@ -289,16 +286,13 @@ const SymptomDetail = () => {
     );
   }
 
-  // Use parseVideoLinks to safely convert video_links to array of VideoLink objects
   const videoLinks = parseVideoLinks(symptomDetails.video_links);
 
-  // Process related content to ensure they are arrays
   const relatedRemedies = ensureArray<RelatedItem>(relatedContent?.related_remedies || []);
   const relatedExperts = ensureArray<RelatedItem>(relatedContent?.related_experts || []);
   const relatedArticles = ensureArray<RelatedItem>(relatedContent?.related_articles || []);
   const relatedLinks = ensureArray<RelatedItem>(relatedContent?.related_links || []);
 
-  // Safely check if arrays have items
   const hasRelatedRemedies = relatedRemedies.length > 0;
   const hasRelatedExperts = relatedExperts.length > 0;
   const hasRelatedArticles = relatedArticles.length > 0;
@@ -339,7 +333,6 @@ const SymptomDetail = () => {
         />
 
         <div className="space-y-8">
-          {/* Hero Section with Image and Title */}
           <div className="relative rounded-lg overflow-hidden">
             {symptomDetails.image_url ? (
               <div>
@@ -382,7 +375,6 @@ const SymptomDetail = () => {
             )}
           </div>
 
-          {/* Main Content and Description */}
           {symptomDetails?.description && (
             <Card className="overflow-hidden">
               <CardContent className="p-6">
@@ -395,7 +387,6 @@ const SymptomDetail = () => {
             </Card>
           )}
 
-          {/* Videos Section - Only visible on mobile */}
           {isMobile && videoLinks.length > 0 && (
             <section>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -464,7 +455,6 @@ const SymptomDetail = () => {
             </section>
           )}
 
-          {/* Related Remedies Section */}
           {hasRelatedRemedies && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Natural Remedies</h2>
@@ -494,7 +484,6 @@ const SymptomDetail = () => {
             </section>
           )}
 
-          {/* Expert Recommendations */}
           {hasRelatedExperts && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Expert Recommendations</h2>
@@ -528,7 +517,6 @@ const SymptomDetail = () => {
             </section>
           )}
 
-          {/* Related Articles - Grid on desktop, carousel on mobile */}
           {hasRelatedArticles && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Related Articles</h2>
@@ -558,7 +546,6 @@ const SymptomDetail = () => {
             </section>
           )}
 
-          {/* Related Links */}
           {hasRelatedLinks && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">Related Resources</h2>
@@ -588,7 +575,6 @@ const SymptomDetail = () => {
             </section>
           )}
 
-          {/* Full Video Section for Mobile (all videos) */}
           {isMobile && videoLinks.length > 0 && (
             <section id="mobile-videos" className="mt-10 pt-4">
               <Separator className="mb-8" />
@@ -642,7 +628,6 @@ const SymptomDetail = () => {
         </div>
       </div>
 
-      {/* Fullscreen Image Dialog */}
       <Dialog 
         open={!!fullscreenImage} 
         onOpenChange={(open) => !open && setFullscreenImage(null)}
