@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -134,6 +135,19 @@ const SymptomDetail = () => {
       if (dataByName) {
         console.log("Found symptom by name:", dataByName);
         return dataByName;
+      }
+      
+      // Third attempt - do a direct fetch by ID (some UUIDs might have inconsistent formatting)
+      try {
+        const { data: directData, error: directError } = await supabase
+          .rpc('get_symptom_by_id', { id_param: symptom });
+          
+        if (!directError && directData && directData.length > 0) {
+          console.log("Found symptom via direct ID lookup:", directData[0]);
+          return directData[0];
+        }
+      } catch (directLookupError) {
+        console.error("Error in direct symptom lookup:", directLookupError);
       }
       
       console.log("No symptom found by ID or name");

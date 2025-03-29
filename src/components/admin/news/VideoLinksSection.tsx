@@ -5,7 +5,7 @@ import { VideoDescriptionInput } from "./video/VideoDescriptionInput";
 import { VideoLinkInput } from "./video/VideoLinkInput";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface VideoLink {
@@ -27,6 +27,13 @@ export const VideoLinksSection = ({
   setVideoDescription,
 }: VideoLinksSectionProps) => {
   const [hasInvalidLinks, setHasInvalidLinks] = useState(false);
+
+  // Initialize with at least one empty link if none provided
+  useEffect(() => {
+    if (Array.isArray(videoLinks) && videoLinks.length === 0) {
+      setVideoLinks([{ url: "", title: "" }]);
+    }
+  }, []);
 
   const addVideoLink = () => {
     setVideoLinks([...videoLinks, { url: "", title: "" }]);
@@ -135,7 +142,7 @@ export const VideoLinksSection = ({
           </div>
         )}
         
-        {videoLinks.map((link, index) => (
+        {Array.isArray(videoLinks) && videoLinks.map((link, index) => (
           <div key={index} className="relative p-4 border rounded-md group hover:border-primary/50 transition-colors">
             <VideoLinkInput
               link={link}
