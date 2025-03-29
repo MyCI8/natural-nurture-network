@@ -1,127 +1,68 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useIsMobile, useBreakpoint, useIsTablet } from '@/hooks/use-mobile';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-// Define layout modes
-export type LayoutMode = 'default' | 'wide' | 'full' | 'three-column';
-
-interface LayoutContextProps {
-  layoutMode: LayoutMode;
+interface LayoutContextType {
+  layoutMode: 'default' | 'compact' | 'comfortable';
   showRightSection: boolean;
-  setLayoutMode: (mode: LayoutMode) => void;
-  setShowRightSection: (show: boolean) => void;
   contentWidth: string;
   contentMaxWidth: string;
   isFullWidth: boolean;
+  setLayoutMode: (mode: 'default' | 'compact' | 'comfortable') => void;
+  setShowRightSection: (show: boolean) => void;
+  setContentWidth: (width: string) => void;
+  setContentMaxWidth: (width: string) => void;
+  setIsFullWidth: (isFullWidth: boolean) => void;
 }
 
-const defaultContext: LayoutContextProps = {
+const defaultValues: LayoutContextType = {
   layoutMode: 'default',
   showRightSection: false,
+  contentWidth: 'w-full',
+  contentMaxWidth: 'max-w-[1000px]',
+  isFullWidth: false,
   setLayoutMode: () => {},
   setShowRightSection: () => {},
-  contentWidth: 'px-4',
-  contentMaxWidth: 'max-w-3xl',
-  isFullWidth: false
+  setContentWidth: () => {},
+  setContentMaxWidth: () => {},
+  setIsFullWidth: () => {}
 };
 
-const LayoutContext = createContext<LayoutContextProps>(defaultContext);
+const LayoutContext = createContext<LayoutContextType>(defaultValues);
 
-export const useLayout = () => useContext(LayoutContext);
+export const useLayout = (): LayoutContextType => {
+  const context = useContext(LayoutContext);
+  if (!context) {
+    throw new Error('useLayout must be used within a LayoutProvider');
+  }
+  return context;
+};
 
-export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
+interface LayoutProviderProps {
+  children: ReactNode;
+}
+
+export const LayoutProvider = ({ children }: LayoutProviderProps) => {
+  const [layoutMode, setLayoutMode] = useState<'default' | 'compact' | 'comfortable'>('default');
   const [showRightSection, setShowRightSection] = useState(false);
-  const [contentWidth, setContentWidth] = useState('px-4');
-  const [contentMaxWidth, setContentMaxWidth] = useState('max-w-3xl');
+  const [contentWidth, setContentWidth] = useState('w-full');
+  const [contentMaxWidth, setContentMaxWidth] = useState('max-w-[1000px]');
   const [isFullWidth, setIsFullWidth] = useState(false);
-  const location = useLocation();
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-  const breakpoint = useBreakpoint();
-  
-  // Update layout based on routes and screen size
-  useEffect(() => {
-    const path = location.pathname;
-    
-    // Set layout mode and right section visibility based on route and screen size
-    if (path === '/news' || path.startsWith('/news/')) {
-      setLayoutMode('three-column');
-      setShowRightSection(!isMobile);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-2 sm:px-4');
-      setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
-      setIsFullWidth(false);
-    } 
-    else if (path.startsWith('/explore/')) {
-      setLayoutMode('three-column');
-      setShowRightSection(!isMobile);
-      setContentWidth(isMobile ? 'p-0' : 'p-0 sm:px-2');
-      setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
-      setIsFullWidth(isMobile);
-    }
-    else if (path.startsWith('/symptoms/')) {
-      setLayoutMode('three-column');
-      setShowRightSection(!isMobile);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-2 sm:px-4');
-      setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
-      setIsFullWidth(false);
-    }
-    else if (path.startsWith('/admin')) {
-      setLayoutMode('wide');
-      setShowRightSection(false);
-      setContentWidth('px-3 sm:px-4 md:px-6');
-      setContentMaxWidth('max-w-6xl');
-      setIsFullWidth(false);
-    } 
-    else if (path === '/explore') {
-      setLayoutMode('full');
-      setShowRightSection(false);
-      setContentWidth('p-0');
-      setContentMaxWidth('max-w-full');
-      setIsFullWidth(true);
-    } 
-    else if (path === '/' || path === '/home') {
-      setLayoutMode('default');
-      setShowRightSection(false);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4');
-      setContentMaxWidth('max-w-6xl');
-      setIsFullWidth(false);
-    }
-    else if (path.startsWith('/users/')) {
-      setLayoutMode('default');
-      setShowRightSection(false);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4');
-      setContentMaxWidth(isMobile ? 'max-w-full' : 'max-w-4xl');
-      setIsFullWidth(isMobile);
-    }
-    else {
-      // Default for other pages
-      setLayoutMode('default');
-      setShowRightSection(false);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4');
-      setContentMaxWidth('max-w-5xl');
-      setIsFullWidth(false);
-    }
 
-    // On mobile, always hide the right section regardless of the route
-    if (isMobile) {
-      setShowRightSection(false);
-    }
-  }, [location, isMobile, isTablet, breakpoint]);
-  
+  const value: LayoutContextType = {
+    layoutMode,
+    showRightSection,
+    contentWidth,
+    contentMaxWidth,
+    isFullWidth,
+    setLayoutMode,
+    setShowRightSection,
+    setContentWidth,
+    setContentMaxWidth,
+    setIsFullWidth
+  };
+
   return (
-    <LayoutContext.Provider 
-      value={{
-        layoutMode,
-        showRightSection,
-        setLayoutMode,
-        setShowRightSection,
-        contentWidth,
-        contentMaxWidth,
-        isFullWidth
-      }}
-    >
+    <LayoutContext.Provider value={value}>
       {children}
     </LayoutContext.Provider>
   );
