@@ -19,6 +19,7 @@ import { Json } from "@/integrations/supabase/types";
 import { Swipeable } from "@/components/ui/swipeable";
 import { ZoomableImage } from "@/components/ui/zoomable-image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DebugData } from "@/components/ui/debug-data";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
@@ -139,10 +140,10 @@ const SymptomDetail = () => {
       
       // Third attempt - do a direct fetch by ID (some UUIDs might have inconsistent formatting)
       try {
-        const { data: directData, error: directError } = await supabase
+        const { data: directData } = await supabase
           .rpc('get_symptom_by_id', { id_param: symptom });
           
-        if (!directError && directData && directData.length > 0) {
+        if (directData && directData.length > 0) {
           console.log("Found symptom via direct ID lookup:", directData[0]);
           return directData[0];
         }
@@ -271,11 +272,15 @@ const SymptomDetail = () => {
           
           <div className="mt-8">
             <h2 className="text-xl font-semibold mb-4">Debug Information</h2>
-            <div className="bg-muted p-4 rounded overflow-x-auto">
-              <pre className="text-xs">
-                {JSON.stringify({ params: symptom, error: error?.message }, null, 2)}
-              </pre>
-            </div>
+            <DebugData 
+              data={{ 
+                params: symptom, 
+                error: error?.message, 
+                lookupType: "direct"
+              }}
+              title="Symptom Lookup Debug"
+              expanded={true}
+            />
           </div>
         </div>
       </div>
@@ -319,6 +324,17 @@ const SymptomDetail = () => {
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
+
+        <DebugData
+          data={{ 
+            symptomId: symptom,
+            symptomDetails,
+            videoLinks,
+            relatedContent
+          }}
+          title="Symptom Data"
+          className="mb-4"
+        />
 
         <div className="space-y-8">
           {/* Hero Section with Image and Title */}

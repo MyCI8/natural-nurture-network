@@ -1178,6 +1178,26 @@ export type Database = {
         }
         Returns: string
       }
+      get_symptom_by_id: {
+        Args: {
+          id_param: string
+        }
+        Returns: {
+          brief_description: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          related_experts: string[] | null
+          related_ingredients: string[] | null
+          symptom: Database["public"]["Enums"]["symptom_type"]
+          thumbnail_description: string | null
+          updated_at: string | null
+          video_description: string | null
+          video_links: Json | null
+          video_url: string | null
+        }[]
+      }
       get_symptom_related_content: {
         Args: {
           p_symptom: Database["public"]["Enums"]["symptom_type"]
