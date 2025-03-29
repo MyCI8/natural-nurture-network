@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -94,11 +95,14 @@ const SymptomDetail = () => {
   const { data: symptomDetails, isLoading, error } = useQuery({
     queryKey: ['symptom-details', symptom],
     queryFn: async () => {
-      if (!symptom) return null;
+      if (!symptom) {
+        console.error("No symptom ID provided");
+        return null;
+      }
       
       console.log("Fetching symptom details for ID:", symptom);
       
-      // First attempt - try to get by ID
+      // Direct attempt to get by UUID
       const { data: dataById, error: errorById } = await supabase
         .from('symptom_details')
         .select('*')
@@ -114,7 +118,7 @@ const SymptomDetail = () => {
         return dataById;
       }
       
-      // Second attempt - try to find by symptom name
+      // Try to find by symptom name (case insensitive)
       console.log("Attempting to find symptom by name:", symptom);
       const { data: dataByName, error: errorByName } = await supabase
         .from('symptom_details')
@@ -124,12 +128,6 @@ const SymptomDetail = () => {
       
       if (errorByName) {
         console.error("Error fetching symptom details by name:", errorByName);
-        toast({
-          title: "Error",
-          description: "Failed to load symptom details",
-          variant: "destructive"
-        });
-        throw errorByName;
       }
       
       if (dataByName) {
@@ -137,23 +135,28 @@ const SymptomDetail = () => {
         return dataByName;
       }
       
-      // Third attempt - do a direct fetch by ID (some UUIDs might have inconsistent formatting)
+      // Last attempt - use the RPC function for exact UUID match
       try {
-        const { data: directData } = await supabase
+        console.log("Trying direct symptom lookup via RPC function");
+        const { data: directData, error: directError } = await supabase
           .rpc('get_symptom_by_id', { id_param: symptom });
+          
+        if (directError) {
+          console.error("Error in direct symptom lookup:", directError);
+        }
           
         if (directData && directData.length > 0) {
           console.log("Found symptom via direct ID lookup:", directData[0]);
           return directData[0];
         }
       } catch (directLookupError) {
-        console.error("Error in direct symptom lookup:", directLookupError);
+        console.error("Exception in direct symptom lookup:", directLookupError);
       }
       
       console.log("No symptom found by ID or name");
       return null;
     },
-    retry: 2,
+    retry: 1,
     retryDelay: 1000,
     enabled: !!symptom
   });
@@ -273,8 +276,8 @@ const SymptomDetail = () => {
             <h2 className="text-xl font-semibold mb-4">Debug Information</h2>
             <DebugData 
               data={{ 
-                params: symptom, 
-                error: error?.message, 
+                lookupId: symptom,
+                error: error instanceof Error ? error.message : "Unknown error",
                 lookupType: "direct"
               }}
               title="Symptom Lookup Debug"
@@ -327,9 +330,9 @@ const SymptomDetail = () => {
         <DebugData
           data={{ 
             symptomId: symptom,
-            symptomDetails,
-            videoLinks,
-            relatedContent
+            symptomType: typeof symptom,
+            symptomDetails: symptomDetails,
+            videoLinks: videoLinks
           }}
           title="Symptom Data"
           className="mb-4"
