@@ -1,50 +1,45 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Eye, EyeOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface DebugDataProps {
   data: any;
   title?: string;
-  className?: string;
   expanded?: boolean;
+  className?: string;
 }
 
-export const DebugData = ({ 
+export function DebugData({ 
   data, 
-  title = "Debug Data", 
-  className,
-  expanded = false
-}: DebugDataProps) => {
-  const [isVisible, setIsVisible] = useState(expanded);
-
-  // Only show in development environment
-  if (process.env.NODE_ENV === 'production') {
-    return null;
-  }
+  title = "Debug Data",
+  expanded = false,
+  className
+}: DebugDataProps) {
+  const [isExpanded, setIsExpanded] = useState(expanded);
 
   return (
-    <Card className={cn("bg-zinc-950 text-zinc-50 border-zinc-800", className)}>
-      <CardHeader className="pb-2 pt-4 px-4 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-mono">{title}</CardTitle>
+    <div className={cn("rounded-md border bg-muted/50", className)}>
+      <div className="flex items-center justify-between px-4 py-2 border-b">
+        <h3 className="text-sm font-medium">{title}</h3>
         <Button 
           variant="ghost" 
-          size="icon" 
-          className="h-6 w-6 text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800"
-          onClick={() => setIsVisible(!isVisible)}
+          size="sm" 
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="h-7 w-7 p-0"
         >
-          {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          {isExpanded ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
         </Button>
-      </CardHeader>
-      {isVisible && (
-        <CardContent className="p-4 pt-0">
-          <pre className="text-xs overflow-auto max-h-[400px] font-mono">
+      </div>
+      
+      {isExpanded && (
+        <div className="p-4 overflow-x-auto">
+          <pre className="text-xs">
             {JSON.stringify(data, null, 2)}
           </pre>
-        </CardContent>
+        </div>
       )}
-    </Card>
+    </div>
   );
-};
+}

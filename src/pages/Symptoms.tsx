@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,10 +6,10 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import SymptomsMarquee from "@/components/SymptomsMarquee";
 import { Search, RefreshCw, ArrowLeft } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { useToast } from "@/hooks/use-toast";
-import SymptomsMarquee from "@/components/SymptomsMarquee";
+import { useToast } from "@/components/ui/use-toast";
 
 type SymptomType = Database["public"]["Enums"]["symptom_type"];
 
@@ -102,12 +101,12 @@ const Symptoms = () => {
   if (error) {
     return (
       <div className="pt-12">
-        <div className="max-w-[800px] mx-auto px-4">
+        <div className="max-w-[800px] mx-auto px-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -119,7 +118,7 @@ const Symptoms = () => {
             <Button 
               onClick={() => refetch()} 
               variant="outline"
-              className="gap-2 touch-manipulation"
+              className="gap-2"
             >
               <RefreshCw className="h-4 w-4" />
               Try Again
@@ -133,12 +132,12 @@ const Symptoms = () => {
   if (isLoading) {
     return (
       <div className="pt-12">
-        <div className="max-w-[800px] mx-auto px-4">
+        <div className="max-w-[800px] mx-auto px-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -158,12 +157,12 @@ const Symptoms = () => {
 
   return (
     <div className="pt-12">
-      <div className="max-w-[800px] mx-auto px-4">
+      <div className="max-w-[800px] mx-auto px-2">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -204,7 +203,7 @@ const Symptoms = () => {
                   <TableCell className="font-medium">
                     <Link 
                       to={`/symptoms/${symptom.id}`}
-                      className="text-primary hover:underline touch-manipulation"
+                      className="text-primary hover:underline"
                     >
                       {symptom.symptom}
                     </Link>
@@ -224,12 +223,12 @@ const Symptoms = () => {
                           key={experts.id}
                           src={experts.image_url || "/placeholder.svg"}
                           alt={experts.full_name}
-                          className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-800"
+                          className="w-8 h-8 rounded-full border-2 border-white"
                           title={experts.full_name}
                         />
                       ))}
                       {(symptom.symptom_experts?.length || 0) > 3 && (
-                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm border-2 border-white dark:border-gray-800">
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-white">
                           +{(symptom.symptom_experts?.length || 0) - 3}
                         </div>
                       )}

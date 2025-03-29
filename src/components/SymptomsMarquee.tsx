@@ -76,13 +76,13 @@ const SymptomsMarquee = () => {
               {[...topSymptoms, ...topSymptoms].map((symptom, index) => (
                 <CarouselItem
                   key={`${symptom}-${index}`}
-                  className="basis-auto pl-8 cursor-pointer touch-manipulation"
+                  className="basis-auto pl-8 cursor-pointer"
                   onClick={() => handleSymptomClick(symptom)}
                 >
                   <a
-                    href={`/symptoms/${symptom.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`#${symptom.toLowerCase().replace(/\s+/g, '-')}`}
                     className={cn(
-                      "text-lg font-medium text-primary hover:text-primary/80",
+                      "text-lg font-medium text-primary hover:text-primary-dark",
                       "transition-colors duration-200"
                     )}
                   >

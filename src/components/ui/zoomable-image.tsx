@@ -1,137 +1,103 @@
 
-import React, { useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import React, { useState, useCallback, useRef } from 'react';
+import { Swipeable } from './swipeable';
+import { cn } from '@/lib/utils';
 
-interface ZoomableImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-  maxZoom?: number;
+interface ZoomableImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+  aspectRatio?: number;
 }
 
-export const ZoomableImage = ({
-  src,
-  alt,
+export function ZoomableImage({ 
+  src, 
+  alt, 
   className,
-  maxZoom = 3,
-  ...props
-}: ZoomableImageProps) => {
+  aspectRatio
+}: ZoomableImageProps) {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isPanning, setIsPanning] = useState(false);
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const imgRef = useRef<HTMLDivElement>(null);
+  const [isZooming, setIsZooming] = useState(false);
+  const lastTouchRef = useRef<{ x: number, y: number } | null>(null);
 
-  // Reset zoom and position on src change
-  useEffect(() => {
-    setScale(1);
-    setPosition({ x: 0, y: 0 });
-  }, [src]);
+  const handlePinch = useCallback((newScale: number) => {
+    setScale(newScale);
+    setIsZooming(newScale > 1);
+  }, []);
 
-  // Handle touch gestures for pinch zoom
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      // Store the initial distance between two fingers for pinch-zoom
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const distance = Math.hypot(
-        touch2.clientX - touch1.clientX,
-        touch2.clientY - touch1.clientY
-      );
-      
-      // @ts-ignore - add a custom property
-      e.currentTarget.dataset.initialPinchDistance = distance;
-    } else if (e.touches.length === 1) {
-      // Single touch for panning
-      setIsPanning(true);
-      setStartPos({
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y,
-      });
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      // Pinch-zoom gesture
-      e.preventDefault();
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const currentDistance = Math.hypot(
-        touch2.clientX - touch1.clientX,
-        touch2.clientY - touch1.clientY
-      );
-      
-      // @ts-ignore - read the custom property
-      const initialDistance = parseFloat(e.currentTarget.dataset.initialPinchDistance) || 0;
-      if (initialDistance > 0) {
-        // Calculate new scale based on the change in distance between fingers
-        const newScale = Math.max(
-          1,
-          Math.min(maxZoom, (scale * currentDistance) / initialDistance)
-        );
-        setScale(newScale);
-        // @ts-ignore - update the custom property
-        e.currentTarget.dataset.initialPinchDistance = currentDistance;
-      }
-    } else if (e.touches.length === 1 && isPanning && scale > 1) {
-      // Panning gesture when zoomed in
-      const newX = e.touches[0].clientX - startPos.x;
-      const newY = e.touches[0].clientY - startPos.y;
-      setPosition({ x: newX, y: newY });
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsPanning(false);
-    if (imgRef.current) {
-      // @ts-ignore - remove the custom property
-      delete imgRef.current.dataset.initialPinchDistance;
-    }
-  };
-
-  // Double-click/double-tap to toggle zoom
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  const handleDoubleTap = useCallback(() => {
     if (scale > 1) {
-      // Reset zoom and position
+      // Reset to normal
       setScale(1);
       setPosition({ x: 0, y: 0 });
+      setIsZooming(false);
     } else {
-      // Zoom in to the maximum
-      setScale(maxZoom);
-      // Center the zoom on the click point
-      if (imgRef.current) {
-        const rect = imgRef.current.getBoundingClientRect();
-        const x = (rect.width / 2 - (e.clientX - rect.left)) * (maxZoom - 1);
-        const y = (rect.height / 2 - (e.clientY - rect.top)) * (maxZoom - 1);
-        setPosition({ x, y });
-      }
+      // Zoom in
+      setScale(2);
+      setIsZooming(true);
     }
-  };
+  }, [scale]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (isZooming && e.touches.length === 1) {
+      e.stopPropagation();
+      const touch = e.touches[0];
+      const currentTouch = { x: touch.clientX, y: touch.clientY };
+      
+      if (lastTouchRef.current) {
+        const deltaX = currentTouch.x - lastTouchRef.current.x;
+        const deltaY = currentTouch.y - lastTouchRef.current.y;
+        
+        setPosition(prev => ({
+          x: prev.x + deltaX,
+          y: prev.y + deltaY
+        }));
+      }
+      
+      lastTouchRef.current = currentTouch;
+    }
+  }, [isZooming]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (isZooming && e.touches.length === 1) {
+      const touch = e.touches[0];
+      lastTouchRef.current = { x: touch.clientX, y: touch.clientY };
+    }
+  }, [isZooming]);
+
+  const handleTouchEnd = useCallback(() => {
+    lastTouchRef.current = null;
+  }, []);
 
   return (
-    <div 
-      ref={imgRef}
-      className={cn(
-        "overflow-hidden relative touch-manipulation", 
-        className
-      )}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onDoubleClick={handleDoubleClick}
+    <Swipeable
+      enableZoom={true}
+      onPinch={handlePinch}
+      className={cn("overflow-hidden touch-manipulation", className)}
     >
-      <img
-        src={src}
-        alt={alt || "Zoomable image"}
-        className="w-full h-full object-contain select-none transition-transform"
+      <div 
+        className="relative w-full h-full"
+        onTouchMove={handleTouchMove}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onDoubleClick={handleDoubleTap}
         style={{
-          transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-          transformOrigin: "center",
+          aspectRatio: aspectRatio ? `${aspectRatio}` : 'auto',
         }}
-        draggable={false}
-        {...props}
-      />
-      <div className="absolute bottom-2 left-0 right-0 text-center opacity-70 text-xs text-white bg-black/30 py-1 pointer-events-none">
-        Double tap to {scale > 1 ? "reset" : "zoom"} • Pinch to zoom
+      >
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-cover"
+          style={{
+            transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
+            transition: isZooming ? 'none' : 'transform 0.3s ease-out',
+            transformOrigin: 'center',
+            willChange: 'transform',
+          }}
+        />
       </div>
-    </div>
+    </Swipeable>
   );
-};
+}
