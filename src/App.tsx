@@ -20,6 +20,7 @@ import NewsArticle from "./pages/NewsArticle";
 import Explore from "./pages/Explore";
 import ExploreDetail from "./pages/ExploreDetail";
 import Symptoms from "./pages/Symptoms";
+import Symptomsz from "./pages/Symptomsz";
 import SymptomDetail from "./pages/SymptomDetail";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -68,6 +69,8 @@ function App() {
             <Route index element={<Symptoms />} />
             <Route path=":id" element={<SymptomDetail />} />
           </Route>
+          
+          <Route path="symptomsz" element={<Symptomsz />} />
           
           <Route path="experts">
             <Route index element={<Experts />} />

@@ -33,6 +33,7 @@ import ManageVideos from "./pages/ManageVideos";
 import EditVideo from "./pages/EditVideo";
 import UserProfile from "./pages/UserProfile";
 import Symptoms from "./pages/Symptoms";
+import Symptomsz from "./pages/Symptomsz";
 import SymptomDetail from "./pages/SymptomDetail";
 
 // Settings pages
@@ -55,6 +56,7 @@ const Routes = () => {
         <Route path="remedies" element={<Remedies />} />
         <Route path="ingredients" element={<Ingredients />} />
         <Route path="symptoms" element={<Symptoms />} />
+        <Route path="symptomsz" element={<Symptomsz />} />
         <Route path="symptoms/:id" element={<SymptomDetail />} />
         <Route path="news" element={<News />} />
         <Route path="news/:id" element={<NewsArticle />} />
