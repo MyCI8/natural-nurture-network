@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -64,7 +63,7 @@ const parseVideoLinks = (links: Json | null): VideoLink[] => {
     console.error('Error processing video links:', e);
     return [];
   }
-};
+}
 
 const ensureArray = <T extends unknown>(data: any): T[] => {
   if (Array.isArray(data)) {
@@ -74,14 +73,14 @@ const ensureArray = <T extends unknown>(data: any): T[] => {
 };
 
 const SymptomDetail = () => {
-  const { symptom } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { setShowRightSection } = useLayout();
   const { toast } = useToast();
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
-  console.log("Symptom ID from params:", symptom);
+  console.log("Symptom ID from params:", id);
 
   useEffect(() => {
     setShowRightSection(true);
@@ -89,37 +88,20 @@ const SymptomDetail = () => {
   }, [setShowRightSection]);
 
   const { data: symptomDetails, isLoading, error } = useQuery({
-    queryKey: ['symptom-details', symptom],
+    queryKey: ['symptom-details', id],
     queryFn: async () => {
-      if (!symptom) {
+      if (!id) {
         console.error("No symptom ID provided");
         return null;
       }
       
-      console.log("Fetching symptom details for ID:", symptom);
+      console.log("Fetching symptom details for ID:", id);
       
       try {
-        const { data: directData, error: directError } = await supabase
-          .rpc('get_symptom_by_id', { 
-            id_param: symptom 
-          });
-        
-        if (directError) {
-          console.error("Error in RPC lookup:", directError);
-          throw new Error(`RPC lookup failed: ${directError.message}`);
-        }
-        
-        console.log("RPC function response:", directData);
-        
-        if (directData && directData.length > 0) {
-          console.log("Found symptom via RPC:", directData[0]);
-          return directData[0];
-        }
-
         const { data: tableData, error: tableError } = await supabase
           .from('symptom_details')
           .select('*')
-          .eq('id', symptom)
+          .eq('id', id)
           .maybeSingle();
         
         if (tableError) {
@@ -136,7 +118,7 @@ const SymptomDetail = () => {
         const { data: nameData, error: nameError } = await supabase
           .from('symptom_details')
           .select('*')
-          .ilike('symptom', symptom)
+          .ilike('symptom', id)
           .maybeSingle();
           
         if (nameError) {
@@ -158,7 +140,7 @@ const SymptomDetail = () => {
     },
     retry: 1,
     retryDelay: 1000,
-    enabled: !!symptom
+    enabled: !!id
   });
 
   const { data: relatedContent } = useQuery({
@@ -274,7 +256,7 @@ const SymptomDetail = () => {
             <h2 className="text-xl font-semibold mb-4">Debug Information</h2>
             <DebugData 
               data={{ 
-                lookupId: symptom,
+                lookupId: id,
                 error: error instanceof Error ? error.message : "Unknown error",
                 lookupType: "direct"
               }}
@@ -324,8 +306,8 @@ const SymptomDetail = () => {
 
         <DebugData
           data={{ 
-            symptomId: symptom,
-            symptomType: typeof symptom,
+            symptomId: id,
+            symptomType: typeof id,
             symptomDetails: symptomDetails,
             videoLinks: videoLinks
           }}
