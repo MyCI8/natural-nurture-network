@@ -196,13 +196,13 @@ const SymptomDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pt-4">
-        <div className="container mx-auto p-4 sm:p-6">
+      <div className="min-h-screen bg-background pt-2">
+        <div className="container mx-auto p-3 sm:p-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-2 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+            className="mb-1 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -220,13 +220,13 @@ const SymptomDetail = () => {
 
   if (error || !symptomDetails) {
     return (
-      <div className="min-h-screen bg-background pt-4">
-        <div className="container mx-auto p-4 sm:p-6">
+      <div className="min-h-screen bg-background pt-2">
+        <div className="container mx-auto p-3 sm:p-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-2 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+            className="mb-1 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -274,24 +274,27 @@ const SymptomDetail = () => {
 
   return (
     <Swipeable 
-      className="min-h-screen bg-background pt-4"
+      className="min-h-screen bg-background pt-2"
       onSwipe={(direction) => {
         if (direction === 'right') {
           navigate(-1);
         }
       }}
     >
-      <div className="container mx-auto p-4 sm:p-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          className="mb-2 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation ml-0"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+      <div className="container mx-auto p-3 sm:p-6">
+        <div className="flex items-center mb-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="mr-2 hover:bg-accent/50 transition-all rounded-full w-9 h-9 touch-manipulation"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">{symptomDetails.symptom}</h1>
+        </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           <div className="relative rounded-lg overflow-hidden">
             {symptomDetails.image_url ? (
               <div>
@@ -307,31 +310,29 @@ const SymptomDetail = () => {
                     />
                   </AspectRatio>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 md:p-8">
-                  <h1 className="text-3xl md:text-4xl font-bold text-white">{symptomDetails.symptom}</h1>
-                  <p className="text-lg text-white/90 mt-2 max-w-2xl">
-                    {symptomDetails.brief_description || 
-                      `Learn about ${symptomDetails.symptom?.toLowerCase() || 'this symptom'} and natural remedies.`}
-                  </p>
-                </div>
               </div>
             ) : (
-              <div className="bg-gradient-to-r from-accent to-accent/30 rounded-lg p-6 md:p-8">
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl md:text-4xl font-bold">{symptomDetails.symptom}</h1>
-                  <p className="text-lg text-muted-foreground mt-2">
-                    {symptomDetails.brief_description || 
-                      `Explore natural remedies and expert advice for ${symptomDetails.symptom?.toLowerCase() || 'this symptom'}.`}
-                  </p>
+              <div className="bg-gradient-to-r from-accent to-accent/30 rounded-lg p-6">
+                <div className="h-40 flex items-center justify-center">
+                  <p className="text-muted-foreground text-center">No image available</p>
                 </div>
               </div>
             )}
           </div>
 
+          {/* Brief description */}
+          <div className="px-1">
+            <p className="text-lg text-muted-foreground">
+              {symptomDetails.brief_description || 
+                `Learn about ${symptomDetails.symptom?.toLowerCase() || 'this symptom'} and natural remedies.`}
+            </p>
+          </div>
+
+          {/* About this symptom */}
           {symptomDetails?.description && (
             <div className="overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">About This Symptom</h2>
+              <div className="p-4">
+                <h2 className="text-xl font-semibold mb-3">About This Symptom</h2>
                 <div 
                   className="prose max-w-none dark:prose-invert"
                   dangerouslySetInnerHTML={{ __html: symptomDetails.description }}
@@ -340,14 +341,15 @@ const SymptomDetail = () => {
             </div>
           )}
 
-          {isMobile && videoLinks.length > 0 && (
+          {/* Helpful videos */}
+          {videoLinks.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 px-4">
                 <Video className="h-5 w-5 text-primary" />
                 Helpful Videos
               </h2>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4 px-1">
                 {videoLinks.slice(0, 3).map((video, index) => (
                   <a 
                     key={index}
@@ -408,10 +410,11 @@ const SymptomDetail = () => {
             </section>
           )}
 
+          {/* Natural Remedies */}
           {hasRelatedRemedies && (
             <section>
-              <h2 className="text-2xl font-semibold mb-4">Natural Remedies</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <h2 className="text-xl font-semibold mb-3 px-4">Natural Remedies</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-1">
                 {relatedRemedies.map((remedy) => (
                   <Card 
                     key={remedy.id} 
@@ -428,7 +431,7 @@ const SymptomDetail = () => {
                       </AspectRatio>
                     )}
                     <CardContent className="p-4">
-                      <h3 className="text-xl font-medium mb-2">{remedy.name}</h3>
+                      <h3 className="text-lg font-medium mb-2">{remedy.name}</h3>
                       <p className="text-muted-foreground text-sm line-clamp-3">{remedy.summary}</p>
                     </CardContent>
                   </Card>
@@ -528,15 +531,15 @@ const SymptomDetail = () => {
             </section>
           )}
 
-          {isMobile && videoLinks.length > 0 && (
-            <section id="mobile-videos" className="mt-10 pt-4">
-              <Separator className="mb-8" />
-              <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+          {videoLinks.length > 0 && (
+            <section id="mobile-videos" className="mt-8 pt-4">
+              <Separator className="mb-6" />
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 px-4">
                 <Video className="h-5 w-5 text-primary" />
                 All Videos
               </h2>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4 px-1">
                 {videoLinks.map((video, index) => (
                   <a 
                     key={index} 
