@@ -196,13 +196,13 @@ const SymptomDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pt-16">
+      <div className="min-h-screen bg-background pt-8">
         <div className="container mx-auto p-4 sm:p-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+            className="mb-4 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -220,13 +220,13 @@ const SymptomDetail = () => {
 
   if (error || !symptomDetails) {
     return (
-      <div className="min-h-screen bg-background pt-16">
+      <div className="min-h-screen bg-background pt-8">
         <div className="container mx-auto p-4 sm:p-6">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+            className="mb-4 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -287,7 +287,7 @@ const SymptomDetail = () => {
 
   return (
     <Swipeable 
-      className="min-h-screen bg-background pt-16"
+      className="min-h-screen bg-background pt-8"
       onSwipe={(direction) => {
         if (direction === 'right') {
           navigate(-1);
@@ -299,21 +299,10 @@ const SymptomDetail = () => {
           variant="ghost"
           size="icon"
           onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
+          className="mb-4 hover:bg-accent/50 transition-all rounded-full w-10 h-10 touch-manipulation"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-
-        <DebugData
-          data={{ 
-            symptomId: id,
-            symptomType: typeof id,
-            symptomDetails: symptomDetails,
-            videoLinks: videoLinks
-          }}
-          title="Symptom Data"
-          className="mb-4"
-        />
 
         <div className="space-y-8">
           <div className="relative rounded-lg overflow-hidden">
@@ -332,7 +321,7 @@ const SymptomDetail = () => {
                   </AspectRatio>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6 md:p-8">
-                  <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
+                  <Badge className="absolute top-2 right-2 self-end mb-2 bg-primary/80 hover:bg-primary text-sm">
                     Symptom
                   </Badge>
                   <h1 className="text-3xl md:text-4xl font-bold text-white">{symptomDetails.symptom}</h1>
@@ -345,7 +334,7 @@ const SymptomDetail = () => {
             ) : (
               <div className="bg-gradient-to-r from-accent to-accent/30 rounded-lg p-6 md:p-8">
                 <div className="flex flex-col gap-2">
-                  <Badge className="self-start mb-2 bg-primary/80 hover:bg-primary text-sm">
+                  <Badge className="self-end mb-2 bg-primary/80 hover:bg-primary text-sm">
                     Symptom
                   </Badge>
                   <h1 className="text-3xl md:text-4xl font-bold">{symptomDetails.symptom}</h1>
