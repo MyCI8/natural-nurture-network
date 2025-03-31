@@ -31,7 +31,7 @@ export const FontControls = ({ editor, fontFamilies }: FontControlsProps) => {
 
   const getFontFamily = () => {
     const attributes = editor.getAttributes("textStyle");
-    return attributes.fontFamily || "";
+    return attributes.fontFamily || "default";
   };
 
   return (
@@ -66,7 +66,7 @@ export const FontControls = ({ editor, fontFamilies }: FontControlsProps) => {
       <Select
         value={getFontFamily()}
         onValueChange={(value) => {
-          if (value === "") {
+          if (value === "default") {
             editor.chain().focus().unsetFontFamily().run();
           } else {
             editor.chain().focus().setFontFamily(value).run();
@@ -77,7 +77,7 @@ export const FontControls = ({ editor, fontFamilies }: FontControlsProps) => {
           <SelectValue placeholder="Font" />
         </SelectTrigger>
         <SelectContent className="bg-popover/100 border shadow-lg">
-          <SelectItem value="" className="hover:bg-accent focus:bg-accent text-xs">
+          <SelectItem value="default" className="hover:bg-accent focus:bg-accent text-xs">
             Default
           </SelectItem>
           {Object.entries(fontFamilies).map(([key, value]) => (

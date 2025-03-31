@@ -32,7 +32,7 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
             <FormLabel>Symptom Type</FormLabel>
             <Select 
               onValueChange={field.onChange} 
-              value={field.value}
+              value={field.value || "select-symptom"}
             >
               <FormControl>
                 <SelectTrigger className="bg-background">
