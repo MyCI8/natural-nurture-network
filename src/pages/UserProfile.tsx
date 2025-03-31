@@ -91,7 +91,7 @@ const UserProfile = () => {
                 onError={() => setIsValidAvatar(false)}
               />
             ) : (
-              <AvatarFallback className="bg-primary/10 text-primary text-xl sm:text-2xl">
+              <AvatarFallback className="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground text-xl sm:text-2xl">
                 {profile?.full_name?.[0] || '?'}
               </AvatarFallback>
             )}
@@ -125,7 +125,7 @@ const UserProfile = () => {
             <Button 
               variant="outline" 
               onClick={() => navigate(`/settings/profile`)}
-              className="w-full sm:w-auto py-3 sm:py-2"
+              className="w-full sm:w-auto py-3 sm:py-2 dark:border-border dark:hover:bg-accent-dark/30"
             >
               <Edit className="w-4 h-4 mr-2" />
               Edit Profile
@@ -151,13 +151,13 @@ const UserProfile = () => {
 
         {/* Content Tabs */}
         <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="posts" className="flex items-center py-3 sm:py-2">
+          <TabsList className="grid w-full grid-cols-2 dark:bg-muted/10">
+            <TabsTrigger value="posts" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
               <Grid className="w-4 h-4 mr-2" />
               Posts
             </TabsTrigger>
             {isOwnProfile && (
-              <TabsTrigger value="saved" className="flex items-center py-3 sm:py-2">
+              <TabsTrigger value="saved" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
                 <Bookmark className="w-4 h-4 mr-2" />
                 Saved
               </TabsTrigger>

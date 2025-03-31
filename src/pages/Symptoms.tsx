@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
@@ -106,7 +107,7 @@ const Symptoms = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+            className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -137,7 +138,7 @@ const Symptoms = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+            className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -162,7 +163,7 @@ const Symptoms = () => {
           variant="ghost"
           size="icon"
           onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+          className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -181,16 +182,16 @@ const Symptoms = () => {
           <Input
             type="search"
             placeholder="Search symptoms..."
-            className="pl-10 w-full max-w-md"
+            className="pl-10 w-full max-w-md bg-background dark:bg-muted/10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <div className="bg-card rounded-lg shadow overflow-hidden">
+        <div className="bg-card dark:bg-card rounded-lg shadow overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-border dark:border-border">
                 <TableHead>Name</TableHead>
                 <TableHead>Brief Description</TableHead>
                 <TableHead className="text-center">Remedies</TableHead>
@@ -199,7 +200,7 @@ const Symptoms = () => {
             </TableHeader>
             <TableBody>
               {filteredSymptoms?.map((symptom) => (
-                <TableRow key={symptom.id} className="hover:bg-muted/50">
+                <TableRow key={symptom.id} className="hover:bg-muted/50 dark:hover:bg-muted/10 border-border dark:border-border">
                   <TableCell className="font-medium">
                     <Link 
                       to={`/symptoms/${symptom.id}`}
@@ -223,12 +224,12 @@ const Symptoms = () => {
                           key={experts.id}
                           src={experts.image_url || "/placeholder.svg"}
                           alt={experts.full_name}
-                          className="w-8 h-8 rounded-full border-2 border-white"
+                          className="w-8 h-8 rounded-full border-2 border-background dark:border-background"
                           title={experts.full_name}
                         />
                       ))}
                       {(symptom.symptom_experts?.length || 0) > 3 && (
-                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-white">
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-background dark:border-background">
                           +{(symptom.symptom_experts?.length || 0) - 3}
                         </div>
                       )}

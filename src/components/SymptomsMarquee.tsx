@@ -82,7 +82,7 @@ const SymptomsMarquee = () => {
   };
 
   return (
-    <section className="py-8 bg-accent overflow-hidden z-0 relative">
+    <section className="py-8 bg-accent dark:bg-accent-dark overflow-hidden z-0 relative">
       <div className="w-full mx-auto">
         <div className="group relative">
           <Carousel
@@ -106,7 +106,7 @@ const SymptomsMarquee = () => {
                 >
                   <div
                     className={cn(
-                      "text-lg font-medium text-primary hover:text-primary-dark",
+                      "text-lg font-medium text-primary hover:text-primary-dark dark:text-primary-foreground dark:hover:text-white",
                       "transition-colors duration-200"
                     )}
                     role="button"

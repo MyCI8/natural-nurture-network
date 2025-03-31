@@ -30,14 +30,19 @@ export default {
           light: "#E8F5E9",
           dark: "#388E3C",
         },
-        secondary: "#F5F7FA",
+        secondary: {
+          DEFAULT: "#F5F7FA",
+          dark: "#1A1F2C",
+        },
         text: {
           DEFAULT: "#222222",
           light: "#666666",
+          dark: "#E0E0E0",
         },
         accent: {
           DEFAULT: "#E8F5E9",
           foreground: "#4CAF50",
+          dark: "#1A2C1D",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -79,7 +84,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.5s ease-out forwards",
         marquee: "marquee 40s linear infinite",
-        "marquee-fast": "marquee 10s linear infinite", // Changed from 20s to 10s to make it twice as fast
+        "marquee-fast": "marquee 10s linear infinite",
       },
     },
   },
