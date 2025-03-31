@@ -42,7 +42,7 @@ export const FontControls = ({ editor, fontFamilies }: FontControlsProps) => {
           if (value === "paragraph") {
             editor.chain().focus().setParagraph().run();
           } else {
-            const level = parseInt(value.split("-")[1], 10);
+            const level = parseInt(value.split("-")[1], 10) as 1 | 2 | 3;
             editor.chain().focus().toggleHeading({ level }).run();
           }
         }}

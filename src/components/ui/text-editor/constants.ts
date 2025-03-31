@@ -1,11 +1,11 @@
 
-export const fontFamilies = [
-  'Arial',
-  'Times New Roman',
-  'Courier New',
-  'Georgia',
-  'Verdana'
-];
+export const fontFamilies = {
+  'Arial': 'Arial, sans-serif',
+  'Times New Roman': 'Times New Roman, serif',
+  'Courier New': 'Courier New, monospace',
+  'Georgia': 'Georgia, serif',
+  'Verdana': 'Verdana, sans-serif'
+};
 
 export const editorClasses = `
   [&_.is-editor-empty]:before:content-[attr(data-placeholder)]
