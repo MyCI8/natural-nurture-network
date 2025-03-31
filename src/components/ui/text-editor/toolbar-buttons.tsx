@@ -1,13 +1,17 @@
 
-import { Button } from "../button";
-import { 
-  Bold, Italic, Strikethrough, List, ListOrdered, 
-  AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  Heading1, Heading2, Heading3, Quote, Code,
-  Table as TableIcon, Image as ImageIcon, Undo, Redo,
-  Type
+import { Editor } from "@tiptap/react";
+import {
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Image as ImageIcon,
+  Table as TableIcon,
 } from "lucide-react";
-import { Editor } from '@tiptap/react';
+import { cn } from "@/lib/utils";
 
 interface ToolbarButtonsProps {
   editor: Editor;
@@ -15,168 +19,104 @@ interface ToolbarButtonsProps {
   addTable: () => void;
 }
 
-export const ToolbarButtons = ({ editor, addImage, addTable }: ToolbarButtonsProps) => {
+export const ToolbarButtons = ({
+  editor,
+  addImage,
+  addTable,
+}: ToolbarButtonsProps) => {
+  const iconSize = 14;
+  
+  const toolbarButtonClass = cn(
+    "p-1 rounded hover:bg-accent touch-manipulation",
+    "transition-colors duration-200 ease-in-out flex items-center justify-center"
+  );
+
+  const isActive = (callback: () => boolean) => {
+    return callback() ? "bg-accent text-accent-foreground" : "text-muted-foreground";
+  };
+
   return (
-    <>
-      <div className="flex gap-1 mr-2 border-r pr-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-        >
-          <Undo className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-        >
-          <Redo className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="flex gap-1 border-r pr-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={editor.isActive('bold') ? "bg-muted" : ""}
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={editor.isActive('italic') ? "bg-muted" : ""}
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          className={editor.isActive('strike') ? "bg-muted" : ""}
-        >
-          <Strikethrough className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="flex gap-1 border-r pr-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className={editor.isActive({ textAlign: 'left' }) ? "bg-muted" : ""}
-        >
-          <AlignLeft className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          className={editor.isActive({ textAlign: 'center' }) ? "bg-muted" : ""}
-        >
-          <AlignCenter className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          className={editor.isActive({ textAlign: 'right' }) ? "bg-muted" : ""}
-        >
-          <AlignRight className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          className={editor.isActive({ textAlign: 'justify' }) ? "bg-muted" : ""}
-        >
-          <AlignJustify className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="flex gap-1 border-r pr-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={editor.isActive('bulletList') ? "bg-muted" : ""}
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={editor.isActive('orderedList') ? "bg-muted" : ""}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="flex gap-1 border-r pr-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={editor.isActive('heading', { level: 1 }) ? "bg-muted" : ""}
-        >
-          <Heading1 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={editor.isActive('heading', { level: 2 }) ? "bg-muted" : ""}
-        >
-          <Heading2 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={editor.isActive('heading', { level: 3 }) ? "bg-muted" : ""}
-        >
-          <Heading3 className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="flex gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={editor.isActive('blockquote') ? "bg-muted" : ""}
-        >
-          <Quote className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={editor.isActive('codeBlock') ? "bg-muted" : ""}
-        >
-          <Code className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={addTable}
-        >
-          <TableIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={addImage}
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
-      </div>
-    </>
+    <div className="flex items-center gap-0.5 flex-wrap">
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={cn(toolbarButtonClass, isActive(() => editor.isActive("bold")))}
+        title="Bold"
+      >
+        <Bold size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={cn(toolbarButtonClass, isActive(() => editor.isActive("italic")))}
+        title="Italic"
+      >
+        <Italic size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={cn(toolbarButtonClass, isActive(() => editor.isActive("bulletList")))}
+        title="Bullet List"
+      >
+        <List size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={cn(toolbarButtonClass, isActive(() => editor.isActive("orderedList")))}
+        title="Ordered List"
+      >
+        <ListOrdered size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        className={cn(toolbarButtonClass, isActive(() => editor.isActive({ textAlign: "left" })))}
+        title="Align Left"
+      >
+        <AlignLeft size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        className={cn(toolbarButtonClass, isActive(() => editor.isActive({ textAlign: "center" })))}
+        title="Align Center"
+      >
+        <AlignCenter size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        className={cn(toolbarButtonClass, isActive(() => editor.isActive({ textAlign: "right" })))}
+        title="Align Right"
+      >
+        <AlignRight size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={addImage}
+        className={toolbarButtonClass}
+        title="Add Image"
+      >
+        <ImageIcon size={iconSize} />
+      </button>
+      
+      <button
+        type="button"
+        onClick={addTable}
+        className={toolbarButtonClass}
+        title="Add Table"
+      >
+        <TableIcon size={iconSize} />
+      </button>
+    </div>
   );
 };

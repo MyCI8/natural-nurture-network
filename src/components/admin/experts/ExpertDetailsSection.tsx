@@ -71,7 +71,7 @@ export const ExpertDetailsSection = ({
         <TextEditor 
           content={bio} 
           onChange={setBio}
-          className="min-h-[200px]"
+          maxHeight="250px"
         />
       </div>
     </div>

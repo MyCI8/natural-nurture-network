@@ -18,9 +18,15 @@ interface TextEditorProps {
   content: string;
   onChange: (content: string) => void;
   className?: string;
+  maxHeight?: string;
 }
 
-const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
+const TextEditor = ({ 
+  content, 
+  onChange, 
+  className,
+  maxHeight = "250px" 
+}: TextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -61,7 +67,7 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || 'min-h-[200px]'} p-4`,
+        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || ''} p-4`,
       },
     },
     // These are valid top-level properties
@@ -87,8 +93,8 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
   });
 
   return (
-    <div className="border rounded-lg">
-      <div className="border-b p-4 flex flex-wrap gap-2">
+    <div className="border rounded-lg flex flex-col">
+      <div className="border-b p-2 flex flex-wrap gap-1 items-center justify-start overflow-x-auto">
         <FontControls editor={editor} fontFamilies={fontFamilies} />
         <ToolbarButtons 
           editor={editor} 
@@ -103,7 +109,12 @@ const TextEditor = ({ content, onChange, className }: TextEditorProps) => {
           }} 
         />
       </div>
-      <EditorContent editor={editor} className={editorClasses} />
+      <div 
+        className="overflow-y-auto"
+        style={{ maxHeight }}
+      >
+        <EditorContent editor={editor} className={editorClasses} />
+      </div>
     </div>
   );
 };

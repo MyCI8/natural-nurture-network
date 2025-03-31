@@ -85,6 +85,7 @@ export const BasicInfoSection = ({ form }: BasicInfoSectionProps) => {
               <TextEditor
                 content={field.value || ''}
                 onChange={field.onChange}
+                maxHeight="300px"
               />
             </FormControl>
             <FormMessage />

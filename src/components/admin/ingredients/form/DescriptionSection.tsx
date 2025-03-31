@@ -31,10 +31,13 @@ const DescriptionSection = ({
 
       <div>
         <Label htmlFor="full_description">Full Description</Label>
-        <TextEditor
-          content={fullDescription}
-          onChange={onFullDescriptionChange}
-        />
+        <div className="mt-1">
+          <TextEditor
+            content={fullDescription}
+            onChange={onFullDescriptionChange}
+            maxHeight="300px"
+          />
+        </div>
       </div>
     </>
   );

@@ -16,6 +16,7 @@ export const ArticleContentSection = ({
       <TextEditor 
         content={content || ""} 
         onChange={onChange}
+        maxHeight="400px"
       />
     </div>
   );
