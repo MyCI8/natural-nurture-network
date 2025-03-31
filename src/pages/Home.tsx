@@ -6,7 +6,7 @@ import SymptomsMarquee from "@/components/SymptomsMarquee";
 
 const Home = () => {
   return (
-    <div className="min-h-screen bg-white overflow-hidden">
+    <div className="min-h-screen bg-white dark:bg-background overflow-hidden">
       <Hero />
       <SymptomsMarquee />
       <NewsSection />
