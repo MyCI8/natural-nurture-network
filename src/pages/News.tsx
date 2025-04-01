@@ -29,12 +29,12 @@ const News = () => {
       <div className="pt-6 sm:pt-12 px-4 w-full">
         <div className="space-y-4 sm:space-y-8">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="overflow-hidden border-0 border-b dark:border-border">
+            <Card key={i} className="overflow-hidden border-0 border-b dark:border-dm-mist">
               <CardContent className="p-3 sm:p-4">
-                <Skeleton className="w-full aspect-[16/9] rounded-lg sm:rounded-xl mb-3 sm:mb-4" />
-                <Skeleton className="h-5 sm:h-6 w-3/4 mb-2 sm:mb-3" />
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-full" />
+                <Skeleton className="w-full aspect-[16/9] rounded-lg sm:rounded-xl mb-3 sm:mb-4 dark:bg-dm-mist-extra" />
+                <Skeleton className="h-5 sm:h-6 w-3/4 mb-2 sm:mb-3 dark:bg-dm-mist-extra" />
+                <Skeleton className="h-4 w-full mb-2 dark:bg-dm-mist-extra" />
+                <Skeleton className="h-4 w-full dark:bg-dm-mist-extra" />
               </CardContent>
             </Card>
           ))}
@@ -46,9 +46,9 @@ const News = () => {
   if (!newsItems?.length) {
     return (
       <div className="pt-6 sm:pt-12 px-4 w-full">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left">News</h1>
-        <p className="text-lg sm:text-xl text-text-light dark:text-text-dark mb-6 sm:mb-8 text-left">Latest Health News Articles</p>
-        <p className="text-center text-text-light dark:text-text-dark py-8 sm:py-12">No news articles available.</p>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left dark:text-dm-text">News</h1>
+        <p className="text-lg sm:text-xl text-text-light dark:text-dm-text-supporting mb-6 sm:mb-8 text-left">Latest Health News Articles</p>
+        <p className="text-center text-text-light dark:text-dm-text-supporting py-8 sm:py-12">No news articles available.</p>
       </div>
     );
   }
@@ -56,24 +56,24 @@ const News = () => {
   return (
     <div className="pt-6 sm:pt-12 px-4 w-full py-[16px]">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left">News</h1>
-        <p className="text-lg sm:text-xl text-text-light dark:text-text-dark text-left">Latest Health News Articles</p>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left dark:text-dm-text">News</h1>
+        <p className="text-lg sm:text-xl text-text-light dark:text-dm-text-supporting text-left">Latest Health News Articles</p>
       </div>
 
       <div className="space-y-4 sm:space-y-6">
         {newsItems.map(article => (
           <Link to={`/news/${article.id}`} key={article.id}>
-            <Card className="overflow-hidden border-0 border-b dark:border-border hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-colors duration-200">
+            <Card className="overflow-hidden border-0 border-b dark:border-dm-mist hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
               <CardContent className="p-3 sm:p-4">
                 {article.image_url && (
                   <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
                     <img src={article.image_url} alt={article.thumbnail_description || article.title} className="w-full object-cover aspect-[16/9]" />
                   </div>
                 )}
-                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left dark:text-dm-text">
                   {article.title}
                 </h3>
-                <p className="text-sm sm:text-base text-text-light dark:text-text-dark text-left">
+                <p className="text-sm sm:text-base text-text-light dark:text-dm-text-supporting text-left">
                   {article.summary}
                 </p>
               </CardContent>

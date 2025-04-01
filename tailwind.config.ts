@@ -60,6 +60,33 @@ export default {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
+        // New dark mode colors from the image
+        "dm-primary": "#3182CE", // Blue primary color
+        "dm-success": "#38A169", // Green success color
+        "dm-alert": "#E05D6F", // Red alert color
+        "dm-idle": "#DD8B32", // Orange idle color
+        "dm-foreground": "#1E1E1E", // Very dark gray foreground
+        "dm-background": "#333333", // Dark gray background
+        "dm-text": "#E5E5E5", // Light gray text
+        "dm-text-supporting": "#A0A0A0", // Gray supporting text
+        "dm-text-shy": "#6E6E6E", // Medium gray shy text
+        "dm-mist": "#404040", // Medium-dark gray mist
+        "dm-mist-extra": "#4F4F4F", // Slightly lighter mist
+        "dm-overlay": "#121212", // Nearly black overlay
+        "dm-contrast": "#FFFFFF", // White contrast
+        // Labels from the image (you can use these for various UI elements)
+        "dm-label-1": "#E05D6F", // Pink/Red
+        "dm-label-2": "#DD8B32", // Orange
+        "dm-label-3": "#D4CB38", // Yellow
+        "dm-label-4": "#A6D037", // Lime green
+        "dm-label-5": "#38A169", // Green
+        "dm-label-6": "#39C481", // Teal green
+        "dm-label-7": "#3ECFCF", // Cyan
+        "dm-label-8": "#3182CE", // Blue
+        "dm-label-9": "#4553CE", // Indigo
+        "dm-label-10": "#7048C6", // Purple
+        "dm-label-11": "#B346B3", // Magenta
+        "dm-label-12": "#E05D6F", // Pink/Red again
       },
       keyframes: {
         "accordion-down": {

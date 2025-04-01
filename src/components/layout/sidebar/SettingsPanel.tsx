@@ -29,15 +29,15 @@ export const SettingsPanel = () => {
   
   return (
     <div className="px-4 space-y-6">
-      <h2 className="text-lg font-semibold mb-4">Settings</h2>
+      <h2 className="text-lg font-semibold mb-4 dark:text-dm-text">Settings</h2>
       
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <Label htmlFor="dark-mode-toggle" className="flex items-center gap-2">
+          <Label htmlFor="dark-mode-toggle" className="flex items-center gap-2 dark:text-dm-text">
             {isDarkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             Dark Mode
           </Label>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground dark:text-dm-text-supporting">
             Toggle dark mode appearance
           </p>
         </div>
@@ -46,13 +46,13 @@ export const SettingsPanel = () => {
           checked={isDarkMode}
           onCheckedChange={handleThemeToggle}
           aria-label="Toggle dark mode"
-          className="data-[state=checked]:bg-primary"
+          className="data-[state=checked]:bg-dm-primary"
         />
       </div>
 
       <Button
         variant="ghost"
-        className="w-full justify-start space-x-4"
+        className="w-full justify-start space-x-4 dark:text-dm-text dark:hover:bg-dm-mist active-scale"
         onClick={() => navigate('/settings/profile')}
       >
         <Settings className="h-5 w-5" />
@@ -61,7 +61,7 @@ export const SettingsPanel = () => {
 
       <Button
         variant="ghost"
-        className="w-full justify-start space-x-4"
+        className="w-full justify-start space-x-4 dark:text-dm-text dark:hover:bg-dm-mist active-scale"
         onClick={() => navigate('/settings/notifications')}
       >
         <span>Notification Preferences</span>
@@ -69,7 +69,7 @@ export const SettingsPanel = () => {
 
       <Button
         variant="ghost"
-        className="w-full justify-start space-x-4"
+        className="w-full justify-start space-x-4 dark:text-dm-text dark:hover:bg-dm-mist active-scale"
         onClick={() => navigate('/settings/privacy')}
       >
         <span>Privacy Settings</span>

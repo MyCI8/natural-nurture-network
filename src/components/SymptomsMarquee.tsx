@@ -82,7 +82,7 @@ const SymptomsMarquee = () => {
   };
 
   return (
-    <section className="py-8 bg-accent dark:bg-accent-dark overflow-hidden z-0 relative">
+    <section className="py-8 bg-accent dark:bg-dm-mist overflow-hidden z-0 relative symptoms-marquee">
       <div className="w-full mx-auto">
         <div className="group relative">
           <Carousel
@@ -101,12 +101,12 @@ const SymptomsMarquee = () => {
               {[...topSymptoms, ...topSymptoms].map((symptom, index) => (
                 <CarouselItem
                   key={`${symptom}-${index}`}
-                  className="basis-auto pl-8 cursor-pointer"
+                  className="basis-auto pl-8 cursor-pointer touch-manipulation active-scale"
                   onClick={() => handleSymptomClick(symptom)}
                 >
                   <div
                     className={cn(
-                      "text-lg font-medium text-primary hover:text-primary-dark dark:text-primary-foreground dark:hover:text-white",
+                      "text-lg font-medium text-primary dark:text-dm-primary hover:text-primary-dark dark:hover:text-dm-contrast",
                       "transition-colors duration-200"
                     )}
                     role="button"

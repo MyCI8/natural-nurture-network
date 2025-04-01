@@ -50,13 +50,13 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 {!compact && <span className="ml-2">Settings</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-3" side="right" align="start">
+            <PopoverContent className="w-56 p-3 dark:bg-dm-foreground dark:border-dm-mist" side="right" align="start">
               <div className="grid gap-2">
-                <h3 className="font-medium mb-1">Account</h3>
+                <h3 className="font-medium mb-1 dark:text-dm-text">Account</h3>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
                   onClick={() => handleNavigate('/settings/profile')}
                 >
                   <User className="h-4 w-4 mr-2" />
@@ -65,18 +65,18 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
                   onClick={() => handleNavigate('/settings/security')}
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   Security
                 </Button>
                 
-                <h3 className="font-medium mt-2 mb-1">Preferences</h3>
+                <h3 className="font-medium mt-2 mb-1 dark:text-dm-text">Preferences</h3>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
                   onClick={() => handleNavigate('/settings/notifications')}
                 >
                   <Bell className="h-4 w-4 mr-2" />
@@ -85,7 +85,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
                   onClick={() => handleNavigate('/settings/privacy')}
                 >
                   <Eye className="h-4 w-4 mr-2" />
@@ -94,7 +94,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
                   onClick={toggleTheme}
                 >
                   {theme === 'dark' ? (
@@ -105,11 +105,11 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                   {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                 </Button>
                 
-                <h3 className="font-medium mt-2 mb-1">Help</h3>
+                <h3 className="font-medium mt-2 mb-1 dark:text-dm-text">Help</h3>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
                   onClick={() => window.open('mailto:support@bettertogether.com')}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
@@ -119,7 +119,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm text-destructive hover:text-destructive active-scale" 
+                  className="w-full justify-start text-sm text-destructive hover:text-destructive active-scale dark:text-dm-alert dark:hover:text-dm-alert" 
                   onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
@@ -129,7 +129,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
             </PopoverContent>
           </Popover>
         </TooltipTrigger>
-        <TooltipContent side="right">
+        <TooltipContent side="right" className="dark:bg-dm-foreground dark:text-dm-text dark:border-dm-mist">
           <p>Settings</p>
         </TooltipContent>
       </Tooltip>
