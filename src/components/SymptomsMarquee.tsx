@@ -106,7 +106,7 @@ const SymptomsMarquee = () => {
                 >
                   <div
                     className={cn(
-                      "text-lg font-medium text-primary dark:text-dm-primary hover:text-primary-dark dark:hover:text-dm-contrast",
+                      "text-lg font-medium text-primary dark:text-primary hover:text-primary-dark dark:hover:text-dm-contrast",
                       "transition-colors duration-200"
                     )}
                     role="button"
