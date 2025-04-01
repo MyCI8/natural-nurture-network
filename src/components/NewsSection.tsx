@@ -7,10 +7,12 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import RemediesSection from "./remedies/RemediesSection";
 import { useRef } from "react";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
+
 const NewsSection = () => {
   const remediesSectionRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
+
   const {
     data: newsItems,
     isLoading
@@ -27,6 +29,7 @@ const NewsSection = () => {
       return data;
     }
   });
+
   const {
     data: videos,
     isLoading: videosLoading
@@ -36,7 +39,7 @@ const NewsSection = () => {
       const {
         data,
         error
-      } = await supabase.from("videos").select("*").eq("status", "published").eq("video_type", "news") // Explicitly filter for news videos only
+      } = await supabase.from("videos").select("*").eq("status", "published").eq("video_type", "news")
       .eq("show_in_latest", true).order("created_at", {
         ascending: false
       }).limit(4);
@@ -45,6 +48,7 @@ const NewsSection = () => {
       return data || [];
     }
   });
+
   if (isLoading) {
     return <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,13 +90,14 @@ const NewsSection = () => {
         </div>
       </section>;
   }
+
   return <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="space-y-4 sm:space-y-6 md:col-span-8">
             <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left">Latest News</h2>
-            {newsItems?.map(item => <Link to={`/news/${item.id}`} key={item.id}>
-                <Card className="overflow-hidden shadow-sm animate-fadeIn hover:shadow-md transition-shadow duration-200">
+            {newsItems?.map((item, index) => <Link to={`/news/${item.id}`} key={item.id}>
+                <Card className={`overflow-hidden border-0 ${index !== newsItems.length - 1 ? 'border-b border-border dark:border-dm-mist/50' : ''} animate-fadeIn hover:shadow-none transition-shadow duration-200`}>
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
                       <div className="w-full md:w-1/3">
@@ -101,7 +106,7 @@ const NewsSection = () => {
                         </AspectRatio>
                       </div>
                       <div className="p-3 sm:p-4 md:p-5 md:w-2/3">
-                        <h3 className="text-base sm:text-lg font-semibold text-text mb-2 text-left line-clamp-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary mb-2 text-left line-clamp-2">
                           {item.title}
                         </h3>
                         <p className="text-xs sm:text-sm text-text-light line-clamp-2 text-left">
@@ -127,15 +132,14 @@ const NewsSection = () => {
           <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0 md:col-span-4">
             <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left">Latest Videos</h3>
             <div className="grid grid-cols-1 gap-4">
-              {videos?.map(video => <Link to={`/news/videos/${video.id}`} key={video.id}>
-                  <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+              {videos?.map((video, index) => <Link to={`/news/videos/${video.id}`} key={video.id}>
+                  <Card className={`overflow-hidden border-0 ${index !== videos.length - 1 ? 'border-b border-border dark:border-dm-mist/50' : ''} hover:shadow-none transition-shadow duration-200`}>
                     <CardContent className="p-0">
                       <AspectRatio ratio={16 / 9} className="bg-gray-100">
                         {video.thumbnail_url ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" loading="lazy" /> : video.video_url && video.video_url.includes('youtube.com') && <img src={`https://img.youtube.com/vi/${getYoutubeVideoId(video.video_url)}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" loading="lazy" />}
                       </AspectRatio>
                       <div className="p-3 text-left">
-                        <h4 className="font-medium text-xs sm:text-sm line-clamp-2">{video.title}</h4>
-                        
+                        <h4 className="font-medium text-xs sm:text-sm line-clamp-2 text-primary dark:text-primary">{video.title}</h4>
                       </div>
                     </CardContent>
                   </Card>
@@ -149,6 +153,7 @@ const NewsSection = () => {
       </div>
     </section>;
 };
+
 const getYoutubeVideoId = url => {
   if (!url) return '';
   let videoId = '';
@@ -164,4 +169,5 @@ const getYoutubeVideoId = url => {
   }
   return videoId;
 };
+
 export default NewsSection;

@@ -61,7 +61,7 @@ const News = () => {
       </div>
 
       <div className="space-y-4 sm:space-y-6">
-        {newsItems.map(article => (
+        {newsItems.map((article, index) => (
           <Link to={`/news/${article.id}`} key={article.id}>
             <Card className="overflow-hidden border-0 border-b dark:border-dm-mist hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
               <CardContent className="p-3 sm:p-4">
@@ -70,7 +70,7 @@ const News = () => {
                     <img src={article.image_url} alt={article.thumbnail_description || article.title} className="w-full object-cover aspect-[16/9]" />
                   </div>
                 )}
-                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left dark:text-dm-text">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-primary dark:text-primary">
                   {article.title}
                 </h3>
                 <p className="text-sm sm:text-base text-text-light dark:text-dm-text-supporting text-left">

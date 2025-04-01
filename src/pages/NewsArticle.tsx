@@ -142,11 +142,11 @@ const NewsArticle = () => {
             <ArrowLeft className="h-4 sm:h-5 w-4 sm:w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-left">News</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-left text-primary dark:text-primary">News</h1>
         </div>
 
         <article className="w-full text-left">
-          <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-left">
+          <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-left text-primary dark:text-primary">
             {article.title}
           </h2>
           

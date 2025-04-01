@@ -29,7 +29,7 @@ const Remedies = () => {
       <div className="pt-6 sm:pt-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="overflow-hidden dark:bg-dm-foreground dark:border-dm-mist">
+            <Card key={i} className="overflow-hidden dark:bg-dm-foreground border-0 dark:border-dm-mist">
               <CardContent className="p-0">
                 <Skeleton className="h-40 sm:h-48 w-full dark:bg-dm-mist-extra" />
                 <div className="p-4 sm:p-6 space-y-2">
@@ -60,7 +60,7 @@ const Remedies = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {remedies?.map((remedy) => (
           <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
-            <Card className="overflow-hidden animate-fadeIn hover:shadow-lg dark:hover:shadow-black/20 transition-shadow duration-200 dark:bg-dm-foreground dark:border-dm-mist">
+            <Card className="overflow-hidden animate-fadeIn hover:shadow-lg dark:hover:shadow-black/20 transition-shadow duration-200 dark:bg-dm-foreground border-0 dark:border-dm-mist">
               <CardContent className="p-0">
                 <div className="h-40 sm:h-48">
                   <img
@@ -70,7 +70,7 @@ const Remedies = () => {
                   />
                 </div>
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-semibold text-text dark:text-dm-text mb-2">
+                  <h3 className="text-lg sm:text-xl font-semibold text-primary dark:text-primary mb-2">
                     {remedy.name}
                   </h3>
                   <p className="text-sm sm:text-base text-text-light dark:text-dm-text-supporting line-clamp-2">
