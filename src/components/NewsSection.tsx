@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +7,10 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import RemediesSection from "./remedies/RemediesSection";
 import { useRef } from "react";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
-
 const NewsSection = () => {
   const remediesSectionRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
-
   const {
     data: newsItems,
     isLoading
@@ -30,7 +27,6 @@ const NewsSection = () => {
       return data;
     }
   });
-
   const {
     data: videos,
     isLoading: videosLoading
@@ -40,8 +36,7 @@ const NewsSection = () => {
       const {
         data,
         error
-      } = await supabase.from("videos").select("*").eq("status", "published").eq("video_type", "news")
-      .eq("show_in_latest", true).order("created_at", {
+      } = await supabase.from("videos").select("*").eq("status", "published").eq("video_type", "news").eq("show_in_latest", true).order("created_at", {
         ascending: false
       }).limit(4);
       if (error) throw error;
@@ -49,7 +44,6 @@ const NewsSection = () => {
       return data || [];
     }
   });
-
   if (isLoading) {
     return <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
         <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -91,12 +85,11 @@ const NewsSection = () => {
         </div>
       </section>;
   }
-
   return <section className="py-6 sm:py-8 lg:py-12 bg-secondary news-section">
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="space-y-4 sm:space-y-6 md:col-span-8">
-            <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left text-primary">Latest News</h2>
+            <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left text-text-dark">Latest News</h2>
             {newsItems?.map((item, index) => <Link to={`/news/${item.id}`} key={item.id}>
                 <Card className={`overflow-hidden border-0 ${index !== newsItems.length - 1 ? 'border-b border-border dark:border-dm-mist/50' : ''} animate-fadeIn hover:shadow-none transition-shadow duration-200`}>
                   <CardContent className="p-0">
@@ -155,7 +148,6 @@ const NewsSection = () => {
       </div>
     </section>;
 };
-
 const getYoutubeVideoId = url => {
   if (!url) return '';
   let videoId = '';
@@ -171,5 +163,4 @@ const getYoutubeVideoId = url => {
   }
   return videoId;
 };
-
 export default NewsSection;
