@@ -65,14 +65,14 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
                   <AspectRatio ratio={1} className="bg-gray-100">
                     <img 
                       src={remedy.image_url || "/placeholder.svg"} 
-                      alt={remedy.title} 
+                      alt={remedy.name} 
                       className="w-full h-full object-cover" 
                       loading="lazy" 
                     />
                   </AspectRatio>
                   <div className="p-3">
                     <h3 className="text-xs sm:text-sm font-semibold text-primary dark:text-primary line-clamp-2">
-                      {remedy.title}
+                      {remedy.name}
                     </h3>
                     <p className="text-xs text-primary dark:text-primary line-clamp-2">
                       {remedy.description}
