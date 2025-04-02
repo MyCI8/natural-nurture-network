@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,20 +10,16 @@ import SymptomsMarquee from "@/components/SymptomsMarquee";
 import { Search, RefreshCw, ArrowLeft } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/components/ui/use-toast";
-
 type SymptomType = Database["public"]["Enums"]["symptom_type"];
-
 interface Expert {
   id: string;
   full_name: string;
   image_url: string | null;
 }
-
 interface Remedy {
   id: string;
   name: string;
 }
-
 interface Symptom {
   id: string;
   symptom: SymptomType;
@@ -38,25 +33,26 @@ interface Symptom {
     experts: Expert;
   }[] | null;
 }
-
 const Symptoms = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const { toast } = useToast();
-
-  const { 
-    data: symptoms, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    toast
+  } = useToast();
+  const {
+    data: symptoms,
+    isLoading,
+    error,
+    refetch
   } = useQuery({
     queryKey: ["symptoms"],
     queryFn: async () => {
       console.log("Fetching symptoms...");
       try {
-        const { data, error } = await supabase
-          .from("symptom_details")
-          .select(`
+        const {
+          data,
+          error
+        } = await supabase.from("symptom_details").select(`
             id,
             symptom,
             brief_description,
@@ -75,14 +71,11 @@ const Symptoms = () => {
                 image_url
               )
             )
-          `)
-          .order('symptom');
-
+          `).order('symptom');
         if (error) {
           console.error("Supabase query error:", error);
           throw error;
         }
-
         console.log("Fetched symptoms data:", data);
         return data as unknown as Symptom[];
       } catch (err) {
@@ -93,22 +86,11 @@ const Symptoms = () => {
     retry: 2,
     retryDelay: 1000
   });
-
-  const filteredSymptoms = symptoms?.filter((symptom) =>
-    symptom.symptom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    symptom.brief_description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  const filteredSymptoms = symptoms?.filter(symptom => symptom.symptom.toLowerCase().includes(searchQuery.toLowerCase()) || symptom.brief_description?.toLowerCase().includes(searchQuery.toLowerCase()));
   if (error) {
-    return (
-      <div className="pt-12">
+    return <div className="pt-12">
         <div className="max-w-[800px] mx-auto px-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10"
-          >
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="text-center">
@@ -116,30 +98,18 @@ const Symptoms = () => {
             <p className="text-muted-foreground mb-8">
               There was a problem loading the symptoms. Please try again.
             </p>
-            <Button 
-              onClick={() => refetch()} 
-              variant="outline"
-              className="gap-2"
-            >
+            <Button onClick={() => refetch()} variant="outline" className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Try Again
             </Button>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (isLoading) {
-    return (
-      <div className="pt-12">
+    return <div className="pt-12">
         <div className="max-w-[800px] mx-auto px-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10"
-          >
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="mb-12">
@@ -147,24 +117,14 @@ const Symptoms = () => {
             <Skeleton className="h-6 w-96" />
           </div>
           <div className="grid grid-cols-1 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24 w-full" />
-            ))}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full" />)}
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="pt-12">
+  return <div className="pt-12 px-0 py-[30px]">
       <div className="max-w-[800px] mx-auto px-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10"
-        >
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mb-6 hover:bg-accent/50 dark:hover:bg-accent-dark/50 transition-all rounded-full w-10 h-10">
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
@@ -179,13 +139,7 @@ const Symptoms = () => {
 
         <div className="my-8 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-          <Input
-            type="search"
-            placeholder="Search symptoms..."
-            className="pl-10 w-full max-w-md bg-background dark:bg-muted/10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <Input type="search" placeholder="Search symptoms..." className="pl-10 w-full max-w-md bg-background dark:bg-muted/10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
         </div>
 
         <div className="bg-card dark:bg-card rounded-lg shadow overflow-hidden">
@@ -199,13 +153,9 @@ const Symptoms = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSymptoms?.map((symptom) => (
-                <TableRow key={symptom.id} className="hover:bg-muted/50 dark:hover:bg-muted/10 border-border dark:border-border">
+              {filteredSymptoms?.map(symptom => <TableRow key={symptom.id} className="hover:bg-muted/50 dark:hover:bg-muted/10 border-border dark:border-border">
                   <TableCell className="font-medium">
-                    <Link 
-                      to={`/symptoms/${symptom.id}`}
-                      className="text-primary hover:underline"
-                    >
+                    <Link to={`/symptoms/${symptom.id}`} className="text-primary hover:underline">
                       {symptom.symptom}
                     </Link>
                   </TableCell>
@@ -219,37 +169,24 @@ const Symptoms = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-center -space-x-2">
-                      {symptom.symptom_experts?.slice(0, 3).map(({ experts }) => (
-                        <img
-                          key={experts.id}
-                          src={experts.image_url || "/placeholder.svg"}
-                          alt={experts.full_name}
-                          className="w-8 h-8 rounded-full border-2 border-background dark:border-background"
-                          title={experts.full_name}
-                        />
-                      ))}
-                      {(symptom.symptom_experts?.length || 0) > 3 && (
-                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-background dark:border-background">
+                      {symptom.symptom_experts?.slice(0, 3).map(({
+                    experts
+                  }) => <img key={experts.id} src={experts.image_url || "/placeholder.svg"} alt={experts.full_name} className="w-8 h-8 rounded-full border-2 border-background dark:border-background" title={experts.full_name} />)}
+                      {(symptom.symptom_experts?.length || 0) > 3 && <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm border-2 border-background dark:border-background">
                           +{(symptom.symptom_experts?.length || 0) - 3}
-                        </div>
-                      )}
+                        </div>}
                     </div>
                   </TableCell>
-                </TableRow>
-              ))}
-              {(filteredSymptoms?.length || 0) === 0 && (
-                <TableRow>
+                </TableRow>)}
+              {(filteredSymptoms?.length || 0) === 0 && <TableRow>
                   <TableCell colSpan={4} className="text-center py-8">
                     <p className="text-muted-foreground">No symptoms found</p>
                   </TableCell>
-                </TableRow>
-              )}
+                </TableRow>}
             </TableBody>
           </Table>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Symptoms;
