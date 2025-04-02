@@ -103,7 +103,7 @@ const NewsSection = () => {
                         <h3 className="text-base sm:text-lg font-semibold mb-2 text-left line-clamp-2 text-text-dark">
                           {item.title}
                         </h3>
-                        <p className="text-xs sm:text-sm text-primary dark:text-primary line-clamp-2 text-left">
+                        <p className="text-xs sm:text-sm line-clamp-2 text-left text-neutral-400">
                           {item.summary}
                         </p>
                         <div className="mt-2 sm:mt-3 text-xs text-primary font-medium text-left">
@@ -133,7 +133,7 @@ const NewsSection = () => {
                         {video.thumbnail_url ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" loading="lazy" /> : video.video_url && video.video_url.includes('youtube.com') && <img src={`https://img.youtube.com/vi/${getYoutubeVideoId(video.video_url)}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" loading="lazy" />}
                       </AspectRatio>
                       <div className="p-3 text-left">
-                        <h4 className="font-medium text-xs sm:text-sm line-clamp-2 text-primary dark:text-primary">{video.title}</h4>
+                        <h4 className="font-medium text-xs sm:text-sm line-clamp-2 text-text-dark">{video.title}</h4>
                         <p className="text-xs text-primary dark:text-primary line-clamp-2">{video.description}</p>
                       </div>
                     </CardContent>
