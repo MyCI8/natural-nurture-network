@@ -1,4 +1,3 @@
-
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +15,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import VideoModal from "@/components/video/VideoModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
 interface VideoLink {
   title: string;
   url: string;
@@ -25,16 +23,18 @@ interface ArticleData {
   video_links?: string | null;
   video_description?: string | null;
 }
-
 interface SymptomVideoData {
   videoLinks: VideoLink[];
   videoDescription: string;
 }
-
 const RightSection = () => {
   const location = useLocation();
-  const { id } = useParams();
-  const { toast } = useToast();
+  const {
+    id
+  } = useParams();
+  const {
+    toast
+  } = useToast();
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [symptomVideos, setSymptomVideos] = useState<SymptomVideoData | null>(null);
@@ -43,11 +43,7 @@ const RightSection = () => {
   useEffect(() => {
     const handleSymptomVideos = (event: CustomEvent<SymptomVideoData>) => {
       if (event.detail) {
-        const validatedLinks = event.detail.videoLinks?.filter(link => 
-          link && typeof link.url === 'string' && link.url.trim() !== '' &&
-          typeof link.title === 'string' && link.title.trim() !== ''
-        ) || [];
-        
+        const validatedLinks = event.detail.videoLinks?.filter(link => link && typeof link.url === 'string' && link.url.trim() !== '' && typeof link.title === 'string' && link.title.trim() !== '') || [];
         setSymptomVideos({
           ...event.detail,
           videoLinks: validatedLinks
@@ -55,9 +51,7 @@ const RightSection = () => {
         console.log("Received symptom videos:", validatedLinks);
       }
     };
-    
     window.addEventListener('symptom-videos' as any, handleSymptomVideos as any);
-    
     return () => {
       window.removeEventListener('symptom-videos' as any, handleSymptomVideos as any);
     };
@@ -215,7 +209,6 @@ const RightSection = () => {
       });
     }
   });
-
   const handleLike = () => {
     if (!currentUser) {
       toast({
@@ -226,7 +219,6 @@ const RightSection = () => {
     }
     likeMutation.mutate();
   };
-
   const handleShare = async () => {
     if (!videoDetails) return;
     const url = window.location.href;
@@ -252,7 +244,6 @@ const RightSection = () => {
       }
     }
   };
-
   const handleVideoClick = (video: Video) => {
     console.log("Video clicked:", video);
     setSelectedVideo(video);
@@ -280,48 +271,25 @@ const RightSection = () => {
       console.error('Error processing video links:', e);
     }
   }
-
-  return (
-    <div className="h-full flex flex-col relative">
+  return <div className="h-full flex flex-col relative">
       <Separator orientation="vertical" className="absolute left-0 top-0 h-full" />
       
-      <div className="p-4 overflow-y-auto flex-1">
+      <div className="p-4 overflow-y-auto flex-1 py-[30px]">
         {/* News article videos */}
-        {location.pathname.startsWith('/news/') && videoLinks.length > 0 && (
-          <>
+        {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>
             <NewsVideos videoLinks={videoLinks} videoDescription={articleData?.video_description || undefined} isDesktop={true} />
-          </>
-        )}
+          </>}
         
         {/* Latest videos on news page */}
-        {(location.pathname === '/news' || location.pathname === '/news/') && (
-          <>
+        {(location.pathname === '/news' || location.pathname === '/news/') && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Latest Videos</h2>
-            {videos && videos.length > 0 ? (
-              <div className="space-y-4">
-                {videos.map(video => (
-                  <div 
-                    key={video.id} 
-                    onClick={() => handleVideoClick(video)}
-                    className="cursor-pointer touch-manipulation"
-                  >
+            {videos && videos.length > 0 ? <div className="space-y-4">
+                {videos.map(video => <div key={video.id} onClick={() => handleVideoClick(video)} className="cursor-pointer touch-manipulation">
                     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
                       <CardContent className="p-0">
                         <AspectRatio ratio={16 / 9} className="bg-gray-100">
-                          {video.thumbnail_url ? (
-                            <img 
-                              src={video.thumbnail_url} 
-                              alt={video.title} 
-                              className="w-full h-full object-cover" 
-                            />
-                          ) : video.video_url && video.video_url.includes('youtube.com') && (
-                            <img 
-                              src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} 
-                              alt={video.title} 
-                              className="w-full h-full object-cover" 
-                            />
-                          )}
+                          {video.thumbnail_url ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : video.video_url && video.video_url.includes('youtube.com') && <img src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" />}
                         </AspectRatio>
                         <div className="p-3 text-left">
                           <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
@@ -331,28 +299,17 @@ const RightSection = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-left pl-2">No videos available</p>
-            )}
-          </>
-        )}
+                  </div>)}
+              </div> : <p className="text-muted-foreground text-left pl-2">No videos available</p>}
+          </>}
         
         {/* Video details for explore page */}
-        {location.pathname.startsWith('/explore/') && (
-          <div className="w-full">
-            {videoDetails ? (
-              <div className="flex flex-col h-full">
+        {location.pathname.startsWith('/explore/') && <div className="w-full">
+            {videoDetails ? <div className="flex flex-col h-full">
                 <div className="p-3 border-b border-gray-200 dark:border-gray-800 px-0 py-0">
                   <div className="flex items-center mb-2">
                     <Avatar className="h-8 w-8 mr-3">
-                      {videoDetails.creator?.avatar_url ? (
-                        <AvatarImage src={videoDetails.creator.avatar_url} alt={videoDetails.creator.username || ''} />
-                      ) : (
-                        <AvatarFallback>{(videoDetails.creator?.username || '?')[0]}</AvatarFallback>
-                      )}
+                      {videoDetails.creator?.avatar_url ? <AvatarImage src={videoDetails.creator.avatar_url} alt={videoDetails.creator.username || ''} /> : <AvatarFallback>{(videoDetails.creator?.username || '?')[0]}</AvatarFallback>}
                     </Avatar>
                     <div>
                       <p className="font-semibold text-sm">{videoDetails.creator?.username || 'Anonymous'}</p>
@@ -369,23 +326,13 @@ const RightSection = () => {
                     </div>
                     
                     <div className="flex items-center space-x-2 mb-0 py-0">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={`text-gray-500 hover:text-[#4CAF50] transition-colors ${userLikeStatus ? 'text-red-500' : ''}`} 
-                        onClick={handleLike}
-                      >
+                      <Button variant="ghost" size="icon" className={`text-gray-500 hover:text-[#4CAF50] transition-colors ${userLikeStatus ? 'text-red-500' : ''}`} onClick={handleLike}>
                         <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
                       </Button>
                       <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors">
                         <MessageCircle className="h-5 w-5" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-gray-500 hover:text-[#4CAF50] transition-colors" 
-                        onClick={handleShare}
-                      >
+                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors" onClick={handleShare}>
                         <Share2 className="h-5 w-5" />
                       </Button>
                       <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors">
@@ -396,48 +343,27 @@ const RightSection = () => {
                 </div>
                 
                 <Comments videoId={id} currentUser={currentUser} />
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-left pl-2">Video details not available</p>
-            )}
-          </div>
-        )}
+              </div> : <p className="text-muted-foreground text-left pl-2">Video details not available</p>}
+          </div>}
         
         {/* Symptom videos section */}
-        {location.pathname.startsWith('/symptoms/') && (
-          <>
+        {location.pathname.startsWith('/symptoms/') && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2 flex items-center gap-2">
               <VideoIcon className="h-5 w-5 text-primary" />
               Symptom Videos
             </h2>
             
-            {symptomVideos && symptomVideos.videoLinks && symptomVideos.videoLinks.length > 0 ? (
-              <div className="space-y-4">
+            {symptomVideos && symptomVideos.videoLinks && symptomVideos.videoLinks.length > 0 ? <div className="space-y-4">
                 <p className="text-sm text-muted-foreground mb-3 text-left pl-2">
                   {symptomVideos.videoDescription}
                 </p>
                 
-                {symptomVideos.videoLinks.map((video, index) => (
-                  <a 
-                    key={index}
-                    href={video.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block touch-manipulation"
-                  >
+                {symptomVideos.videoLinks.map((video, index) => <a key={index} href={video.url} target="_blank" rel="noopener noreferrer" className="block touch-manipulation">
                     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
                       <CardContent className="p-0">
-                        <AspectRatio ratio={16/9} className="bg-gray-100 relative">
-                          {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? (
-                            <>
-                              <img 
-                                src={getYoutubeVideoId(video.url) ? 
-                                  `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/hqdefault.jpg` : 
-                                  ''
-                                } 
-                                alt={video.title} 
-                                className="w-full h-full object-cover" 
-                              />
+                        <AspectRatio ratio={16 / 9} className="bg-gray-100 relative">
+                          {video.url.includes('youtube.com') || video.url.includes('youtu.be') ? <>
+                              <img src={getYoutubeVideoId(video.url) ? `https://img.youtube.com/vi/${getYoutubeVideoId(video.url)}/hqdefault.jpg` : ''} alt={video.title} className="w-full h-full object-cover" />
                               <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                                 <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
                                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -445,57 +371,38 @@ const RightSection = () => {
                                   </svg>
                                 </div>
                               </div>
-                            </>
-                          ) : (
-                            <div className="w-full h-full bg-accent flex items-center justify-center">
+                            </> : <div className="w-full h-full bg-accent flex items-center justify-center">
                               <span className="text-muted-foreground">Video Preview</span>
-                            </div>
-                          )}
+                            </div>}
                         </AspectRatio>
                         <div className="p-3 text-left">
                           <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
                         </div>
                       </CardContent>
                     </Card>
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <div className="p-4 text-center bg-accent/50 rounded-lg">
+                  </a>)}
+              </div> : <div className="p-4 text-center bg-accent/50 rounded-lg">
                 <Alert variant="default" className="border-amber-200">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     No videos available for this symptom.
                   </AlertDescription>
                 </Alert>
-              </div>
-            )}
-          </>
-        )}
+              </div>}
+          </>}
         
         {/* Default content for other pages */}
-        {!location.pathname.startsWith('/news/') && 
-         !location.pathname.startsWith('/explore/') && 
-         !location.pathname.startsWith('/symptoms/') && 
-         location.pathname !== '/news' && 
-         location.pathname !== '/news/' && (
-          <>
+        {!location.pathname.startsWith('/news/') && !location.pathname.startsWith('/explore/') && !location.pathname.startsWith('/symptoms/') && location.pathname !== '/news' && location.pathname !== '/news/' && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Additional Information</h2>
             <p className="text-sm text-muted-foreground text-left pl-2">
               This panel displays contextual information related to the current page.
             </p>
-          </>
-        )}
+          </>}
       </div>
 
       {/* Video modal for playing videos */}
-      <VideoModal
-        video={selectedVideo}
-        isOpen={!!selectedVideo}
-        onClose={() => setSelectedVideo(null)}
-      />
-    </div>
-  );
+      <VideoModal video={selectedVideo} isOpen={!!selectedVideo} onClose={() => setSelectedVideo(null)} />
+    </div>;
 };
 
 // Helper function to extract YouTube video ID
@@ -503,7 +410,6 @@ function getYoutubeVideoId(url: string) {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
+  return match && match[2].length === 11 ? match[2] : null;
 }
-
 export default RightSection;
