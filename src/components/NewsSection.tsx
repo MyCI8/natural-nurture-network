@@ -134,7 +134,7 @@ const NewsSection = () => {
                       </AspectRatio>
                       <div className="p-3 text-left">
                         <h4 className="font-medium text-xs sm:text-sm line-clamp-2 text-text-dark">{video.title}</h4>
-                        <p className="text-xs text-primary dark:text-primary line-clamp-2">{video.description}</p>
+                        <p className="text-xs line-clamp-2 text-gray-400">{video.description}</p>
                       </div>
                     </CardContent>
                   </Card>
