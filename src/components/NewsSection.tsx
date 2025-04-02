@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,7 +96,7 @@ const NewsSection = () => {
       <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div className="space-y-4 sm:space-y-6 md:col-span-8">
-            <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left">Latest News</h2>
+            <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left text-primary">Latest News</h2>
             {newsItems?.map((item, index) => <Link to={`/news/${item.id}`} key={item.id}>
                 <Card className={`overflow-hidden border-0 ${index !== newsItems.length - 1 ? 'border-b border-border dark:border-dm-mist/50' : ''} animate-fadeIn hover:shadow-none transition-shadow duration-200`}>
                   <CardContent className="p-0">
@@ -109,7 +110,7 @@ const NewsSection = () => {
                         <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary mb-2 text-left line-clamp-2">
                           {item.title}
                         </h3>
-                        <p className="text-xs sm:text-sm text-text-light line-clamp-2 text-left">
+                        <p className="text-xs sm:text-sm text-primary dark:text-primary line-clamp-2 text-left">
                           {item.summary}
                         </p>
                         <div className="mt-2 sm:mt-3 text-xs text-primary font-medium text-left">
@@ -130,7 +131,7 @@ const NewsSection = () => {
           </div>
           
           <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0 md:col-span-4">
-            <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left">Latest Videos</h3>
+            <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left text-primary">Latest Videos</h3>
             <div className="grid grid-cols-1 gap-4">
               {videos?.map((video, index) => <Link to={`/news/videos/${video.id}`} key={video.id}>
                   <Card className={`overflow-hidden border-0 ${index !== videos.length - 1 ? 'border-b border-border dark:border-dm-mist/50' : ''} hover:shadow-none transition-shadow duration-200`}>
@@ -140,6 +141,7 @@ const NewsSection = () => {
                       </AspectRatio>
                       <div className="p-3 text-left">
                         <h4 className="font-medium text-xs sm:text-sm line-clamp-2 text-primary dark:text-primary">{video.title}</h4>
+                        <p className="text-xs text-primary dark:text-primary line-clamp-2">{video.description}</p>
                       </div>
                     </CardContent>
                   </Card>
