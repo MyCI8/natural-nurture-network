@@ -66,7 +66,7 @@ const Navbar = () => {
   const filteredMenuItems = menuItems.filter(item => !item.protected || session);
 
   return (
-    <nav className="bg-white/70 backdrop-blur-sm shadow-sm fixed w-full z-50">
+    <nav className="bg-background shadow-sm fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -112,7 +112,7 @@ const Navbar = () => {
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute right-0 top-16 bg-white shadow-lg border-t min-w-[200px] max-w-fit">
+          <div className="absolute right-0 top-16 bg-background shadow-lg border-t min-w-[200px] max-w-fit">
             <div className="px-4 py-2 space-y-1">
               {filteredMenuItems.map((item) => (
                 <Link

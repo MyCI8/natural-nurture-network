@@ -129,7 +129,7 @@ const BottomNav = () => {
           size="icon"
           onClick={handlePost}
           aria-label="Create post"
-          className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+          className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
         >
           <Upload className="h-5 w-5" />
         </Button>

@@ -77,7 +77,7 @@ export const MobileHeader = ({
 
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 h-14 bg-background/80 backdrop-blur-sm border-b z-50 transition-transform duration-300 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 h-14 bg-background border-b z-50 transition-transform duration-300 ease-in-out ${
         shouldShowHeader ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
