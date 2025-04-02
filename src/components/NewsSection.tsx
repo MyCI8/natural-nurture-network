@@ -100,7 +100,7 @@ const NewsSection = () => {
                         </AspectRatio>
                       </div>
                       <div className="p-3 sm:p-4 md:p-5 md:w-2/3">
-                        <h3 className="text-base sm:text-lg font-semibold text-primary dark:text-primary mb-2 text-left line-clamp-2">
+                        <h3 className="text-base sm:text-lg font-semibold mb-2 text-left line-clamp-2 text-text-dark">
                           {item.title}
                         </h3>
                         <p className="text-xs sm:text-sm text-primary dark:text-primary line-clamp-2 text-left">
