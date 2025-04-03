@@ -9,6 +9,11 @@
   overflow: hidden;
 }
 
+.dark .instagram-feed-item {
+  background-color: #1E1E1E;
+  border-color: #404040;
+}
+
 .instagram-header {
   display: flex;
   align-items: center;
@@ -43,6 +48,12 @@
   text-align: left;
 }
 
+.dark .instagram-likes,
+.dark .instagram-description,
+.dark .instagram-username {
+  color: #E5E5E5;
+}
+
 .instagram-description {
   padding: 0 12px 8px;
   font-size: 14px;
@@ -57,12 +68,20 @@
   text-align: left;
 }
 
+.dark .instagram-view-comments {
+  color: #A0A0A0;
+}
+
 .instagram-comment-input {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
   border-top: 1px solid #dbdbdb;
+}
+
+.dark .instagram-comment-input {
+  border-color: #404040;
 }
 
 /* Video dialog specific styles */
@@ -81,8 +100,13 @@
   object-fit: cover !important;
 }
 
+.dark input::placeholder {
+  color: #A0A0A0;
+}
+
 @media (min-width: 768px) {
   .instagram-feed-item {
     margin-bottom: 28px;
   }
 }
+

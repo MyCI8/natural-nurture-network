@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
@@ -81,29 +82,29 @@ const VideoDialog = ({
   if (!video || !isOpen) return null;
 
   return (
-    <div className="w-full bg-white dark:bg-gray-900 min-h-screen">
+    <div className="w-full bg-white dark:bg-dm-background min-h-screen">
       <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto h-[100dvh]">
         <div className="md:hidden p-4 flex justify-end">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="rounded-full h-9 w-9 flex items-center justify-center z-50"
+            className="rounded-full h-9 w-9 flex items-center justify-center z-50 dark:text-dm-text"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
         
-        <div className="hidden md:block md:w-[240px] border-r border-gray-200 dark:border-gray-800 p-4">
+        <div className="hidden md:block md:w-[240px] border-r border-gray-200 dark:border-dm-mist p-4">
           <div className="flex items-center">
             <Avatar className="h-8 w-8 mr-3">
               {video.creator?.avatar_url ? (
                 <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
               ) : (
-                <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
+                <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">{(video.creator?.username || '?')[0]}</AvatarFallback>
               )}
             </Avatar>
-            <span className="font-medium text-sm">{video.creator?.username || 'Anonymous'}</span>
+            <span className="font-medium text-sm dark:text-dm-text">{video.creator?.username || 'Anonymous'}</span>
           </div>
         </div>
         
@@ -126,47 +127,47 @@ const VideoDialog = ({
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 text-black dark:text-white hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-full hidden md:flex"
+            className="absolute top-4 right-4 z-20 text-white hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-full hidden md:flex"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
         
-        <div className="w-full md:w-[350px] bg-white dark:bg-gray-900 flex flex-col h-full border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="w-full md:w-[350px] bg-white dark:bg-dm-background flex flex-col h-full border-l border-gray-200 dark:border-dm-mist overflow-y-auto">
+          <div className="p-4 border-b border-gray-200 dark:border-dm-mist px-0 py-0">
             <div className="flex items-center mb-2">
               <Avatar className="h-8 w-8 mr-3">
                 {video.creator?.avatar_url ? (
                   <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
                 ) : (
-                  <AvatarFallback>{(video.creator?.username || '?')[0]}</AvatarFallback>
+                  <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">{(video.creator?.username || '?')[0]}</AvatarFallback>
                 )}
               </Avatar>
               <div>
-                <p className="font-semibold text-sm">{video.creator?.username || 'Anonymous'}</p>
+                <p className="font-semibold text-sm dark:text-dm-text">{video.creator?.username || 'Anonymous'}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="ml-auto">
+                  <Button variant="ghost" size="icon" className="ml-auto dark:text-dm-text">
                     <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="text-red-500">
+                <DropdownMenuContent align="end" className="dark:bg-dm-foreground dark:text-dm-text dark:border-dm-mist">
+                  <DropdownMenuItem className="text-red-500 dark:text-red-400">
                     Report
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="dark:text-dm-text">
                     Add to favorites
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuSeparator className="dark:bg-dm-mist" />
+                  <DropdownMenuItem className="dark:text-dm-text">
                     Share to...
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopyLink}>
+                  <DropdownMenuItem onClick={handleCopyLink} className="dark:text-dm-text">
                     Copy link
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onClose}>
+                  <DropdownMenuSeparator className="dark:bg-dm-mist" />
+                  <DropdownMenuItem onClick={onClose} className="dark:text-dm-text">
                     Cancel
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -175,13 +176,13 @@ const VideoDialog = ({
             
             <div className="flex flex-col space-y-2">
               <div>
-                <p className="text-sm text-left">{video.description}</p>
-                <p className="text-xs text-gray-500 mt-1 text-left">
+                <p className="text-sm text-left dark:text-dm-text">{video.description}</p>
+                <p className="text-xs text-gray-500 dark:text-dm-text-supporting mt-1 text-left">
                   {new Date(video.created_at || '').toLocaleDateString()}
                 </p>
               </div>
               
-              <div className="text-sm text-gray-500 mb-2">
+              <div className="text-sm text-gray-500 dark:text-dm-text-supporting mb-2">
                 <span>{video.likes_count || 0} likes</span>
               </div>
               
@@ -190,28 +191,28 @@ const VideoDialog = ({
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
+                  className="text-gray-500 dark:text-dm-text-supporting hover:text-[#4CAF50] dark:hover:text-dm-primary transition-transform hover:scale-110 h-11 w-11 touch-manipulation"
                 >
                   <Heart className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
+                  className="text-gray-500 dark:text-dm-text-supporting hover:text-[#4CAF50] dark:hover:text-dm-primary transition-transform hover:scale-110 h-11 w-11 touch-manipulation"
                 >
                   <MessageCircle className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
+                  className="text-gray-500 dark:text-dm-text-supporting hover:text-[#4CAF50] dark:hover:text-dm-primary transition-transform hover:scale-110 h-11 w-11 touch-manipulation"
                 >
                   <Share2 className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 hover:text-[#4CAF50] transition-transform hover:scale-110 h-11 w-11"
+                  className="text-gray-500 dark:text-dm-text-supporting hover:text-[#4CAF50] dark:hover:text-dm-primary transition-transform hover:scale-110 h-11 w-11 touch-manipulation"
                 >
                   <Bookmark className="h-5 w-5" />
                 </Button>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -152,20 +151,17 @@ const Explore = () => {
       setCommentText('');
       setSubmittingCommentFor(null);
       
-      // Create a new comment object to update local state
       const newComment = {
         id: data.id,
         content: data.comment,
         username: currentUser?.username || 'User'
       };
       
-      // Update local comments state
       setLocalComments(prev => ({
         ...prev,
         [data.videoId]: [newComment, ...(prev[data.videoId] || [])]
       }));
       
-      // Invalidate query to refresh data
       queryClient.invalidateQueries({ queryKey: ['explore-videos'] });
       
       toast({
@@ -242,22 +238,24 @@ const Explore = () => {
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen dark:text-dm-text">Loading...</div>;
   }
 
   return (
-    <div className="flex flex-col items-center w-full bg-white dark:bg-black">
+    <div className="flex flex-col items-center w-full bg-white dark:bg-dm-background">
       {videos.map((video) => (
         <div 
           key={video.id}
           className="instagram-feed-item"
         >
           <div className="instagram-header">
-            <Avatar className="h-8 w-8 border border-gray-200">
+            <Avatar className="h-8 w-8 border border-gray-200 dark:border-dm-mist">
               {video.creator?.avatar_url ? (
                 <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} />
               ) : (
-                <AvatarFallback>{video.creator?.full_name?.[0] || '?'}</AvatarFallback>
+                <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">
+                  {video.creator?.full_name?.[0] || '?'}
+                </AvatarFallback>
               )}
             </Avatar>
             <div className="flex-1 text-left">
@@ -268,7 +266,7 @@ const Explore = () => {
                 {video.creator?.username || 'Anonymous'}
               </span>
             </div>
-            <Button variant="ghost" size="icon" className="text-gray-700">
+            <Button variant="ghost" size="icon" className="text-gray-700 dark:text-dm-text">
               <MoreHorizontal className="h-5 w-5" />
             </Button>
           </div>
@@ -297,7 +295,7 @@ const Explore = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-white'}`}
+                className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-dm-text'}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleLike(video.id);
@@ -309,7 +307,7 @@ const Explore = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="p-0 hover:bg-transparent text-black dark:text-white"
+                className="p-0 hover:bg-transparent text-black dark:text-dm-text"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleNavigateToVideo(video.id);
@@ -321,7 +319,7 @@ const Explore = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="p-0 hover:bg-transparent text-black dark:text-white"
+                className="p-0 hover:bg-transparent text-black dark:text-dm-text"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleShare(video);
@@ -334,7 +332,7 @@ const Explore = () => {
             <Button 
               variant="ghost" 
               size="icon"
-              className="p-0 hover:bg-transparent text-black dark:text-white"
+              className="p-0 hover:bg-transparent text-black dark:text-dm-text"
             >
               <Bookmark className="h-6 w-6" />
             </Button>
@@ -345,16 +343,16 @@ const Explore = () => {
           </div>
           
           <div className="instagram-description">
-            <span className="font-semibold mr-2">{video.creator?.username}</span>
-            {video.description}
+            <span className="font-semibold mr-2 dark:text-dm-text">{video.creator?.username}</span>
+            <span className="dark:text-dm-text">{video.description}</span>
           </div>
           
           {localComments[video.id]?.length > 0 && (
             <div className="px-4 text-left text-sm space-y-1">
               {localComments[video.id].map(comment => (
                 <div key={comment.id} className="flex">
-                  <span className="font-semibold mr-2">{comment.username}</span>
-                  <span>{comment.content}</span>
+                  <span className="font-semibold mr-2 dark:text-dm-text">{comment.username}</span>
+                  <span className="dark:text-dm-text">{comment.content}</span>
                 </div>
               ))}
             </div>
@@ -370,13 +368,13 @@ const Explore = () => {
           <div className="instagram-comment-input">
             {submittingCommentFor === video.id ? (
               <div className="flex items-center justify-center w-8 h-8">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent dark:border-dm-text dark:border-r-transparent"></div>
               </div>
             ) : (
               <Input
                 type="text"
                 placeholder="Add a comment..."
-                className="text-sm border-none focus-visible:ring-0 px-0 h-auto py-1"
+                className="text-sm border-none focus-visible:ring-0 px-0 h-auto py-1 dark:text-dm-text dark:bg-transparent"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 onKeyDown={(e) => {
@@ -391,7 +389,7 @@ const Explore = () => {
             <Button
               variant="ghost"
               size="sm"
-              className={`text-blue-500 font-semibold ${!commentText.trim() || submittingCommentFor ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`}
+              className={`text-blue-500 dark:text-dm-primary font-semibold ${!commentText.trim() || submittingCommentFor ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`}
               disabled={!commentText.trim() || !!submittingCommentFor}
               onClick={() => handleComment(video.id)}
             >
