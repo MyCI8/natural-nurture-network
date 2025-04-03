@@ -274,7 +274,7 @@ const RightSection = () => {
   return <div className="h-full flex flex-col relative">
       <Separator orientation="vertical" className="absolute left-0 top-0 h-full" />
       
-      <div className="p-4 overflow-y-auto flex-1 py-[30px]">
+      <div className="p-4 overflow-y-auto flex-1 w-full py-[30px] ">
         {/* News article videos */}
         {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>

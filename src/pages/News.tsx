@@ -46,8 +46,8 @@ const News = () => {
   }
   return <div className="pt-6 sm:pt-12 px-4 w-full py-[30px]">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left dark:text-dm-text">News</h1>
-        <p className="text-lg sm:text-xl text-text-light dark:text-dm-text-supporting text-left">Latest Health News Articles</p>
+        <h1 className="text-3xl font-bold mb-2 text-left dark:text-dm-text sm:text-2xl">News</h1>
+        <p className="text-lg text-text-light dark:text-dm-text-supporting text-left sm:text-xl">Latest Health News Articles</p>
       </div>
 
       <div className="space-y-4 sm:space-y-6">
