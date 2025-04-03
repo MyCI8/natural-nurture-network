@@ -1,3 +1,4 @@
+
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -272,7 +273,7 @@ const RightSection = () => {
 
   return (
     <div className="h-full flex flex-col relative">
-      <Separator orientation="vertical" className="absolute left-0 top-0 h-full" />
+      <Separator orientation="vertical" className="absolute left-0 top-0 h-full dark:bg-gray-700" />
       
       <div className="p-4 overflow-y-auto flex-1 py-[30px] h-full">
         {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
@@ -293,12 +294,20 @@ const RightSection = () => {
                   >
                     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
                       <CardContent className="p-0">
-                        <AspectRatio ratio={16 / 9} className="bg-gray-100">
-                          {video.thumbnail_url ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : video.video_url && video.video_url.includes('youtube.com') && <img src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" />}
+                        <AspectRatio ratio={16 / 9} className="bg-gray-100 dark:bg-gray-800">
+                          {video.thumbnail_url ? 
+                            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : 
+                            video.video_url && video.video_url.includes('youtube.com') && 
+                            <img 
+                              src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} 
+                              alt={video.title} 
+                              className="w-full h-full object-cover" 
+                            />
+                          }
                         </AspectRatio>
-                        <div className="p-3 text-left">
+                        <div className="p-3 text-left dark:bg-dm-foreground dark:text-dm-text">
                           <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground dark:text-dm-text-supporting mt-1">
                             {new Date(video.created_at).toLocaleDateString()}
                           </p>
                         </div>
@@ -308,7 +317,7 @@ const RightSection = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground text-left pl-2">No videos available</p>
+              <p className="text-muted-foreground dark:text-dm-text-supporting text-left pl-2">No videos available</p>
             )}
           </div>
         )}

@@ -1,4 +1,5 @@
 
+
 .instagram-feed-item {
   width: 100%;
   max-width: 500px;
@@ -102,6 +103,33 @@
 
 .dark input::placeholder {
   color: #A0A0A0;
+}
+
+/* Ensure proper aspect ratio for all videos and images */
+.aspect-16-9 {
+  aspect-ratio: 16/9;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.aspect-16-9 img,
+.aspect-16-9 video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Consistent separator styles */
+.article-separator {
+  width: 50%;
+  margin: 1rem auto;
+  height: 1px;
+  background-color: #e5e5e5;
+}
+
+.dark .article-separator {
+  background-color: #404040;
 }
 
 @media (min-width: 768px) {

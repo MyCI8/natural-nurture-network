@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -5,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Separator } from "@/components/ui/separator";
+
 const News = () => {
   const navigate = useNavigate();
   const {
@@ -51,22 +55,38 @@ const News = () => {
       </div>
 
       <div className="space-y-4 sm:space-y-6">
-        {newsItems.map((article, index) => <Link to={`/news/${article.id}`} key={article.id}>
-            <Card className="overflow-hidden border-0 border-b dark:border-dm-mist hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
-              <CardContent className="p-3 sm:p-4 py-0 px-[20px]">
-                {article.image_url && <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
-                    <img src={article.image_url} alt={article.thumbnail_description || article.title} className="w-full object-cover aspect-[16/9]" />
-                  </div>}
-                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-primary dark:text-primary">
-                  {article.title}
-                </h3>
-                <p className="text-sm sm:text-base text-text-light dark:text-dm-text-supporting text-left">
-                  {article.summary}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>)}
+        {newsItems.map((article, index) => (
+          <div key={article.id} className="flex flex-col items-center">
+            <Link to={`/news/${article.id}`} className="w-full">
+              <Card className="overflow-hidden border-0 hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
+                <CardContent className="p-3 sm:p-4 py-0 px-[20px]">
+                  {article.image_url && (
+                    <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
+                      <AspectRatio ratio={16/9} className="w-full">
+                        <img 
+                          src={article.image_url} 
+                          alt={article.thumbnail_description || article.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      </AspectRatio>
+                    </div>
+                  )}
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-primary dark:text-primary">
+                    {article.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-text-light dark:text-dm-text-supporting text-left">
+                    {article.summary}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+            {index < newsItems.length - 1 && (
+              <Separator className="my-4 w-3/4 mx-auto bg-gray-200 dark:bg-gray-700" />
+            )}
+          </div>
+        ))}
       </div>
     </div>;
 };
+
 export default News;
