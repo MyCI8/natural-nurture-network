@@ -1,5 +1,4 @@
 
-
 .instagram-feed-item {
   width: 100%;
   max-width: 500px;
@@ -132,9 +131,20 @@
   background-color: #404040;
 }
 
+/* Touch-friendly styles */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Thumb zone considerations */
+@media (max-width: 768px) {
+  .thumb-friendly {
+    margin-bottom: 1rem;
+  }
+}
+
 @media (min-width: 768px) {
   .instagram-feed-item {
     margin-bottom: 28px;
   }
 }
-

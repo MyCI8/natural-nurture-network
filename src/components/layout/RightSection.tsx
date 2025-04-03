@@ -1,4 +1,3 @@
-
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,12 +33,8 @@ interface SymptomVideoData {
 
 const RightSection = () => {
   const location = useLocation();
-  const {
-    id
-  } = useParams();
-  const {
-    toast
-  } = useToast();
+  const { id } = useParams();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [symptomVideos, setSymptomVideos] = useState<SymptomVideoData | null>(null);
@@ -72,24 +67,17 @@ const RightSection = () => {
   } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
-      const {
-        data
-      } = await supabase.auth.getUser();
+      const { data } = await supabase.auth.getUser();
       return data.user;
     }
   });
 
   const newsArticleId = location.pathname.startsWith('/news/') ? location.pathname.split('/news/')[1] : null;
-  const {
-    data: articleData
-  } = useQuery<ArticleData | null>({
+  const { data: articleData } = useQuery<ArticleData | null>({
     queryKey: ["news-article-videos", newsArticleId],
     queryFn: async () => {
       if (!newsArticleId) return null;
-      const {
-        data,
-        error
-      } = await supabase.from("news_articles").select("video_links, video_description").eq("id", newsArticleId).maybeSingle();
+      const { data, error } = await supabase.from("news_articles").select("video_links, video_description").eq("id", newsArticleId).maybeSingle();
       if (error) {
         console.error("Error fetching article video data:", error);
         return null;
@@ -105,10 +93,7 @@ const RightSection = () => {
     queryKey: ["news-videos-sidebar"],
     queryFn: async () => {
       console.log("Fetching latest videos for sidebar");
-      const {
-        data,
-        error
-      } = await supabase.from("videos").select("*, creator:creator_id(*), related_article_id").eq("status", "published").eq("video_type", "news").eq("show_in_latest", true).order("created_at", {
+      const { data, error } = await supabase.from("videos").select("*, creator:creator_id(*), related_article_id").eq("status", "published").eq("video_type", "news").eq("show_in_latest", true).order("created_at", {
         ascending: false
       }).limit(8);
       if (error) {
@@ -129,10 +114,7 @@ const RightSection = () => {
     queryKey: ['video-details', id],
     queryFn: async () => {
       if (!id || !location.pathname.startsWith('/explore/')) return null;
-      const {
-        data,
-        error
-      } = await supabase.from('videos').select(`
+      const { data, error } = await supabase.from('videos').select(`
           *,
           creator:creator_id (
             id,
@@ -156,9 +138,7 @@ const RightSection = () => {
     queryKey: ['video-like-status', id, currentUser?.id],
     queryFn: async () => {
       if (!currentUser || !id) return false;
-      const {
-        data
-      } = await supabase.from('video_likes').select('id').eq('video_id', id).eq('user_id', currentUser.id).maybeSingle();
+      const { data } = await supabase.from('video_likes').select('id').eq('video_id', id).eq('user_id', currentUser.id).maybeSingle();
       return !!data;
     },
     enabled: !!currentUser && !!id && location.pathname.startsWith('/explore/')
@@ -170,17 +150,13 @@ const RightSection = () => {
         throw new Error('You must be logged in to like a video');
       }
       if (userLikeStatus) {
-        const {
-          error
-        } = await supabase.from('video_likes').delete().eq('video_id', id).eq('user_id', currentUser.id);
+        const { error } = await supabase.from('video_likes').delete().eq('video_id', id).eq('user_id', currentUser.id);
         if (error) throw error;
         return {
           liked: false
         };
       } else {
-        const {
-          error
-        } = await supabase.from('video_likes').insert([{
+        const { error } = await supabase.from('video_likes').insert([{
           video_id: id,
           user_id: currentUser.id
         }]);
@@ -275,7 +251,7 @@ const RightSection = () => {
     <div className="h-full flex flex-col relative">
       <Separator orientation="vertical" className="absolute left-0 top-0 h-full dark:bg-gray-700" />
       
-      <div className="p-4 overflow-y-auto flex-1 py-[30px] h-full">
+      <div className="p-4 h-full py-[30px]">
         {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>
             <NewsVideos videoLinks={videoLinks} videoDescription={articleData?.video_description || undefined} isDesktop={true} />
@@ -285,34 +261,38 @@ const RightSection = () => {
           <div className="h-full flex flex-col">
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Latest Videos</h2>
             {videos && videos.length > 0 ? (
-              <div className="space-y-4 flex-1 overflow-y-auto">
-                {videos.map(video => (
-                  <div 
-                    key={video.id} 
-                    onClick={() => handleVideoClick(video)} 
-                    className="cursor-pointer touch-manipulation"
-                  >
-                    <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
-                      <CardContent className="p-0">
-                        <AspectRatio ratio={16 / 9} className="bg-gray-100 dark:bg-gray-800">
-                          {video.thumbnail_url ? 
-                            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : 
-                            video.video_url && video.video_url.includes('youtube.com') && 
-                            <img 
-                              src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} 
-                              alt={video.title} 
-                              className="w-full h-full object-cover" 
-                            />
-                          }
-                        </AspectRatio>
-                        <div className="p-3 text-left dark:bg-dm-foreground dark:text-dm-text">
-                          <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
-                          <p className="text-xs text-muted-foreground dark:text-dm-text-supporting mt-1">
-                            {new Date(video.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
+              <div className="space-y-4">
+                {videos.map((video, index) => (
+                  <div key={video.id}>
+                    <div 
+                      onClick={() => handleVideoClick(video)} 
+                      className="cursor-pointer touch-manipulation"
+                    >
+                      <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
+                        <CardContent className="p-0">
+                          <AspectRatio ratio={16 / 9} className="bg-gray-100 dark:bg-gray-800">
+                            {video.thumbnail_url ? 
+                              <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : 
+                              video.video_url && video.video_url.includes('youtube.com') && 
+                              <img 
+                                src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} 
+                                alt={video.title} 
+                                className="w-full h-full object-cover" 
+                              />
+                            }
+                          </AspectRatio>
+                          <div className="p-3 text-left dark:bg-dm-foreground dark:text-dm-text">
+                            <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
+                            <p className="text-xs text-muted-foreground dark:text-dm-text-supporting mt-1">
+                              {new Date(video.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    {index < videos.length - 1 && (
+                      <Separator className="my-4 w-1/2 mx-auto bg-gray-200 dark:bg-gray-700" />
+                    )}
                   </div>
                 ))}
               </div>
