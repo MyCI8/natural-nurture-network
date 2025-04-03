@@ -15,18 +15,22 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import VideoModal from "@/components/video/VideoModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
 interface VideoLink {
   title: string;
   url: string;
 }
+
 interface ArticleData {
   video_links?: string | null;
   video_description?: string | null;
 }
+
 interface SymptomVideoData {
   videoLinks: VideoLink[];
   videoDescription: string;
 }
+
 const RightSection = () => {
   const location = useLocation();
   const {
@@ -39,7 +43,6 @@ const RightSection = () => {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [symptomVideos, setSymptomVideos] = useState<SymptomVideoData | null>(null);
 
-  // Listen for symptom videos data from the SymptomDetail component
   useEffect(() => {
     const handleSymptomVideos = (event: CustomEvent<SymptomVideoData>) => {
       if (event.detail) {
@@ -57,14 +60,12 @@ const RightSection = () => {
     };
   }, []);
 
-  // Reset symptom videos when navigating away from symptoms pages
   useEffect(() => {
     if (!location.pathname.startsWith('/symptoms/')) {
       setSymptomVideos(null);
     }
   }, [location]);
 
-  // Get current user
   const {
     data: currentUser
   } = useQuery({
@@ -77,7 +78,6 @@ const RightSection = () => {
     }
   });
 
-  // Get news article video data
   const newsArticleId = location.pathname.startsWith('/news/') ? location.pathname.split('/news/')[1] : null;
   const {
     data: articleData
@@ -98,7 +98,6 @@ const RightSection = () => {
     enabled: !!newsArticleId
   });
 
-  // Get latest videos for sidebar
   const {
     data: videos
   } = useQuery<Video[]>({
@@ -123,7 +122,6 @@ const RightSection = () => {
     }
   });
 
-  // Get video details for explore page
   const {
     data: videoDetails
   } = useQuery({
@@ -151,7 +149,6 @@ const RightSection = () => {
     enabled: !!id && location.pathname.startsWith('/explore/')
   });
 
-  // Check if user has liked the video
   const {
     data: userLikeStatus
   } = useQuery({
@@ -166,7 +163,6 @@ const RightSection = () => {
     enabled: !!currentUser && !!id && location.pathname.startsWith('/explore/')
   });
 
-  // Handle like/unlike functionality
   const likeMutation = useMutation({
     mutationFn: async () => {
       if (!currentUser) {
@@ -209,6 +205,7 @@ const RightSection = () => {
       });
     }
   });
+
   const handleLike = () => {
     if (!currentUser) {
       toast({
@@ -219,6 +216,7 @@ const RightSection = () => {
     }
     likeMutation.mutate();
   };
+
   const handleShare = async () => {
     if (!videoDetails) return;
     const url = window.location.href;
@@ -244,12 +242,12 @@ const RightSection = () => {
       }
     }
   };
+
   const handleVideoClick = (video: Video) => {
     console.log("Video clicked:", video);
     setSelectedVideo(video);
   };
 
-  // Process video links for news articles
   const videoLinks: VideoLink[] = [];
   if (articleData?.video_links) {
     const linksData = articleData.video_links;
@@ -271,21 +269,28 @@ const RightSection = () => {
       console.error('Error processing video links:', e);
     }
   }
-  return <div className="h-full flex flex-col relative">
+
+  return (
+    <div className="h-full flex flex-col relative">
       <Separator orientation="vertical" className="absolute left-0 top-0 h-full" />
       
-      <div className="p-4 overflow-y-auto flex-1 py-[30px] ">
-        {/* News article videos */}
+      <div className="p-4 overflow-y-auto flex-1 py-[30px] h-full">
         {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>
             <NewsVideos videoLinks={videoLinks} videoDescription={articleData?.video_description || undefined} isDesktop={true} />
           </>}
         
-        {/* Latest videos on news page */}
-        {(location.pathname === '/news' || location.pathname === '/news/') && <>
+        {(location.pathname === '/news' || location.pathname === '/news/') && (
+          <div className="h-full flex flex-col">
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Latest Videos</h2>
-            {videos && videos.length > 0 ? <div className="space-y-4">
-                {videos.map(video => <div key={video.id} onClick={() => handleVideoClick(video)} className="cursor-pointer touch-manipulation">
+            {videos && videos.length > 0 ? (
+              <div className="space-y-4 flex-1 overflow-y-auto">
+                {videos.map(video => (
+                  <div 
+                    key={video.id} 
+                    onClick={() => handleVideoClick(video)} 
+                    className="cursor-pointer touch-manipulation"
+                  >
                     <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
                       <CardContent className="p-0">
                         <AspectRatio ratio={16 / 9} className="bg-gray-100">
@@ -299,11 +304,15 @@ const RightSection = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  </div>)}
-              </div> : <p className="text-muted-foreground text-left pl-2">No videos available</p>}
-          </>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-left pl-2">No videos available</p>
+            )}
+          </div>
+        )}
         
-        {/* Video details for explore page */}
         {location.pathname.startsWith('/explore/') && <div className="w-full">
             {videoDetails ? <div className="flex flex-col h-full">
                 <div className="p-3 border-b border-gray-200 dark:border-gray-800 px-0 py-0">
@@ -346,7 +355,6 @@ const RightSection = () => {
               </div> : <p className="text-muted-foreground text-left pl-2">Video details not available</p>}
           </div>}
         
-        {/* Symptom videos section */}
         {location.pathname.startsWith('/symptoms/') && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2 flex items-center gap-2">
               <VideoIcon className="h-5 w-5 text-primary" />
@@ -391,7 +399,6 @@ const RightSection = () => {
               </div>}
           </>}
         
-        {/* Default content for other pages */}
         {!location.pathname.startsWith('/news/') && !location.pathname.startsWith('/explore/') && !location.pathname.startsWith('/symptoms/') && location.pathname !== '/news' && location.pathname !== '/news/' && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Additional Information</h2>
             <p className="text-sm text-muted-foreground text-left pl-2">
@@ -400,16 +407,16 @@ const RightSection = () => {
           </>}
       </div>
 
-      {/* Video modal for playing videos */}
       <VideoModal video={selectedVideo} isOpen={!!selectedVideo} onClose={() => setSelectedVideo(null)} />
-    </div>;
+    </div>
+  );
 };
 
-// Helper function to extract YouTube video ID
 function getYoutubeVideoId(url: string) {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return match && match[2].length === 11 ? match[2] : null;
 }
+
 export default RightSection;
