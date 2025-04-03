@@ -124,7 +124,7 @@ const NewsSection = () => {
           </div>
           
           <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0 md:col-span-4">
-            <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left text-primary">Latest Videos</h3>
+            <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left text-text-dark">Latest Videos</h3>
             <div className="grid grid-cols-1 gap-4">
               {videos?.map((video, index) => <Link to={`/news/videos/${video.id}`} key={video.id}>
                   <Card className={`overflow-hidden border-0 ${index !== videos.length - 1 ? 'border-b border-border dark:border-dm-mist/50' : ''} hover:shadow-none transition-shadow duration-200`}>
