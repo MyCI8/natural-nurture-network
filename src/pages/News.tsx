@@ -53,7 +53,7 @@ const News = () => {
       <div className="space-y-4 sm:space-y-6">
         {newsItems.map((article, index) => <Link to={`/news/${article.id}`} key={article.id}>
             <Card className="overflow-hidden border-0 border-b dark:border-dm-mist hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
-              <CardContent className="p-3 sm:p-4">
+              <CardContent className="p-3 sm:p-4 py-0 px-[20px]">
                 {article.image_url && <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
                     <img src={article.image_url} alt={article.thumbnail_description || article.title} className="w-full object-cover aspect-[16/9]" />
                   </div>}
