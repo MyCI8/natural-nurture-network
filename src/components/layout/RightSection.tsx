@@ -1,4 +1,5 @@
-import React, { useLocation, useParams } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { NewsVideos } from "@/components/news/NewsVideos";
@@ -12,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
 import VideoModal from "@/components/video/VideoModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -249,7 +249,6 @@ const RightSection = () => {
 
   return (
     <div className="h-full flex flex-col relative">
-      {/* Always render vertical separator that spans full height */}
       <Separator 
         orientation="vertical" 
         className="absolute left-0 top-0 bottom-0 w-[1px] bg-border dark:bg-gray-700 z-10" 
