@@ -11,7 +11,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
       attribute="class" 
       defaultTheme="system"
       enableSystem={true}
-      disableTransitionOnChange={false}
+      disableTransitionOnChange={true} // Ensure transitions are completely disabled
       {...props}
     >
       {children}
