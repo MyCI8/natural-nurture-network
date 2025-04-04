@@ -148,3 +148,27 @@
     margin-bottom: 28px;
   }
 }
+
+/* Prevent scrollbar display */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
+/* Vertical separator consistent style */
+.vertical-separator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background-color: #e5e5e5;
+}
+
+.dark .vertical-separator {
+  background-color: #404040;
+}

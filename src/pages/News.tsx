@@ -29,7 +29,7 @@ const News = () => {
   });
 
   if (isLoading) {
-    return <div className="pt-6 sm:pt-12 px-4 w-full">
+    return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
         <div className="space-y-4 sm:space-y-8">
           {[1, 2, 3].map(i => <Card key={i} className="overflow-hidden border-0 border-b dark:border-dm-mist">
               <CardContent className="p-3 sm:p-4">
@@ -44,25 +44,25 @@ const News = () => {
   }
 
   if (!newsItems?.length) {
-    return <div className="pt-6 sm:pt-12 px-4 w-full">
+    return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left dark:text-dm-text">News</h1>
         <p className="text-lg sm:text-xl text-text-light dark:text-dm-text-supporting mb-6 sm:mb-8 text-left">Latest Health News Articles</p>
         <p className="text-center text-text-light dark:text-dm-text-supporting py-8 sm:py-12">No news articles available.</p>
       </div>;
   }
 
-  return <div className="pt-6 sm:pt-12 px-4 w-full h-full py-[30px]">
+  return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-3xl font-bold mb-2 text-left dark:text-dm-text sm:text-2xl">News</h1>
         <p className="text-lg text-text-light dark:text-dm-text-supporting text-left sm:text-xl">Latest Health News Articles</p>
       </div>
 
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-6">
         {newsItems.map((article, index) => (
-          <div key={article.id} className="flex flex-col items-center">
-            <Link to={`/news/${article.id}`} className="w-full">
+          <div key={article.id} className="flex flex-col items-center touch-manipulation">
+            <Link to={`/news/${article.id}`} className="w-full thumb-friendly">
               <Card className="overflow-hidden border-0 hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
-                <CardContent className="p-3 sm:p-4 py-4 px-[20px]">
+                <CardContent className="p-4">
                   {article.image_url && (
                     <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
                       <AspectRatio ratio={16/9} className="w-full">

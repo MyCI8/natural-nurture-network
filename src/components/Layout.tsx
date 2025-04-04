@@ -65,7 +65,7 @@ const LayoutContent = () => {
               ${isFullWidth || isHomePage ? 'w-full' : 'mx-auto'} 
               ${(!isFullWidth && !isHomePage) ? contentWidth : ''}
               ${(!isFullWidth && !isHomePage) ? contentMaxWidth : ''}
-              transition-all duration-300
+              transition-all duration-300 h-full
             `}
           >
             <Outlet />
@@ -74,7 +74,7 @@ const LayoutContent = () => {
 
         {/* Right Section - Only shown when enabled and not on mobile */}
         {!isMobile && showRightSection && (
-          <aside className={`${isTablet ? 'w-[300px]' : 'w-[350px]'} shrink-0 h-screen sticky top-0 border-l border-border z-20 overflow-y-auto`}>
+          <aside className={`${isTablet ? 'w-[300px]' : 'w-[350px]'} shrink-0 h-screen sticky top-0 border-l border-border z-20 overflow-hidden`}>
             <RightSection />
           </aside>
         )}

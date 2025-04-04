@@ -248,10 +248,10 @@ const RightSection = () => {
   }
 
   return (
-    <div className="h-full flex flex-col relative">
+    <div className="h-full flex flex-col">
       <Separator orientation="vertical" className="absolute left-0 top-0 h-full dark:bg-gray-700" />
       
-      <div className="p-4 h-full py-[30px]">
+      <div className="p-4 h-full flex flex-col">
         {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>
             <NewsVideos videoLinks={videoLinks} videoDescription={articleData?.video_description || undefined} isDesktop={true} />
@@ -261,18 +261,19 @@ const RightSection = () => {
           <div className="h-full flex flex-col">
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Latest Videos</h2>
             {videos && videos.length > 0 ? (
-              <div className="space-y-4">
+              <div className="flex-1 flex flex-col space-y-6">
                 {videos.map((video, index) => (
-                  <div key={video.id}>
+                  <div key={video.id} className="flex flex-col">
                     <div 
                       onClick={() => handleVideoClick(video)} 
                       className="cursor-pointer touch-manipulation"
                     >
-                      <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200">
+                      <Card className="overflow-hidden hover:shadow-md transition-shadow duration-200 border-0">
                         <CardContent className="p-0">
                           <AspectRatio ratio={16 / 9} className="bg-gray-100 dark:bg-gray-800">
                             {video.thumbnail_url ? 
-                              <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : 
+                              <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> 
+                              : 
                               video.video_url && video.video_url.includes('youtube.com') && 
                               <img 
                                 src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} 
