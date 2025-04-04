@@ -1,4 +1,4 @@
-import { useLocation, useParams } from "react-router-dom";
+import React, { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { NewsVideos } from "@/components/news/NewsVideos";
@@ -248,10 +248,14 @@ const RightSection = () => {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <Separator orientation="vertical" className="absolute left-0 top-0 h-full dark:bg-gray-700" />
+    <div className="h-full flex flex-col relative">
+      {/* Always render vertical separator that spans full height */}
+      <Separator 
+        orientation="vertical" 
+        className="absolute left-0 top-0 bottom-0 w-[1px] bg-border dark:bg-gray-700 z-10" 
+      />
       
-      <div className="p-4 h-full flex flex-col">
+      <div className="p-4 h-full flex flex-col overflow-hidden">
         {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>
             <NewsVideos videoLinks={videoLinks} videoDescription={articleData?.video_description || undefined} isDesktop={true} />
