@@ -34,8 +34,7 @@ const Index = () => {
       }
     };
     
-    // Add dark-mode-transition class to body for smooth transitions
-    document.body.classList.add('dark-mode-transition');
+    // Removed dark-mode-transition class to disable transitions
     
     addSwipeArea();
     window.addEventListener('resize', addSwipeArea);
@@ -53,7 +52,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background dark:bg-background overflow-hidden dark-mode-transition">
+    <div className="min-h-screen bg-background dark:bg-background overflow-hidden">
       <Hero />
       <SymptomsMarquee />
       <NewsSection />

@@ -1,4 +1,3 @@
-
 import { useLocation, Outlet } from "react-router-dom";
 import MainSidebar from "./layout/MainSidebar";
 import RightSection from "./layout/RightSection";
@@ -31,9 +30,6 @@ const LayoutContent = () => {
       }
     };
 
-    // Add dark-mode-transition class to enable smooth transitions
-    document.body.classList.add('dark-mode-transition');
-
     window.addEventListener("beforeunload", preventUnwantedRedirect);
     return () => {
       window.removeEventListener("beforeunload", preventUnwantedRedirect);
@@ -41,7 +37,7 @@ const LayoutContent = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden dark-mode-transition">
+    <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout - increased max-width to 1400px */}
       <div className="w-full max-w-[1400px] mx-auto flex relative">
         {/* Mobile Top Header - only on mobile */}
@@ -65,7 +61,7 @@ const LayoutContent = () => {
               ${isFullWidth || isHomePage ? 'w-full' : 'mx-auto'} 
               ${(!isFullWidth && !isHomePage) ? contentWidth : ''}
               ${(!isFullWidth && !isHomePage) ? contentMaxWidth : ''}
-              transition-all duration-300 h-full
+              h-full
             `}
           >
             <Outlet />

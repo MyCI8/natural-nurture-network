@@ -1,4 +1,3 @@
-
 .instagram-feed-item {
   width: 100%;
   max-width: 500px;
@@ -171,4 +170,11 @@
 
 .dark .vertical-separator {
   background-color: #404040;
+}
+
+/* Light mode specific overrides to ensure text is visible */
+.instagram-likes,
+.instagram-description,
+.instagram-username {
+  color: #222222; /* Dark color for light mode */
 }
