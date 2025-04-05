@@ -22,7 +22,7 @@ interface VideoLink {
 }
 
 interface ArticleData {
-  video_links?: string | null;
+  video_links?: VideoLink[] | string | null;
   video_description?: string | null;
 }
 
@@ -38,6 +38,11 @@ const RightSection = () => {
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [symptomVideos, setSymptomVideos] = useState<SymptomVideoData | null>(null);
+
+  useEffect(() => {
+    console.log("Current location path:", location.pathname);
+    console.log("Article ID param:", id);
+  }, [location, id]);
 
   useEffect(() => {
     const handleSymptomVideos = (event: CustomEvent<SymptomVideoData>) => {
@@ -72,20 +77,69 @@ const RightSection = () => {
     }
   });
 
-  const newsArticleId = location.pathname.startsWith('/news/') ? location.pathname.split('/news/')[1] : null;
-  const { data: articleData } = useQuery<ArticleData | null>({
+  const getNewsArticleId = (path: string) => {
+    if (path.startsWith('/news/')) {
+      const match = path.match(/\/news\/([^/]+)/);
+      return match ? match[1] : null;
+    }
+    return null;
+  };
+
+  const newsArticleId = getNewsArticleId(location.pathname);
+  console.log("Extracted news article ID:", newsArticleId);
+
+  const { data: articleData, isLoading: articleLoading } = useQuery<ArticleData | null>({
     queryKey: ["news-article-videos", newsArticleId],
     queryFn: async () => {
       if (!newsArticleId) return null;
-      const { data, error } = await supabase.from("news_articles").select("video_links, video_description").eq("id", newsArticleId).maybeSingle();
+      
+      console.log("Fetching video data for article:", newsArticleId);
+      const { data, error } = await supabase
+        .from("news_articles")
+        .select("video_links, video_description")
+        .eq("id", newsArticleId)
+        .single();
+      
       if (error) {
         console.error("Error fetching article video data:", error);
         return null;
       }
+      
+      console.log("Article video data fetched:", data);
       return data as ArticleData;
     },
     enabled: !!newsArticleId
   });
+
+  const getVideoLinks = (): VideoLink[] => {
+    if (!articleData?.video_links) return [];
+    
+    console.log("Processing video links. Data type:", typeof articleData.video_links);
+    console.log("Raw video links data:", articleData.video_links);
+    
+    if (Array.isArray(articleData.video_links)) {
+      return articleData.video_links.filter(link => 
+        link && typeof link.url === 'string' && link.url.trim() !== ''
+      );
+    }
+    
+    if (typeof articleData.video_links === 'string') {
+      try {
+        const parsed = JSON.parse(articleData.video_links);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(link => 
+            link && typeof link === 'object' && 
+            typeof link.url === 'string' && link.url.trim() !== '' &&
+            typeof link.title === 'string'
+          );
+        }
+      } catch (e) {
+        console.error("Error parsing video links JSON:", e);
+      }
+    }
+    
+    return [];
+  };
 
   const {
     data: videos
@@ -225,27 +279,8 @@ const RightSection = () => {
     setSelectedVideo(video);
   };
 
-  const videoLinks: VideoLink[] = [];
-  if (articleData?.video_links) {
-    const linksData = articleData.video_links;
-    try {
-      if (typeof linksData === 'string') {
-        const parsed = JSON.parse(linksData);
-        if (Array.isArray(parsed)) {
-          for (const item of parsed) {
-            if (item && typeof item === 'object' && 'url' in item && typeof item.url === 'string') {
-              videoLinks.push({
-                title: typeof item.title === 'string' ? item.title : '',
-                url: item.url
-              });
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Error processing video links:', e);
-    }
-  }
+  const videoLinks = getVideoLinks();
+  console.log("Processed video links:", videoLinks);
 
   return (
     <div className="h-full flex flex-col relative">
@@ -255,10 +290,24 @@ const RightSection = () => {
       />
       
       <div className="p-4 h-full flex flex-col overflow-hidden">
-        {location.pathname.startsWith('/news/') && videoLinks.length > 0 && <>
+        {newsArticleId && videoLinks.length > 0 ? (
+          <>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-left pl-2">Related Videos</h2>
-            <NewsVideos videoLinks={videoLinks} videoDescription={articleData?.video_description || undefined} isDesktop={true} />
-          </>}
+            <NewsVideos 
+              videoLinks={videoLinks} 
+              videoDescription={articleData?.video_description || undefined} 
+              isDesktop={true} 
+            />
+          </>
+        ) : newsArticleId && articleLoading ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : newsArticleId && !videoLinks.length ? (
+          <div className="p-4 text-center">
+            <p className="text-muted-foreground dark:text-dm-text-supporting">No videos available for this article</p>
+          </div>
+        ) : null}
         
         {(location.pathname === '/news' || location.pathname === '/news/') && (
           <div className="h-full flex flex-col">
