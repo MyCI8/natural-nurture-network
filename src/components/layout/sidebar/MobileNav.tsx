@@ -74,9 +74,9 @@ export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
     <nav 
       role="navigation" 
       aria-label="Main navigation"
-      className={`fixed bottom-0 left-0 right-0 h-16 bg-background border-t z-50 ${
+      className={`fixed bottom-0 left-0 right-0 h-16 z-50 border-t transition-transform duration-300 ${
         shouldShowNav ? 'translate-y-0' : 'translate-y-full'
-      } transition-transform duration-300`}
+      } dark:bg-[#1A1F2C] bg-white`} // Added solid background colors for light and dark modes
     >
       <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
         {navigationItems.map((item) => (

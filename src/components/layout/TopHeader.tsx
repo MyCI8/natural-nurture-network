@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -138,7 +139,7 @@ const TopHeader = () => {
     <header 
       className={`fixed top-0 left-0 right-0 h-14 bg-background z-50 border-b flex items-center justify-between px-4 transition-transform duration-300 ${
         visible ? 'translate-y-0' : '-translate-y-full'
-      }`}
+      } dark:bg-[#1A1F2C] bg-white`} // Added solid background colors for light and dark modes
     >
       <div className="flex items-center gap-2">
         <Avatar 
