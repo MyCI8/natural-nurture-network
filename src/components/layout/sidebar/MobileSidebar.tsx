@@ -123,7 +123,7 @@ export const MobileSidebar = ({
 
   return (
     <div 
-      className={`fixed inset-0 z-[60] ${
+      className={`fixed inset-0 z-[100] ${
         isExpanded ? 'visible' : 'invisible'
       } transition-all duration-300`} 
       style={{ touchAction: 'none' }}
