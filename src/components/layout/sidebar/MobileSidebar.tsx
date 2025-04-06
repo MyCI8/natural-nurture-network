@@ -140,12 +140,11 @@ export const MobileSidebar = ({
       {/* Sidebar */}
       <div 
         ref={sidebarRef}
-        className={`absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] bg-background shadow-xl transition-transform duration-300 ease-out h-full flex flex-col overflow-hidden ${
+        className={`absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] shadow-xl transition-transform duration-300 ease-out h-full flex flex-col ${
           isExpanded ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ overscrollBehavior: 'contain' }}
+        } dark:bg-[#1A1F2C] bg-white`}
       >
-        <div className="flex justify-between items-center p-4 border-b relative">
+        <div className="flex justify-between items-center p-4 border-b">
           <div className="text-lg font-semibold">Menu</div>
           <Button 
             variant="ghost" 
@@ -162,7 +161,7 @@ export const MobileSidebar = ({
         </div>
 
         {showSettings ? (
-          <div className="px-4 pb-4 overflow-y-auto flex-1">
+          <div className="flex-1 px-4 py-4">
             <Button 
               variant="ghost" 
               className="mb-4 flex items-center mt-4 touch-manipulation active:scale-95 transition-transform"
@@ -185,7 +184,7 @@ export const MobileSidebar = ({
               />
             </div>
             
-            <div className="flex-1 px-4 py-2 overflow-y-auto -webkit-overflow-scrolling-touch">
+            <div className="flex-1 px-4 py-2">
               <NavigationButtons 
                 onItemClick={() => {
                   setIsExpanded(false);

@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Search, Leaf, Sun, Moon, X } from "lucide-react";
+import { Search, Leaf, Sun, Moon, X, Shield } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileButton } from "./sidebar/UserProfileButton";
@@ -137,9 +136,9 @@ const TopHeader = () => {
   
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 h-14 bg-background z-50 border-b flex items-center justify-between px-4 transition-transform duration-300 ${
+      className={`fixed top-0 left-0 right-0 h-14 z-50 border-b flex items-center justify-between px-4 transition-transform duration-300 ${
         visible ? 'translate-y-0' : '-translate-y-full'
-      } dark:bg-[#1A1F2C] bg-white`} // Added solid background colors for light and dark modes
+      } dark:bg-[#1A1F2C] bg-white`}
     >
       <div className="flex items-center gap-2">
         <Avatar 
@@ -166,9 +165,9 @@ const TopHeader = () => {
       
       <div 
         data-menu="sidebar"
-        className={`fixed top-0 left-0 bottom-0 w-[280px] bg-background border-r z-50 transition-all duration-300 ease-in-out p-4 mobile-drawer ${
+        className={`fixed top-0 left-0 bottom-0 w-[280px] border-r z-50 transition-all duration-300 ease-in-out p-4 ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } dark:bg-[#1A1F2C] bg-white`}
       >
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center p-4 border-b">
@@ -191,28 +190,26 @@ const TopHeader = () => {
           </div>
           
           {showSettingsPanel ? (
-            <div className="flex-1 overflow-y-auto safari-scroll">
-              <div className="p-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mb-4"
-                  onClick={() => setShowSettingsPanel(false)}
-                >
-                  ← Back
-                </Button>
-                <SettingsPanel />
-              </div>
+            <div className="flex-1 px-4 py-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="mb-4"
+                onClick={() => setShowSettingsPanel(false)}
+              >
+                ← Back
+              </Button>
+              <SettingsPanel />
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto safari-scroll py-4">
+            <div className="flex-1 px-4 py-2">
               <NavigationButtons 
                 onItemClick={() => {
                   setIsMenuOpen(false);
                 }}
               />
               
-              <div className="px-4 mt-6">
+              <div className="mt-6">
                 <Button
                   className="w-full rounded-full mb-6 bg-primary text-primary-foreground hover:bg-primary/90 py-5 active-scale"
                   onClick={() => {
@@ -232,6 +229,7 @@ const TopHeader = () => {
                       setIsMenuOpen(false);
                     }}
                   >
+                    <Shield className="h-5 w-5 mr-2" />
                     Admin Panel
                   </Button>
                 )}
