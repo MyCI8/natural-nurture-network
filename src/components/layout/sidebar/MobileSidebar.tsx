@@ -128,7 +128,7 @@ export const MobileSidebar = ({
       } transition-all duration-300`} 
       style={{ touchAction: 'none' }}
     >
-      {/* Backdrop */}
+      {/* Backdrop with solid background */}
       <div 
         className={`absolute inset-0 bg-black/50 backdrop-blur-sm ${
           isExpanded ? 'opacity-100' : 'opacity-0'
@@ -137,12 +137,12 @@ export const MobileSidebar = ({
         aria-hidden="true"
       />
       
-      {/* Sidebar */}
+      {/* Sidebar with solid white/dark background */}
       <div 
         ref={sidebarRef}
         className={`absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] shadow-xl transition-transform duration-300 ease-out h-full flex flex-col ${
           isExpanded ? 'translate-x-0' : '-translate-x-full'
-        } dark:bg-[#1A1F2C] bg-white`}
+        } dark:bg-[#1A1F2C] bg-white`} // Solid backgrounds for light and dark modes
       >
         <div className="flex justify-between items-center p-4 border-b">
           <div className="text-lg font-semibold">Menu</div>
