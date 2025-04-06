@@ -123,7 +123,7 @@ export const MobileSidebar = ({
 
   return (
     <div 
-      className={`fixed inset-0 z-[100] ${
+      className={`fixed inset-0 z-[200] ${
         isExpanded ? 'visible' : 'invisible'
       } transition-all duration-300`} 
       style={{ touchAction: 'none' }}
@@ -142,7 +142,7 @@ export const MobileSidebar = ({
         ref={sidebarRef}
         className={`absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] shadow-xl transition-transform duration-300 ease-out h-full flex flex-col ${
           isExpanded ? 'translate-x-0' : '-translate-x-full'
-        } dark:bg-[#1A1F2C] bg-white`} // Solid backgrounds for light and dark modes
+        } dark:bg-[#1A1F2C] bg-white z-[250]`} // Added z-index and solid backgrounds
       >
         <div className="flex justify-between items-center p-4 border-b">
           <div className="text-lg font-semibold">Menu</div>
