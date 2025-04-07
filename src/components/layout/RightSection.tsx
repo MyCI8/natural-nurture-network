@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -372,18 +373,7 @@ const RightSection = () => {
                       <p className="text-sm text-left">{videoDetails.description}</p>
                     </div>
                     
-                    <div className="text-sm text-gray-500 mb-2 flex items-center gap-2">
-                      <span>{videoDetails.likes_count || 0} likes</span>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={`p-0 h-6 w-6 hover:bg-transparent ${userLikeStatus ? 'text-red-500' : 'text-gray-500'}`} 
-                        onClick={handleLike}
-                      >
-                        <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
-                      </Button>
-                    </div>
-                    
+                    {/* Rearranged action buttons: chat, save, share directly below description */}
                     <div className="flex items-center space-x-2 mb-0 py-0">
                       <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors touch-manipulation">
                         <MessageCircle className="h-5 w-5" />
@@ -393,6 +383,19 @@ const RightSection = () => {
                       </Button>
                       <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors touch-manipulation" onClick={handleShare}>
                         <Share2 className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    
+                    {/* Moved likes count section with heart icon to the bottom */}
+                    <div className="text-sm text-gray-500 mb-2 flex items-center gap-2">
+                      <span>{videoDetails.likes_count || 0} likes</span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className={`p-0 h-6 w-6 hover:bg-transparent ${userLikeStatus ? 'text-red-500' : 'text-gray-500'}`} 
+                        onClick={handleLike}
+                      >
+                        <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
                       </Button>
                     </div>
                   </div>

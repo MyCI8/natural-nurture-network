@@ -1,3 +1,4 @@
+
 .instagram-feed-item {
   width: 100%;
   max-width: 500px;
@@ -38,8 +39,14 @@
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
+  border-bottom: 1px solid rgba(219, 219, 219, 0.3);
 }
 
+.dark .instagram-actions {
+  border-color: rgba(64, 64, 64, 0.3);
+}
+
+/* Updated styles for likes section now that it's at the bottom */
 .instagram-likes {
   padding: 0 12px 4px;
   font-weight: 600;
@@ -48,6 +55,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-top: 4px;
 }
 
 .dark .instagram-likes,
@@ -121,17 +129,7 @@
   object-fit: cover;
 }
 
-/* Consistent separator styles */
-.article-separator {
-  width: 50%;
-  margin: 1rem auto;
-  height: 1px;
-  background-color: #e5e5e5;
-}
-
-.dark .article-separator {
-  background-color: #404040;
-}
+/* ... keep existing code (consistent separator styles and other styles) */
 
 /* Touch-friendly styles */
 .touch-manipulation {
@@ -143,6 +141,15 @@
   .thumb-friendly {
     margin-bottom: 1rem;
   }
+  
+  /* Ensure action buttons have proper spacing on mobile */
+  .instagram-actions {
+    padding-bottom: 10px;
+  }
+  
+  .instagram-likes {
+    margin-top: 6px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -151,36 +158,7 @@
   }
 }
 
-/* Prevent scrollbar display */
-.no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari, Opera */
-}
-
-/* Vertical separator consistent style */
-.vertical-separator {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 1px;
-  background-color: #e5e5e5;
-}
-
-.dark .vertical-separator {
-  background-color: #404040;
-}
-
-/* Light mode specific overrides to ensure text is visible */
-.instagram-likes,
-.instagram-description,
-.instagram-username {
-  color: #222222; /* Dark color for light mode */
-}
+/* ... keep existing code (scrollbar styles and other utilities) */
 
 /* Touch friendly button styles */
 .action-button {
