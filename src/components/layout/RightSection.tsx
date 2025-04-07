@@ -372,22 +372,27 @@ const RightSection = () => {
                       <p className="text-sm text-left">{videoDetails.description}</p>
                     </div>
                     
-                    <div className="text-sm text-gray-500 mb-2">
+                    <div className="text-sm text-gray-500 mb-2 flex items-center gap-2">
                       <span>{videoDetails.likes_count || 0} likes</span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className={`p-0 h-6 w-6 hover:bg-transparent ${userLikeStatus ? 'text-red-500' : 'text-gray-500'}`} 
+                        onClick={handleLike}
+                      >
+                        <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
+                      </Button>
                     </div>
                     
                     <div className="flex items-center space-x-2 mb-0 py-0">
-                      <Button variant="ghost" size="icon" className={`text-gray-500 hover:text-[#4CAF50] transition-colors ${userLikeStatus ? 'text-red-500' : ''}`} onClick={handleLike}>
-                        <Heart className={`h-5 w-5 ${userLikeStatus ? 'fill-current' : ''}`} />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors">
+                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors touch-manipulation">
                         <MessageCircle className="h-5 w-5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors" onClick={handleShare}>
-                        <Share2 className="h-5 w-5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors">
+                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors touch-manipulation">
                         <Bookmark className="h-5 w-5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#4CAF50] transition-colors touch-manipulation" onClick={handleShare}>
+                        <Share2 className="h-5 w-5" />
                       </Button>
                     </div>
                   </div>

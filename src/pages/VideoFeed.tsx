@@ -211,43 +211,45 @@ const VideoFeed = () => {
                   />
                 </div>
 
-                {/* Video Description */}
+                {/* Video Description and Likes */}
                 <div className="p-3 sm:p-4">
                   <p className="text-sm text-[#666666] text-left mb-2">
                     {video.description?.substring(0, 100)}
                     {video.description?.length > 100 && '...'}
                   </p>
                   
-                  <div className="mt-2 mb-3 text-sm text-[#666666]">
-                    <span className="mr-4">{video.likes_count || 0} likes</span>
-                    <span>{video.views_count || 0} views</span>
-                  </div>
-
-                  {/* Interaction Buttons with improved touch targets */}
-                  <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 border-t pt-3">
+                  {/* Updated likes count with heart icon */}
+                  <div className="mt-2 mb-3 text-sm text-[#666666] flex items-center space-x-2">
+                    <span className="mr-1">{video.likes_count || 0} likes</span>
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className={`h-11 w-11 transition-transform hover:scale-110 ${
+                      className={`h-8 w-8 p-0 transition-transform hover:scale-110 ${
                         userLikes?.includes(video.id) 
                           ? 'text-red-500' 
                           : 'text-[#666666] hover:text-[#4CAF50]'
                       }`}
                       onClick={(e) => handleLike(video.id, e)}
                     >
-                      <Heart className="h-6 w-6" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
+                      <Heart className="h-5 w-5" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
                     </Button>
+                    <span className="ml-2">{video.views_count || 0} views</span>
+                  </div>
+
+                  {/* Rearranged action buttons: chat, save, share */}
+                  <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 border-t pt-3">
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110"
+                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
                     >
                       <MessageCircle className="h-6 w-6" />
                     </Button>
+                    
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className={`h-11 w-11 transition-transform hover:scale-110 ${
+                      className={`h-11 w-11 transition-transform hover:scale-110 touch-manipulation ${
                         userSaves?.includes(video.id) 
                           ? 'text-[#4CAF50]' 
                           : 'text-[#666666] hover:text-[#4CAF50]'
@@ -259,10 +261,11 @@ const VideoFeed = () => {
                         fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
                       />
                     </Button>
+                    
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 sm:hidden"
+                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
                     >
                       <Share2 className="h-6 w-6" />
                     </Button>

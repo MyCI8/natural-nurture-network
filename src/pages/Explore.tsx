@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -290,24 +291,29 @@ const Explore = () => {
             />
           </div>
 
+          {/* Updated likes count section with heart icon */}
+          <div className="instagram-likes flex items-center gap-2 py-2">
+            <span>{video.likes_count || 0} likes</span>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className={`p-0 h-6 w-6 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-dm-text'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLike(video.id);
+              }}
+            >
+              <Heart className={`h-5 w-5 ${userLikes[video.id] ? 'fill-current' : ''}`} />
+            </Button>
+          </div>
+
+          {/* Rearranged action buttons: chat, save, share */}
           <div className="instagram-actions">
             <div className="flex gap-4">
               <Button 
                 variant="ghost" 
                 size="icon"
-                className={`p-0 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-dm-text'}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLike(video.id);
-                }}
-              >
-                <Heart className={`h-6 w-6 ${userLikes[video.id] ? 'fill-current' : ''}`} />
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="p-0 hover:bg-transparent text-black dark:text-dm-text"
+                className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleNavigateToVideo(video.id);
@@ -319,7 +325,15 @@ const Explore = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="p-0 hover:bg-transparent text-black dark:text-dm-text"
+                className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation"
+              >
+                <Bookmark className="h-6 w-6" />
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleShare(video);
@@ -328,18 +342,6 @@ const Explore = () => {
                 <Share2 className="h-6 w-6" />
               </Button>
             </div>
-            
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="p-0 hover:bg-transparent text-black dark:text-dm-text"
-            >
-              <Bookmark className="h-6 w-6" />
-            </Button>
-          </div>
-
-          <div className="instagram-likes">
-            {video.likes_count || 0} likes
           </div>
           
           <div className="instagram-description">

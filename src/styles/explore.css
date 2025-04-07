@@ -45,6 +45,9 @@
   font-weight: 600;
   font-size: 14px;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .dark .instagram-likes,
@@ -177,4 +180,27 @@
 .instagram-description,
 .instagram-username {
   color: #222222; /* Dark color for light mode */
+}
+
+/* Touch friendly button styles */
+.action-button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Larger touch targets for mobile */
+@media (max-width: 768px) {
+  .instagram-actions button,
+  .video-dialog-actions button {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .instagram-likes button {
+    min-width: 32px;
+    min-height: 32px;
+  }
 }

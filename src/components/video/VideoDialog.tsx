@@ -182,19 +182,21 @@ const VideoDialog = ({
                 </p>
               </div>
               
-              <div className="text-sm text-gray-500 dark:text-dm-text-supporting mb-2">
+              {/* Updated likes count section with heart icon */}
+              <div className="text-sm text-gray-500 dark:text-dm-text-supporting mb-2 flex items-center gap-2">
                 <span>{video.likes_count || 0} likes</span>
-              </div>
-              
-              {/* Interaction buttons with improved touch area */}
-              <div className="flex items-center space-x-2 mb-2 py-1">
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-gray-500 dark:text-dm-text-supporting hover:text-[#4CAF50] dark:hover:text-dm-primary transition-transform hover:scale-110 h-11 w-11 touch-manipulation"
+                  className={`p-0 h-6 w-6 hover:bg-transparent ${userLikes?.[video.id] ? 'text-red-500' : 'text-gray-500 dark:text-dm-text-supporting'}`}
+                  onClick={() => onLikeToggle?.(video.id)}
                 >
-                  <Heart className="h-5 w-5" />
+                  <Heart className={`h-5 w-5 ${userLikes?.[video.id] ? 'fill-current' : ''}`} />
                 </Button>
+              </div>
+              
+              {/* Rearranged interaction buttons: chat, save, share */}
+              <div className="flex items-center space-x-2 mb-2 py-1">
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -207,14 +209,14 @@ const VideoDialog = ({
                   size="icon"
                   className="text-gray-500 dark:text-dm-text-supporting hover:text-[#4CAF50] dark:hover:text-dm-primary transition-transform hover:scale-110 h-11 w-11 touch-manipulation"
                 >
-                  <Share2 className="h-5 w-5" />
+                  <Bookmark className="h-5 w-5" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon"
                   className="text-gray-500 dark:text-dm-text-supporting hover:text-[#4CAF50] dark:hover:text-dm-primary transition-transform hover:scale-110 h-11 w-11 touch-manipulation"
                 >
-                  <Bookmark className="h-5 w-5" />
+                  <Share2 className="h-5 w-5" />
                 </Button>
               </div>
             </div>
