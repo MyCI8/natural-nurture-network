@@ -1,11 +1,13 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX, X } from 'lucide-react';
+import { Volume2, VolumeX, X, ShoppingCart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import ProductLinkCard from './ProductLinkCard';
 
 interface VideoPlayerProps {
   video: Video;
@@ -44,6 +46,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [videoAspectRatio, setVideoAspectRatio] = useState<number | null>(null);
   const [playAttempted, setPlayAttempted] = useState(false);
   const [playbackStarted, setPlaybackStarted] = useState(false);
+  const [visibleProductLink, setVisibleProductLink] = useState<string | null>(null);
   
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.1,
@@ -193,6 +196,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     onAudioStateChange?.(newMutedState);
   };
 
+  const toggleProductLink = (linkId: string) => {
+    if (visibleProductLink === linkId) {
+      setVisibleProductLink(null);
+    } else {
+      setVisibleProductLink(linkId);
+    }
+  };
+
   const feedAspectRatio = aspectRatio || 4/5;
 
   const getVideoStyle = () => {
@@ -285,6 +296,35 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             title={video.title}
           ></iframe>
         )}
+
+        {productLinks.length > 0 && (
+          <div className="absolute top-2 left-2 z-10">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleProductLink(productLinks[0].id);
+              }}
+            >
+              <ShoppingCart className="h-4 w-4 mr-1" />
+              <span className="text-xs">Products</span>
+            </Button>
+          </div>
+        )}
+
+        {productLinks.map((link) => (
+          <div key={link.id} className={cn(
+            "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+            visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+          )}>
+            <ProductLinkCard 
+              link={link} 
+              onClose={() => setVisibleProductLink(null)} 
+            />
+          </div>
+        ))}
       </div>
     );
   }
@@ -344,6 +384,35 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             )}
           </Button>
         )}
+
+        {productLinks.length > 0 && (
+          <div className="absolute top-3 left-3 z-10">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleProductLink(productLinks[0].id);
+              }}
+            >
+              <ShoppingCart className="h-4 w-4 mr-1" />
+              <span className="text-xs">Products</span>
+            </Button>
+          </div>
+        )}
+
+        {productLinks.map((link) => (
+          <div key={link.id} className={cn(
+            "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+            visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+          )}>
+            <ProductLinkCard 
+              link={link} 
+              onClose={() => setVisibleProductLink(null)} 
+            />
+          </div>
+        ))}
       </div>
     );
   }
@@ -397,7 +466,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           variant="ghost"
           size="icon"
           onClick={toggleMute}
-          className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center"
+          className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center touch-manipulation"
         >
           {isMuted ? (
             <VolumeX className="h-4 w-4 text-white" />
@@ -408,28 +477,34 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       )}
 
       {productLinks.length > 0 && (
-        <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none">
-          {productLinks.map((link) => (
-            <div
-              key={link.id}
-              className="absolute pointer-events-auto"
-              style={{
-                left: `${link.position_x || 50}%`,
-                top: `${link.position_y || 50}%`,
-                transform: 'translate(-50%, -50%)'
+        <>
+          <div className="absolute top-3 left-3 z-10">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleProductLink(productLinks[0].id);
               }}
             >
-              <Button
-                variant="secondary"
-                className="bg-white/80 hover:bg-white shadow-lg backdrop-blur-sm"
-                onClick={() => window.open(link.url, '_blank')}
-              >
-                {link.title}
-                {link.price && ` - $${link.price}`}
-              </Button>
+              <ShoppingCart className="h-4 w-4 mr-1" />
+              <span className="text-xs">Products</span>
+            </Button>
+          </div>
+
+          {productLinks.map((link) => (
+            <div key={link.id} className={cn(
+              "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+              visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+            )}>
+              <ProductLinkCard 
+                link={link} 
+                onClose={() => setVisibleProductLink(null)} 
+              />
             </div>
           ))}
-        </div>
+        </>
       )}
     </div>
   );

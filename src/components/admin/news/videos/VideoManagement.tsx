@@ -3,12 +3,14 @@ import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Video, Archive, Trash2 } from "lucide-react";
+import { Plus, Video, Archive, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import VideoTable from "./VideoTable";
 import VideoFilters from "./VideoFilters";
 import { Video as VideoType } from "@/types/video";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import VideoStatsCards from "./VideoStatsCards";
 
 const VideoManagement = () => {
   const navigate = useNavigate();
@@ -50,7 +52,7 @@ const VideoManagement = () => {
       
       let query = supabase
         .from("videos")
-        .select("*, related_article_id")
+        .select("*, related_article_id, video_product_links(count)")
         .eq("video_type", "news");
 
       if (searchQuery) {
@@ -77,7 +79,8 @@ const VideoManagement = () => {
           ...video, 
           usage: videoUsageData.usage,
           relatedArticleTitle: videoUsageData.articleTitle,
-          related_article_id: video.related_article_id || null // Ensure related_article_id is always defined
+          related_article_id: video.related_article_id || null, // Ensure related_article_id is always defined
+          product_links_count: video.video_product_links?.[0]?.count || 0
         };
       }).filter(video => {
         if (videoFilter === "all") return true;
@@ -139,12 +142,19 @@ const VideoManagement = () => {
       return videoId;
     },
     onSuccess: () => {
-      toast.success("Video deleted successfully");
+      toast({
+        title: "Video deleted successfully",
+        variant: "default"
+      });
       queryClient.invalidateQueries({ queryKey: ["admin-news-videos"] });
     },
     onError: (error) => {
       console.error("Error deleting video:", error);
-      toast.error("Failed to delete video");
+      toast({
+        title: "Failed to delete video",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   });
 
@@ -159,12 +169,19 @@ const VideoManagement = () => {
       return videoId;
     },
     onSuccess: () => {
-      toast.success("Video archived successfully");
+      toast({
+        title: "Video archived successfully",
+        variant: "default"
+      });
       queryClient.invalidateQueries({ queryKey: ["admin-news-videos"] });
     },
     onError: (error) => {
       console.error("Error archiving video:", error);
-      toast.error("Failed to archive video");
+      toast({
+        title: "Failed to archive video",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   });
 
@@ -179,29 +196,55 @@ const VideoManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Manage News Videos</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate("/admin/news")}
+            className="mr-2 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold">Manage News Videos</h2>
+            <p className="text-muted-foreground">
+              Create and manage videos for news content
+            </p>
+          </div>
+        </div>
         <Button onClick={handleAddVideo}>
-          <Video className="mr-2 h-4 w-4" /> Create News Video
+          <Plus className="mr-2 h-4 w-4" /> Create News Video
         </Button>
       </div>
 
-      <VideoFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        videoFilter={videoFilter}
-        setVideoFilter={setVideoFilter}
-      />
+      <VideoStatsCards videos={videos} />
 
-      <VideoTable 
-        videos={videos} 
-        navigate={navigate} 
-        isLoading={isLoading} 
-        onDelete={(id) => deleteVideoMutation.mutate(id)}
-        onArchive={(id) => archiveVideoMutation.mutate(id)}
-      />
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">Video Library</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <VideoFilters
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            videoFilter={videoFilter}
+            setVideoFilter={setVideoFilter}
+          />
+
+          <div className="mt-4">
+            <VideoTable 
+              videos={videos} 
+              navigate={navigate} 
+              isLoading={isLoading} 
+              onDelete={(id) => deleteVideoMutation.mutate(id)}
+              onArchive={(id) => archiveVideoMutation.mutate(id)}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

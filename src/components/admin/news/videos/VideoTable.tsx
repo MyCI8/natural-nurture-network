@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Video, Archive, Trash2, Plus } from "lucide-react";
+import { Video, Archive, Trash2, Plus, ShoppingCart } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Video as VideoType } from "@/types/video";
 
 interface VideoTableProps {
@@ -82,6 +83,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Usage</TableHead>
+            <TableHead>Product Links</TableHead>
             <TableHead>Views</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -125,6 +127,16 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                   articleTitle={video.relatedArticleTitle}
                   showInLatest={video.show_in_latest}
                 />
+              </TableCell>
+              <TableCell>
+                {(video as any).product_links_count > 0 ? (
+                  <Badge variant="secondary" className="gap-1">
+                    <ShoppingCart className="h-3 w-3" />
+                    {(video as any).product_links_count}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground text-sm">None</span>
+                )}
               </TableCell>
               <TableCell>{video.views_count || 0}</TableCell>
               <TableCell>{formatDate(video.created_at)}</TableCell>

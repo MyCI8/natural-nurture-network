@@ -55,7 +55,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 4px;
 }
 
 .dark .instagram-likes,
@@ -129,8 +128,6 @@
   object-fit: cover;
 }
 
-/* ... keep existing code (consistent separator styles and other styles) */
-
 /* Touch-friendly styles */
 .touch-manipulation {
   touch-action: manipulation;
@@ -146,10 +143,6 @@
   .instagram-actions {
     padding-bottom: 10px;
   }
-  
-  .instagram-likes {
-    margin-top: 6px;
-  }
 }
 
 @media (min-width: 768px) {
@@ -157,8 +150,6 @@
     margin-bottom: 28px;
   }
 }
-
-/* ... keep existing code (scrollbar styles and other utilities) */
 
 /* Touch friendly button styles */
 .action-button {
@@ -181,4 +172,38 @@
     min-width: 32px;
     min-height: 32px;
   }
+}
+
+/* Product link animation and styles */
+.shadow-up {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Product button animations */
+@keyframes product-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.product-button-pulse {
+  animation: product-pulse 2s ease-in-out infinite;
+}
+
+/* Product card slide animations */
+@keyframes slide-in-up {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0); }
+}
+
+.slide-in-up {
+  animation: slide-in-up 0.3s ease-out forwards;
+}
+
+@keyframes slide-out-down {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+.slide-out-down {
+  animation: slide-out-down 0.3s ease-out forwards;
 }

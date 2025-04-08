@@ -1,6 +1,8 @@
 
+import React from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { NewspaperIcon, PlayCircle } from "lucide-react";
 
 interface VideoUsageBadgeProps {
   usage: "latest" | "article" | "both" | "none";
@@ -9,35 +11,60 @@ interface VideoUsageBadgeProps {
 }
 
 export const VideoUsageBadge = ({ usage, articleTitle, showInLatest }: VideoUsageBadgeProps) => {
-  // Determine badge variant and text based on usage
-  let badgeVariant: "outline" | "secondary" | "default" = "outline";
-  let badgeText = "Not Used";
-  let tooltipText = "This video is not being used";
-
-  if (usage === "both") {
-    badgeVariant = "default";
-    badgeText = "Both";
-    tooltipText = `Used in Latest Videos and article: "${articleTitle}"`;
-  } else if (usage === "article") {
-    badgeVariant = "secondary";
-    badgeText = "In Article";
-    tooltipText = `Used in article: "${articleTitle}"`;
-  } else if (usage === "latest") {
-    badgeVariant = "outline";
-    badgeText = "Latest Videos";
-    tooltipText = "Shown in Latest Videos section";
-  }
-
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Badge variant={badgeVariant} className="whitespace-nowrap">
-          {badgeText}
-        </Badge>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{tooltipText}</p>
-      </TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      {usage === "both" ? (
+        <div className="flex gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 gap-1">
+                <PlayCircle className="h-3 w-3" />
+                Latest
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Displayed in latest videos section</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700 gap-1">
+                <NewspaperIcon className="h-3 w-3" />
+                Article
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Linked in article: {articleTitle}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      ) : usage === "latest" ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700 gap-1">
+              <PlayCircle className="h-3 w-3" />
+              Latest
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Displayed in latest videos section</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : usage === "article" ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700 gap-1">
+              <NewspaperIcon className="h-3 w-3" />
+              Article
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Linked in article: {articleTitle}</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <span className="text-muted-foreground text-sm">None</span>
+      )}
+    </TooltipProvider>
   );
 };
