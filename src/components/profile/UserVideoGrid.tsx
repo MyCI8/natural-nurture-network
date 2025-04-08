@@ -20,6 +20,8 @@ export const UserVideoGrid = ({ userId }: UserVideoGridProps) => {
         .select('*')
         .eq('creator_id', userId)
         .eq('status', 'published')
+        // Filter out admin-uploaded "latest videos" by checking video_type
+        .neq('video_type', 'news')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -45,7 +47,7 @@ export const UserVideoGrid = ({ userId }: UserVideoGridProps) => {
         {videos.map((video) => (
           <div
             key={video.id}
-            className="relative aspect-square cursor-pointer group"
+            className="relative aspect-square cursor-pointer group touch-manipulation"
             onClick={() => setSelectedVideo(video)}
           >
             {video.thumbnail_url ? (
