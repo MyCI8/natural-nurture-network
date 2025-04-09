@@ -16,12 +16,12 @@ interface ProductLinksEditorProps {
 const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
   const [links, setLinks] = useState<ProductLink[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [newLink, setNewLink] = useState<Partial<ProductLink>>({
     title: '',
     url: '',
     price: null,
-    position_x: 50,
-    position_y: 50,
+    image_url: '',
   });
 
   // Fetch existing product links for the video
@@ -71,8 +71,9 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: newLink.title,
           url: newLink.url,
           price: newLink.price,
-          position_x: newLink.position_x,
-          position_y: newLink.position_y,
+          image_url: newLink.image_url,
+          position_x: 50, // Default value
+          position_y: 50, // Default value
         })
         .select();
         
@@ -83,8 +84,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
         title: '',
         url: '',
         price: null,
-        position_x: 50,
-        position_y: 50,
+        image_url: '',
       });
       
       toast({
@@ -130,39 +130,66 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
   };
 
   const extractAmazonMetadata = async () => {
-    if (!newLink.url || !newLink.url.includes('amazon.com')) {
+    if (!newLink.url) {
       toast({
         title: 'Invalid URL',
-        description: 'Please enter a valid Amazon product URL.',
+        description: 'Please enter an Amazon product URL.',
         variant: 'destructive',
       });
       return;
     }
     
-    // This is a placeholder for an API that would extract metadata
-    // In a real implementation, you would call a backend service
-    toast({
-      title: 'Extracting product information',
-      description: 'This would connect to an API to extract Amazon product metadata.',
-    });
+    setIsExtracting(true);
     
-    // Simulate extraction delay
-    setTimeout(() => {
-      // Example placeholder metadata
-      const title = 'Amazon Product ' + Math.floor(Math.random() * 1000);
-      const price = (Math.random() * 100).toFixed(2);
+    try {
+      // Parse Amazon link - This is simplified for demo purposes
+      // In a real implementation, this would connect to an API service
+      let productId = '';
       
+      // Handle short URLs like a.co/d/hRlELFf
+      if (newLink.url.includes('a.co/d/')) {
+        productId = newLink.url.split('a.co/d/')[1].split('?')[0].split('#')[0];
+      } 
+      // Handle regular amazon URLs
+      else if (newLink.url.includes('/dp/')) {
+        productId = newLink.url.split('/dp/')[1].split('/')[0].split('?')[0];
+      } 
+      else if (newLink.url.includes('/gp/product/')) {
+        productId = newLink.url.split('/gp/product/')[1].split('/')[0].split('?')[0];
+      }
+      
+      if (!productId) {
+        throw new Error('Could not extract product ID from URL');
+      }
+      
+      // For demo purposes, we'll generate mock data
+      // In production, this would call an Amazon product API
+      const mockTitle = 'Amazon Product ' + productId.substring(0, 4).toUpperCase();
+      const mockPrice = (Math.random() * 100 + 10).toFixed(2);
+      const mockImageUrl = `https://via.placeholder.com/200x200/f3f3f3/222222?text=Product+${productId.substring(0, 4)}`;
+      
+      // Update the form with extracted data
       setNewLink({
         ...newLink,
-        title: title,
-        price: parseFloat(price),
+        title: mockTitle,
+        price: parseFloat(mockPrice),
+        image_url: mockImageUrl,
       });
       
       toast({
         title: 'Product information extracted',
-        description: 'Product title and price have been populated.',
+        description: 'Product details have been populated.',
       });
-    }, 1000);
+    } catch (error) {
+      console.error('Error extracting product metadata:', error);
+      toast({
+        title: 'Extraction failed',
+        description: 'Could not extract product information. Please enter details manually.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   return (
@@ -173,30 +200,40 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-3">
+            <div className="grid gap-4">
+              <div>
                 <Label htmlFor="product-url">Amazon Product URL</Label>
                 <div className="flex mt-1">
                   <Input
                     id="product-url"
-                    placeholder="https://www.amazon.com/product/..."
+                    placeholder="https://www.amazon.com/product/... or https://a.co/d/..."
                     value={newLink.url || ''}
                     onChange={(e) => handleInputChange('url', e.target.value)}
                     className="flex-grow"
                   />
                   <Button 
-                    className="ml-2"
+                    className="ml-2 flex-shrink-0 touch-manipulation"
                     variant="outline"
                     onClick={extractAmazonMetadata}
                     type="button"
+                    disabled={isExtracting}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Extract
+                    {isExtracting ? (
+                      <div className="flex items-center">
+                        <div className="h-4 w-4 mr-2 rounded-full border-2 border-gray-300 border-t-primary animate-spin"></div>
+                        Extracting...
+                      </div>
+                    ) : (
+                      <>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Extract
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
               
-              <div className="col-span-2">
+              <div>
                 <Label htmlFor="product-title">Product Title</Label>
                 <Input
                   id="product-title"
@@ -223,37 +260,36 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
               </div>
               
               <div>
-                <Label htmlFor="position-x">Position X (%)</Label>
+                <Label htmlFor="product-image">Product Image URL</Label>
                 <Input
-                  id="position-x"
-                  type="number"
-                  placeholder="50"
-                  min={0}
-                  max={100}
-                  value={newLink.position_x || 50}
-                  onChange={(e) => handleInputChange('position_x', parseInt(e.target.value) || 50)}
+                  id="product-image"
+                  placeholder="https://example.com/product-image.jpg"
+                  value={newLink.image_url || ''}
+                  onChange={(e) => handleInputChange('image_url', e.target.value)}
                   className="mt-1"
                 />
               </div>
               
-              <div>
-                <Label htmlFor="position-y">Position Y (%)</Label>
-                <Input
-                  id="position-y"
-                  type="number"
-                  placeholder="50"
-                  min={0}
-                  max={100}
-                  value={newLink.position_y || 50}
-                  onChange={(e) => handleInputChange('position_y', parseInt(e.target.value) || 50)}
-                  className="mt-1"
-                />
-              </div>
+              {newLink.image_url && (
+                <div className="mt-2">
+                  <Label className="mb-2 block">Image Preview</Label>
+                  <div className="w-24 h-24 border rounded overflow-hidden bg-gray-100 dark:bg-dm-mist">
+                    <img 
+                      src={newLink.image_url} 
+                      alt="Product preview" 
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200x200/f3f3f3/444444?text=Error';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleAddLink} className="w-full">
+          <Button onClick={handleAddLink} className="w-full touch-manipulation">
             <Plus className="h-4 w-4 mr-2" /> Add Product Link
           </Button>
         </CardFooter>
@@ -271,16 +307,29 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
               <Card key={link.id} className="overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium">{link.title}</h4>
-                      <p className="text-sm text-muted-foreground truncate">{link.url}</p>
-                      <div className="flex items-center mt-1">
+                    <div className="flex items-start gap-3">
+                      {link.image_url ? (
+                        <div className="w-14 h-14 flex-shrink-0">
+                          <img 
+                            src={link.image_url} 
+                            alt={link.title} 
+                            className="w-full h-full object-contain rounded border dark:border-dm-mist"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200/f3f3f3/444444?text=NA';
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 flex-shrink-0 bg-gray-100 dark:bg-dm-mist rounded border dark:border-dm-mist flex items-center justify-center text-xs text-gray-500">
+                          No image
+                        </div>
+                      )}
+                      <div className="flex-grow min-w-0">
+                        <h4 className="font-medium">{link.title}</h4>
+                        <p className="text-sm text-muted-foreground truncate">{link.url}</p>
                         {link.price && (
-                          <span className="text-sm mr-3">${link.price.toFixed(2)}</span>
+                          <p className="text-sm mt-1">${link.price.toFixed(2)}</p>
                         )}
-                        <span className="text-xs text-muted-foreground">
-                          Position: {link.position_x}%, {link.position_y}%
-                        </span>
                       </div>
                     </div>
                     <div className="flex">
@@ -288,7 +337,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
                         variant="ghost"
                         size="icon"
                         onClick={() => window.open(link.url, '_blank')}
-                        className="h-8 w-8"
+                        className="h-8 w-8 touch-manipulation"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
@@ -296,7 +345,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteLink(link.id)}
-                        className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                        className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10 touch-manipulation"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

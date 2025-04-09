@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -207,8 +208,8 @@ const ExploreDetail = () => {
         </div>
       </div>
       
-      {/* Description */}
-      <div className="px-4 py-2 border-b border-gray-200 dark:border-dm-mist">
+      {/* Description - removed the border-b */}
+      <div className="px-4 py-2">
         <p className="text-gray-700 dark:text-dm-text-supporting">{video.description}</p>
       </div>
       

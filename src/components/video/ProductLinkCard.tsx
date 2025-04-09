@@ -19,27 +19,26 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
   }>({
     title: link.title,
     price: link.price || undefined,
-    imageUrl: undefined,
+    imageUrl: link.image_url || undefined,
     description: undefined
   });
 
-  // This would fetch Amazon product data in a real implementation
-  // For now we'll just use placeholder data
   useEffect(() => {
-    // In a real implementation, this would call an API to fetch Amazon product data
-    // You could also store this data in your database when the link is created
-    
-    // Placeholder implementation
-    if (link.url.includes('amazon.com')) {
+    // Use the image_url from the link if available
+    if (link.image_url) {
+      setProductMetadata(prev => ({
+        ...prev,
+        imageUrl: link.image_url
+      }));
+    } else if (link.url.includes('amazon.com') || link.url.includes('a.co')) {
       // Generate a placeholder image based on the product title
       const placeholderImage = `https://via.placeholder.com/200x200/f0f0f0/404040?text=${encodeURIComponent(link.title.substring(0, 10))}`;
       
-      setProductMetadata({
-        title: link.title,
-        price: link.price || undefined,
+      setProductMetadata(prev => ({
+        ...prev,
         imageUrl: placeholderImage,
         description: "This is a product available on Amazon. Click to learn more and purchase."
-      });
+      }));
     }
   }, [link]);
 
@@ -66,7 +65,7 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
               e.stopPropagation();
               onClose();
             }}
-            className="h-6 w-6 p-0"
+            className="h-6 w-6 p-0 touch-manipulation"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -74,11 +73,14 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
         
         <div className="flex touch-manipulation" onClick={handleProductClick}>
           {productMetadata.imageUrl && (
-            <div className="w-14 h-14 flex-shrink-0 mr-3">
+            <div className="w-16 h-16 flex-shrink-0 mr-3">
               <img 
                 src={productMetadata.imageUrl} 
                 alt={productMetadata.title} 
-                className="w-full h-full object-cover rounded"
+                className="w-full h-full object-contain rounded"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200/f3f3f3/444444?text=NA';
+                }}
               />
             </div>
           )}
