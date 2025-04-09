@@ -9,17 +9,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Share2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+
 const ExploreDetail = () => {
-  const {
-    id
-  } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const {
-    setShowRightSection
-  } = useLayout();
-  const {
-    toast
-  } = useToast();
+  const { setShowRightSection } = useLayout();
+  const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
   const commentsRef = useRef<HTMLDivElement>(null);
 
@@ -54,10 +49,7 @@ const ExploreDetail = () => {
       });
     }
   };
-  const {
-    data: video,
-    isLoading: isVideoLoading
-  } = useQuery({
+  const { data: video, isLoading: isVideoLoading } = useQuery({
     queryKey: ['video', id],
     queryFn: async () => {
       const {
@@ -82,9 +74,8 @@ const ExploreDetail = () => {
       };
     }
   });
-  const {
-    data: currentUser
-  } = useQuery({
+
+  const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
       const {
@@ -93,9 +84,8 @@ const ExploreDetail = () => {
       return data?.user || null;
     }
   });
-  const {
-    data: userLikeStatus
-  } = useQuery({
+
+  const { data: userLikeStatus } = useQuery({
     queryKey: ['video-like-status', id, currentUser?.id],
     queryFn: async () => {
       if (!currentUser || !id) return false;
@@ -106,9 +96,11 @@ const ExploreDetail = () => {
     },
     enabled: !!currentUser && !!id
   });
+
   const handleClose = () => {
     navigate('/explore');
   };
+
   const handleShare = async () => {
     if (!video) return;
     try {
@@ -129,21 +121,29 @@ const ExploreDetail = () => {
       console.error('Error sharing:', err);
     }
   };
+
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
+
   if (!video) {
     return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
   }
-  return <div className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
-      {/* Video section with minimal padding */}
-      <div className="w-full h-screen relative flex items-center justify-center bg-black px-1 sm:px-2 touch-manipulation">
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
+      {/* Video section without extra padding or black background */}
+      <div className="w-full relative flex items-center justify-center">
         {/* Creator info overlay */}
         <div className="absolute top-4 left-4 z-20 flex items-center">
           <Avatar className="h-10 w-10 mr-2 border-2 border-white/30">
-            {video.creator?.avatar_url ? <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} /> : <AvatarFallback className="bg-black/50 text-white">
+            {video.creator?.avatar_url ? (
+              <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+            ) : (
+              <AvatarFallback className="bg-black/50 text-white">
                 {(video.creator?.username || '?')[0]}
-              </AvatarFallback>}
+              </AvatarFallback>
+            )}
           </Avatar>
           <span className="font-medium text-white text-shadow-sm">
             {video.creator?.username || 'Anonymous'}
@@ -152,28 +152,56 @@ const ExploreDetail = () => {
         
         {/* Close button overlay */}
         <div className="absolute top-4 right-4 z-20">
-          <Button variant="ghost" size="icon" onClick={handleClose} className="rounded-full bg-black/50 text-white hover:bg-black/70 touch-manipulation">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleClose} 
+            className="rounded-full bg-black/50 text-white hover:bg-black/70 touch-manipulation"
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
         
-        <div className="relative w-full h-full max-w-6xl mx-auto flex items-center justify-center">
-          <VideoPlayer video={video} autoPlay={true} showControls onClose={handleClose} isFullscreen={false} className="w-full h-full max-h-[90vh]" objectFit="contain" useAspectRatio={false} />
+        <div className="w-full">
+          <VideoPlayer 
+            video={video} 
+            autoPlay={true} 
+            showControls={false} 
+            onClose={handleClose} 
+            isFullscreen={false} 
+            className="w-full" 
+            objectFit="contain" 
+            useAspectRatio={false} 
+          />
         </div>
       </div>
       
       {/* Video interaction buttons below video */}
       <div className="w-full bg-white dark:bg-dm-background px-4 flex justify-between items-center py-[8px]">
         <div className="flex space-x-4">
-          <Button variant="ghost" size="icon" className={`h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 touch-manipulation dark:text-dm-text dark:hover:bg-dm-mist ${userLikeStatus ? 'text-red-500' : ''}`}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={`h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 touch-manipulation dark:text-dm-text dark:hover:bg-dm-mist ${userLikeStatus ? 'text-red-500' : ''}`}
+          >
             <Heart className={`h-6 w-6 ${userLikeStatus ? 'fill-current' : ''}`} />
           </Button>
           
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 dark:text-dm-text dark:hover:bg-dm-mist touch-manipulation" onClick={scrollToComments}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 dark:text-dm-text dark:hover:bg-dm-mist touch-manipulation" 
+            onClick={scrollToComments}
+          >
             <MessageCircle className="h-6 w-6" />
           </Button>
           
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 dark:text-dm-text dark:hover:bg-dm-mist touch-manipulation" onClick={handleShare}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 dark:text-dm-text dark:hover:bg-dm-mist touch-manipulation" 
+            onClick={handleShare}
+          >
             <Share2 className="h-6 w-6" />
           </Button>
         </div>
@@ -184,13 +212,15 @@ const ExploreDetail = () => {
         <p className="text-gray-700 dark:text-dm-text-supporting">{video.description}</p>
       </div>
       
-      {/* Comments section - visible when scrolled */}
-      <div ref={commentsRef} className={`w-full bg-white dark:bg-dm-background transition-opacity duration-300 px-4 ${showComments ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="max-w-3xl mx-auto pt-4">
+      {/* Comments section */}
+      <div ref={commentsRef} className={`w-full bg-white dark:bg-dm-background px-4 ${showComments ? 'opacity-100' : 'opacity-0'} pt-4`}>
+        <div className="max-w-3xl mx-auto">
           <h2 className="text-lg font-semibold mb-4 dark:text-dm-text">Comments</h2>
           <Comments videoId={video.id} currentUser={currentUser} />
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ExploreDetail;
