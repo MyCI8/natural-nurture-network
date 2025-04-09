@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, ExternalLink, DollarSign } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, DollarSign, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { ProductLink } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface ProductLinksEditorProps {
   videoId: string;
@@ -72,8 +72,6 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           url: newLink.url,
           price: newLink.price,
           image_url: newLink.image_url,
-          position_x: 50, // Default value
-          position_y: 50, // Default value
         })
         .select();
         
@@ -129,8 +127,18 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     setNewLink({ ...newLink, [field]: value });
   };
 
-  const extractAmazonMetadata = async () => {
-    if (!newLink.url) {
+  const handleUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    handleInputChange('url', url);
+    
+    // Auto-extract product info if it's an Amazon link
+    if (url && (url.includes('amazon.com') || url.includes('amzn.to/') || url.includes('a.co/'))) {
+      extractAmazonMetadata(url);
+    }
+  };
+
+  const extractAmazonMetadata = async (url = newLink.url) => {
+    if (!url) {
       toast({
         title: 'Invalid URL',
         description: 'Please enter an Amazon product URL.',
@@ -142,44 +150,29 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     setIsExtracting(true);
     
     try {
-      // Parse Amazon link - This is simplified for demo purposes
-      // In a real implementation, this would connect to an API service
-      let productId = '';
-      
-      // Handle short URLs like a.co/d/hRlELFf
-      if (newLink.url.includes('a.co/d/')) {
-        productId = newLink.url.split('a.co/d/')[1].split('?')[0].split('#')[0];
-      } 
-      // Handle regular amazon URLs
-      else if (newLink.url.includes('/dp/')) {
-        productId = newLink.url.split('/dp/')[1].split('/')[0].split('?')[0];
-      } 
-      else if (newLink.url.includes('/gp/product/')) {
-        productId = newLink.url.split('/gp/product/')[1].split('/')[0].split('?')[0];
-      }
-      
-      if (!productId) {
-        throw new Error('Could not extract product ID from URL');
-      }
-      
-      // For demo purposes, we'll generate mock data
-      // In production, this would call an Amazon product API
-      const mockTitle = 'Amazon Product ' + productId.substring(0, 4).toUpperCase();
-      const mockPrice = (Math.random() * 100 + 10).toFixed(2);
-      const mockImageUrl = `https://via.placeholder.com/200x200/f3f3f3/222222?text=Product+${productId.substring(0, 4)}`;
-      
-      // Update the form with extracted data
-      setNewLink({
-        ...newLink,
-        title: mockTitle,
-        price: parseFloat(mockPrice),
-        image_url: mockImageUrl,
+      // Call our Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('extract-product-info', {
+        body: { url }
       });
       
-      toast({
-        title: 'Product information extracted',
-        description: 'Product details have been populated.',
-      });
+      if (error) throw error;
+      
+      if (data) {
+        // Update the form with extracted data
+        setNewLink({
+          ...newLink,
+          url: url,
+          title: data.title || newLink.title || '',
+          price: data.price || newLink.price || null,
+          image_url: data.image_url || newLink.image_url || '',
+          description: data.description || ''
+        });
+        
+        toast({
+          title: 'Product information extracted',
+          description: 'Product details have been populated from Amazon.',
+        });
+      }
     } catch (error) {
       console.error('Error extracting product metadata:', error);
       toast({
@@ -208,19 +201,19 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
                     id="product-url"
                     placeholder="https://www.amazon.com/product/... or https://a.co/d/..."
                     value={newLink.url || ''}
-                    onChange={(e) => handleInputChange('url', e.target.value)}
+                    onChange={handleUrlChange}
                     className="flex-grow"
                   />
                   <Button 
                     className="ml-2 flex-shrink-0 touch-manipulation"
                     variant="outline"
-                    onClick={extractAmazonMetadata}
+                    onClick={() => extractAmazonMetadata()}
                     type="button"
                     disabled={isExtracting}
                   >
                     {isExtracting ? (
                       <div className="flex items-center">
-                        <div className="h-4 w-4 mr-2 rounded-full border-2 border-gray-300 border-t-primary animate-spin"></div>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         Extracting...
                       </div>
                     ) : (

@@ -30,7 +30,7 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
         ...prev,
         imageUrl: link.image_url
       }));
-    } else if (link.url.includes('amazon.com') || link.url.includes('a.co')) {
+    } else if (link.url.includes('amazon.com') || link.url.includes('a.co') || link.url.includes('amzn.to')) {
       // Generate a placeholder image based on the product title
       const placeholderImage = `https://via.placeholder.com/200x200/f0f0f0/404040?text=${encodeURIComponent(link.title.substring(0, 10))}`;
       
@@ -51,7 +51,7 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
   };
 
   return (
-    <Card className="rounded-t-lg rounded-b-none border-t border-x border-b-0 shadow-up bg-card/95 backdrop-blur-sm">
+    <Card className="rounded-t-lg rounded-b-none border-t border-x border-b-0 shadow-up bg-card/95 backdrop-blur-sm touch-manipulation">
       <CardContent className="p-3">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-medium text-sm flex items-center gap-1">

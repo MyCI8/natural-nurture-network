@@ -32,8 +32,7 @@ export interface ProductLink {
   title: string;
   url: string;
   price?: number | null;
-  position_x?: number | null;
-  position_y?: number | null;
   image_url?: string | null;
   created_at?: string;
+  description?: string;
 }

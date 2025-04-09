@@ -177,7 +177,7 @@ const ExploreDetail = () => {
         </div>
       </div>
       
-      {/* Video interaction buttons below video */}
+      {/* Video interaction buttons below video - removed the border-b */}
       <div className="w-full bg-white dark:bg-dm-background px-4 flex justify-between items-center py-[8px]">
         <div className="flex space-x-4">
           <Button 
@@ -208,7 +208,7 @@ const ExploreDetail = () => {
         </div>
       </div>
       
-      {/* Description - removed the border-b */}
+      {/* Description */}
       <div className="px-4 py-2">
         <p className="text-gray-700 dark:text-dm-text-supporting">{video.description}</p>
       </div>
