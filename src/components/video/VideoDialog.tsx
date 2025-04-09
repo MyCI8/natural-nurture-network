@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
 import { Video, ProductLink } from '@/types/video';
-import { Heart, MessageCircle, Share2, Bookmark, X, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, X, MoreHorizontal, ExternalLink } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -89,7 +88,7 @@ const VideoDialog = ({
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="rounded-full h-9 w-9 flex items-center justify-center z-50 dark:text-dm-text"
+            className="rounded-full h-9 w-9 flex items-center justify-center z-50 dark:text-dm-text touch-manipulation"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -106,6 +105,16 @@ const VideoDialog = ({
             </Avatar>
             <span className="font-medium text-sm dark:text-dm-text">{video.creator?.username || 'Anonymous'}</span>
           </div>
+          
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="w-full mt-4 flex items-center gap-2 touch-manipulation"
+            onClick={handleViewDetails}
+          >
+            <ExternalLink className="h-4 w-4" />
+            View full screen
+          </Button>
         </div>
         
         <div className="video-container flex-1 flex items-center justify-center bg-black h-[60vh] md:h-full relative overflow-hidden">
@@ -127,9 +136,18 @@ const VideoDialog = ({
             variant="ghost" 
             size="icon" 
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 text-white hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-full hidden md:flex"
+            className="absolute top-4 right-4 z-20 text-white hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-full hidden md:flex touch-manipulation"
           >
             <X className="h-5 w-5" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleViewDetails}
+            className="absolute bottom-4 right-4 z-20 text-white bg-black/50 hover:bg-black/70 rounded-full md:hidden touch-manipulation"
+          >
+            <ExternalLink className="h-5 w-5" />
           </Button>
         </div>
         
@@ -148,11 +166,14 @@ const VideoDialog = ({
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="ml-auto dark:text-dm-text">
+                  <Button variant="ghost" size="icon" className="ml-auto dark:text-dm-text touch-manipulation">
                     <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="dark:bg-dm-foreground dark:text-dm-text dark:border-dm-mist">
+                  <DropdownMenuItem className="dark:text-dm-text" onClick={handleViewDetails}>
+                    View full screen
+                  </DropdownMenuItem>
                   <DropdownMenuItem className="text-red-500 dark:text-red-400">
                     Report
                   </DropdownMenuItem>
@@ -182,7 +203,6 @@ const VideoDialog = ({
                 </p>
               </div>
               
-              {/* Rearranged interaction buttons: chat, save, share directly below media */}
               <div className="flex items-center space-x-2 mb-2 py-1">
                 <Button 
                   variant="ghost" 
@@ -207,7 +227,6 @@ const VideoDialog = ({
                 </Button>
               </div>
               
-              {/* Moved likes count section with heart icon to the bottom */}
               <div className="text-sm text-gray-500 dark:text-dm-text-supporting mb-2 flex items-center gap-2">
                 <span>{video.likes_count || 0} likes</span>
                 <Button 

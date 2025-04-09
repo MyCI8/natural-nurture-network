@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import '../styles/explore.css';
+
 const Explore = () => {
   const navigate = useNavigate();
   const {
@@ -30,6 +31,7 @@ const Explore = () => {
     content: string;
     username: string;
   }[]>>({});
+
   useEffect(() => {
     const fetchUser = async () => {
       const {
@@ -51,6 +53,7 @@ const Explore = () => {
     };
     fetchUser();
   }, []);
+
   const {
     data: videos = [],
     isLoading
@@ -83,6 +86,7 @@ const Explore = () => {
       })[];
     }
   });
+
   const likeMutation = useMutation({
     mutationFn: async ({
       videoId,
@@ -134,6 +138,7 @@ const Explore = () => {
       });
     }
   });
+
   const commentMutation = useMutation({
     mutationFn: async ({
       videoId,
@@ -198,6 +203,7 @@ const Explore = () => {
       });
     }
   });
+
   const handleShare = async (video: Video) => {
     if (navigator.share) {
       try {
@@ -221,6 +227,7 @@ const Explore = () => {
       }
     }
   };
+
   const handleLike = (videoId: string) => {
     if (!currentUser) {
       toast({
@@ -234,6 +241,7 @@ const Explore = () => {
       isLiked: userLikes[videoId] || false
     });
   };
+
   const handleComment = (videoId: string) => {
     if (!commentText.trim()) return;
     if (!currentUser) {
@@ -249,14 +257,19 @@ const Explore = () => {
       comment: commentText
     });
   };
+
   const handleNavigateToVideo = (videoId: string) => {
     navigate(`/explore/${videoId}`);
   };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen dark:text-dm-text">Loading...</div>;
   }
-  return <div className="flex flex-col items-center w-full bg-white dark:bg-dm-background">
-      {videos.map(video => <div key={video.id} className="instagram-feed-item">
+
+  return (
+    <div className="flex flex-col items-center w-full bg-white dark:bg-dm-background">
+      {videos.map(video => (
+        <div key={video.id} className="instagram-feed-item">
           <div className="instagram-header">
             <Avatar className="h-8 w-8 border border-gray-200 dark:border-dm-mist">
               {video.creator?.avatar_url ? <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} /> : <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">
@@ -273,14 +286,25 @@ const Explore = () => {
             </Button>
           </div>
 
-          <div className="instagram-video-container" style={{
-        aspectRatio: '4/5',
-        position: 'relative'
-      }} onClick={() => handleNavigateToVideo(video.id)}>
-            <VideoPlayer video={video} autoPlay showControls={false} globalAudioEnabled={globalAudioEnabled} onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} onClick={() => handleNavigateToVideo(video.id)} className="w-full h-full" />
+          <div 
+            className="instagram-video-container" 
+            style={{
+              aspectRatio: '4/5',
+              position: 'relative'
+            }} 
+            onClick={() => handleNavigateToVideo(video.id)}
+          >
+            <VideoPlayer 
+              video={video} 
+              autoPlay 
+              showControls={false} 
+              globalAudioEnabled={globalAudioEnabled} 
+              onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
+              onClick={() => handleNavigateToVideo(video.id)} 
+              className="w-full h-full" 
+            />
           </div>
 
-          {/* Rearranged action buttons: chat, save, share directly below media */}
           <div className="instagram-actions">
             <div className="flex gap-4">
               <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" onClick={e => {
@@ -302,8 +326,7 @@ const Explore = () => {
               </Button>
             </div>
           </div>
-          
-          {/* Moved likes count section with heart icon to the bottom */}
+
           <div className="instagram-likes flex items-center gap-2 py-[5px]">
             <span>{video.likes_count || 0} likes</span>
             <Button variant="ghost" size="icon" className={`p-0 h-6 w-6 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-dm-text'}`} onClick={e => {
@@ -313,23 +336,23 @@ const Explore = () => {
               <Heart className={`h-5 w-5 ${userLikes[video.id] ? 'fill-current' : ''}`} />
             </Button>
           </div>
-          
+
           <div className="instagram-description">
             <span className="font-semibold mr-2 dark:text-dm-text">{video.creator?.username}</span>
             <span className="dark:text-dm-text">{video.description}</span>
           </div>
-          
+
           {localComments[video.id]?.length > 0 && <div className="px-4 text-left text-sm space-y-1">
               {localComments[video.id].map(comment => <div key={comment.id} className="flex">
                   <span className="font-semibold mr-2 dark:text-dm-text">{comment.username}</span>
                   <span className="dark:text-dm-text">{comment.content}</span>
                 </div>)}
             </div>}
-          
+
           <div className="instagram-view-comments" onClick={() => handleNavigateToVideo(video.id)}>
             View all {video.comments_count || 0} comments
           </div>
-          
+
           <div className="instagram-comment-input">
             {submittingCommentFor === video.id ? <div className="flex items-center justify-center w-8 h-8">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent dark:border-dm-text dark:border-r-transparent"></div>
@@ -344,9 +367,21 @@ const Explore = () => {
               Post
             </Button>
           </div>
-        </div>)}
+        </div>
+      ))}
 
-      <VideoDialog video={selectedVideo} isOpen={!!selectedVideo} onClose={() => setSelectedVideo(null)} globalAudioEnabled={globalAudioEnabled} onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} userLikes={userLikes} onLikeToggle={handleLike} currentUser={currentUser} />
-    </div>;
+      <VideoDialog 
+        video={selectedVideo} 
+        isOpen={!!selectedVideo} 
+        onClose={() => setSelectedVideo(null)} 
+        globalAudioEnabled={globalAudioEnabled} 
+        onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
+        userLikes={userLikes} 
+        onLikeToggle={handleLike} 
+        currentUser={currentUser} 
+      />
+    </div>
+  );
 };
+
 export default Explore;
