@@ -1045,7 +1045,9 @@ export type Database = {
       video_product_links: {
         Row: {
           created_at: string | null
+          description: string | null
           id: string
+          image_url: string | null
           position_x: number | null
           position_y: number | null
           price: number | null
@@ -1055,7 +1057,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
           id?: string
+          image_url?: string | null
           position_x?: number | null
           position_y?: number | null
           price?: number | null
@@ -1065,7 +1069,9 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          description?: string | null
           id?: string
+          image_url?: string | null
           position_x?: number | null
           position_y?: number | null
           price?: number | null

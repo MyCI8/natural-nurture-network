@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +39,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           
         if (error) throw error;
         
-        // Convert the results to match our ProductLink type - with proper type safety
+        // Convert the results to ProductLink type
         const typedLinks = data?.map(link => {
           const typedLink: ProductLink = {
             id: link.id,
@@ -48,11 +47,10 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
             title: link.title,
             url: link.url,
             price: link.price,
-            // Safely access properties that might not exist in the DB with proper type casting
-            image_url: 'image_url' in link ? (link.image_url as string | null) : null,
-            description: 'description' in link ? (link.description as string | null) : null,
-            position_x: 'position_x' in link ? (link.position_x as number | null) : null,
-            position_y: 'position_y' in link ? (link.position_y as number | null) : null,
+            image_url: link.image_url || null,
+            description: link.description || null,
+            position_x: link.position_x || null,
+            position_y: link.position_y || null,
             created_at: link.created_at
           };
           return typedLink;
@@ -109,11 +107,10 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: data[0].title,
           url: data[0].url,
           price: data[0].price,
-          // Safely handle potentially missing fields in DB schema with proper type casting
-          image_url: 'image_url' in data[0] ? (data[0].image_url as string | null) : null,
-          description: 'description' in data[0] ? (data[0].description as string | null) : null,
-          position_x: 'position_x' in data[0] ? (data[0].position_x as number | null) : null,
-          position_y: 'position_y' in data[0] ? (data[0].position_y as number | null) : null,
+          image_url: data[0].image_url || null,
+          description: data[0].description || null,
+          position_x: data[0].position_x || null,
+          position_y: data[0].position_y || null,
           created_at: data[0].created_at
         };
         
