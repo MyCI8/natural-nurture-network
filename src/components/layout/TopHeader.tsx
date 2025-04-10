@@ -1,20 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Search, Leaf, Sun, Moon, X, Shield } from "lucide-react";
+import { Search, Leaf, X, Shield } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileButton } from "./sidebar/UserProfileButton";
 import { NavigationButtons } from "./sidebar/NavigationItems";
 import { SettingsPanel } from "./sidebar/SettingsPanel";
-import { useTheme } from "next-themes";
-import { Switch } from "@/components/ui/switch";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const TopHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
   const [isHomePage, setIsHomePage] = useState(false);
@@ -127,12 +126,6 @@ const TopHeader = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
-
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  const isDarkMode = mounted ? theme === 'dark' : false;
   
   return (
     <header 
@@ -243,19 +236,8 @@ const TopHeader = () => {
                 </Button>
                 
                 <div className="flex items-center justify-between px-3 py-2 rounded-lg mt-4">
-                  <div className="flex items-center gap-2">
-                    {isDarkMode ? (
-                      <Moon className="h-5 w-5" />
-                    ) : (
-                      <Sun className="h-5 w-5" />
-                    )}
-                    <span>Dark Mode</span>
-                  </div>
-                  <Switch
-                    checked={isDarkMode}
-                    onCheckedChange={toggleTheme}
-                    aria-label="Toggle dark mode"
-                  />
+                  <span>Theme</span>
+                  <ThemeToggle />
                 </div>
               </div>
             </div>

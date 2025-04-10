@@ -3,13 +3,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Settings, Upload, LogOut, X, Search, Moon, Sun } from "lucide-react";
+import { Shield, Settings, Upload, LogOut, X, Search } from "lucide-react";
 import { NavigationButtons } from "./NavigationItems";
 import { SettingsPanel } from "./SettingsPanel";
 import { UserProfileButton } from "./UserProfileButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Input } from "@/components/ui/input";
 
 interface MobileSidebarProps {
@@ -33,7 +33,6 @@ export const MobileSidebar = ({
   const [showSettings, setShowSettings] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
-  const { theme, setTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Handle swipe gestures to close sidebar
@@ -236,20 +235,8 @@ export const MobileSidebar = ({
               </form>
               
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium">Dark Mode</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
-                  {theme === 'dark' ? (
-                    <Sun className="h-5 w-5" />
-                  ) : (
-                    <Moon className="h-5 w-5" />
-                  )}
-                </Button>
+                <span className="text-sm font-medium">Theme</span>
+                <ThemeToggle />
               </div>
 
               {currentUser && (

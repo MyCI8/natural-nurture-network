@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useTheme } from "next-themes";
 
 import {
   Dialog,
@@ -13,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Label } from "@/components/ui/label";
 import { 
   Settings, 
@@ -23,8 +22,6 @@ import {
   Eye, 
   HelpCircle, 
   LogOut,
-  Sun,
-  Moon
 } from "lucide-react";
 
 interface SettingsModalProps {
@@ -35,7 +32,6 @@ interface SettingsModalProps {
 
 export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps) {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("account");
   const [mounted, setMounted] = useState(false);
 
@@ -78,9 +74,6 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
     onOpenChange(false);
     navigate("/");
   };
-
-  // Get the right value for dark mode
-  const isDarkMode = mounted ? theme === 'dark' : false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -170,22 +163,12 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-4">
             <div className="border rounded-lg p-4 space-y-3">
-              <h3 className="font-medium flex items-center gap-2">
-                {isDarkMode ? (
-                  <Moon className="h-4 w-4" />
-                ) : (
-                  <Sun className="h-4 w-4" />
-                )} 
+              <h3 className="font-medium flex items-center gap-2 mb-3">
                 Appearance
               </h3>
               <div className="flex items-center justify-between">
-                <Label htmlFor="settings-dark-mode">Dark Mode</Label>
-                <Switch
-                  id="settings-dark-mode"
-                  checked={isDarkMode}
-                  onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                  className="data-[state=checked]:bg-primary"
-                />
+                <Label htmlFor="settings-dark-mode">Theme</Label>
+                {mounted && <ThemeToggle />}
               </div>
             </div>
             
