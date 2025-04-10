@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import VideoDialog from '@/components/video/VideoDialog';
-import type { Video } from '@/types/video';
+import type { Video, ProductLink } from '@/types/video';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -84,6 +84,18 @@ const Explore = () => {
         creator: any;
         comments_count: number;
       })[];
+    }
+  });
+
+  const { data: allProductLinks = [] } = useQuery({
+    queryKey: ['all-product-links'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('video_product_links')
+        .select('*');
+      
+      if (error) throw error;
+      return data as ProductLink[];
     }
   });
 
@@ -262,6 +274,10 @@ const Explore = () => {
     navigate(`/explore/${videoId}`);
   };
 
+  const getProductLinksForVideo = (videoId: string) => {
+    return allProductLinks.filter(link => link.video_id === videoId);
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen dark:text-dm-text">Loading...</div>;
   }
@@ -302,6 +318,7 @@ const Explore = () => {
               onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
               onClick={() => handleNavigateToVideo(video.id)} 
               className="w-full h-full" 
+              productLinks={getProductLinksForVideo(video.id)}
             />
           </div>
 
@@ -379,6 +396,7 @@ const Explore = () => {
         userLikes={userLikes} 
         onLikeToggle={handleLike} 
         currentUser={currentUser} 
+        productLinks={selectedVideo ? getProductLinksForVideo(selectedVideo.id) : []}
       />
     </div>
   );

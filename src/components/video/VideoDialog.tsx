@@ -27,6 +27,7 @@ interface VideoDialogProps {
   userLikes?: Record<string, boolean>;
   onLikeToggle?: (videoId: string) => void;
   currentUser?: any;
+  productLinks?: ProductLink[];
 }
 
 const VideoDialog = ({ 
@@ -37,7 +38,8 @@ const VideoDialog = ({
   onAudioStateChange,
   userLikes = {},
   onLikeToggle,
-  currentUser
+  currentUser,
+  productLinks = []
 }: VideoDialogProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -121,6 +123,7 @@ const VideoDialog = ({
           <div className="absolute inset-0 flex items-center justify-center">
             <VideoPlayer
               video={video}
+              productLinks={productLinks}
               autoPlay={true}
               showControls={false}
               globalAudioEnabled={globalAudioEnabled}

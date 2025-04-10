@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -19,24 +18,20 @@ const ExploreDetail = () => {
   const [showComments, setShowComments] = useState(false);
   const commentsRef = useRef<HTMLDivElement>(null);
 
-  // Always show right section when on the explore detail page
   useEffect(() => {
     setShowRightSection(true);
-    return () => setShowRightSection(true); // Keep it visible on unmount too
+    return () => setShowRightSection(true);
   }, [setShowRightSection]);
 
-  // Handle scroll to show/hide comments based on scroll position
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
-      // Show comments when scrolled down a bit
       setShowComments(scrollPosition > 100);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Scroll to comments when clicking comment button
   const scrollToComments = () => {
     setShowComments(true);
     if (commentsRef.current) {
@@ -50,6 +45,7 @@ const ExploreDetail = () => {
       });
     }
   };
+
   const { data: video, isLoading: isVideoLoading } = useQuery({
     queryKey: ['video', id],
     queryFn: async () => {
@@ -68,7 +64,6 @@ const ExploreDetail = () => {
         `).eq('id', id).single();
       if (error) throw error;
 
-      // Ensure related_article_id is included
       return {
         ...data,
         related_article_id: data.related_article_id || null
@@ -98,7 +93,6 @@ const ExploreDetail = () => {
     enabled: !!currentUser && !!id
   });
 
-  // Fetch product links for this video
   const { data: productLinks = [] } = useQuery({
     queryKey: ['videoProductLinks', id],
     queryFn: async () => {
@@ -152,9 +146,7 @@ const ExploreDetail = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
-      {/* Video section without extra padding or black background */}
       <div className="w-full relative flex items-center justify-center">
-        {/* Creator info overlay */}
         <div className="absolute top-4 left-4 z-20 flex items-center">
           <Avatar className="h-10 w-10 mr-2 border-2 border-white/30">
             {video.creator?.avatar_url ? (
@@ -170,7 +162,6 @@ const ExploreDetail = () => {
           </span>
         </div>
         
-        {/* Close button overlay */}
         <div className="absolute top-4 right-4 z-20">
           <Button 
             variant="ghost" 
@@ -197,7 +188,6 @@ const ExploreDetail = () => {
         </div>
       </div>
       
-      {/* Video interaction buttons below video - remove the border-b */}
       <div className="w-full bg-white dark:bg-dm-background px-4 flex justify-between items-center py-[8px]">
         <div className="flex space-x-4">
           <Button 
@@ -228,12 +218,10 @@ const ExploreDetail = () => {
         </div>
       </div>
       
-      {/* Description */}
       <div className="px-4 py-2">
         <p className="text-gray-700 dark:text-dm-text-supporting">{video.description}</p>
       </div>
       
-      {/* Comments section */}
       <div ref={commentsRef} className={`w-full bg-white dark:bg-dm-background px-4 ${showComments ? 'opacity-100' : 'opacity-0'} pt-4`}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-lg font-semibold mb-4 dark:text-dm-text">Comments</h2>
