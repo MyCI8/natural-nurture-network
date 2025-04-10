@@ -39,7 +39,23 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           .eq('video_id', videoId);
           
         if (error) throw error;
-        setLinks(data || []);
+        
+        // Convert the results to match our ProductLink type
+        const typedLinks = data?.map(link => {
+          const typedLink: ProductLink = {
+            id: link.id,
+            video_id: link.video_id,
+            title: link.title,
+            url: link.url,
+            price: link.price,
+            // Use optional chaining to safely handle properties that might not exist in the DB
+            image_url: link.image_url || null,
+            description: link.description || null
+          };
+          return typedLink;
+        }) || [];
+        
+        setLinks(typedLinks);
       } catch (error) {
         console.error('Error fetching product links:', error);
         toast.error('Failed to load product links');
@@ -58,17 +74,6 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     }
     
     try {
-      // First, check if the database schema has the description column
-      // If not, we'll need to omit it from the insert
-      const { data: tableInfo, error: tableError } = await supabase
-        .from('video_product_links')
-        .select()
-        .limit(1);
-        
-      if (tableError) {
-        console.error('Error checking table schema:', tableError);
-      }
-      
       // Prepare the product link data
       const productLinkData: any = {
         video_id: videoId,
@@ -77,13 +82,15 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
         price: newLink.price
       };
       
-      // Only include image_url if it's provided
+      // Only include image_url and description if they're provided
       if (newLink.image_url) {
         productLinkData.image_url = newLink.image_url;
       }
       
-      // Only include description if the column exists
-      // This will be determined by examining the response from the previous select query
+      if (newLink.description) {
+        productLinkData.description = newLink.description;
+      }
+      
       const { data, error } = await supabase
         .from('video_product_links')
         .insert(productLinkData)
@@ -99,14 +106,10 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: data[0].title,
           url: data[0].url,
           price: data[0].price,
-          image_url: data[0].image_url || null
+          // Handle potentially missing fields in DB schema
+          image_url: data[0].image_url || null,
+          description: data[0].description || null
         };
-        
-        // If the response included a description field, add it to our object
-        if ('description' in data[0]) {
-          // @ts-ignore - we're checking at runtime if this exists
-          newProductLink.description = data[0].description;
-        }
         
         setLinks([...links, newProductLink]);
         
