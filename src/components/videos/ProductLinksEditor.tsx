@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,14 +42,16 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
         
         // Convert the results to ProductLink type
         const typedLinks = data?.map(link => {
+          // Use type assertion to tell TypeScript about the structure
           const typedLink: ProductLink = {
             id: link.id,
             video_id: link.video_id,
             title: link.title,
             url: link.url,
             price: link.price,
-            image_url: link.image_url || null,
-            description: link.description || null,
+            // Use type assertion (as any) to bypass TypeScript's property check
+            image_url: (link as any).image_url || null,
+            description: (link as any).description || null,
             position_x: link.position_x || null,
             position_y: link.position_y || null,
             created_at: link.created_at
@@ -107,8 +110,9 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: data[0].title,
           url: data[0].url,
           price: data[0].price,
-          image_url: data[0].image_url || null,
-          description: data[0].description || null,
+          // Use type assertion to access properties that TypeScript doesn't know about
+          image_url: (data[0] as any).image_url || null,
+          description: (data[0] as any).description || null,
           position_x: data[0].position_x || null,
           position_y: data[0].position_y || null,
           created_at: data[0].created_at
