@@ -98,6 +98,25 @@ const ExploreDetail = () => {
     enabled: !!currentUser && !!id
   });
 
+  // Fetch product links for this video
+  const { data: productLinks = [] } = useQuery({
+    queryKey: ['videoProductLinks', id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from('video_product_links')
+        .select('*')
+        .eq('video_id', id);
+        
+      if (error) {
+        console.error("Error fetching product links:", error);
+        return [];
+      }
+      return data || [];
+    },
+    enabled: !!id
+  });
+
   const handleClose = () => {
     navigate('/explore');
   };
@@ -166,6 +185,7 @@ const ExploreDetail = () => {
         <div className="w-full">
           <VideoPlayer 
             video={video} 
+            productLinks={productLinks}
             autoPlay={true} 
             showControls={false} 
             onClose={handleClose} 
@@ -177,7 +197,7 @@ const ExploreDetail = () => {
         </div>
       </div>
       
-      {/* Video interaction buttons below video - removed the border-b */}
+      {/* Video interaction buttons below video - remove the border-b */}
       <div className="w-full bg-white dark:bg-dm-background px-4 flex justify-between items-center py-[8px]">
         <div className="flex space-x-4">
           <Button 

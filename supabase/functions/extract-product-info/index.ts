@@ -40,7 +40,13 @@ serve(async (req) => {
     console.error('Error extracting product info:', error);
     
     return new Response(
-      JSON.stringify({ error: error.message || 'Failed to extract product information' }),
+      JSON.stringify({ 
+        error: error.message || 'Failed to extract product information',
+        title: "Amazon Product", // Fallback title
+        image_url: null,
+        price: null,
+        description: "Product information could not be extracted automatically."
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
@@ -51,12 +57,19 @@ async function resolveUrl(url: string): Promise<string> {
   try {
     // Handle Amazon short links
     if (url.includes('a.co/') || url.includes('amzn.to/')) {
+      console.log("Following Amazon short URL redirect:", url);
+      
+      // Use fetch with HEAD method to follow redirects
       const response = await fetch(url, {
         method: 'HEAD',
         redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
       });
       
       // Return the final URL after redirects
+      console.log("Resolved to:", response.url);
       return response.url;
     }
     
@@ -72,6 +85,8 @@ async function resolveUrl(url: string): Promise<string> {
 // Function to extract product information from a URL
 async function extractProductInfo(url: string) {
   try {
+    console.log("Fetching page content from:", url);
+    
     // Fetch the page content
     const response = await fetch(url, {
       headers: {
@@ -87,6 +102,7 @@ async function extractProductInfo(url: string) {
     }
     
     const html = await response.text();
+    console.log("Page content length:", html.length);
     
     // Parse the HTML
     const parser = new DOMParser();
@@ -100,12 +116,15 @@ async function extractProductInfo(url: string) {
     const productInfo = {
       title: extractMetaContent(doc, 'og:title') || 
              extractMetaContent(doc, 'twitter:title') ||
-             extractTitle(doc),
+             extractTitle(doc) || 
+             "Amazon Product",
       image_url: extractMetaContent(doc, 'og:image') || 
-                 extractMetaContent(doc, 'twitter:image'),
+                 extractMetaContent(doc, 'twitter:image') ||
+                 extractAmazonProductImage(doc, html),
       description: extractMetaContent(doc, 'og:description') || 
                    extractMetaContent(doc, 'twitter:description') ||
-                   extractMetaContent(doc, 'description'),
+                   extractMetaContent(doc, 'description') ||
+                   "Product from Amazon",
       price: extractPrice(doc, html),
       url: url
     };
@@ -120,7 +139,7 @@ async function extractProductInfo(url: string) {
     return {
       title: "Amazon Product",
       image_url: null,
-      description: null,
+      description: "Product information could not be extracted automatically.",
       price: null,
       url: url,
       error: error.message
@@ -138,14 +157,55 @@ function extractMetaContent(doc: Document, property: string): string | null {
 // Helper function to extract the title
 function extractTitle(doc: Document): string | null {
   const titleElement = doc.querySelector('title');
-  return titleElement ? titleElement.textContent : null;
+  if (titleElement && titleElement.textContent) {
+    // Clean up the title (remove "Amazon.com:" prefix if present)
+    let title = titleElement.textContent.trim();
+    if (title.startsWith("Amazon.com:")) {
+      title = title.substring("Amazon.com:".length).trim();
+    }
+    return title;
+  }
+  return null;
+}
+
+// Helper function to extract Amazon product images
+function extractAmazonProductImage(doc: Document, html: string): string | null {
+  try {
+    // Try various selectors that might contain the product image
+    const imgSelectors = [
+      '#landingImage',
+      '#imgBlkFront',
+      '#main-image',
+      '.a-dynamic-image',
+      '#ebooksImgBlkFront'
+    ];
+    
+    for (const selector of imgSelectors) {
+      const img = doc.querySelector(selector);
+      if (img && img.getAttribute('src')) {
+        return img.getAttribute('src');
+      }
+    }
+    
+    // Try to find image URL in the JSON data that Amazon embeds in the page
+    const imgJsonRegex = /"(https:\/\/m\.media-amazon\.com\/images\/I\/[^"]+)"/;
+    const imgMatch = html.match(imgJsonRegex);
+    if (imgMatch && imgMatch[1]) {
+      return imgMatch[1];
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error extracting Amazon product image:', error);
+    return null;
+  }
 }
 
 // Helper function to extract the price
 function extractPrice(doc: Document, html: string): number | null {
   try {
     // Try to find price in specific spans that Amazon usually uses
-    const priceElements = doc.querySelectorAll('.a-price .a-offscreen, #priceblock_ourprice, #priceblock_dealprice');
+    const priceElements = doc.querySelectorAll('.a-price .a-offscreen, #priceblock_ourprice, #priceblock_dealprice, .a-color-price');
     
     for (let i = 0; i < priceElements.length; i++) {
       const priceText = priceElements[i].textContent;
@@ -160,10 +220,17 @@ function extractPrice(doc: Document, html: string): number | null {
     }
     
     // If the above methods fail, try to find price using regex in the raw HTML
-    const priceRegex = /"price":\s*([\d.]+)/;
-    const match = html.match(priceRegex);
-    if (match && match[1]) {
-      return parseFloat(match[1]);
+    const pricePatterns = [
+      /"price":\s*([\d.]+)/,
+      /"amount":\s*"([\d.]+)"/,
+      /priceAmount.*?([\d.]+)/
+    ];
+    
+    for (const pattern of pricePatterns) {
+      const match = html.match(pattern);
+      if (match && match[1]) {
+        return parseFloat(match[1]);
+      }
     }
     
     return null;

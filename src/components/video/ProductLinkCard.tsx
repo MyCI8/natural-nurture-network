@@ -20,25 +20,30 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
     title: link.title,
     price: link.price || undefined,
     imageUrl: link.image_url || undefined,
-    description: undefined
+    description: link.description || undefined
   });
 
   useEffect(() => {
-    // Use the image_url from the link if available
-    if (link.image_url) {
-      setProductMetadata(prev => ({
-        ...prev,
-        imageUrl: link.image_url
-      }));
-    } else if (link.url.includes('amazon.com') || link.url.includes('a.co') || link.url.includes('amzn.to')) {
-      // Generate a placeholder image based on the product title
-      const placeholderImage = `https://via.placeholder.com/200x200/f0f0f0/404040?text=${encodeURIComponent(link.title.substring(0, 10))}`;
-      
-      setProductMetadata(prev => ({
-        ...prev,
-        imageUrl: placeholderImage,
-        description: "This is a product available on Amazon. Click to learn more and purchase."
-      }));
+    // Always update product metadata when link changes
+    setProductMetadata({
+      title: link.title,
+      price: link.price || undefined,
+      imageUrl: link.image_url || undefined,
+      description: link.description || undefined
+    });
+    
+    // If there's no image_url, generate a placeholder
+    if (!link.image_url) {
+      if (link.url.includes('amazon.com') || link.url.includes('a.co') || link.url.includes('amzn.to')) {
+        // Generate a placeholder image based on the product title
+        const placeholderImage = `https://via.placeholder.com/200x200/f0f0f0/404040?text=${encodeURIComponent(link.title.substring(0, 10))}`;
+        
+        setProductMetadata(prev => ({
+          ...prev,
+          imageUrl: placeholderImage,
+          description: prev.description || "This is a product available on Amazon. Click to learn more and purchase."
+        }));
+      }
     }
   }, [link]);
 
@@ -48,6 +53,15 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
     console.log(`Product link clicked: ${link.id}`);
     // Open the product in a new tab
     window.open(link.url, '_blank');
+  };
+
+  // Determine where to display the Buy button text - show "Buy on Amazon" 
+  // only for Amazon links, otherwise just show "Buy Now"
+  const getBuyButtonText = () => {
+    if (link.url.includes('amazon.com') || link.url.includes('a.co') || link.url.includes('amzn.to')) {
+      return "Buy on Amazon";
+    }
+    return "Buy Now";
   };
 
   return (
@@ -103,7 +117,7 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
             onClick={handleProductClick}
           >
             <ExternalLink className="h-3.5 w-3.5" />
-            <span className="text-xs">Buy on Amazon</span>
+            <span className="text-xs">{getBuyButtonText()}</span>
           </Button>
         </div>
       </CardContent>

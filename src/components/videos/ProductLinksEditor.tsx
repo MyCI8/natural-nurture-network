@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { ProductLink } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ProductLinksEditorProps {
   videoId: string;
@@ -22,6 +23,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     url: '',
     price: null,
     image_url: '',
+    description: ''
   });
 
   // Fetch existing product links for the video
@@ -72,6 +74,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           url: newLink.url,
           price: newLink.price,
           image_url: newLink.image_url,
+          description: newLink.description
         })
         .select();
         
@@ -83,6 +86,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
         url: '',
         price: null,
         image_url: '',
+        description: ''
       });
       
       toast({
@@ -133,7 +137,10 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     
     // Auto-extract product info if it's an Amazon link
     if (url && (url.includes('amazon.com') || url.includes('amzn.to/') || url.includes('a.co/'))) {
-      extractAmazonMetadata(url);
+      // Only auto-extract if the URL looks good
+      if (url.startsWith('http') && url.length > 10) {
+        extractAmazonMetadata(url);
+      }
     }
   };
 
@@ -150,12 +157,16 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     setIsExtracting(true);
     
     try {
+      console.log("Extracting metadata for:", url);
+      
       // Call our Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('extract-product-info', {
         body: { url }
       });
       
       if (error) throw error;
+      
+      console.log("Extraction result:", data);
       
       if (data) {
         // Update the form with extracted data
@@ -165,7 +176,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: data.title || newLink.title || '',
           price: data.price || newLink.price || null,
           image_url: data.image_url || newLink.image_url || '',
-          description: data.description || ''
+          description: data.description || newLink.description || ''
         });
         
         toast({
@@ -263,6 +274,18 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
                 />
               </div>
               
+              <div>
+                <Label htmlFor="product-description">Product Description</Label>
+                <Textarea
+                  id="product-description"
+                  placeholder="Short product description..."
+                  value={newLink.description || ''}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+              
               {newLink.image_url && (
                 <div className="mt-2">
                   <Label className="mb-2 block">Image Preview</Label>
@@ -322,6 +345,9 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
                         <p className="text-sm text-muted-foreground truncate">{link.url}</p>
                         {link.price && (
                           <p className="text-sm mt-1">${link.price.toFixed(2)}</p>
+                        )}
+                        {link.description && (
+                          <p className="text-xs text-muted-foreground mt-1 truncate">{link.description}</p>
                         )}
                       </div>
                     </div>
