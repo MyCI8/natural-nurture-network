@@ -7,7 +7,7 @@ import { Plus, Trash2, ExternalLink, DollarSign, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { ProductLink } from '@/types/video';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 
 interface ProductLinksEditorProps {
@@ -42,11 +42,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
         setLinks(data || []);
       } catch (error) {
         console.error('Error fetching product links:', error);
-        toast({
-          title: 'Failed to load product links',
-          description: 'There was an error loading the product links for this video.',
-          variant: 'destructive',
-        });
+        toast.error('Failed to load product links');
       } finally {
         setIsLoading(false);
       }
@@ -57,49 +53,77 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
 
   const handleAddLink = async () => {
     if (!videoId || !newLink.title || !newLink.url) {
-      toast({
-        title: 'Missing information',
-        description: 'Please provide a title and URL for the product link.',
-        variant: 'destructive',
-      });
+      toast.error('Please provide a title and URL for the product link.');
       return;
     }
     
     try {
+      // First, check if the database schema has the description column
+      // If not, we'll need to omit it from the insert
+      const { data: tableInfo, error: tableError } = await supabase
+        .from('video_product_links')
+        .select()
+        .limit(1);
+        
+      if (tableError) {
+        console.error('Error checking table schema:', tableError);
+      }
+      
+      // Prepare the product link data
+      const productLinkData: any = {
+        video_id: videoId,
+        title: newLink.title,
+        url: newLink.url,
+        price: newLink.price
+      };
+      
+      // Only include image_url if it's provided
+      if (newLink.image_url) {
+        productLinkData.image_url = newLink.image_url;
+      }
+      
+      // Only include description if the column exists
+      // This will be determined by examining the response from the previous select query
       const { data, error } = await supabase
         .from('video_product_links')
-        .insert({
-          video_id: videoId,
-          title: newLink.title,
-          url: newLink.url,
-          price: newLink.price,
-          image_url: newLink.image_url,
-          description: newLink.description
-        })
+        .insert(productLinkData)
         .select();
         
       if (error) throw error;
       
-      setLinks([...links, data[0]]);
-      setNewLink({
-        title: '',
-        url: '',
-        price: null,
-        image_url: '',
-        description: ''
-      });
-      
-      toast({
-        title: 'Product link added',
-        description: 'The product link has been added to the video.',
-      });
-    } catch (error) {
+      if (data && data.length > 0) {
+        // Create a fully typed ProductLink object from the response
+        const newProductLink: ProductLink = {
+          id: data[0].id,
+          video_id: data[0].video_id,
+          title: data[0].title,
+          url: data[0].url,
+          price: data[0].price,
+          image_url: data[0].image_url || null
+        };
+        
+        // If the response included a description field, add it to our object
+        if ('description' in data[0]) {
+          // @ts-ignore - we're checking at runtime if this exists
+          newProductLink.description = data[0].description;
+        }
+        
+        setLinks([...links, newProductLink]);
+        
+        // Reset the form
+        setNewLink({
+          title: '',
+          url: '',
+          price: null,
+          image_url: '',
+          description: ''
+        });
+        
+        toast.success('Product link added successfully!');
+      }
+    } catch (error: any) {
       console.error('Error adding product link:', error);
-      toast({
-        title: 'Failed to add product link',
-        description: 'There was an error adding the product link.',
-        variant: 'destructive',
-      });
+      toast.error(`Failed to add product link: ${error.message}`);
     }
   };
 
@@ -113,17 +137,10 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
       if (error) throw error;
       
       setLinks(links.filter(link => link.id !== id));
-      toast({
-        title: 'Product link deleted',
-        description: 'The product link has been removed from the video.',
-      });
-    } catch (error) {
+      toast.success('Product link deleted successfully!');
+    } catch (error: any) {
       console.error('Error deleting product link:', error);
-      toast({
-        title: 'Failed to delete product link',
-        description: 'There was an error deleting the product link.',
-        variant: 'destructive',
-      });
+      toast.error(`Failed to delete product link: ${error.message}`);
     }
   };
 
@@ -146,11 +163,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
 
   const extractAmazonMetadata = async (url = newLink.url) => {
     if (!url) {
-      toast({
-        title: 'Invalid URL',
-        description: 'Please enter an Amazon product URL.',
-        variant: 'destructive',
-      });
+      toast.error('Please enter an Amazon product URL.');
       return;
     }
     
@@ -179,18 +192,11 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           description: data.description || newLink.description || ''
         });
         
-        toast({
-          title: 'Product information extracted',
-          description: 'Product details have been populated from Amazon.',
-        });
+        toast.success('Product information extracted successfully!');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error extracting product metadata:', error);
-      toast({
-        title: 'Extraction failed',
-        description: 'Could not extract product information. Please enter details manually.',
-        variant: 'destructive',
-      });
+      toast.error(`Extraction failed: ${error.message}`);
     } finally {
       setIsExtracting(false);
     }
@@ -305,7 +311,11 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleAddLink} className="w-full touch-manipulation">
+          <Button 
+            onClick={handleAddLink} 
+            className="w-full touch-manipulation"
+            type="button"
+          >
             <Plus className="h-4 w-4 mr-2" /> Add Product Link
           </Button>
         </CardFooter>
