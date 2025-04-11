@@ -38,13 +38,3 @@ export interface ProductLink {
   position_x?: number | null;
   position_y?: number | null;
 }
-
-export interface VideoFlag {
-  id: string;
-  video_id: string;
-  user_id: string;
-  reason: string;
-  details?: string;
-  created_at: string;
-  status: "pending" | "reviewed" | "resolved" | "dismissed";
-}
