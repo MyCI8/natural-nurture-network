@@ -162,6 +162,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                           videoType: "news" 
                         }
                       })}
+                      className="h-9 text-sm"
                     >
                       Edit
                     </Button>
@@ -172,7 +173,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                           variant="ghost"
                           size="icon"
                           onClick={() => onArchive(video.id)}
-                          className="h-8 w-8"
+                          className="h-9 w-9 touch-manipulation"
                           disabled={video.status === 'archived'}
                         >
                           <Archive className="h-4 w-4" />
@@ -188,7 +189,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                          className="h-9 w-9 text-destructive hover:text-destructive/90 hover:bg-destructive/10 touch-manipulation"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
