@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import VideoDialog from '@/components/video/VideoDialog';
+import VideoOptionsMenu from '@/components/video/VideoOptionsMenu';
 import type { Video, ProductLink } from '@/types/video';
 import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -297,9 +299,12 @@ const Explore = () => {
                 {video.creator?.username || 'Anonymous'}
               </span>
             </div>
-            <Button variant="ghost" size="icon" className="text-gray-700 dark:text-dm-text">
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
+            
+            <VideoOptionsMenu 
+              videoId={video.id}
+              onShareVideo={() => handleShare(video)}
+              viewDetailsUrl={`/explore/${video.id}`}
+            />
           </div>
 
           <div 

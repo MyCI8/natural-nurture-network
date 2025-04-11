@@ -29,7 +29,8 @@ import EditUser from "./pages/EditUser";
 import EditSymptom from "./pages/EditSymptom";
 import Explore from "./pages/Explore";
 import ExploreDetail from "./pages/ExploreDetail";
-import ManageVideos from "./pages/ManageVideos";
+import ExploreVideos from "./pages/ExploreVideos";
+import UserVideoManagement from "./pages/UserVideoManagement";
 import EditVideo from "./pages/EditVideo";
 import UserProfile from "./pages/UserProfile";
 import Symptoms from "./pages/Symptoms";
@@ -93,7 +94,8 @@ const Routes = () => {
             <Route path="videos/:id" element={<EditVideo />} />
           </Route>
           <Route path="videos">
-            <Route index element={<ManageVideos />} />
+            <Route index element={<UserVideoManagement />} />
+            <Route path="explore" element={<ExploreVideos />} />
             <Route path=":id" element={<EditVideo />} />
           </Route>
           <Route path="symptoms">
