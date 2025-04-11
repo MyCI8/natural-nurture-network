@@ -46,7 +46,7 @@ const VideoOptionsMenu = ({ videoId, onShareVideo, viewDetailsUrl }: VideoOption
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px] backdrop-blur-md bg-white/90 dark:bg-dm-mist/90 border-none shadow-lg rounded-xl">
-          <DropdownMenuLabel>Video Options</DropdownMenuItem>
+          <DropdownMenuLabel>Video Options</DropdownMenuLabel>
           
           <DropdownMenuItem 
             onClick={onShareVideo}
