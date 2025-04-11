@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,9 +48,8 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
             title: link.title,
             url: link.url,
             price: link.price,
-            // Use type assertion (as any) to bypass TypeScript's property check
-            image_url: (link as any).image_url || null,
-            description: (link as any).description || null,
+            image_url: link.image_url || null,
+            description: link.description || null,
             position_x: link.position_x || null,
             position_y: link.position_y || null,
             created_at: link.created_at
@@ -79,21 +77,14 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     
     try {
       // Prepare the product link data
-      const productLinkData: any = {
+      const productLinkData = {
         video_id: videoId,
         title: newLink.title,
         url: newLink.url,
-        price: newLink.price
+        price: newLink.price,
+        image_url: newLink.image_url || null,
+        description: newLink.description || null
       };
-      
-      // Only include image_url and description if they're provided
-      if (newLink.image_url) {
-        productLinkData.image_url = newLink.image_url;
-      }
-      
-      if (newLink.description) {
-        productLinkData.description = newLink.description;
-      }
       
       const { data, error } = await supabase
         .from('video_product_links')
@@ -110,9 +101,8 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: data[0].title,
           url: data[0].url,
           price: data[0].price,
-          // Use type assertion to access properties that TypeScript doesn't know about
-          image_url: (data[0] as any).image_url || null,
-          description: (data[0] as any).description || null,
+          image_url: data[0].image_url || null,
+          description: data[0].description || null,
           position_x: data[0].position_x || null,
           position_y: data[0].position_y || null,
           created_at: data[0].created_at
@@ -158,17 +148,9 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     setNewLink({ ...newLink, [field]: value });
   };
 
-  const handleUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     handleInputChange('url', url);
-    
-    // Auto-extract product info if it's an Amazon link
-    if (url && (url.includes('amazon.com') || url.includes('amzn.to/') || url.includes('a.co/'))) {
-      // Only auto-extract if the URL looks good
-      if (url.startsWith('http') && url.length > 10) {
-        extractAmazonMetadata(url);
-      }
-    }
   };
 
   const extractAmazonMetadata = async (url = newLink.url) => {
@@ -182,24 +164,23 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
     try {
       console.log("Extracting metadata for:", url);
       
-      // Call our Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('extract-product-info', {
+      // Call our Supabase Edge Function for link preview
+      const { data, error } = await supabase.functions.invoke('link-preview', {
         body: { url }
       });
       
       if (error) throw error;
       
-      console.log("Extraction result:", data);
+      console.log("Link preview result:", data);
       
       if (data) {
         // Update the form with extracted data
         setNewLink({
           ...newLink,
-          url: url,
           title: data.title || newLink.title || '',
-          price: data.price || newLink.price || null,
-          image_url: data.image_url || newLink.image_url || '',
-          description: data.description || newLink.description || ''
+          image_url: data.thumbnailUrl || newLink.image_url || '',
+          description: data.description || newLink.description || '',
+          url: url
         });
         
         toast.success('Product information extracted successfully!');

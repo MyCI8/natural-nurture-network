@@ -30,6 +30,7 @@ serve(async (req) => {
     const doc = parser.parseFromString(html, 'text/html');
 
     let title = '';
+    let description = '';
     let thumbnailUrl = '';
 
     // Get meta tags (including OpenGraph and Twitter Card)
@@ -50,6 +51,14 @@ serve(async (req) => {
       { property: 'image' }
     ];
 
+    // Description selectors
+    const descriptionSelectors = [
+      { property: 'og:description' },
+      { name: 'twitter:description' },
+      { name: 'description' },
+      { itemprop: 'description' }
+    ];
+
     // First try to get the best title
     const titleSelectors = [
       { selector: 'meta[property="og:title"]', attr: 'content' },
@@ -67,7 +76,23 @@ serve(async (req) => {
       }
     }
 
-    // Then try to get the best image
+    // Try to get description
+    for (const metaConfig of descriptionSelectors) {
+      const [property, value] = Object.entries(metaConfig)[0];
+      const tag = Array.from(metaTags || []).find(meta => 
+        meta.getAttribute(property) === value
+      );
+      
+      if (tag) {
+        const content = tag.getAttribute('content');
+        if (content) {
+          description = content.trim();
+          break;
+        }
+      }
+    }
+
+    // Try to get the best image
     // First check meta tags
     for (const metaConfig of possibleMetaSelectors) {
       const [property, value] = Object.entries(metaConfig)[0];
@@ -172,13 +197,41 @@ serve(async (req) => {
       }
     }
 
-    console.log('Preview results:', { title, thumbnailUrl, url });
+    // Extract product price if available (for Amazon specifically)
+    let price = null;
+    if (url.includes('amazon.com') || url.includes('amzn.to/') || url.includes('a.co/')) {
+      // Try various price selectors specific to Amazon
+      const priceSelectors = [
+        '#priceblock_ourprice',
+        '#priceblock_dealprice',
+        '.a-price .a-offscreen',
+        '#corePrice_desktop .a-price .a-offscreen',
+        '.a-price .a-price-whole'
+      ];
+      
+      for (const selector of priceSelectors) {
+        const priceElement = doc?.querySelector(selector);
+        if (priceElement) {
+          const priceText = priceElement.textContent || '';
+          // Extract digits and decimal point only
+          const priceMatch = priceText.match(/(\d+([.,]\d+)?)/);
+          if (priceMatch) {
+            price = parseFloat(priceMatch[0].replace(',', '.'));
+            break;
+          }
+        }
+      }
+    }
+
+    console.log('Preview results:', { title, description, thumbnailUrl, url, price });
 
     return new Response(
       JSON.stringify({
         title,
+        description,
         thumbnailUrl,
         url,
+        price
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

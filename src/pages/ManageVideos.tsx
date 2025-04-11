@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -118,7 +117,6 @@ const ManageVideos = () => {
   };
 
   const renderVideoStats = () => {
-    // Calculate video statistics
     const totalVideos = videos.length;
     const totalViews = videos.reduce((sum, video) => sum + (video.views_count || 0), 0);
     const videosWithLinks = videos.filter(video => 
@@ -347,6 +345,24 @@ const VideoGrid = ({
     );
   }
 
+  const getYoutubeThumbnail = (url: string | null): string | null => {
+    if (!url || !url.includes('youtube.com')) return null;
+    
+    try {
+      const videoId = url.includes('v=') 
+        ? new URLSearchParams(new URL(url).search).get('v')
+        : url.split('youtu.be/')[1]?.split('?')[0];
+        
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      }
+    } catch (e) {
+      console.error("Error parsing YouTube URL:", e);
+    }
+    
+    return null;
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {videos.map((video) => (
@@ -356,6 +372,12 @@ const VideoGrid = ({
               {video.thumbnail_url ? (
                 <img
                   src={video.thumbnail_url}
+                  alt={video.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : video.video_url && video.video_url.includes('youtube.com') ? (
+                <img
+                  src={getYoutubeThumbnail(video.video_url)}
                   alt={video.title}
                   className="w-full h-full object-cover"
                 />
