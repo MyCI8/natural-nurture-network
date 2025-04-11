@@ -107,20 +107,23 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
             {videos.map((video) => (
               <TableRow key={video.id}>
                 <TableCell>
-                  {getThumbnailUrl(video) ? (
-                    <img 
-                      src={getThumbnailUrl(video)} 
-                      alt={video.title} 
-                      className="w-16 h-10 object-cover rounded"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/160x90/f0f0f0/404040?text=No+Image';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-16 h-10 bg-muted flex items-center justify-center rounded">
-                      <Video className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  )}
+                  {(() => {
+                    const thumbnailUrl = getThumbnailUrl(video);
+                    return thumbnailUrl ? (
+                      <img 
+                        src={thumbnailUrl} 
+                        alt={video.title} 
+                        className="w-16 h-10 object-cover rounded"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/160x90/f0f0f0/404040?text=No+Image';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-16 h-10 bg-muted flex items-center justify-center rounded">
+                        <Video className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="font-medium max-w-[200px] truncate">{video.title}</TableCell>
                 <TableCell>
