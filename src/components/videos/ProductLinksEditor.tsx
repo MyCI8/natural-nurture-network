@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,23 +41,20 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
         if (error) throw error;
         
         // Convert the results to ProductLink type
-        const typedLinks = data?.map(link => {
-          // Use type assertion to tell TypeScript about the structure
-          const typedLink: ProductLink = {
-            id: link.id,
-            video_id: link.video_id,
-            title: link.title,
-            url: link.url,
-            price: link.price,
-            image_url: link.image_url || null,
-            description: link.description || null,
-            position_x: link.position_x || null,
-            position_y: link.position_y || null,
-            created_at: link.created_at
-          };
-          return typedLink;
-        }) || [];
+        const typedLinks = data?.map(link => ({
+          id: link.id,
+          video_id: link.video_id,
+          title: link.title,
+          url: link.url,
+          price: link.price,
+          image_url: link.image_url || '',
+          description: link.description || '',
+          position_x: link.position_x || null,
+          position_y: link.position_y || null,
+          created_at: link.created_at
+        } as ProductLink)) || [];
         
+        console.log("Fetched product links:", typedLinks);
         setLinks(typedLinks);
       } catch (error) {
         console.error('Error fetching product links:', error);
@@ -101,8 +99,8 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: data[0].title,
           url: data[0].url,
           price: data[0].price,
-          image_url: data[0].image_url || null,
-          description: data[0].description || null,
+          image_url: data[0].image_url || '',
+          description: data[0].description || '',
           position_x: data[0].position_x || null,
           position_y: data[0].position_y || null,
           created_at: data[0].created_at
@@ -180,6 +178,7 @@ const ProductLinksEditor: React.FC<ProductLinksEditorProps> = ({ videoId }) => {
           title: data.title || newLink.title || '',
           image_url: data.thumbnailUrl || newLink.image_url || '',
           description: data.description || newLink.description || '',
+          price: data.price || newLink.price || null,
           url: url
         });
         

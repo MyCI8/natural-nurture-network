@@ -56,19 +56,32 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
     );
   }
 
-  const getYoutubeThumbnail = (url) => {
-    if (!url || !url.includes('youtube.com')) return null;
+  const getYoutubeVideoId = (url: string | null): string | null => {
+    if (!url) return null;
     
     try {
-      const videoId = url.includes('v=') 
-        ? new URLSearchParams(new URL(url).search).get('v')
-        : url.split('youtu.be/')[1]?.split('?')[0];
-        
+      // Match both youtube.com/watch?v= and youtu.be/ formats
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    } catch (e) {
+      console.error("Error parsing YouTube URL:", e);
+      return null;
+    }
+  };
+
+  const getThumbnailUrl = (video: VideoType): string | null => {
+    // First check if video has a direct thumbnail
+    if (video.thumbnail_url) {
+      return video.thumbnail_url;
+    }
+    
+    // Then check if it's a YouTube video and get thumbnail from the video_url
+    if (video.video_url) {
+      const videoId = getYoutubeVideoId(video.video_url);
       if (videoId) {
         return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
       }
-    } catch (e) {
-      console.error("Error parsing YouTube URL:", e);
     }
     
     return null;
@@ -93,17 +106,14 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
           {videos.map((video) => (
             <TableRow key={video.id}>
               <TableCell>
-                {video.thumbnail_url ? (
+                {getThumbnailUrl(video) ? (
                   <img 
-                    src={video.thumbnail_url} 
+                    src={getThumbnailUrl(video)} 
                     alt={video.title} 
                     className="w-16 h-10 object-cover rounded"
-                  />
-                ) : video.video_url && video.video_url.includes('youtube.com') ? (
-                  <img 
-                    src={getYoutubeThumbnail(video.video_url)} 
-                    alt={video.title} 
-                    className="w-16 h-10 object-cover rounded"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/160x90/f0f0f0/404040?text=No+Image';
+                    }}
                   />
                 ) : (
                   <div className="w-16 h-10 bg-muted flex items-center justify-center rounded">
@@ -145,7 +155,12 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(`/admin/news/videos/${video.id}`)}
+                    onClick={() => navigate(`/admin/videos/${video.id}`, {
+                      state: { 
+                        returnTo: "/admin/news/videos",
+                        videoType: "news" 
+                      }
+                    })}
                   >
                     Edit
                   </Button>

@@ -24,7 +24,15 @@ serve(async (req) => {
 
     console.log('Fetching preview for URL:', url);
 
-    const response = await fetch(url);
+    // Add user agent to mimic a browser request
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml'
+      }
+    };
+
+    const response = await fetch(url, options);
     const html = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
@@ -32,6 +40,7 @@ serve(async (req) => {
     let title = '';
     let description = '';
     let thumbnailUrl = '';
+    let price = null;
 
     // Get meta tags (including OpenGraph and Twitter Card)
     const metaTags = doc?.querySelectorAll('meta');
@@ -123,6 +132,13 @@ serve(async (req) => {
             if (image && typeof image === 'string' && isValidImageUrl(image)) {
               thumbnailUrl = image;
               break;
+            } else if (image && Array.isArray(image) && image.length > 0) {
+              // Some sites provide image as an array
+              const firstImage = typeof image[0] === 'string' ? image[0] : image[0]?.url;
+              if (firstImage && isValidImageUrl(firstImage)) {
+                thumbnailUrl = firstImage;
+                break;
+              }
             }
           } catch (e) {
             console.error('Error parsing JSON-LD:', e);
@@ -131,60 +147,60 @@ serve(async (req) => {
       }
     }
 
-    // If still no image found, look for the largest image that's likely to be a preview
-    if (!thumbnailUrl) {
-      const images = Array.from(doc?.querySelectorAll('img') || []);
-      let bestImage = null;
-      let bestScore = 0;
-
-      for (const img of images) {
-        const src = img.getAttribute('src');
-        if (!src || !isValidImageUrl(src)) continue;
-
-        // Convert relative URLs to absolute
-        const absoluteSrc = new URL(src, url).href;
-        
-        // Calculate image score based on attributes and position
-        const width = parseInt(img.getAttribute('width') || '0');
-        const height = parseInt(img.getAttribute('height') || '0');
-        const area = width * height;
-        
-        // Scoring factors
-        let score = 0;
-        
-        // Prefer larger images
-        if (area > 10000) score += area / 10000;
-        
-        // Prefer images higher in the document
-        const position = images.indexOf(img);
-        score += (images.length - position) / images.length * 10;
-        
-        // Avoid small icons and common UI elements
-        if (width < 100 || height < 100) score -= 50;
-        if (src.toLowerCase().includes('logo')) score -= 30;
-        if (src.toLowerCase().includes('icon')) score -= 30;
-        
-        // Prefer images with descriptive attributes
-        if (img.getAttribute('alt')) score += 10;
-        if (img.getAttribute('title')) score += 10;
-
-        // Boost score for images in main content area
-        const parent = img.parentElement;
-        if (parent) {
-          const parentClasses = parent.getAttribute('class') || '';
-          if (parentClasses.includes('content') || parentClasses.includes('main')) {
-            score += 20;
+    // Amazon-specific image extraction if needed
+    if (!thumbnailUrl && (url.includes('amazon.com') || url.includes('amzn.to') || url.includes('a.co'))) {
+      // Try to find the main product image
+      const mainImage = doc?.querySelector('#landingImage, #imgBlkFront, #ebooksImgBlkFront');
+      if (mainImage) {
+        const src = mainImage.getAttribute('src') || mainImage.getAttribute('data-old-hires') || mainImage.getAttribute('data-a-dynamic-image');
+        if (src && isValidImageUrl(src)) {
+          thumbnailUrl = src;
+        } else if (src && src.startsWith('{')) {
+          // Handle the data-a-dynamic-image JSON string
+          try {
+            const imageData = JSON.parse(src);
+            const imageUrl = Object.keys(imageData)[0]; // Get the first URL
+            if (imageUrl && isValidImageUrl(imageUrl)) {
+              thumbnailUrl = imageUrl;
+            }
+          } catch (e) {
+            console.error('Error parsing Amazon image JSON:', e);
           }
         }
-
-        if (score > bestScore) {
-          bestScore = score;
-          bestImage = absoluteSrc;
-        }
       }
+    }
 
-      if (bestImage) {
-        thumbnailUrl = bestImage;
+    // If still no image found, look for the largest image that's likely to be a preview
+    if (!thumbnailUrl) {
+      const images = Array.from(doc?.querySelectorAll('img') || [])
+        .filter(img => {
+          const src = img.getAttribute('src');
+          return src && isValidImageUrl(src) && !src.includes('logo') && !src.includes('icon');
+        })
+        .map(img => {
+          const src = img.getAttribute('src');
+          // Convert relative URLs to absolute
+          const absoluteSrc = src ? new URL(src, url).href : '';
+          const width = parseInt(img.getAttribute('width') || '0');
+          const height = parseInt(img.getAttribute('height') || '0');
+          const alt = img.getAttribute('alt') || '';
+          
+          // Calculate score based on size and position
+          let score = 0;
+          if (width > 100 && height > 100) {
+            score += (width * height) / 5000; // Prefer larger images
+          }
+          // Boost score for images that might be product-related
+          if (alt && !alt.toLowerCase().includes('logo') && !alt.toLowerCase().includes('icon')) {
+            score += 20;
+          }
+          
+          return { src: absoluteSrc, score, width, height };
+        })
+        .sort((a, b) => b.score - a.score); // Sort by score descending
+      
+      if (images.length > 0) {
+        thumbnailUrl = images[0].src;
       }
     }
 
@@ -198,7 +214,6 @@ serve(async (req) => {
     }
 
     // Extract product price if available (for Amazon specifically)
-    let price = null;
     if (url.includes('amazon.com') || url.includes('amzn.to/') || url.includes('a.co/')) {
       // Try various price selectors specific to Amazon
       const priceSelectors = [
@@ -206,13 +221,15 @@ serve(async (req) => {
         '#priceblock_dealprice',
         '.a-price .a-offscreen',
         '#corePrice_desktop .a-price .a-offscreen',
-        '.a-price .a-price-whole'
+        '.a-price .a-price-whole',
+        '.a-price',
+        '#tp_price_block_total_price_ww .a-offscreen'
       ];
       
       for (const selector of priceSelectors) {
         const priceElement = doc?.querySelector(selector);
         if (priceElement) {
-          const priceText = priceElement.textContent || '';
+          const priceText = priceElement.textContent || priceElement.getAttribute('content') || '';
           // Extract digits and decimal point only
           const priceMatch = priceText.match(/(\d+([.,]\d+)?)/);
           if (priceMatch) {
@@ -254,9 +271,17 @@ function isValidImageUrl(url: string): boolean {
   // Check if it has a valid image extension
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
   const lowercaseUrl = url.toLowerCase();
-  return imageExtensions.some(ext => lowercaseUrl.endsWith(ext)) ||
-    // Also allow URLs that might be dynamic but contain image-related keywords
+  
+  // First check for common image extensions
+  const hasImageExtension = imageExtensions.some(ext => lowercaseUrl.endsWith(ext));
+  
+  // Then check for additional image-related patterns in the URL
+  const hasImagePattern = 
     lowercaseUrl.includes('/image') ||
     lowercaseUrl.includes('/photo') ||
-    lowercaseUrl.includes('/picture');
+    lowercaseUrl.includes('/picture') ||
+    lowercaseUrl.includes('/images/') ||
+    lowercaseUrl.includes('/img/');
+    
+  return hasImageExtension || hasImagePattern;
 }
