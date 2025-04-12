@@ -53,7 +53,7 @@ const ManageVideos = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [videoType, setVideoType] = useState<"all" | "general" | "explore">("explore");
+  const [videoType, setVideoType] = useState<"all" | "general" | "explore">("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [filters, setFilters] = useState<VideoFilters>({
@@ -110,8 +110,15 @@ const ManageVideos = () => {
         query = query.order("created_at", { ascending: false });
       }
 
+      console.log("Fetching videos with query:", JSON.stringify(query));
+
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching videos:", error);
+        throw error;
+      }
+      
+      console.log("Fetched videos data:", data);
       
       return data.map(video => ({
         ...video,
