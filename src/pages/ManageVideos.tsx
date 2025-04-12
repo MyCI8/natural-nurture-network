@@ -1,59 +1,110 @@
-import { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Video as VideoIcon, Trash2, ExternalLink, ArrowLeft, ShoppingCart } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { 
+  ArrowLeft, 
+  BarChart, 
+  Calendar, 
+  Clock, 
+  Filter, 
+  Flag, 
+  Plus, 
+  ShoppingCart, 
+  Star, 
+  Video as VideoIcon
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
-import type { Video } from "@/types/video";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Video } from "@/types/video";
+
+// Import dashboard components
+import StatsCard from "@/components/videos/dashboard/StatsCard";
+import VideoMetricsChart from "@/components/videos/dashboard/VideoMetricsChart";
+import TopVideosCard from "@/components/videos/dashboard/TopVideosCard";
+import CategoryPerformanceCard from "@/components/videos/dashboard/CategoryPerformanceCard";
+import EnhancedVideoTable from "@/components/videos/table/EnhancedVideoTable";
+import AdvancedFilters, { VideoFilters } from "@/components/videos/filters/AdvancedFilters";
+
+// Sample data for charts
+const generateChartData = () => {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return days.map(day => ({
+    name: day,
+    views: Math.floor(Math.random() * 1000) + 100,
+    likes: Math.floor(Math.random() * 100) + 10,
+    comments: Math.floor(Math.random() * 50) + 5,
+  }));
+};
+
+const categoryData = [
+  { name: 'Fitness', views: 1200, likes: 340, engagement: 8.5 },
+  { name: 'Nutrition', views: 900, likes: 210, engagement: 7.2 },
+  { name: 'Wellbeing', views: 1500, likes: 450, engagement: 12.1 },
+  { name: 'General', views: 750, likes: 180, engagement: 6.4 },
+  { name: 'Tips', views: 1100, likes: 290, engagement: 9.3 },
+];
 
 const ManageVideos = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"recent" | "views">("recent");
-  const [currentTab, setCurrentTab] = useState<"all" | "draft" | "published" | "archived">("all");
-  const [videoType, setVideoType] = useState<"all" | "general" | "news" | "explore">("all");
-  const [deleteVideoId, setDeleteVideoId] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [videoType, setVideoType] = useState<"all" | "general" | "explore">("explore");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<VideoFilters>({
+    search: "",
+    status: "",
+    category: "",
+    sortBy: "recent",
+    startDate: undefined,
+    endDate: undefined,
+    hasProductLinks: false,
+    minViews: undefined,
+    maxViews: undefined,
+    engagement: "",
+  });
 
-  const { data: videos = [], isLoading, refetch } = useQuery({
-    queryKey: ["admin-videos", searchQuery, currentTab, sortBy, videoType],
+  // Fetch videos with filtered query
+  const { data: videos = [], isLoading } = useQuery({
+    queryKey: ["admin-videos", videoType, filters],
     queryFn: async () => {
       let query = supabase
         .from("videos")
-        .select("*, video_product_links(count)");
+        .select("*, video_product_links(count), creator:creator_id(id, full_name, username, avatar_url)");
 
-      if (searchQuery) {
-        query = query.ilike("title", `%${searchQuery}%`);
-      }
-
-      if (currentTab !== "all") {
-        query = query.eq("status", currentTab);
-      }
-
+      // Apply video type filter
       if (videoType !== "all") {
         query = query.eq("video_type", videoType);
-      } else {
-        query = query.not('video_type', 'eq', 'news');
       }
 
-      if (sortBy === "views") {
+      // Apply search filter
+      if (filters.search) {
+        query = query.ilike("title", `%${filters.search}%`);
+      }
+
+      // Apply status filter
+      if (filters.status) {
+        query = query.eq("status", filters.status);
+      }
+
+      // Apply date range filter
+      if (filters.startDate && filters.endDate) {
+        query = query
+          .gte("created_at", filters.startDate.toISOString())
+          .lte("created_at", filters.endDate.toISOString());
+      }
+
+      // Apply sort order
+      if (filters.sortBy === "views") {
         query = query.order("views_count", { ascending: false });
+      } else if (filters.sortBy === "likes") {
+        query = query.order("likes_count", { ascending: false });
+      } else if (filters.sortBy === "title") {
+        query = query.order("title", { ascending: true });
       } else {
         query = query.order("created_at", { ascending: false });
       }
@@ -68,6 +119,7 @@ const ManageVideos = () => {
     },
   });
 
+  // Delete video mutation
   const deleteVideoMutation = useMutation({
     mutationFn: async (videoId: string) => {
       const { error } = await supabase
@@ -82,7 +134,8 @@ const ManageVideos = () => {
       toast({
         title: "Video deleted successfully"
       });
-      refetch();
+      queryClient.invalidateQueries({ queryKey: ["admin-videos"] });
+      setDeleteDialogOpen(false);
     },
     onError: (error: any) => {
       toast({
@@ -93,97 +146,125 @@ const ManageVideos = () => {
     }
   });
 
-  const handleDeleteClick = (videoId: string) => {
-    setDeleteVideoId(videoId);
-    setIsDeleteDialogOpen(true);
+  // Archive video mutation
+  const archiveVideoMutation = useMutation({
+    mutationFn: async (videoId: string) => {
+      const { error } = await supabase
+        .from("videos")
+        .update({ status: "archived" })
+        .eq("id", videoId);
+      
+      if (error) throw error;
+      return videoId;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Video archived successfully"
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin-videos"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to archive video",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Feature video mutation
+  const featureVideoMutation = useMutation({
+    mutationFn: async ({ videoId, featured }: { videoId: string; featured: boolean }) => {
+      const { error } = await supabase
+        .from("videos")
+        .update({ show_in_latest: featured })
+        .eq("id", videoId);
+      
+      if (error) throw error;
+      return { videoId, featured };
+    },
+    onSuccess: ({ videoId, featured }) => {
+      toast({
+        title: `Video ${featured ? 'featured' : 'unfeatured'} successfully`
+      });
+      queryClient.invalidateQueries({ queryKey: ["admin-videos"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update feature status",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleDeleteVideo = (videoId: string) => {
+    setSelectedVideoId(videoId);
+    setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (deleteVideoId) {
-      deleteVideoMutation.mutate(deleteVideoId);
-      setIsDeleteDialogOpen(false);
-      setDeleteVideoId(null);
+  const confirmDelete = () => {
+    if (selectedVideoId) {
+      deleteVideoMutation.mutate(selectedVideoId);
     }
   };
 
+  const handleArchiveVideo = (videoId: string) => {
+    archiveVideoMutation.mutate(videoId);
+  };
+
+  const handleFeatureVideo = (videoId: string, featured: boolean) => {
+    featureVideoMutation.mutate({ videoId, featured });
+  };
+
   const handleAddVideo = () => {
-    const videoTypeParam = videoType !== 'all' ? videoType : 'general';
     navigate("/admin/videos/new", { 
       state: { 
         returnTo: "/admin/videos",
-        videoType: videoTypeParam
+        videoType: videoType === "all" ? "general" : videoType
       } 
     });
   };
 
-  const renderVideoStats = () => {
-    const totalVideos = videos.length;
-    const totalViews = videos.reduce((sum, video) => sum + (video.views_count || 0), 0);
-    const videosWithLinks = videos.filter(video => 
-      (video as any).product_links_count && (video as any).product_links_count > 0
-    ).length;
-    const publishedVideos = videos.filter(video => video.status === 'published').length;
-
-    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Videos</p>
-                <p className="text-2xl font-bold mt-1">{totalVideos}</p>
-              </div>
-              <VideoIcon className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{publishedVideos} published</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Views</p>
-                <p className="text-2xl font-bold mt-1">{totalViews.toLocaleString()}</p>
-              </div>
-              <ExternalLink className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Across all videos</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Product Links</p>
-                <p className="text-2xl font-bold mt-1">{videosWithLinks}</p>
-              </div>
-              <ShoppingCart className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {Math.round((videosWithLinks / totalVideos) * 100) || 0}% of videos
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Video Types</p>
-                <p className="text-2xl font-bold mt-1">
-                  {videos.filter(v => v.video_type === 'general').length} / {videos.filter(v => v.video_type === 'explore').length}
-                </p>
-              </div>
-              <VideoIcon className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">General / Explore</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  const handleEditVideo = (videoId: string) => {
+    navigate(`/admin/videos/${videoId}`, {
+      state: {
+        returnTo: "/admin/videos",
+        videoType: videoType
+      }
+    });
   };
+
+  const handlePreviewVideo = (videoId: string) => {
+    window.open(`/news/videos/${videoId}`, '_blank');
+  };
+
+  const handleViewDetails = (videoId: string) => {
+    // For future implementation: navigate to detailed analytics view
+    toast({
+      title: "Analytics feature",
+      description: "Detailed video analytics will be implemented soon.",
+    });
+  };
+
+  const handleManageLinks = (videoId: string) => {
+    navigate(`/admin/videos/${videoId}`, {
+      state: {
+        returnTo: "/admin/videos",
+        videoType: videoType,
+        activeTab: "products"
+      }
+    });
+  };
+
+  // Calculate stats for dashboard
+  const totalVideos = videos.length;
+  const totalViews = videos.reduce((sum, video) => sum + (video.views_count || 0), 0);
+  const totalLikes = videos.reduce((sum, video) => sum + (video.likes_count || 0), 0);
+  const engagementRate = totalViews > 0 ? ((totalLikes / totalViews) * 100).toFixed(1) : "0";
+  const videosWithLinks = videos.filter(v => (v as any).product_links_count > 0).length;
+  const publishedVideos = videos.filter(v => v.status === 'published').length;
+  const topVideos = [...videos].sort((a, b) => (b.views_count || 0) - (a.views_count || 0)).slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -198,112 +279,129 @@ const ManageVideos = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="text-2xl font-bold">Manage Videos</h2>
+            <h2 className="text-2xl font-bold">Video Management</h2>
             <p className="text-muted-foreground">
-              Create and manage general and explore videos
+              Manage and analyze your video content
             </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Select 
-            value={videoType} 
-            onValueChange={(value: "all" | "general" | "news" | "explore") => setVideoType(value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Video Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="general">General Videos</SelectItem>
-              <SelectItem value="explore">Explore Videos</SelectItem>
-            </SelectContent>
-          </Select>
+          <Tabs value={videoType} onValueChange={(v) => setVideoType(v as any)} className="mr-2">
+            <TabsList>
+              <TabsTrigger value="explore">Explore</TabsTrigger>
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="all">All Videos</TabsTrigger>
+            </TabsList>
+          </Tabs>
           
           <Button onClick={handleAddVideo}>
-            <Plus className="mr-2 h-4 w-4" /> Add New Video
+            <Plus className="mr-2 h-4 w-4" /> Add Video
           </Button>
         </div>
       </div>
 
-      {renderVideoStats()}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="w-full border-b pb-0 mb-6">
+          <TabsTrigger value="dashboard" className="gap-2">
+            <BarChart className="h-4 w-4" />
+            Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="videos" className="gap-2">
+            <VideoIcon className="h-4 w-4" />
+            All Videos
+          </TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Video Library</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs 
-            defaultValue="all" 
-            value={currentTab} 
-            onValueChange={(value: "all" | "draft" | "published" | "archived") => setCurrentTab(value)}
-          >
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">All Videos</TabsTrigger>
-              <TabsTrigger value="draft">Drafts</TabsTrigger>
-              <TabsTrigger value="published">Published</TabsTrigger>
-              <TabsTrigger value="archived">Archived</TabsTrigger>
-            </TabsList>
+        <TabsContent value="dashboard" className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <StatsCard
+              title="Total Videos"
+              value={totalVideos}
+              icon={VideoIcon}
+              description={`${publishedVideos} published`}
+            />
+            <StatsCard
+              title="Total Views"
+              value={totalViews.toLocaleString()}
+              icon={Eye}
+              description="All time views"
+            />
+            <StatsCard
+              title="Engagement Rate"
+              value={`${engagementRate}%`}
+              icon={Star}
+              description="Likes to views ratio"
+            />
+            <StatsCard
+              title="Product Links"
+              value={videosWithLinks}
+              icon={ShoppingCart}
+              description={`${Math.round((videosWithLinks / totalVideos) * 100) || 0}% of videos`}
+            />
+          </div>
 
-            <div className="mt-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="relative">
-                  <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search videos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8"
-                  />
-                </div>
+          {/* Charts and Analytics */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <VideoMetricsChart
+              title="Weekly Performance"
+              data={generateChartData()}
+              description="Views and engagement over the past week"
+            />
+            <CategoryPerformanceCard data={categoryData} />
+          </div>
 
-                <Select
-                  value={sortBy}
-                  onValueChange={(value: "recent" | "views") => setSortBy(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="recent">Most Recent</SelectItem>
-                    <SelectItem value="views">Most Viewed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Top Videos and Additional Stats */}
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <TopVideosCard videos={topVideos} onViewDetails={handleViewDetails} />
             </div>
+            <div className="space-y-6">
+              <Card className="p-6">
+                <h3 className="text-base font-medium mb-4">Quick Actions</h3>
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start" onClick={handleAddVideo}>
+                    <Plus className="mr-2 h-4 w-4" /> Create New Video
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start text-amber-700">
+                    <Flag className="mr-2 h-4 w-4" /> Review Flagged Content
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Calendar className="mr-2 h-4 w-4" /> Schedule Content
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Clock className="mr-2 h-4 w-4" /> View Watch Time
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <Filter className="mr-2 h-4 w-4" /> Manage Categories
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
 
-            <TabsContent value="all" className="mt-6">
-              <VideoGrid 
-                videos={videos} 
-                navigate={navigate} 
-                onDeleteClick={handleDeleteClick}
-              />
-            </TabsContent>
-            <TabsContent value="draft" className="mt-6">
-              <VideoGrid 
-                videos={videos} 
-                navigate={navigate}
-                onDeleteClick={handleDeleteClick}
-              />
-            </TabsContent>
-            <TabsContent value="published" className="mt-6">
-              <VideoGrid 
-                videos={videos} 
-                navigate={navigate}
-                onDeleteClick={handleDeleteClick}
-              />
-            </TabsContent>
-            <TabsContent value="archived" className="mt-6">
-              <VideoGrid 
-                videos={videos} 
-                navigate={navigate}
-                onDeleteClick={handleDeleteClick}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+        <TabsContent value="videos">
+          <AdvancedFilters 
+            filters={filters} 
+            onFilterChange={setFilters} 
+          />
+          <EnhancedVideoTable 
+            videos={videos}
+            isLoading={isLoading}
+            onViewDetails={handleViewDetails}
+            onEdit={handleEditVideo}
+            onDelete={handleDeleteVideo}
+            onArchive={handleArchiveVideo}
+            onPreview={handlePreviewVideo}
+            onFeature={handleFeatureVideo}
+            onManageLinks={handleManageLinks}
+          />
+        </TabsContent>
+      </Tabs>
 
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Video</DialogTitle>
@@ -312,10 +410,16 @@ const ManageVideos = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+            >
               Delete
             </Button>
           </DialogFooter>
@@ -325,128 +429,33 @@ const ManageVideos = () => {
   );
 };
 
-const VideoGrid = ({ 
-  videos, 
-  navigate, 
-  onDeleteClick 
-}: { 
-  videos: Video[], 
-  navigate: (path: string) => void,
-  onDeleteClick: (id: string) => void
-}) => {
-  if (videos.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground mb-4">No videos found</p>
-        <Button onClick={() => navigate("/admin/videos/new")}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Video
-        </Button>
-      </div>
-    );
-  }
-
-  const getYoutubeThumbnail = (url: string | null): string | null => {
-    if (!url || !url.includes('youtube.com')) return null;
-    
-    try {
-      const videoId = url.includes('v=') 
-        ? new URLSearchParams(new URL(url).search).get('v')
-        : url.split('youtu.be/')[1]?.split('?')[0];
-        
-      if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      }
-    } catch (e) {
-      console.error("Error parsing YouTube URL:", e);
-    }
-    
-    return null;
-  };
-
+// Missing import but needed for one component
+const Card = ({ className, children }: { className?: string, children: React.ReactNode }) => {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {videos.map((video) => (
-        <Card key={video.id}>
-          <CardContent className="p-4">
-            <AspectRatio ratio={16/9} className="mb-4 bg-muted rounded-md overflow-hidden">
-              {video.thumbnail_url ? (
-                <img
-                  src={video.thumbnail_url}
-                  alt={video.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : video.video_url && video.video_url.includes('youtube.com') ? (
-                <img
-                  src={getYoutubeThumbnail(video.video_url)}
-                  alt={video.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <VideoIcon className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-            </AspectRatio>
-            <h3 className="font-semibold mb-2">{video.title}</h3>
-            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-              {video.description?.substring(0, 100) || "No description"}
-            </p>
-            <div className="flex items-center gap-2 mb-4">
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                video.video_type === 'news' ? 'bg-blue-100 text-blue-800' : 
-                video.video_type === 'explore' ? 'bg-green-100 text-green-800' : 
-                'bg-gray-100 text-gray-800'
-              }`}>
-                {video.video_type.charAt(0).toUpperCase() + video.video_type.slice(1)}
-              </span>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                video.status === 'published' ? 'bg-green-100 text-green-800' : 
-                video.status === 'archived' ? 'bg-red-100 text-red-800' : 
-                'bg-yellow-100 text-yellow-800'
-              }`}>
-                {video.status.charAt(0).toUpperCase() + video.status.slice(1)}
-              </span>
-              
-              {(video as any).product_links_count > 0 && (
-                <Badge variant="outline" className="gap-1 bg-purple-50 border-purple-200 text-purple-700">
-                  <ShoppingCart className="h-3 w-3" />
-                  {(video as any).product_links_count}
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                {video.views_count} views
-              </span>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/news/videos/${video.id}`)}
-                >
-                  <ExternalLink className="h-4 w-4 mr-1" /> View
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/admin/videos/${video.id}`)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700"
-                  onClick={() => onDeleteClick(video.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
+      {children}
     </div>
+  );
+};
+
+// Missing Eye component
+const Eye = (props: any) => {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
   );
 };
 
