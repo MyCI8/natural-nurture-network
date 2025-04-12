@@ -93,7 +93,6 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
                   <VideoUsageBadge
                     usage={video.usage}
                     articleTitle={video.relatedArticleTitle}
-                    showInLatest={video.show_in_latest}
                   />
                 </TableCell>
                 <TableCell>
