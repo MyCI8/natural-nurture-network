@@ -12,7 +12,8 @@ import {
   Plus, 
   ShoppingCart, 
   Star, 
-  Video as VideoIcon 
+  Video as VideoIcon,
+  LucideProps 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -439,9 +440,10 @@ const Card = ({ className, children }: { className?: string, children: React.Rea
 };
 
 // Eye icon component to avoid Lucide import issues
-const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => {
+const EyeIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => {
   return (
     <svg
+      ref={ref}
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       width="24"
@@ -457,6 +459,8 @@ const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => {
       <circle cx="12" cy="12" r="3" />
     </svg>
   );
-};
+});
+
+EyeIcon.displayName = "EyeIcon";
 
 export default ManageVideos;
