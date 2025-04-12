@@ -12,7 +12,7 @@ import {
   Plus, 
   ShoppingCart, 
   Star, 
-  Video as VideoIcon
+  Video as VideoIcon 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -88,7 +88,7 @@ const ManageVideos = () => {
 
       // Apply status filter
       if (filters.status) {
-        query = query.eq("status", filters.status);
+        query = query.eq("status", filters.status as "published" | "draft" | "archived");
       }
 
       // Apply date range filter
@@ -324,7 +324,7 @@ const ManageVideos = () => {
             <StatsCard
               title="Total Views"
               value={totalViews.toLocaleString()}
-              icon={Eye}
+              icon={EyeIcon}
               description="All time views"
             />
             <StatsCard
@@ -429,7 +429,7 @@ const ManageVideos = () => {
   );
 };
 
-// Missing import but needed for one component
+// Card component to avoid dependency issues
 const Card = ({ className, children }: { className?: string, children: React.ReactNode }) => {
   return (
     <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
@@ -438,8 +438,8 @@ const Card = ({ className, children }: { className?: string, children: React.Rea
   );
 };
 
-// Missing Eye component
-const Eye = (props: any) => {
+// Eye icon component to avoid Lucide import issues
+const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       {...props}
