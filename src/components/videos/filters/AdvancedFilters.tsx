@@ -243,9 +243,9 @@ const AdvancedFilters = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Any engagement</SelectItem>
-                <SelectItem value="high">High (>10%)</SelectItem>
+                <SelectItem value="high">High (&gt;10%)</SelectItem>
                 <SelectItem value="medium">Medium (5-10%)</SelectItem>
-                <SelectItem value="low">Low (<5%)</SelectItem>
+                <SelectItem value="low">Low (&lt;5%)</SelectItem>
               </SelectContent>
             </Select>
           </div>
