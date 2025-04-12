@@ -28,6 +28,63 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Video as VideoType } from "@/types/video";
 
+// Create a dedicated thumbnail component to handle all the logic in one place
+const VideoThumbnail = ({ video }: { video: VideoType }) => {
+  // Extract YouTube ID logic
+  const getYoutubeVideoId = (url: string | null): string | null => {
+    if (!url) return null;
+    
+    try {
+      // Match both youtube.com/watch?v= and youtu.be/ formats
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    } catch (e) {
+      console.error("Error parsing YouTube URL:", e);
+      return null;
+    }
+  };
+
+  // Get thumbnail URL with proper error handling
+  const getThumbnailUrl = (): string | null => {
+    // First check if video has a direct thumbnail
+    if (video.thumbnail_url) {
+      return video.thumbnail_url;
+    }
+    
+    // Then check if it's a YouTube video and get thumbnail from the video_url
+    if (video.video_url) {
+      const videoId = getYoutubeVideoId(video.video_url);
+      if (videoId) {
+        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      }
+    }
+    
+    return null;
+  };
+
+  const thumbnailUrl = getThumbnailUrl();
+
+  if (thumbnailUrl) {
+    return (
+      <img 
+        src={thumbnailUrl} 
+        alt={video.title} 
+        className="w-16 h-10 object-cover rounded"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/160x90/f0f0f0/404040?text=No+Image';
+        }}
+      />
+    );
+  }
+  
+  return (
+    <div className="w-16 h-10 bg-muted flex items-center justify-center rounded">
+      <Video className="h-4 w-4 text-muted-foreground" />
+    </div>
+  );
+};
+
 interface VideoTableProps {
   videos: VideoType[];
   navigate: (path: string) => void;
@@ -56,37 +113,6 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
     );
   }
 
-  const getYoutubeVideoId = (url: string | null): string | null => {
-    if (!url) return null;
-    
-    try {
-      // Match both youtube.com/watch?v= and youtu.be/ formats
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2].length === 11) ? match[2] : null;
-    } catch (e) {
-      console.error("Error parsing YouTube URL:", e);
-      return null;
-    }
-  };
-
-  const getThumbnailUrl = (video: VideoType): string | null => {
-    // First check if video has a direct thumbnail
-    if (video.thumbnail_url) {
-      return video.thumbnail_url;
-    }
-    
-    // Then check if it's a YouTube video and get thumbnail from the video_url
-    if (video.video_url) {
-      const videoId = getYoutubeVideoId(video.video_url);
-      if (videoId) {
-        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      }
-    }
-    
-    return null;
-  };
-
   return (
     <TooltipProvider>
       <div className="touch-auto overflow-x-auto">
@@ -107,30 +133,7 @@ const VideoTable = ({ videos, navigate, isLoading, onDelete, onArchive }: VideoT
             {videos.map((video) => (
               <TableRow key={video.id}>
                 <TableCell>
-                  {/* Use a more explicit IIFE structure to avoid TypeScript confusion */}
-                  {(() => {
-                    // Make sure we're only calling getThumbnailUrl with one argument
-                    const thumbnailUrl = getThumbnailUrl(video);
-                    
-                    if (thumbnailUrl) {
-                      return (
-                        <img 
-                          src={thumbnailUrl} 
-                          alt={video.title} 
-                          className="w-16 h-10 object-cover rounded"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/160x90/f0f0f0/404040?text=No+Image';
-                          }}
-                        />
-                      );
-                    } else {
-                      return (
-                        <div className="w-16 h-10 bg-muted flex items-center justify-center rounded">
-                          <Video className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      );
-                    }
-                  })()}
+                  <VideoThumbnail video={video} />
                 </TableCell>
                 <TableCell className="font-medium max-w-[200px] truncate">{video.title}</TableCell>
                 <TableCell>
