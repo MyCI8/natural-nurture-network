@@ -23,8 +23,8 @@ const EditVideo = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("details");
   
-  // Determine video type from location state or default to 'general'
-  const videoType = location.state?.videoType || 'general';
+  // Determine video type from location state or default to 'explore'
+  const videoType = location.state?.videoType || 'explore';
   
   // Always set the correct return path based on video type
   const getCorrectReturnPath = () => {
@@ -122,8 +122,8 @@ const EditVideo = () => {
   
   // Determine page title based on video type
   const pageTitle = id 
-    ? `Edit ${formState.videoType === 'news' ? 'News' : ''} Video` 
-    : `Create New ${formState.videoType === 'news' ? 'News' : ''} Video`;
+    ? `Edit ${formState.videoType === 'news' ? 'News' : 'Explore'} Video` 
+    : `Create New ${formState.videoType === 'news' ? 'News' : 'Explore'} Video`;
 
   const handleThumbnailUpdated = (newThumbnailUrl: string) => {
     // Update the form state with the new thumbnail URL

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +53,7 @@ const ManageVideos = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [videoType, setVideoType] = useState<"all" | "general" | "explore">("all");
+  const [videoType, setVideoType] = useState<"all" | "explore" | "general">("all");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [filters, setFilters] = useState<VideoFilters>({
@@ -247,7 +248,7 @@ const ManageVideos = () => {
     navigate("/admin/videos/new", { 
       state: { 
         returnTo: "/admin/videos",
-        videoType: videoType === "all" ? "general" : videoType
+        videoType: videoType === "all" ? "explore" : videoType
       } 
     });
   };
@@ -331,7 +332,7 @@ const ManageVideos = () => {
           >
             <TabsList>
               <TabsTrigger value="explore">Explore</TabsTrigger>
-              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="general">News</TabsTrigger>
               <TabsTrigger value="all">All Videos</TabsTrigger>
             </TabsList>
           </Tabs>

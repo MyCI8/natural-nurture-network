@@ -13,10 +13,10 @@ type VideoFormState = {
   showInLatest: boolean;
   status: "draft" | "published" | "archived";
   relatedArticleId: string | null;
-  videoType: "news" | "general" | "explore";
+  videoType: "news" | "explore" | "general";
 };
 
-export function useVideoForm(videoId?: string, defaultVideoType: "news" | "general" | "explore" = "general") {
+export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explore" | "general" = "explore") {
   const navigate = useNavigate();
   const location = useLocation();
   const [formState, setFormState] = useState<VideoFormState>({
@@ -62,7 +62,11 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
       if (data) {
         setVideo(data as Video);
         
-        const videoType = data.video_type as "news" | "general" | "explore" || defaultVideoType;
+        // Map "general" to "explore" if needed for backwards compatibility
+        let mappedVideoType = data.video_type;
+        if (mappedVideoType === "general") {
+          mappedVideoType = "explore";
+        }
         
         setFormState({
           title: data.title || "",
@@ -72,7 +76,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
           showInLatest: data.show_in_latest ?? true,
           status: data.status as "draft" | "published" | "archived",
           relatedArticleId: data.related_article_id || null,
-          videoType: videoType
+          videoType: mappedVideoType as "news" | "explore" | "general"
         });
 
         if (data.video_url && data.video_url.includes('youtube.com')) {
@@ -188,6 +192,9 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
         thumbnailUrl = getYouTubeThumbnail(formState.videoUrl);
       }
 
+      // Map the "explore" videoType to "general" in the database
+      const mappedVideoType = formState.videoType === "explore" ? "general" : formState.videoType;
+
       const videoData = {
         title: formState.title,
         description: formState.description,
@@ -195,7 +202,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
         thumbnail_url: thumbnailUrl,
         status: (asDraft ? "draft" : "published") as "draft" | "published" | "archived",
         creator_id: user.id,
-        video_type: formState.videoType,
+        video_type: mappedVideoType,
         related_article_id: formState.relatedArticleId,
         show_in_latest: formState.showInLatest
       };
