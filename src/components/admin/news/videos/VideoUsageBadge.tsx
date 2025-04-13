@@ -9,7 +9,7 @@ interface VideoUsageBadgeProps {
 
 export const VideoUsageBadge = ({ usage }: VideoUsageBadgeProps) => {
   let text: string;
-  let variant: "default" | "secondary" | "outline" | "ghost";
+  let variant: "default" | "secondary" | "outline" | "destructive";
 
   switch (usage) {
     case "latest":
@@ -26,7 +26,7 @@ export const VideoUsageBadge = ({ usage }: VideoUsageBadgeProps) => {
       break;
     default:
       text = "None";
-      variant = "ghost";
+      variant = "secondary"; // Changed from ghost to secondary
       break;
   }
 
