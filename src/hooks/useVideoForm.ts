@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
     relatedArticleId: null,
     videoType: defaultVideoType
   });
+  const [video, setVideo] = useState<Video | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
@@ -42,13 +44,24 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
     try {
       const { data, error } = await supabase
         .from("videos")
-        .select("*, related_article_id")
+        .select(`
+          *,
+          creator:creator_id (
+            id,
+            full_name,
+            username,
+            avatar_url
+          ),
+          related_article_id
+        `)
         .eq("id", videoId)
         .single();
         
       if (error) throw error;
       
       if (data) {
+        setVideo(data as Video);
+        
         const videoType = data.video_type as "news" | "general" | "explore" || defaultVideoType;
         
         setFormState({
@@ -239,6 +252,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "gener
     mediaPreview,
     isYoutubeLink,
     articles,
+    video,
     fetchVideo,
     fetchArticles,
     handleInputChange,

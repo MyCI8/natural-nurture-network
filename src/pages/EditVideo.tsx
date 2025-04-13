@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductLinksEditor from "@/components/videos/ProductLinksEditor";
 import RegenerateThumbnail from "@/components/videos/RegenerateThumbnail";
+import VideoInfoPanel from "@/components/videos/VideoInfoPanel";
 
 const EditVideo = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const EditVideo = () => {
     mediaPreview,
     isYoutubeLink,
     articles,
+    video,
     fetchVideo,
     fetchArticles,
     handleInputChange,
@@ -109,7 +111,7 @@ const EditVideo = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background pt-16">
-        <div className="container mx-auto p-6 max-w-[800px]">
+        <div className="container mx-auto p-4 sm:p-6 max-w-[1000px]">
           <div className="flex items-center justify-center h-64">
             <p>Loading video data...</p>
           </div>
@@ -130,23 +132,25 @@ const EditVideo = () => {
 
   return (
     <div className="min-h-screen bg-background pt-16">
-      <div className="container mx-auto p-6 max-w-[800px]">
+      <div className="container mx-auto p-4 sm:p-6 max-w-[1000px]">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate(returnTo)}
-          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+          className="mb-4 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
+        {id && <VideoInfoPanel video={video} isLoading={isLoading} />}
+
         <Card>
-          <CardHeader className="border-b">
+          <CardHeader className="border-b py-4">
             <CardTitle className="text-xl">{pageTitle}</CardTitle>
           </CardHeader>
           
           <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab}>
-            <div className="px-6 pt-4">
+            <div className="px-4 sm:px-6 pt-3">
               <TabsList className="w-full grid grid-cols-2">
                 <TabsTrigger value="details">Video Details</TabsTrigger>
                 {id && <TabsTrigger value="products">Product Links</TabsTrigger>}
@@ -155,7 +159,7 @@ const EditVideo = () => {
             
             <TabsContent value="details">
               <form onSubmit={handleSubmit}>
-                <CardContent className="pt-6 space-y-6">
+                <CardContent className="pt-4 space-y-4 sm:pt-6 sm:space-y-6 px-4 sm:px-6">
                   <div className="space-y-2">
                     <Label htmlFor="title">Title</Label>
                     <Input
@@ -252,18 +256,20 @@ const EditVideo = () => {
                   )}
                 </CardContent>
                 
-                <CardFooter className="flex justify-between border-t px-6 py-4">
+                <CardFooter className="flex justify-between border-t px-4 sm:px-6 py-3 sm:py-4">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleSaveDraft}
                     disabled={isSaving}
+                    className="touch-manipulation"
                   >
                     Save as Draft
                   </Button>
                   <Button
                     type="submit"
                     disabled={isSaving || !formState.title || (!formState.videoUrl && !mediaPreview)}
+                    className="touch-manipulation"
                   >
                     {isSaving ? "Saving..." : id ? "Update Video" : "Publish Video"}
                   </Button>
@@ -273,11 +279,11 @@ const EditVideo = () => {
             
             <TabsContent value="products">
               {id ? (
-                <CardContent className="pt-6">
+                <CardContent className="pt-4 sm:pt-6 px-4 sm:px-6">
                   <ProductLinksEditor videoId={id} />
                 </CardContent>
               ) : (
-                <CardContent className="pt-6 text-center py-12">
+                <CardContent className="pt-4 sm:pt-6 text-center py-8 sm:py-12">
                   <p className="text-muted-foreground">Save the video first to add product links.</p>
                 </CardContent>
               )}
