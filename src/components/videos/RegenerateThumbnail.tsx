@@ -50,7 +50,7 @@ const RegenerateThumbnail = ({ video, onThumbnailUpdated }: RegenerateThumbnailP
 
       toast({
         title: "Thumbnail regenerated",
-        description: "The video thumbnail has been updated successfully"
+        description: data.message || "The video thumbnail has been updated successfully"
       });
     } catch (error) {
       console.error("Error regenerating thumbnail:", error);
@@ -70,7 +70,7 @@ const RegenerateThumbnail = ({ video, onThumbnailUpdated }: RegenerateThumbnailP
       size="sm"
       onClick={handleRegenerateThumbnail}
       disabled={isRegenerating || !video.video_url}
-      className="gap-1"
+      className="gap-1 touch-manipulation"
     >
       <RefreshCw className={`h-4 w-4 ${isRegenerating ? 'animate-spin' : ''}`} />
       {isRegenerating ? "Generating..." : "Regenerate Thumbnail"}
