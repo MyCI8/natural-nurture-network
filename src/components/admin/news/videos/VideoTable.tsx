@@ -57,7 +57,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-interface VideoManagementProps {}
+interface VideoTableProps {
+  videos: Video[]; 
+  navigate: NavigateFunction;
+  isLoading: boolean;
+  onDelete: (id: string) => void;
+  onArchive: (id: string) => void;
+}
 
 const VideoUsageBadge = ({ usage }: { usage: Video["usage"] }) => {
   let text, variant;
@@ -88,9 +94,13 @@ const VideoUsageBadge = ({ usage }: { usage: Video["usage"] }) => {
   );
 };
 
-const VideoTable: React.FC<VideoManagementProps> = () => {
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
+const VideoTable: React.FC<VideoTableProps> = ({ 
+  videos, 
+  navigate, 
+  isLoading, 
+  onDelete, 
+  onArchive 
+}) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -99,95 +109,6 @@ const VideoTable: React.FC<VideoManagementProps> = () => {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const { toast } = useToast();
-  const navigate = useNavigate();
-
-  const fetchVideos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("videos")
-        .select(
-          `
-          *,
-          creator:creator_id (
-            id,
-            full_name,
-            username,
-            avatar_url
-          )
-        `
-        )
-        .eq("video_type", "news")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch videos",
-          variant: "destructive",
-        });
-        console.error("Supabase error:", error);
-        return;
-      }
-
-      if (data) {
-        setVideos(data as Video[]);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-      console.error("Unexpected error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    fetchVideos();
-
-    const handleRefetchVideos = () => {
-      console.log("Refetching videos due to custom event");
-      fetchVideos();
-    };
-
-    window.addEventListener("refetch-news-videos", handleRefetchVideos);
-
-    return () => {
-      window.removeEventListener("refetch-news-videos", handleRefetchVideos);
-    };
-  }, [fetchVideos]);
-
-  const deleteVideo = async (id: string) => {
-    try {
-      const { error } = await supabase.from("videos").delete().eq("id", id);
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to delete video",
-          variant: "destructive",
-        });
-        console.error("Supabase error:", error);
-        return;
-      }
-
-      setVideos((prevVideos) => prevVideos.filter((video) => video.id !== id));
-      toast({
-        title: "Success",
-        description: "Video deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-      console.error("Unexpected error:", error);
-    }
-  };
 
   const columns: ColumnDef<Video>[] = [
     {
@@ -296,7 +217,7 @@ const VideoTable: React.FC<VideoManagementProps> = () => {
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
-                          deleteVideo(video.id);
+                          onDelete(video.id);
                         }}
                       >
                         Delete
@@ -368,7 +289,7 @@ const VideoTable: React.FC<VideoManagementProps> = () => {
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
