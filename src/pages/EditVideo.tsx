@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -14,6 +13,7 @@ import { useVideoForm } from "@/hooks/useVideoForm";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductLinksEditor from "@/components/videos/ProductLinksEditor";
+import RegenerateThumbnail from "@/components/videos/RegenerateThumbnail";
 
 const EditVideo = () => {
   const navigate = useNavigate();
@@ -122,6 +122,19 @@ const EditVideo = () => {
     ? `Edit ${formState.videoType === 'news' ? 'News' : ''} Video` 
     : `Create New ${formState.videoType === 'news' ? 'News' : ''} Video`;
 
+  const handleThumbnailUpdated = (newThumbnailUrl: string) => {
+    // Update the form state with the new thumbnail URL
+    handleInputChange("thumbnailUrl", newThumbnailUrl);
+    
+    // If there's a media preview, update it as well
+    if (mediaPreview) {
+      // Clear the current preview
+      URL.revokeObjectURL(mediaPreview);
+      // Set the new preview to the thumbnail URL
+      setMediaPreview(newThumbnailUrl);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6 max-w-[800px]">
@@ -194,14 +207,40 @@ const EditVideo = () => {
                     />
                   </div>
 
-                  <MediaUploader
-                    mediaPreview={mediaPreview}
-                    isYoutubeLink={isYoutubeLink}
-                    videoUrl={formState.videoUrl}
-                    onMediaUpload={handleMediaUpload}
-                    onVideoLinkChange={handleVideoLinkChange}
-                    onClearMedia={clearMediaFile}
-                  />
+                  <>
+                    <MediaUploader
+                      mediaPreview={mediaPreview}
+                      isYoutubeLink={isYoutubeLink}
+                      videoUrl={formState.videoUrl}
+                      onMediaUpload={handleMediaUpload}
+                      onVideoLinkChange={handleVideoLinkChange}
+                      onClearMedia={clearMediaFile}
+                    />
+                    
+                    {id && formState.videoUrl && (
+                      <div className="flex justify-end">
+                        <RegenerateThumbnail 
+                          video={{
+                            id,
+                            title: formState.title,
+                            video_url: formState.videoUrl,
+                            thumbnail_url: formState.thumbnailUrl,
+                            // Include other required Video properties
+                            description: formState.description,
+                            creator_id: null,
+                            status: formState.status,
+                            views_count: 0,
+                            likes_count: 0,
+                            created_at: "",
+                            updated_at: "",
+                            video_type: formState.videoType,
+                            related_article_id: formState.relatedArticleId
+                          }}
+                          onThumbnailUpdated={handleThumbnailUpdated}
+                        />
+                      </div>
+                    )}
+                  </>
 
                   {formState.videoType === 'news' && (
                     <div className="flex items-center space-x-2">

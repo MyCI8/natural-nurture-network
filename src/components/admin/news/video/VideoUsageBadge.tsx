@@ -7,10 +7,9 @@ import { NewspaperIcon, PlayCircle } from "lucide-react";
 interface VideoUsageBadgeProps {
   usage: "latest" | "article" | "both" | "none";
   articleTitle?: string;
-  showInLatest?: boolean;
 }
 
-export const VideoUsageBadge = ({ usage, articleTitle, showInLatest }: VideoUsageBadgeProps) => {
+export const VideoUsageBadge = ({ usage, articleTitle }: VideoUsageBadgeProps) => {
   return (
     <TooltipProvider>
       {usage === "both" ? (
@@ -34,7 +33,7 @@ export const VideoUsageBadge = ({ usage, articleTitle, showInLatest }: VideoUsag
               </Badge>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Linked in article: {articleTitle}</p>
+              <p>Linked in article: {articleTitle || 'Unknown article'}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -59,7 +58,7 @@ export const VideoUsageBadge = ({ usage, articleTitle, showInLatest }: VideoUsag
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Linked in article: {articleTitle}</p>
+            <p>Linked in article: {articleTitle || 'Unknown article'}</p>
           </TooltipContent>
         </Tooltip>
       ) : (

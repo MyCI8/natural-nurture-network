@@ -72,58 +72,77 @@ const ManageVideos = () => {
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ["admin-videos", videoType, filters],
     queryFn: async () => {
-      let query = supabase
-        .from("videos")
-        .select("*, video_product_links(count), creator:creator_id(id, full_name, username, avatar_url)");
+      try {
+        console.log(`Fetching videos with videoType: ${videoType}`);
+        
+        let query = supabase
+          .from("videos")
+          .select("*, video_product_links(count), creator:creator_id(id, full_name, username, avatar_url)");
 
-      // Apply video type filter
-      if (videoType !== "all") {
-        query = query.eq("video_type", videoType);
-      }
+        // Apply video type filter
+        if (videoType !== "all") {
+          console.log(`Filtering by video_type: ${videoType}`);
+          query = query.eq("video_type", videoType);
+        }
 
-      // Apply search filter
-      if (filters.search) {
-        query = query.ilike("title", `%${filters.search}%`);
-      }
+        // Apply search filter
+        if (filters.search) {
+          query = query.ilike("title", `%${filters.search}%`);
+        }
 
-      // Apply status filter
-      if (filters.status) {
-        query = query.eq("status", filters.status as "published" | "draft" | "archived");
-      }
+        // Apply status filter
+        if (filters.status) {
+          query = query.eq("status", filters.status as "published" | "draft" | "archived");
+        }
 
-      // Apply date range filter
-      if (filters.startDate && filters.endDate) {
-        query = query
-          .gte("created_at", filters.startDate.toISOString())
-          .lte("created_at", filters.endDate.toISOString());
-      }
+        // Apply date range filter
+        if (filters.startDate && filters.endDate) {
+          query = query
+            .gte("created_at", filters.startDate.toISOString())
+            .lte("created_at", filters.endDate.toISOString());
+        }
 
-      // Apply sort order
-      if (filters.sortBy === "views") {
-        query = query.order("views_count", { ascending: false });
-      } else if (filters.sortBy === "likes") {
-        query = query.order("likes_count", { ascending: false });
-      } else if (filters.sortBy === "title") {
-        query = query.order("title", { ascending: true });
-      } else {
-        query = query.order("created_at", { ascending: false });
-      }
+        // Apply sort order
+        if (filters.sortBy === "views") {
+          query = query.order("views_count", { ascending: false });
+        } else if (filters.sortBy === "likes") {
+          query = query.order("likes_count", { ascending: false });
+        } else if (filters.sortBy === "title") {
+          query = query.order("title", { ascending: true });
+        } else {
+          query = query.order("created_at", { ascending: false });
+        }
 
-      console.log("Fetching videos with query:", JSON.stringify(query));
-
-      const { data, error } = await query;
-      if (error) {
-        console.error("Error fetching videos:", error);
+        console.log(`Executing video query for type: ${videoType}`);
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error("Error fetching videos:", error);
+          throw error;
+        }
+        
+        console.log(`Fetched ${data?.length || 0} videos for type: ${videoType}`);
+        
+        // Debug: Log the video types found to verify filtering
+        if (data && data.length > 0) {
+          const videoTypes = data.map(v => v.video_type);
+          const typeCount = {};
+          videoTypes.forEach(type => {
+            typeCount[type] = (typeCount[type] || 0) + 1;
+          });
+          console.log("Video types found:", typeCount);
+        }
+        
+        return data.map(video => ({
+          ...video,
+          product_links_count: video.video_product_links?.[0]?.count || 0
+        })) as Video[];
+      } catch (error) {
+        console.error("Query error:", error);
         throw error;
       }
-      
-      console.log("Fetched videos data:", data);
-      
-      return data.map(video => ({
-        ...video,
-        product_links_count: video.video_product_links?.[0]?.count || 0
-      })) as Video[];
     },
+    refetchOnWindowFocus: false
   });
 
   // Delete video mutation
@@ -247,7 +266,6 @@ const ManageVideos = () => {
   };
 
   const handleViewDetails = (videoId: string) => {
-    // For future implementation: navigate to detailed analytics view
     toast({
       title: "Analytics feature",
       description: "Detailed video analytics will be implemented soon.",
@@ -265,13 +283,13 @@ const ManageVideos = () => {
   };
 
   // Calculate stats for dashboard
-  const totalVideos = videos.length;
-  const totalViews = videos.reduce((sum, video) => sum + (video.views_count || 0), 0);
-  const totalLikes = videos.reduce((sum, video) => sum + (video.likes_count || 0), 0);
+  const totalVideos = videos ? videos.length : 0;
+  const totalViews = videos ? videos.reduce((sum, video) => sum + (video.views_count || 0), 0) : 0;
+  const totalLikes = videos ? videos.reduce((sum, video) => sum + (video.likes_count || 0), 0) : 0;
   const engagementRate = totalViews > 0 ? ((totalLikes / totalViews) * 100).toFixed(1) : "0";
-  const videosWithLinks = videos.filter(v => (v as any).product_links_count > 0).length;
-  const publishedVideos = videos.filter(v => v.status === 'published').length;
-  const topVideos = [...videos].sort((a, b) => (b.views_count || 0) - (a.views_count || 0)).slice(0, 5);
+  const videosWithLinks = videos ? videos.filter(v => (v as any).product_links_count > 0).length : 0;
+  const publishedVideos = videos ? videos.filter(v => v.status === 'published').length : 0;
+  const topVideos = videos ? [...videos].sort((a, b) => (b.views_count || 0) - (a.views_count || 0)).slice(0, 5) : [];
 
   console.log("Dashboard stats:", { 
     totalVideos, 
@@ -303,7 +321,14 @@ const ManageVideos = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <Tabs value={videoType} onValueChange={(v) => setVideoType(v as any)} className="mr-2">
+          <Tabs 
+            value={videoType} 
+            onValueChange={(v) => {
+              console.log(`Changing video type filter to: ${v}`);
+              setVideoType(v as any);
+            }} 
+            className="mr-2"
+          >
             <TabsList>
               <TabsTrigger value="explore">Explore</TabsTrigger>
               <TabsTrigger value="general">General</TabsTrigger>

@@ -35,16 +35,18 @@ export const getThumbnailUrl = (video: Video): string | null => {
       return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
     }
     
-    // If it's a Supabase storage URL for uploaded videos, generate a thumbnail
-    if (video.video_url.includes('supabase.co/storage')) {
-      // For uploaded videos without thumbnails, use a placeholder based on the video title
-      const seed = encodeURIComponent(video.title.substring(0, 20));
+    // If it's a Supabase storage URL for uploaded videos, generate a consistent placeholder
+    if (isUploadedVideo(video.video_url)) {
+      // Generate a consistent placeholder based on the video id or title
+      const seed = video.id || encodeURIComponent(video.title.substring(0, 20));
+      
+      // Use a more reliable placeholder service
       return `https://picsum.photos/seed/${seed}/800/450`;
     }
   }
   
   // Default placeholder if no thumbnail can be generated
-  return null;
+  return `https://via.placeholder.com/800x450/f0f0f0/404040?text=${encodeURIComponent(video.title.substring(0, 30))}`;
 };
 
 /**
@@ -61,4 +63,17 @@ export const isYoutubeVideo = (videoUrl: string | null): boolean => {
 export const isUploadedVideo = (videoUrl: string | null): boolean => {
   if (!videoUrl) return false;
   return videoUrl.includes('supabase.co/storage');
+};
+
+/**
+ * Generates a consistent color from a string (for placeholder backgrounds)
+ */
+export const stringToColor = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const color = Math.floor(Math.abs(Math.sin(hash) * 16777215) % 16777215).toString(16);
+  return '#' + '0'.repeat(6 - color.length) + color;
 };
