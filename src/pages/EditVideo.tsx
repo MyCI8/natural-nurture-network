@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -125,14 +126,6 @@ const EditVideo = () => {
   const handleThumbnailUpdated = (newThumbnailUrl: string) => {
     // Update the form state with the new thumbnail URL
     handleInputChange("thumbnailUrl", newThumbnailUrl);
-    
-    // If there's a media preview, update it as well
-    if (mediaPreview) {
-      // Clear the current preview
-      URL.revokeObjectURL(mediaPreview);
-      // Set the new preview to the thumbnail URL
-      setMediaPreview(newThumbnailUrl);
-    }
   };
 
   return (
