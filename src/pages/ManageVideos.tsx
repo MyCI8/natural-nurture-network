@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -273,6 +272,16 @@ const ManageVideos = () => {
   const videosWithLinks = videos.filter(v => (v as any).product_links_count > 0).length;
   const publishedVideos = videos.filter(v => v.status === 'published').length;
   const topVideos = [...videos].sort((a, b) => (b.views_count || 0) - (a.views_count || 0)).slice(0, 5);
+
+  console.log("Dashboard stats:", { 
+    totalVideos, 
+    totalViews, 
+    totalLikes, 
+    engagementRate, 
+    videosWithLinks, 
+    publishedVideos,
+    topVideosCount: topVideos.length
+  });
 
   return (
     <div className="space-y-6">
