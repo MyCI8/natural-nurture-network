@@ -1,21 +1,15 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MediaUploader } from "@/components/videos/MediaUploader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVideoForm } from "@/hooks/useVideoForm";
 import { toast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductLinksEditor from "@/components/videos/ProductLinksEditor";
-import RegenerateThumbnail from "@/components/videos/RegenerateThumbnail";
 import VideoInfoPanel from "@/components/videos/VideoInfoPanel";
+import { BackButton } from "@/components/videos/BackButton";
+import { VideoLoadingState } from "@/components/videos/VideoLoadingState";
+import { VideoDetailsForm } from "@/components/videos/VideoDetailsForm";
 
 const EditVideo = () => {
   const navigate = useNavigate();
@@ -109,15 +103,7 @@ const EditVideo = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background pt-16">
-        <div className="container mx-auto p-4 sm:p-6 max-w-[1000px]">
-          <div className="flex items-center justify-center h-64">
-            <p>Loading video data...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <VideoLoadingState />;
   }
   
   // Determine page title based on video type
@@ -133,14 +119,7 @@ const EditVideo = () => {
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-4 sm:p-6 max-w-[1000px]">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(returnTo)}
-          className="mb-4 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <BackButton onClick={() => navigate(returnTo)} />
 
         {id && <VideoInfoPanel video={video} isLoading={isLoading} />}
 
@@ -152,129 +131,29 @@ const EditVideo = () => {
           <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab}>
             <div className="px-4 sm:px-6 pt-3">
               <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="details">Video Details</TabsTrigger>
-                {id && <TabsTrigger value="products">Product Links</TabsTrigger>}
+                <TabsTrigger value="details" className="touch-manipulation">Video Details</TabsTrigger>
+                {id && <TabsTrigger value="products" className="touch-manipulation">Product Links</TabsTrigger>}
               </TabsList>
             </div>
             
             <TabsContent value="details">
-              <form onSubmit={handleSubmit}>
-                <CardContent className="pt-4 space-y-4 sm:pt-6 sm:space-y-6 px-4 sm:px-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      value={formState.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                      placeholder="Enter video title"
-                      className="border-gray-300"
-                    />
-                  </div>
-
-                  {formState.videoType === 'news' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="relatedArticle">Related Article (Optional)</Label>
-                      <Select
-                        value={formState.relatedArticleId || "none"}
-                        onValueChange={(value) => handleInputChange("relatedArticleId", value === "none" ? null : value)}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a related article (optional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {articles.map((article) => (
-                            <SelectItem key={article.id} value={article.id}>
-                              {article.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={formState.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
-                      placeholder="Add a description..."
-                      className="min-h-[120px]"
-                    />
-                  </div>
-
-                  <>
-                    <MediaUploader
-                      mediaPreview={mediaPreview}
-                      isYoutubeLink={isYoutubeLink}
-                      videoUrl={formState.videoUrl}
-                      onMediaUpload={handleMediaUpload}
-                      onVideoLinkChange={handleVideoLinkChange}
-                      onClearMedia={clearMediaFile}
-                    />
-                    
-                    {id && formState.videoUrl && (
-                      <div className="flex justify-end">
-                        <RegenerateThumbnail 
-                          video={{
-                            id,
-                            title: formState.title,
-                            video_url: formState.videoUrl,
-                            thumbnail_url: formState.thumbnailUrl,
-                            // Include other required Video properties
-                            description: formState.description,
-                            creator_id: null,
-                            status: formState.status,
-                            views_count: 0,
-                            likes_count: 0,
-                            created_at: "",
-                            updated_at: "",
-                            video_type: formState.videoType,
-                            related_article_id: formState.relatedArticleId
-                          }}
-                          onThumbnailUpdated={handleThumbnailUpdated}
-                        />
-                      </div>
-                    )}
-                  </>
-
-                  {formState.videoType === 'news' && (
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="showInLatest" 
-                        checked={formState.showInLatest}
-                        onCheckedChange={(checked) => handleInputChange("showInLatest", checked)}
-                      />
-                      <label
-                        htmlFor="showInLatest"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Show in Latest Videos section
-                      </label>
-                    </div>
-                  )}
-                </CardContent>
-                
-                <CardFooter className="flex justify-between border-t px-4 sm:px-6 py-3 sm:py-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSaveDraft}
-                    disabled={isSaving}
-                    className="touch-manipulation"
-                  >
-                    Save as Draft
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSaving || !formState.title || (!formState.videoUrl && !mediaPreview)}
-                    className="touch-manipulation"
-                  >
-                    {isSaving ? "Saving..." : id ? "Update Video" : "Publish Video"}
-                  </Button>
-                </CardFooter>
-              </form>
+              <CardContent className="p-0">
+                <VideoDetailsForm 
+                  formState={formState}
+                  mediaPreview={mediaPreview}
+                  isYoutubeLink={isYoutubeLink}
+                  articles={articles}
+                  videoId={id}
+                  isSaving={isSaving}
+                  handleInputChange={handleInputChange}
+                  handleMediaUpload={handleMediaUpload}
+                  handleVideoLinkChange={handleVideoLinkChange}
+                  clearMediaFile={clearMediaFile}
+                  handleSubmit={handleSubmit}
+                  handleSaveDraft={handleSaveDraft}
+                  onThumbnailUpdated={handleThumbnailUpdated}
+                />
+              </CardContent>
             </TabsContent>
             
             <TabsContent value="products">
