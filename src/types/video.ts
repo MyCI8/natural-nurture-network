@@ -24,6 +24,9 @@ export interface Video {
   
   // The actual database column - this is the one to use
   show_in_latest?: boolean; // Database column that controls display in Latest Videos section
+  
+  // For UI display: We map 'general' in the database to 'explore' in the UI
+  displayVideoType?: string;
 }
 
 export interface ProductLink {

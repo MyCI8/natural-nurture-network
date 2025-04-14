@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Video } from "@/types/video";
 
-// Import dashboard components
 import StatsCard from "@/components/videos/dashboard/StatsCard";
 import VideoMetricsChart from "@/components/videos/dashboard/VideoMetricsChart";
 import TopVideosCard from "@/components/videos/dashboard/TopVideosCard";
@@ -30,7 +28,6 @@ import CategoryPerformanceCard from "@/components/videos/dashboard/CategoryPerfo
 import EnhancedVideoTable from "@/components/videos/table/EnhancedVideoTable";
 import AdvancedFilters, { VideoFilters } from "@/components/videos/filters/AdvancedFilters";
 
-// Sample data for charts
 const generateChartData = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   return days.map(day => ({
@@ -69,7 +66,6 @@ const ManageVideos = () => {
     engagement: "",
   });
 
-  // Fetch videos with filtered query
   const { data: videos = [], isLoading } = useQuery({
     queryKey: ["admin-videos", videoType, filters],
     queryFn: async () => {
@@ -80,30 +76,26 @@ const ManageVideos = () => {
           .from("videos")
           .select("*, video_product_links(count), creator:creator_id(id, full_name, username, avatar_url)");
 
-        // Apply video type filter
         if (videoType !== "all") {
-          console.log(`Filtering by video_type: ${videoType}`);
-          query = query.eq("video_type", videoType);
+          const dbVideoType = videoType === "explore" ? "general" : videoType;
+          console.log(`Filtering by video_type: ${dbVideoType}`);
+          query = query.eq("video_type", dbVideoType);
         }
 
-        // Apply search filter
         if (filters.search) {
           query = query.ilike("title", `%${filters.search}%`);
         }
 
-        // Apply status filter
         if (filters.status) {
           query = query.eq("status", filters.status as "published" | "draft" | "archived");
         }
 
-        // Apply date range filter
         if (filters.startDate && filters.endDate) {
           query = query
             .gte("created_at", filters.startDate.toISOString())
             .lte("created_at", filters.endDate.toISOString());
         }
 
-        // Apply sort order
         if (filters.sortBy === "views") {
           query = query.order("views_count", { ascending: false });
         } else if (filters.sortBy === "likes") {
@@ -124,7 +116,6 @@ const ManageVideos = () => {
         
         console.log(`Fetched ${data?.length || 0} videos for type: ${videoType}`);
         
-        // Debug: Log the video types found to verify filtering
         if (data && data.length > 0) {
           const videoTypes = data.map(v => v.video_type);
           const typeCount = {};
@@ -136,7 +127,8 @@ const ManageVideos = () => {
         
         return data.map(video => ({
           ...video,
-          product_links_count: video.video_product_links?.[0]?.count || 0
+          product_links_count: video.video_product_links?.[0]?.count || 0,
+          displayVideoType: video.video_type === "general" ? "explore" : video.video_type
         })) as Video[];
       } catch (error) {
         console.error("Query error:", error);
@@ -146,7 +138,6 @@ const ManageVideos = () => {
     refetchOnWindowFocus: false
   });
 
-  // Delete video mutation
   const deleteVideoMutation = useMutation({
     mutationFn: async (videoId: string) => {
       const { error } = await supabase
@@ -173,7 +164,6 @@ const ManageVideos = () => {
     }
   });
 
-  // Archive video mutation
   const archiveVideoMutation = useMutation({
     mutationFn: async (videoId: string) => {
       const { error } = await supabase
@@ -199,7 +189,6 @@ const ManageVideos = () => {
     }
   });
 
-  // Feature video mutation
   const featureVideoMutation = useMutation({
     mutationFn: async ({ videoId, featured }: { videoId: string; featured: boolean }) => {
       const { error } = await supabase
@@ -283,7 +272,6 @@ const ManageVideos = () => {
     });
   };
 
-  // Calculate stats for dashboard
   const totalVideos = videos ? videos.length : 0;
   const totalViews = videos ? videos.reduce((sum, video) => sum + (video.views_count || 0), 0) : 0;
   const totalLikes = videos ? videos.reduce((sum, video) => sum + (video.likes_count || 0), 0) : 0;
@@ -330,14 +318,14 @@ const ManageVideos = () => {
             }} 
             className="mr-2"
           >
-            <TabsList>
+            <TabsList className="touch-manipulation">
               <TabsTrigger value="explore">Explore</TabsTrigger>
               <TabsTrigger value="general">News</TabsTrigger>
               <TabsTrigger value="all">All Videos</TabsTrigger>
             </TabsList>
           </Tabs>
           
-          <Button onClick={handleAddVideo}>
+          <Button onClick={handleAddVideo} className="touch-manipulation">
             <Plus className="mr-2 h-4 w-4" /> Add Video
           </Button>
         </div>
@@ -345,18 +333,17 @@ const ManageVideos = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-full border-b pb-0 mb-6">
-          <TabsTrigger value="dashboard" className="gap-2">
+          <TabsTrigger value="dashboard" className="gap-2 touch-manipulation">
             <BarChart className="h-4 w-4" />
             Dashboard
           </TabsTrigger>
-          <TabsTrigger value="videos" className="gap-2">
+          <TabsTrigger value="videos" className="gap-2 touch-manipulation">
             <VideoIcon className="h-4 w-4" />
             All Videos
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-6">
-          {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatsCard
               title="Total Videos"
@@ -384,7 +371,6 @@ const ManageVideos = () => {
             />
           </div>
 
-          {/* Charts and Analytics */}
           <div className="grid gap-6 md:grid-cols-2">
             <VideoMetricsChart
               title="Weekly Performance"
@@ -394,7 +380,6 @@ const ManageVideos = () => {
             <CategoryPerformanceCard data={categoryData} />
           </div>
 
-          {/* Top Videos and Additional Stats */}
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-2">
               <TopVideosCard videos={topVideos} onViewDetails={handleViewDetails} />
@@ -403,19 +388,19 @@ const ManageVideos = () => {
               <Card className="p-6">
                 <h3 className="text-base font-medium mb-4">Quick Actions</h3>
                 <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start" onClick={handleAddVideo}>
+                  <Button variant="outline" className="w-full justify-start touch-manipulation" onClick={handleAddVideo}>
                     <Plus className="mr-2 h-4 w-4" /> Create New Video
                   </Button>
-                  <Button variant="outline" className="w-full justify-start text-amber-700">
+                  <Button variant="outline" className="w-full justify-start text-amber-700 touch-manipulation">
                     <Flag className="mr-2 h-4 w-4" /> Review Flagged Content
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start touch-manipulation">
                     <Calendar className="mr-2 h-4 w-4" /> Schedule Content
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start touch-manipulation">
                     <Clock className="mr-2 h-4 w-4" /> View Watch Time
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start touch-manipulation">
                     <Filter className="mr-2 h-4 w-4" /> Manage Categories
                   </Button>
                 </div>
@@ -443,7 +428,6 @@ const ManageVideos = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -456,12 +440,14 @@ const ManageVideos = () => {
             <Button 
               variant="outline" 
               onClick={() => setDeleteDialogOpen(false)}
+              className="touch-manipulation"
             >
               Cancel
             </Button>
             <Button 
               variant="destructive" 
               onClick={confirmDelete}
+              className="touch-manipulation"
             >
               Delete
             </Button>
@@ -472,7 +458,6 @@ const ManageVideos = () => {
   );
 };
 
-// Card component to avoid dependency issues
 const Card = ({ className, children }: { className?: string, children: React.ReactNode }) => {
   return (
     <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
@@ -481,7 +466,6 @@ const Card = ({ className, children }: { className?: string, children: React.Rea
   );
 };
 
-// Eye icon component to avoid Lucide import issues
 const EyeIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => {
   return (
     <svg

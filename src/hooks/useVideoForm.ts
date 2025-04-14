@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,7 +61,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       if (data) {
         setVideo(data as Video);
         
-        // Map "general" to "explore" if needed for backwards compatibility
         let mappedVideoType = data.video_type;
         if (mappedVideoType === "general") {
           mappedVideoType = "explore";
@@ -192,7 +190,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
         thumbnailUrl = getYouTubeThumbnail(formState.videoUrl);
       }
 
-      // Map the "explore" videoType to "general" in the database
       const mappedVideoType = formState.videoType === "explore" ? "general" : formState.videoType;
 
       const videoData = {

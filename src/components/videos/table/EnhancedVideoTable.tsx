@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Archive, 
@@ -86,6 +85,15 @@ const EnhancedVideoTable = ({
       setSelectedVideos(new Set());
     } else {
       setSelectedVideos(new Set(videos.map(v => v.id)));
+    }
+  };
+
+  const getDisplayCategory = (videoType: string): string => {
+    switch(videoType) {
+      case 'general':
+        return 'Explore';
+      default:
+        return videoType.charAt(0).toUpperCase() + videoType.slice(1);
     }
   };
 
@@ -226,7 +234,7 @@ const EnhancedVideoTable = ({
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      {video.video_type.charAt(0).toUpperCase() + video.video_type.slice(1)}
+                      {getDisplayCategory(video.video_type)}
                     </Badge>
                   </TableCell>
                   <TableCell>
