@@ -283,109 +283,172 @@ const Explore = () => {
   }
 
   return (
-    <div className="flex flex-col items-center w-full bg-white dark:bg-dm-background">
-      {videos.map(video => (
-        <div key={video.id} className="instagram-feed-item">
-          <div className="instagram-header">
-            <Avatar className="h-8 w-8 border border-gray-200 dark:border-dm-mist">
-              {video.creator?.avatar_url ? <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} /> : <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">
-                  {video.creator?.full_name?.[0] || '?'}
-                </AvatarFallback>}
-            </Avatar>
-            <div className="flex-1 text-left">
-              <span className="instagram-username" onClick={() => navigate(`/users/${video.creator?.id}`)}>
-                {video.creator?.username || 'Anonymous'}
-              </span>
-            </div>
-            <Button variant="ghost" size="icon" className="text-gray-700 dark:text-dm-text">
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
-          </div>
-
-          <div 
-            className="instagram-video-container" 
-            style={{
-              aspectRatio: '4/5',
-              position: 'relative'
-            }} 
-            onClick={() => handleNavigateToVideo(video.id)}
-          >
-            <VideoPlayer 
-              video={video} 
-              autoPlay 
-              showControls={false} 
-              globalAudioEnabled={globalAudioEnabled} 
-              onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
-              onClick={() => handleNavigateToVideo(video.id)} 
-              className="w-full h-full" 
-              productLinks={getProductLinksForVideo(video.id)}
-            />
-          </div>
-
-          <div className="instagram-actions">
-            <div className="flex gap-4">
-              <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" onClick={e => {
-            e.stopPropagation();
-            handleNavigateToVideo(video.id);
-          }}>
-                <MessageCircle className="h-6 w-6" />
-              </Button>
-              
-              <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation">
-                <Bookmark className="h-6 w-6" />
-              </Button>
-              
-              <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" onClick={e => {
-            e.stopPropagation();
-            handleShare(video);
-          }}>
-                <Share2 className="h-6 w-6" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="instagram-likes flex items-center gap-2 py-[5px]">
-            <span>{video.likes_count || 0} likes</span>
-            <Button variant="ghost" size="icon" className={`p-0 h-6 w-6 hover:bg-transparent ${userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-dm-text'}`} onClick={e => {
-          e.stopPropagation();
-          handleLike(video.id);
-        }}>
-              <Heart className={`h-5 w-5 ${userLikes[video.id] ? 'fill-current' : ''}`} />
-            </Button>
-          </div>
-
-          <div className="instagram-description">
-            <span className="font-semibold mr-2 dark:text-dm-text">{video.creator?.username}</span>
-            <span className="dark:text-dm-text">{video.description}</span>
-          </div>
-
-          {localComments[video.id]?.length > 0 && <div className="px-4 text-left text-sm space-y-1">
-              {localComments[video.id].map(comment => <div key={comment.id} className="flex">
-                  <span className="font-semibold mr-2 dark:text-dm-text">{comment.username}</span>
-                  <span className="dark:text-dm-text">{comment.content}</span>
-                </div>)}
-            </div>}
-
-          <div className="instagram-view-comments" onClick={() => handleNavigateToVideo(video.id)}>
-            View all {video.comments_count || 0} comments
-          </div>
-
-          <div className="instagram-comment-input">
-            {submittingCommentFor === video.id ? <div className="flex items-center justify-center w-8 h-8">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent dark:border-dm-text dark:border-r-transparent"></div>
-              </div> : <Input type="text" placeholder="Add a comment..." className="text-sm border-none focus-visible:ring-0 px-0 h-auto py-1 dark:text-dm-text dark:bg-transparent" value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleComment(video.id);
+    <div className="flex flex-col items-center w-full bg-black dark:bg-black min-h-screen">
+      <Swipeable 
+        onSwipe={(direction) => {
+          if (direction === 'up' && videos.length > 0) {
+            const nextIndex = Math.min(videos.length - 1, (videos.indexOf(selectedVideo || videos[0]) || 0) + 1);
+            setSelectedVideo(videos[nextIndex]);
+          } else if (direction === 'down' && videos.length > 0) {
+            const prevIndex = Math.max(0, (videos.indexOf(selectedVideo || videos[0]) || 0) - 1);
+            setSelectedVideo(videos[prevIndex]);
           }
-        }} />}
-            
-            <Button variant="ghost" size="sm" className={`text-blue-500 dark:text-dm-primary font-semibold ${!commentText.trim() || submittingCommentFor ? 'opacity-50 cursor-not-allowed' : 'opacity-100'}`} disabled={!commentText.trim() || !!submittingCommentFor} onClick={() => handleComment(video.id)}>
-              Post
-            </Button>
+        }}
+        className="w-full h-full"
+        enableZoom={false}
+      >
+        {videos.map(video => (
+          <div key={video.id} className="instagram-feed-item">
+            <div className="instagram-header">
+              <Avatar className="h-8 w-8 border border-gray-200 dark:border-dm-mist">
+                {video.creator?.avatar_url ? 
+                  <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} /> : 
+                  <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">
+                    {video.creator?.full_name?.[0] || '?'}
+                  </AvatarFallback>
+                }
+              </Avatar>
+              <div className="flex-1 text-left">
+                <span className="instagram-username" onClick={() => navigate(`/users/${video.creator?.id}`)}>
+                  {video.creator?.username || 'Anonymous'}
+                </span>
+              </div>
+              <Button variant="ghost" size="icon" className="text-gray-700 dark:text-dm-text touch-manipulation">
+                <MoreHorizontal className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div 
+              className="instagram-video-container" 
+              style={{
+                aspectRatio: '4/5',
+                position: 'relative'
+              }} 
+              onClick={() => handleNavigateToVideo(video.id)}
+            >
+              <VideoPlayer 
+                video={video} 
+                autoPlay={true}
+                showControls={false} 
+                globalAudioEnabled={globalAudioEnabled} 
+                onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
+                className="w-full h-full" 
+                productLinks={getProductLinksForVideo(video.id)}
+              />
+            </div>
+
+            <div className="instagram-actions">
+              <div className="flex gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" 
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleNavigateToVideo(video.id);
+                  }}
+                >
+                  <MessageCircle className="h-6 w-6" />
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation"
+                >
+                  <Bookmark className="h-6 w-6" />
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" 
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleShare(video);
+                  }}
+                >
+                  <Share2 className="h-6 w-6" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="instagram-likes flex items-center gap-2 py-[5px]">
+              <span>{video.likes_count || 0} likes</span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`p-0 h-6 w-6 hover:bg-transparent touch-manipulation ${
+                  userLikes[video.id] ? 'text-red-500' : 'text-black dark:text-dm-text'
+                }`} 
+                onClick={e => {
+                  e.stopPropagation();
+                  handleLike(video.id);
+                }}
+              >
+                <Heart className={`h-5 w-5 ${userLikes[video.id] ? 'fill-current' : ''}`} />
+              </Button>
+            </div>
+
+            <div className="instagram-description">
+              <span className="font-semibold mr-2 dark:text-dm-text">{video.creator?.username}</span>
+              <span className="dark:text-dm-text">{video.description}</span>
+            </div>
+
+            {localComments[video.id]?.length > 0 && (
+              <div className="px-4 text-left text-sm space-y-1">
+                {localComments[video.id].map(comment => (
+                  <div key={comment.id} className="flex">
+                    <span className="font-semibold mr-2 dark:text-dm-text">{comment.username}</span>
+                    <span className="dark:text-dm-text">{comment.content}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div 
+              className="instagram-view-comments touch-manipulation" 
+              onClick={() => handleNavigateToVideo(video.id)}
+            >
+              View all {video.comments_count || 0} comments
+            </div>
+
+            <div className="instagram-comment-input">
+              {submittingCommentFor === video.id ? (
+                <div className="flex items-center justify-center w-8 h-8">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent dark:border-dm-text dark:border-r-transparent"></div>
+                </div>
+              ) : (
+                <Input 
+                  type="text" 
+                  placeholder="Add a comment..." 
+                  className="text-sm border-none focus-visible:ring-0 px-0 h-auto py-1 dark:text-dm-text dark:bg-transparent touch-manipulation" 
+                  value={commentText} 
+                  onChange={e => setCommentText(e.target.value)} 
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleComment(video.id);
+                    }
+                  }} 
+                />
+              )}
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`text-blue-500 dark:text-dm-primary font-semibold touch-manipulation ${
+                  !commentText.trim() || submittingCommentFor ? 'opacity-50 cursor-not-allowed' : 'opacity-100'
+                }`} 
+                disabled={!commentText.trim() || !!submittingCommentFor} 
+                onClick={() => handleComment(video.id)}
+              >
+                Post
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </Swipeable>
 
       <VideoDialog 
         video={selectedVideo} 

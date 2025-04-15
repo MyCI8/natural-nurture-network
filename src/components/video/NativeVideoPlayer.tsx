@@ -1,19 +1,17 @@
 
-import React, { useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { X, Volume2, VolumeX, ShoppingCart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import React, { useRef, useEffect, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 import { Video, ProductLink } from '@/types/video';
-import { supabase } from '@/integrations/supabase/client';
-import { isElementFullyVisible, logVideoView } from './utils/videoPlayerUtils';
+import { VolumeX, Volume2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import ProductLinkCard from './ProductLinkCard';
+import { cn } from '@/lib/utils';
 
 interface NativeVideoPlayerProps {
   video: Video;
   productLinks?: ProductLink[];
   autoPlay?: boolean;
-  isMuted: boolean;
+  isMuted?: boolean;
   showControls?: boolean;
   isFullscreen?: boolean;
   className?: string;
@@ -23,7 +21,7 @@ interface NativeVideoPlayerProps {
   onMuteToggle: (e: React.MouseEvent) => void;
   toggleProductLink: (linkId: string) => void;
   playbackStarted: boolean;
-  setPlaybackStarted: (started: boolean) => void;
+  setPlaybackStarted: React.Dispatch<React.SetStateAction<boolean>>;
   useAspectRatio?: boolean;
   feedAspectRatio?: number;
   objectFit?: 'contain' | 'cover';
@@ -34,7 +32,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   video,
   productLinks = [],
   autoPlay = true,
-  isMuted,
+  isMuted = true,
   showControls = false,
   isFullscreen = false,
   className,
@@ -51,284 +49,187 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   onInView
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const { ref: inViewRef, inView } = useInView({
+    threshold: 0.6,
+    triggerOnce: false,
+  });
   
-  // Effect to handle visibility changes
+  // Update external components when inView changes
   useEffect(() => {
-    if (!videoRef.current || !autoPlay) return;
-    
-    const observer = new IntersectionObserver(
-      entries => {
-        const [entry] = entries;
-        const isVisible = entry.isIntersecting;
-        onInView?.(isVisible);
-        
-        if (isVisible && autoPlay) {
-          attemptPlay();
-        } else if (!isVisible && !isFullscreen && videoRef.current && !showControls) {
-          videoRef.current.pause();
-        }
-      },
-      { threshold: 0.3 }
-    );
-    
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
+    if (onInView) {
+      onInView(inView);
     }
-    
-    return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
-    };
-  }, [autoPlay, isFullscreen, showControls]);
+  }, [inView, onInView]);
   
-  // Effect to attempt autoplay when component mounts
+  // Set video ref to both the video element and inView ref
+  const setRefs = (el: HTMLVideoElement | null) => {
+    videoRef.current = el;
+    inViewRef(el);
+  };
+  
+  // Handle autoplay when in view
   useEffect(() => {
-    if (!autoPlay || !videoRef.current || playbackStarted) return;
-    
-    if (isFullscreen || showControls || isElementFullyVisible(videoRef.current)) {
-      attemptPlay();
-    }
-    
-    const timer = setTimeout(() => {
-      if (!playbackStarted && videoRef.current) {
-        attemptPlay();
-      }
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, [autoPlay, showControls, isFullscreen]);
-  
-  const attemptPlay = async () => {
     if (!videoRef.current) return;
     
-    try {
+    if (inView && autoPlay) {
+      // Attempt to play the video
       const playPromise = videoRef.current.play();
       
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setPlaybackStarted(true);
-          logVideoView(video.id, supabase);
-        }).catch(error => {
-          console.error("First play attempt failed:", error);
-          
-          if (videoRef.current && !videoRef.current.muted) {
-            console.log("Trying again with muted audio");
-            videoRef.current.muted = true;
-            
-            videoRef.current.play().then(() => {
-              setPlaybackStarted(true);
-              logVideoView(video.id, supabase);
-            }).catch(secondError => {
-              console.error("Second play attempt failed:", secondError);
-              
-              setTimeout(() => {
-                if (videoRef.current && !playbackStarted) {
-                  videoRef.current.play().catch(e => 
-                    console.error("Final play attempt failed:", e)
-                  );
-                }
-              }, 1000);
-            });
-          }
-        });
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setPlaybackStarted(true);
+          })
+          .catch(error => {
+            console.error("Autoplay prevented:", error);
+            setIsPlaying(false);
+          });
       }
-    } catch (error) {
-      console.error("Error during video play:", error);
+    } else {
+      // Pause when not in view
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [inView, autoPlay, setPlaybackStarted]);
+  
+  // Play/pause based on visibility and autoPlay prop changes
+  useEffect(() => {
+    if (!videoRef.current) return;
+    
+    if (autoPlay && inView) {
+      const playPromise = videoRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setPlaybackStarted(true);
+          })
+          .catch(error => {
+            console.error("Play prevented:", error);
+            setIsPlaying(false);
+          });
+      }
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [autoPlay, inView, setPlaybackStarted]);
+  
+  // Update muted state when isMuted prop changes
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+  
+  const containerClasses = cn(
+    "relative overflow-hidden",
+    isFullscreen ? "w-full h-full" : "",
+    className
+  );
+  
+  const videoClasses = cn(
+    "w-full h-full",
+    objectFit === 'contain' ? "object-contain" : "object-cover"
+  );
+  
+  // Handle video click to toggle play/pause
+  const handleVideoClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!videoRef.current) return;
+    
+    if (videoRef.current.paused) {
+      const playPromise = videoRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setPlaybackStarted(true);
+          })
+          .catch(error => {
+            console.error("Play prevented:", error);
+          });
+      }
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+    
+    // Call parent onClick handler if provided
+    if (onClick) {
+      onClick();
     }
   };
   
-  const getVideoStyle = () => {
-    const baseStyle: React.CSSProperties = {
-      objectFit,
-      width: '100%',
-      height: '100%',
-    };
-    
-    if (isFullscreen) {
-      return {
-        ...baseStyle,
-        maxHeight: '100vh',
-        width: 'auto',
-        maxWidth: '100%',
-      };
-    }
-    
-    return baseStyle;
-  };
-  
-  if (isFullscreen) {
-    return (
-      <div 
-        ref={containerRef}
-        className={cn(
-          "relative overflow-hidden flex items-center justify-center bg-black", 
-          "h-full w-full",
-          className
-        )}
-        onClick={() => onClick?.()}
-      >
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            className="absolute top-2 right-2 z-20 text-white bg-black/20 hover:bg-black/40 h-6 w-6 p-0.5 rounded-full touch-manipulation"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-        
-        <video
-          ref={videoRef}
-          src={video.video_url || undefined}
-          className="max-h-screen w-auto max-w-full"
-          style={getVideoStyle()}
-          loop
-          muted={isMuted}
-          playsInline
-          controls={showControls}
-          poster={video.thumbnail_url || undefined}
-          preload="metadata"
-        />
-        
-        {!showControls && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onMuteToggle}
-            className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center touch-manipulation"
-          >
-            {isMuted ? (
-              <VolumeX className="h-4 w-4 text-white" />
-            ) : (
-              <Volume2 className="h-4 w-4 text-white" />
-            )}
-          </Button>
-        )}
-
-        {productLinks.length > 0 && (
-          <div className="absolute top-3 left-3 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleProductLink(productLinks[0].id);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4 mr-1" />
-              <span className="text-xs">Products</span>
-            </Button>
-          </div>
-        )}
-
-        {productLinks.map((link) => (
-          <div key={link.id} className={cn(
-            "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
-            visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
-          )}>
-            <ProductLinkCard 
-              link={link} 
-              onClose={() => toggleProductLink(link.id)} 
-            />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div 
-      ref={containerRef}
-      className={cn(
-        "relative overflow-hidden bg-black", 
-        className
-      )}
-      onClick={() => onClick?.()}
+      className={containerClasses}
+      onClick={onClick}
     >
-      {useAspectRatio ? (
-        <AspectRatio ratio={feedAspectRatio} className="w-full">
+      {useAspectRatio && !isFullscreen ? (
+        <div 
+          style={{ aspectRatio: feedAspectRatio }}
+          className="w-full bg-black overflow-hidden"
+        >
           <video
-            ref={videoRef}
-            src={video.video_url || undefined}
-            className="w-full h-full"
-            style={getVideoStyle()}
-            loop
-            muted={isMuted}
-            playsInline
-            controls={showControls}
-            poster={video.thumbnail_url || undefined}
-            preload="auto"
+            ref={setRefs}
+            src={video.video_url || ''}
+            className={videoClasses}
             autoPlay={autoPlay}
+            loop
+            playsInline
+            muted={isMuted}
+            controls={showControls}
+            preload="auto"
+            onClick={handleVideoClick}
+            poster={video.thumbnail_url || undefined}
           />
-        </AspectRatio>
+        </div>
       ) : (
         <video
-          ref={videoRef}
-          src={video.video_url || undefined}
-          className="w-full h-full"
-          style={getVideoStyle()}
-          loop
-          muted={isMuted}
-          playsInline
-          controls={showControls}
-          poster={video.thumbnail_url || undefined}
-          preload="auto"
+          ref={setRefs}
+          src={video.video_url || ''}
+          className={videoClasses}
           autoPlay={autoPlay}
+          loop
+          playsInline
+          muted={isMuted}
+          controls={showControls}
+          preload="auto"
+          onClick={handleVideoClick}
+          poster={video.thumbnail_url || undefined}
         />
       )}
       
-      {!showControls && (
+      {/* Audio control button */}
+      {playbackStarted && (
         <Button
           variant="ghost"
           size="icon"
+          className="absolute bottom-4 right-4 z-10 rounded-full bg-black/30 hover:bg-black/50 text-white h-10 w-10 pointer-events-auto touch-manipulation"
           onClick={onMuteToggle}
-          className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center touch-manipulation"
         >
-          {isMuted ? (
-            <VolumeX className="h-4 w-4 text-white" />
-          ) : (
-            <Volume2 className="h-4 w-4 text-white" />
-          )}
+          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
         </Button>
       )}
-
-      {productLinks.length > 0 && (
-        <>
-          <div className="absolute top-3 left-3 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleProductLink(productLinks[0].id);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4 mr-1" />
-              <span className="text-xs">Products</span>
-            </Button>
-          </div>
-
-          {productLinks.map((link) => (
-            <div key={link.id} className={cn(
-              "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
-              visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
-            )}>
-              <ProductLinkCard 
-                link={link} 
-                onClose={() => toggleProductLink(link.id)} 
-              />
-            </div>
-          ))}
-        </>
-      )}
+      
+      {/* Product link popup */}
+      {productLinks.map((link) => (
+        <div key={link.id} className={cn(
+          "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+          visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+        )}>
+          <ProductLinkCard 
+            link={link} 
+            onClose={() => toggleProductLink(link.id)} 
+          />
+        </div>
+      ))}
     </div>
   );
 };

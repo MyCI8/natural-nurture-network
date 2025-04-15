@@ -6,9 +6,11 @@ import VideoPlayer from '@/components/video/VideoPlayer';
 import { useLayout } from '@/contexts/LayoutContext';
 import Comments from '@/components/video/Comments';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, X, ArrowLeft, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { ShoppingCart } from 'lucide-react';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -145,9 +147,110 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
-      <div className="w-full relative flex items-center justify-center">
-        <div className="absolute top-4 left-4 z-20 flex items-center">
+    <div className="min-h-screen bg-black dark:bg-black flex flex-col touch-manipulation">
+      <div className="w-full h-screen relative flex items-center justify-center">
+        <div className="absolute top-4 left-4 z-20">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleClose} 
+            className="rounded-full bg-black/50 text-white hover:bg-black/70 touch-manipulation"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <div className="absolute top-4 right-4 z-20">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full bg-black/50 text-white hover:bg-black/70 touch-manipulation"
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="dark:bg-dm-foreground dark:text-dm-text dark:border-dm-mist">
+              <DropdownMenuItem className="dark:text-dm-text">
+                Not interested
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-red-500 dark:text-red-400">
+                Report
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="dark:bg-dm-mist" />
+              <DropdownMenuItem className="dark:text-dm-text">
+                Add to favorites
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url);
+                toast({
+                  title: "Link copied",
+                  description: "Video link copied to clipboard"
+                });
+              }} className="dark:text-dm-text">
+                Copy link
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        
+        <div className="w-full h-full">
+          <VideoPlayer 
+            video={video} 
+            productLinks={productLinks}
+            autoPlay={true} 
+            showControls={false} 
+            onClose={handleClose} 
+            isFullscreen={true} 
+            className="w-full h-full" 
+            objectFit="contain" 
+            useAspectRatio={false} 
+          />
+        </div>
+        
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col space-y-4 z-20">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={`rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation ${
+              userLikeStatus ? 'text-red-500' : ''
+            }`}
+          >
+            <Heart className={`h-6 w-6 ${userLikeStatus ? 'fill-current' : ''}`} />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation" 
+            onClick={scrollToComments}
+          >
+            <MessageCircle className="h-6 w-6" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation" 
+            onClick={handleShare}
+          >
+            <Share2 className="h-6 w-6" />
+          </Button>
+          
+          {productLinks && productLinks.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation"
+            >
+              <ShoppingCart className="h-6 w-6" />
+            </Button>
+          )}
+        </div>
+        
+        <div className="absolute bottom-20 left-4 right-24 flex items-center z-20">
           <Avatar className="h-10 w-10 mr-2 border-2 border-white/30">
             {video.creator?.avatar_url ? (
               <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
@@ -157,69 +260,15 @@ const ExploreDetail = () => {
               </AvatarFallback>
             )}
           </Avatar>
-          <span className="font-medium text-white text-shadow-sm">
-            {video.creator?.username || 'Anonymous'}
-          </span>
+          <div>
+            <span className="font-medium text-white text-shadow-sm">
+              {video.creator?.username || 'Anonymous'}
+            </span>
+            <p className="text-white/80 text-sm mt-1 line-clamp-2 max-w-[250px]">
+              {video.description}
+            </p>
+          </div>
         </div>
-        
-        <div className="absolute top-4 right-4 z-20">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleClose} 
-            className="rounded-full bg-black/50 text-white hover:bg-black/70 touch-manipulation"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <div className="w-full">
-          <VideoPlayer 
-            video={video} 
-            productLinks={productLinks}
-            autoPlay={true} 
-            showControls={false} 
-            onClose={handleClose} 
-            isFullscreen={false} 
-            className="w-full" 
-            objectFit="contain" 
-            useAspectRatio={false} 
-          />
-        </div>
-      </div>
-      
-      <div className="w-full bg-white dark:bg-dm-background px-4 flex justify-between items-center py-[8px]">
-        <div className="flex space-x-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className={`h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 touch-manipulation dark:text-dm-text dark:hover:bg-dm-mist ${userLikeStatus ? 'text-red-500' : ''}`}
-          >
-            <Heart className={`h-6 w-6 ${userLikeStatus ? 'fill-current' : ''}`} />
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 dark:text-dm-text dark:hover:bg-dm-mist touch-manipulation" 
-            onClick={scrollToComments}
-          >
-            <MessageCircle className="h-6 w-6" />
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-10 w-10 rounded-full text-gray-700 hover:bg-gray-100 dark:text-dm-text dark:hover:bg-dm-mist touch-manipulation" 
-            onClick={handleShare}
-          >
-            <Share2 className="h-6 w-6" />
-          </Button>
-        </div>
-      </div>
-      
-      <div className="px-4 py-2">
-        <p className="text-gray-700 dark:text-dm-text-supporting">{video.description}</p>
       </div>
       
       <div ref={commentsRef} className={`w-full bg-white dark:bg-dm-background px-4 ${showComments ? 'opacity-100' : 'opacity-0'} pt-4`}>

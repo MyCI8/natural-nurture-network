@@ -2,14 +2,21 @@
 import React from 'react';
 import { ProductLink } from '@/types/video';
 import ProductLinkItem from './ProductLinkItem';
+import { Swipeable } from '@/components/ui/swipeable';
 
 interface ProductLinksListProps {
   links: ProductLink[];
   isLoading: boolean;
   onDeleteLink: (id: string) => Promise<void>;
+  onSwipe?: (direction: 'left' | 'right' | 'up' | 'down') => void;
 }
 
-const ProductLinksList: React.FC<ProductLinksListProps> = ({ links, isLoading, onDeleteLink }) => {
+const ProductLinksList: React.FC<ProductLinksListProps> = ({ 
+  links, 
+  isLoading, 
+  onDeleteLink,
+  onSwipe 
+}) => {
   if (isLoading) {
     return <p className="text-center text-muted-foreground">Loading product links...</p>;
   }
@@ -19,7 +26,7 @@ const ProductLinksList: React.FC<ProductLinksListProps> = ({ links, isLoading, o
   }
   
   return (
-    <div className="space-y-3">
+    <Swipeable onSwipe={onSwipe} className="space-y-3 touch-manipulation w-full">
       {links.map((link) => (
         <ProductLinkItem 
           key={link.id} 
@@ -27,7 +34,7 @@ const ProductLinksList: React.FC<ProductLinksListProps> = ({ links, isLoading, o
           onDelete={onDeleteLink} 
         />
       ))}
-    </div>
+    </Swipeable>
   );
 };
 
