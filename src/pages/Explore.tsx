@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +11,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { Swipeable } from '@/components/ui/swipeable';
 import '../styles/explore.css';
+
+// Enhanced video type with comments_count
+type EnhancedVideo = Video & {
+  creator: any;
+  comments_count: number;
+};
 
 const Explore = () => {
   const navigate = useNavigate();
@@ -18,9 +26,7 @@ const Explore = () => {
     toast
   } = useToast();
   const queryClient = useQueryClient();
-  const [selectedVideo, setSelectedVideo] = useState<(Video & {
-    creator: any;
-  }) | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<EnhancedVideo | null>(null);
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -31,6 +37,7 @@ const Explore = () => {
     content: string;
     username: string;
   }[]>>({});
+  const [preloadedVideoIds, setPreloadedVideoIds] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -52,7 +59,20 @@ const Explore = () => {
       }
     };
     fetchUser();
-  }, []);
+
+    // Refetch like status when event is fired
+    const refetchHandler = () => {
+      if (currentUser) {
+        queryClient.invalidateQueries({ queryKey: ['userLikes', currentUser.id] });
+        queryClient.invalidateQueries({ queryKey: ['explore-videos'] });
+      }
+    };
+    window.addEventListener('refetch-like-status', refetchHandler);
+    
+    return () => {
+      window.removeEventListener('refetch-like-status', refetchHandler);
+    };
+  }, [currentUser, queryClient]);
 
   const {
     data: videos = [],
@@ -80,12 +100,30 @@ const Explore = () => {
       return data.map((video: any) => ({
         ...video,
         comments_count: video.comments?.[0]?.count || 0
-      })) as (Video & {
-        creator: any;
-        comments_count: number;
-      })[];
+      })) as EnhancedVideo[];
     }
   });
+
+  // When videos load, preload the first few
+  useEffect(() => {
+    if (videos.length > 0 && preloadedVideoIds.length === 0) {
+      // Preload first 3 videos
+      const idsToPreload = videos.slice(0, 3).map(v => v.id);
+      setPreloadedVideoIds(idsToPreload);
+    }
+  }, [videos, preloadedVideoIds]);
+
+  // Preload function
+  const preloadNextVideos = (currentIndex: number) => {
+    const nextIds = videos
+      .slice(currentIndex + 1, currentIndex + 4)
+      .map(v => v.id)
+      .filter(id => !preloadedVideoIds.includes(id));
+      
+    if (nextIds.length > 0) {
+      setPreloadedVideoIds(prev => [...prev, ...nextIds]);
+    }
+  };
 
   const { data: allProductLinks = [] } = useQuery({
     queryKey: ['all-product-links'],
@@ -270,7 +308,9 @@ const Explore = () => {
     });
   };
 
-  const handleNavigateToVideo = (videoId: string) => {
+  const handleNavigateToVideo = (videoId: string, index: number) => {
+    // Preload next videos when navigating to a video
+    preloadNextVideos(index);
     navigate(`/explore/${videoId}`);
   };
 
@@ -284,9 +324,28 @@ const Explore = () => {
 
   return (
     <div className="flex flex-col items-center w-full bg-white dark:bg-dm-background">
-      {videos.map(video => (
-        <div key={video.id} className="instagram-feed-item">
-          <div className="instagram-header">
+      {videos.map((video, index) => (
+        <Swipeable 
+          key={video.id} 
+          className="instagram-feed-item touch-manipulation"
+          onSwipe={(direction) => {
+            if (direction === "up" && index < videos.length - 1) {
+              preloadNextVideos(index);
+              // Scroll to the next video with smooth animation
+              const nextVideo = document.getElementById(`video-${videos[index + 1].id}`);
+              if (nextVideo) {
+                nextVideo.scrollIntoView({ behavior: 'smooth' });
+              }
+            } else if (direction === "down" && index > 0) {
+              // Scroll to the previous video with smooth animation
+              const prevVideo = document.getElementById(`video-${videos[index - 1].id}`);
+              if (prevVideo) {
+                prevVideo.scrollIntoView({ behavior: 'smooth' });
+              }
+            }
+          }}
+        >
+          <div id={`video-${video.id}`} className="instagram-header">
             <Avatar className="h-8 w-8 border border-gray-200 dark:border-dm-mist">
               {video.creator?.avatar_url ? <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} /> : <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">
                   {video.creator?.full_name?.[0] || '?'}
@@ -308,15 +367,15 @@ const Explore = () => {
               aspectRatio: '4/5',
               position: 'relative'
             }} 
-            onClick={() => handleNavigateToVideo(video.id)}
+            onClick={() => handleNavigateToVideo(video.id, index)}
           >
             <VideoPlayer 
               video={video} 
-              autoPlay 
+              autoPlay={preloadedVideoIds.includes(video.id) || index < 2} 
               showControls={false} 
               globalAudioEnabled={globalAudioEnabled} 
               onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
-              onClick={() => handleNavigateToVideo(video.id)} 
+              onClick={() => handleNavigateToVideo(video.id, index)} 
               className="w-full h-full" 
               productLinks={getProductLinksForVideo(video.id)}
             />
@@ -326,7 +385,7 @@ const Explore = () => {
             <div className="flex gap-4">
               <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" onClick={e => {
             e.stopPropagation();
-            handleNavigateToVideo(video.id);
+            handleNavigateToVideo(video.id, index);
           }}>
                 <MessageCircle className="h-6 w-6" />
               </Button>
@@ -366,7 +425,7 @@ const Explore = () => {
                 </div>)}
             </div>}
 
-          <div className="instagram-view-comments" onClick={() => handleNavigateToVideo(video.id)}>
+          <div className="instagram-view-comments" onClick={() => handleNavigateToVideo(video.id, index)}>
             View all {video.comments_count || 0} comments
           </div>
 
@@ -384,8 +443,13 @@ const Explore = () => {
               Post
             </Button>
           </div>
-        </div>
+        </Swipeable>
       ))}
+
+      {/* For debugging: Show preloaded video IDs */}
+      {/* <div className="fixed bottom-20 left-0 bg-black/50 text-white p-2 text-xs z-50">
+        Preloaded: {preloadedVideoIds.join(', ')}
+      </div> */}
 
       <VideoDialog 
         video={selectedVideo} 

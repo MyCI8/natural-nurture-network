@@ -131,6 +131,7 @@
 /* Touch-friendly styles */
 .touch-manipulation {
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Thumb zone considerations */
@@ -142,6 +143,15 @@
   /* Ensure action buttons have proper spacing on mobile */
   .instagram-actions {
     padding-bottom: 10px;
+  }
+  
+  /* Enhanced touch targets for important buttons */
+  .action-button {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -206,4 +216,114 @@
 
 .slide-out-down {
   animation: slide-out-down 0.3s ease-out forwards;
+}
+
+/* Fullscreen video experience styles */
+.fullscreen-video-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background-color: black;
+}
+
+.video-controls-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.video-controls-overlay button {
+  pointer-events: auto;
+}
+
+.video-controls-top {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+
+.video-controls-right {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.video-controls-bottom {
+  display: flex;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Swipe indicators */
+.swipe-indicator {
+  position: absolute;
+  width: 4px;
+  height: 32px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.swipe-up-indicator {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.swipe-down-indicator {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Text shadow for better visibility on video */
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive padding for mobile devices */
+@media (max-width: 640px) {
+  .video-controls-top,
+  .video-controls-bottom {
+    padding: 12px;
+  }
+  
+  .video-controls-right {
+    right: 12px;
+  }
+}
+
+/* Active button effects */
+.active-scale {
+  transform: scale(0.95);
+}
+
+/* Fade controls when inactive */
+.fade-controls {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.show-controls {
+  opacity: 1;
 }
