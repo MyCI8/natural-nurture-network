@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-import { Swipeable } from '@/components/ui/swipeable';
 import '../styles/explore.css';
 
 const Explore = () => {
@@ -22,7 +20,6 @@ const Explore = () => {
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<(Video & {
     creator: any;
-    comments_count: number;
   }) | null>(null);
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
   const [commentText, setCommentText] = useState('');
