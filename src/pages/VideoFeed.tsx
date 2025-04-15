@@ -1,34 +1,24 @@
 
-import React, { useCallback, useState, useRef, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Video } from '@/types/video';
-import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, ArrowLeft, ShoppingCart } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Swipeable } from '@/components/ui/swipeable';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+import Comments from '@/components/video/Comments';
+import VideoDialog from '@/components/video/VideoDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const videoContainerRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const isMobile = useIsMobile();
-  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
 
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
@@ -40,15 +30,14 @@ const VideoFeed = () => {
           profiles:creator_id (
             id,
             full_name,
-            avatar_url,
-            username
+            avatar_url
           )
         `)
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as (Video & { profiles: { id: string; full_name: string; avatar_url: string | null; username: string | null } })[];
+      return data as (Video & { profiles: { id: string; full_name: string; avatar_url: string | null } })[];
     }
   });
 
@@ -90,85 +79,9 @@ const VideoFeed = () => {
     enabled: !!currentUser,
   });
 
-  const { data: productLinks = [] } = useQuery({
-    queryKey: ['allProductLinks'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('video_product_links')
-        .select('*');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const getProductLinksForVideo = (videoId: string) => {
-    return productLinks.filter(link => link.video_id === videoId);
-  };
-
-  useEffect(() => {
-    // Set up intersection observer for videos to auto-play the visible one
-    if (videos && videos.length > 0) {
-      observerRef.current = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const videoId = entry.target.getAttribute('data-video-id');
-            const index = videos.findIndex(v => v.id === videoId);
-            if (index !== -1) {
-              setCurrentIndex(index);
-            }
-          }
-        });
-      }, { threshold: 0.8 });
-      
-      // Clean up on unmount
-      return () => {
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-        }
-      };
-    }
-  }, [videos]);
-
-  useEffect(() => {
-    // Apply observer to video elements
-    const videoElements = document.querySelectorAll('.video-container');
-    
-    if (observerRef.current && videoElements.length > 0) {
-      videoElements.forEach(el => {
-        observerRef.current?.observe(el);
-      });
-    }
-    
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [videos, isLoading]);
-
-  // Function to handle video swipe navigation
-  const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
-    if (!videos || videos.length === 0) return;
-    
-    if (direction === 'up' && currentIndex < videos.length - 1) {
-      setCurrentIndex(prevIndex => prevIndex + 1);
-      
-      // Scroll to the next video
-      const nextVideoElement = document.querySelector(`[data-video-id="${videos[currentIndex + 1].id}"]`);
-      if (nextVideoElement) {
-        nextVideoElement.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else if (direction === 'down' && currentIndex > 0) {
-      setCurrentIndex(prevIndex => prevIndex - 1);
-      
-      // Scroll to the previous video
-      const prevVideoElement = document.querySelector(`[data-video-id="${videos[currentIndex - 1].id}"]`);
-      if (prevVideoElement) {
-        prevVideoElement.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
+  const handleVideoClick = useCallback((video: Video) => {
+    setSelectedVideo(video);
+  }, []);
 
   const handleLike = async (videoId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -231,45 +144,6 @@ const VideoFeed = () => {
     }
   };
 
-  const handleVideoClick = (video: Video) => {
-    setIsFullscreen(true);
-  };
-
-  const handleBackClick = () => {
-    setIsFullscreen(false);
-  };
-
-  const handleShare = async (videoId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const video = videos?.find(v => v.id === videoId);
-    if (!video) return;
-    
-    const shareUrl = `${window.location.origin}/explore/${videoId}`;
-    
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: video.title || 'Check out this video',
-          text: video.description || '',
-          url: shareUrl
-        });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({
-          title: "Link copied",
-          description: "Video link copied to clipboard!"
-        });
-      }
-    } catch (error) {
-      console.error('Error sharing:', error);
-    }
-  };
-
-  const handleCommentClick = (videoId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/explore/${videoId}`);
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen pt-16">
@@ -288,172 +162,132 @@ const VideoFeed = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-16 overflow-y-auto" ref={videoContainerRef}>
-      <Swipeable 
-        onSwipe={handleSwipe} 
-        className="h-full w-full touch-manipulation"
-        enableZoom={false}
-      >
-        <div className="w-full">
+    <div className="min-h-screen bg-background pt-16">
+      <div className={`mx-auto px-2 sm:px-4 ${isMobile ? 'max-w-full' : 'max-w-[600px]'}`}>
+        <div className="space-y-4 sm:space-y-6 py-4 sm:py-6">
           {!videos?.length ? (
             <div className="text-center py-8 sm:py-12">
               <p className="text-[#666666] mb-4">No videos available</p>
             </div>
           ) : (
-            videos.map((video, index) => (
+            videos.map((video) => (
               <div 
                 key={video.id} 
-                className={`video-container w-full relative ${
-                  isFullscreen ? 'h-screen fixed inset-0 z-50 bg-black' : 'h-[calc(100vh-4rem)]'
-                }`}
-                data-video-id={video.id}
-                onClick={() => handleVideoClick(video)}
+                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
               >
-                <VideoPlayer
-                  video={video}
-                  autoPlay={index === currentIndex}
-                  showControls={false}
-                  globalAudioEnabled={globalAudioEnabled}
-                  onAudioStateChange={(isMuted) => setGlobalAudioEnabled(!isMuted)}
-                  isFullscreen={isFullscreen}
-                  className="w-full h-full object-cover"
-                  productLinks={getProductLinksForVideo(video.id)}
-                />
-                
-                {/* Overlay UI for controls */}
-                <div className="absolute inset-0 z-10 pointer-events-none" onClick={e => e.stopPropagation()}>
-                  {/* Top bar with back button and more menu */}
-                  <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center pointer-events-auto">
-                    {isFullscreen && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={handleBackClick}
-                        className="text-white hover:bg-white/20 h-10 w-10 rounded-full touch-manipulation"
-                      >
-                        <ArrowLeft className="h-5 w-5" />
-                      </Button>
+                {/* User Info */}
+                <div 
+                  className="flex items-center space-x-3 p-3 sm:p-4 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (video.profiles?.id) {
+                      navigate(`/users/${video.profiles.id}`);
+                    }
+                  }}
+                >
+                  <Avatar className="h-8 w-8">
+                    {video.profiles?.avatar_url ? (
+                      <AvatarImage src={video.profiles.avatar_url} alt={video.profiles?.full_name || 'User'} />
+                    ) : (
+                      <AvatarFallback className="bg-[#E8F5E9] text-[#4CAF50]">
+                        {video.profiles?.full_name?.charAt(0) || '?'}
+                      </AvatarFallback>
                     )}
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild className="ml-auto">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="text-white hover:bg-white/20 h-10 w-10 rounded-full touch-manipulation"
-                        >
-                          <MoreHorizontal className="h-5 w-5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          Not interested
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          Report
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          Add to favorites
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                  </Avatar>
+                  <span className="font-medium hover:text-[#4CAF50] transition-colors">
+                    {video.profiles?.full_name || 'Anonymous User'}
+                  </span>
+                </div>
+
+                {/* Video Container */}
+                <div 
+                  className="w-full relative cursor-pointer" 
+                  onClick={() => handleVideoClick(video)}
+                >
+                  <VideoPlayer
+                    video={video}
+                    autoPlay
+                    showControls={false}
+                  />
+                </div>
+
+                {/* Rearranged action buttons: chat, save, share directly below media */}
+                <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 pt-3 px-3 sm:px-4">
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
+                  >
+                    <MessageCircle className="h-6 w-6" />
+                  </Button>
                   
-                  {/* Side action buttons */}
-                  <div className="absolute right-4 bottom-20 flex flex-col space-y-4 pointer-events-auto">
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    className={`h-11 w-11 transition-transform hover:scale-110 touch-manipulation ${
+                      userSaves?.includes(video.id) 
+                        ? 'text-[#4CAF50]' 
+                        : 'text-[#666666] hover:text-[#4CAF50]'
+                    }`}
+                    onClick={(e) => handleSave(video.id, e)}
+                  >
+                    <Bookmark 
+                      className="h-6 w-6" 
+                      fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
+                    />
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
+                  >
+                    <Share2 className="h-6 w-6" />
+                  </Button>
+                </div>
+
+                {/* Video Description and Likes */}
+                <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                  <p className="text-sm text-[#666666] text-left mb-2">
+                    {video.description?.substring(0, 100)}
+                    {video.description?.length > 100 && '...'}
+                  </p>
+                  
+                  {/* Moved likes count with heart icon to the bottom */}
+                  <div className="mt-2 mb-3 text-sm text-[#666666] flex items-center space-x-2">
+                    <span className="mr-1">{video.likes_count || 0} likes</span>
                     <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={`rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation ${
-                        userLikes?.includes(video.id) ? 'text-red-500' : ''
+                      variant="ghost"
+                      size="icon"
+                      className={`h-8 w-8 p-0 transition-transform hover:scale-110 ${
+                        userLikes?.includes(video.id) 
+                          ? 'text-red-500' 
+                          : 'text-[#666666] hover:text-[#4CAF50]'
                       }`}
                       onClick={(e) => handleLike(video.id, e)}
                     >
-                      <Heart className={`h-6 w-6 ${userLikes?.includes(video.id) ? 'fill-current' : ''}`} />
+                      <Heart className="h-5 w-5" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
                     </Button>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation"
-                      onClick={(e) => handleCommentClick(video.id, e)}
-                    >
-                      <MessageCircle className="h-6 w-6" />
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className={`rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation ${
-                        userSaves?.includes(video.id) ? 'text-[#4CAF50]' : ''
-                      }`}
-                      onClick={(e) => handleSave(video.id, e)}
-                    >
-                      <Bookmark 
-                        className="h-6 w-6" 
-                        fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
-                      />
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation"
-                      onClick={(e) => handleShare(video.id, e)}
-                    >
-                      <Share2 className="h-6 w-6" />
-                    </Button>
-                    
-                    {getProductLinksForVideo(video.id).length > 0 && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="rounded-full bg-black/30 text-white h-12 w-12 touch-manipulation"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/explore/${video.id}`);
-                        }}
-                      >
-                        <ShoppingCart className="h-6 w-6" />
-                      </Button>
-                    )}
+                    <span className="ml-2">{video.views_count || 0} views</span>
                   </div>
-                  
-                  {/* User info at bottom */}
-                  <div className="absolute bottom-4 left-4 right-16 flex items-center pointer-events-auto">
-                    <Avatar 
-                      className="h-10 w-10 border-2 border-white cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (video.profiles?.id) {
-                          navigate(`/users/${video.profiles.id}`);
-                        }
-                      }}
-                    >
-                      {video.profiles?.avatar_url ? (
-                        <AvatarImage src={video.profiles.avatar_url} alt={video.profiles?.full_name || 'User'} />
-                      ) : (
-                        <AvatarFallback className="bg-[#E8F5E9] text-[#4CAF50]">
-                          {video.profiles?.full_name?.charAt(0) || '?'}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div className="ml-3 text-white">
-                      <p className="font-semibold text-sm drop-shadow-md">
-                        {video.profiles?.username || video.profiles?.full_name || 'Anonymous User'}
-                      </p>
-                      <p className="text-xs text-white/80 drop-shadow-md line-clamp-2 mt-1 max-w-[250px]">
-                        {video.description}
-                      </p>
-                    </div>
+
+                  {/* Comments Section */}
+                  <div className="mt-1">
+                    <Comments videoId={video.id} currentUser={currentUser} />
                   </div>
                 </div>
               </div>
             ))
           )}
         </div>
-      </Swipeable>
+      </div>
+
+      <VideoDialog
+        video={selectedVideo}
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+        currentUser={currentUser}
+      />
     </div>
   );
 };
