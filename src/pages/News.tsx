@@ -70,7 +70,7 @@ const News = () => {
                 <CardContent className="p-4">
                   {article.image_url && <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
                       <AspectRatio ratio={16 / 9} className="w-full">
-                        <img src={article.image_url} alt={article.thumbnail_description || article.title} className="w-full h-full object-cover" />
+                        <img src={article.image_url} alt={article.thumbnail_description || article.title} className="w-full h-full object-fill" />
                       </AspectRatio>
                     </div>}
                   <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-text-dark dark:text-dm-text">
