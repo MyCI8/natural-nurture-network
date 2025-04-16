@@ -108,7 +108,7 @@ const BottomNav = () => {
       aria-label="Main navigation"
       className={`fixed bottom-0 left-0 right-0 h-16 z-50 border-t transition-transform duration-300 ${
         visible ? 'translate-y-0' : 'translate-y-full'
-      } dark:bg-[#1A1F2C] bg-white`} // Added solid background colors for light and dark modes
+      } dark:bg-[#1A1F2C] bg-white pb-safe`} // Added pb-safe class for bottom safe area
     >
       <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
         {navigationItems.map((item) => (

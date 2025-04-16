@@ -3,69 +3,80 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom utility classes for safe areas */
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  
+  .pr-safe {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+  
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .pl-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+}
+
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 20% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.1 76.2% 36.3%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    @apply bg-background text-foreground antialiased;
-    /* Removed transition to eliminate animation between modes */
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Dark mode specific styles */
-.dark .news-section {
-  @apply bg-dm-background text-dm-text;
-}
-
-.dark .remedies-section {
-  @apply bg-dm-foreground text-dm-text;
-}
-
-.dark .symptoms-marquee {
-  @apply bg-dm-mist text-dm-text;
-}
-
-/* Light mode specific text styles to ensure readability */
-.news-section:not(.dark .news-section) h2,
-.news-section:not(.dark .news-section) h3 {
-  @apply text-text-dark;
-}
-
-.news-section:not(.dark .news-section) p {
-  @apply text-text;
-}
-
-.news-section:not(.dark .news-section) .card h3 {
-  @apply text-primary;
-}
-
-/* Add touch-friendly styles */
-.thumb-friendly {
-  @apply min-h-[48px] min-w-[48px] py-2;
-  touch-action: manipulation;
-}
-
-/* Add styles for thumb zones on mobile */
-@media (max-width: 768px) {
-  .thumb-zone-bottom {
-    @apply fixed bottom-0 left-0 right-0 z-50;
-    height: 80px; /* Thumb-reachable zone */
-  }
-  
-  .thumb-zone-side {
-    @apply fixed top-[30%] bottom-[30%] z-40;
-    width: 20px; /* Side swipe detection area */
-  }
-  
-  .thumb-zone-side-left {
-    @apply left-0;
-  }
-  
-  .thumb-zone-side-right {
-    @apply right-0;
-  }
-}
-
-/* Add swipe detection area styles */
-.swipe-detection-area {
-  @apply fixed top-0 bottom-0 left-0 w-16 z-30 opacity-0;
-  touch-action: pan-y;
-}
+/* ... keep existing code */

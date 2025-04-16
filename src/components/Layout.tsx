@@ -1,3 +1,4 @@
+
 import { useLocation, Outlet } from "react-router-dom";
 import MainSidebar from "./layout/MainSidebar";
 import RightSection from "./layout/RightSection";
@@ -53,7 +54,7 @@ const LayoutContent = () => {
         {/* Main Content Area */}
         <main 
           className={`flex-1 min-h-screen ${
-            isMobile ? `${isHomePage ? 'pt-0' : 'pt-14'} pb-16` : ''
+            isMobile ? `${isHomePage ? 'pt-0' : 'pt-14'} pb-16 pb-safe` : ''
           } relative z-10 overflow-x-hidden`}
         >
           <div 
