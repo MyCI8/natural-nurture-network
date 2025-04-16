@@ -291,7 +291,7 @@ const RightSection = () => {
                           <AspectRatio ratio={16 / 9} className="bg-gray-100 dark:bg-gray-800">
                             {video.thumbnail_url ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : video.video_url && video.video_url.includes('youtube.com') && <img src={`https://img.youtube.com/vi/${video.video_url.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`} alt={video.title} className="w-full h-full object-cover" />}
                           </AspectRatio>
-                          <div className="p-3 text-left dark:bg-dm-foreground dark:text-dm-text">
+                          <div className="p-3 text-left dark:bg-dm-foreground dark:text-dm-text py-[4px]">
                             <h4 className="font-medium text-sm line-clamp-2">{video.title}</h4>
                             <p className="text-xs text-muted-foreground dark:text-dm-text-supporting mt-1">
                               {new Date(video.created_at).toLocaleDateString()}
