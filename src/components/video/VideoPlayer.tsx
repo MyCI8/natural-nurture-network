@@ -52,6 +52,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   }, [isFullscreen]);
   
+  // Effect to listen for product link show events
+  useEffect(() => {
+    const handleShowProductLink = (e: CustomEvent) => {
+      if (e.detail && e.detail.linkId) {
+        setVisibleProductLink(e.detail.linkId);
+      }
+    };
+    
+    window.addEventListener('show-product-link', handleShowProductLink as EventListener);
+    
+    return () => {
+      window.removeEventListener('show-product-link', handleShowProductLink as EventListener);
+    };
+  }, []);
+  
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     const newMutedState = !isMuted;

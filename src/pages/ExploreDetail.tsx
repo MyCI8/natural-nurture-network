@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +6,7 @@ import VideoPlayer from '@/components/video/VideoPlayer';
 import { useLayout } from '@/contexts/LayoutContext';
 import Comments from '@/components/video/Comments';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, X, MoreHorizontal, Volume2, VolumeX } from 'lucide-react';
+import { Heart, MessageCircle, Share2, X, MoreHorizontal, Volume2, VolumeX, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Swipeable } from '@/components/ui/swipeable';
@@ -21,6 +20,16 @@ const ExploreDetail = () => {
   const [isMuted, setIsMuted] = useState(false);
   const commentsRef = useRef<HTMLDivElement>(null);
   const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(id);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  
+  useEffect(() => {
+    if (controlsVisible) {
+      const timer = setTimeout(() => {
+        setControlsVisible(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [controlsVisible]);
 
   useEffect(() => {
     setShowRightSection(true);
@@ -31,12 +40,15 @@ const ExploreDetail = () => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       setShowComments(scrollPosition > 100);
+      
+      if (scrollPosition > 10) {
+        setControlsVisible(false);
+      }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Update URL when video changes but without full navigation
   useEffect(() => {
     if (currentVideoId && currentVideoId !== id) {
       window.history.replaceState(null, '', `/explore/${currentVideoId}`);
@@ -83,7 +95,6 @@ const ExploreDetail = () => {
     enabled: !!currentVideoId
   });
 
-  // Adjacent videos for swiping
   const { data: adjacentVideos = [] } = useQuery({
     queryKey: ['adjacent-videos', currentVideoId],
     queryFn: async () => {
@@ -105,7 +116,6 @@ const ExploreDetail = () => {
     enabled: !!currentVideoId
   });
 
-  // Get previous and next video IDs
   const getCurrentIndex = () => {
     if (!currentVideoId || adjacentVideos.length === 0) return -1;
     return adjacentVideos.findIndex(v => v.id === currentVideoId);
@@ -210,7 +220,6 @@ const ExploreDetail = () => {
             user_id: currentUser.id 
           }]);
       }
-      // Invalidate query to refresh like status
       window.dispatchEvent(new CustomEvent('refetch-like-status'));
     } catch (err) {
       console.error('Error updating like status:', err);
@@ -238,6 +247,14 @@ const ExploreDetail = () => {
     }
   };
 
+  const handleShowProducts = () => {
+    if (productLinks.length > 0) {
+      window.dispatchEvent(new CustomEvent('show-product-link', { 
+        detail: { linkId: productLinks[0].id } 
+      }));
+    }
+  };
+
   const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
     if (direction === 'up') {
       const nextId = getNextVideoId();
@@ -250,6 +267,10 @@ const ExploreDetail = () => {
         setCurrentVideoId(prevId);
       }
     }
+  };
+
+  const handleScreenTap = () => {
+    setControlsVisible(!controlsVisible);
   };
 
   if (isVideoLoading) {
@@ -267,7 +288,10 @@ const ExploreDetail = () => {
         className="relative w-full h-full flex-1 touch-manipulation"
         threshold={60}
       >
-        <div className="absolute inset-0 w-full h-full z-0">
+        <div 
+          className="absolute inset-0 w-full h-full z-0"
+          onClick={handleScreenTap}
+        >
           <VideoPlayer 
             video={video} 
             productLinks={productLinks}
@@ -283,8 +307,7 @@ const ExploreDetail = () => {
           />
         </div>
         
-        {/* Top overlay - Back button and three-dot menu */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-20 bg-gradient-to-b from-black/70 to-transparent">
+        <div className={`absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-20 bg-gradient-to-b from-black/70 to-transparent transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -303,53 +326,60 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        {/* Right side vertical action buttons */}
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 space-y-5 z-20">
-          <div className="flex flex-col items-center space-y-5">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={`rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90 ${userLikeStatus ? 'text-red-500' : ''}`}
-              onClick={handleLike}
-            >
-              <Heart className={`h-6 w-6 ${userLikeStatus ? 'fill-current' : ''}`} />
-            </Button>
-            
+        <div className={`absolute bottom-24 right-3 flex flex-col items-center space-y-5 z-20 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={`rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90`}
+            onClick={handleLike}
+          >
+            <Heart className="h-6 w-6" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90"
+            onClick={scrollToComments}
+          >
+            <MessageCircle className="h-6 w-6" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90"
+            onClick={handleShare}
+          >
+            <Share2 className="h-6 w-6" />
+          </Button>
+          
+          {productLinks.length > 0 && (
             <Button 
               variant="ghost" 
               size="icon" 
               className="rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90"
-              onClick={scrollToComments}
+              onClick={handleShowProducts}
             >
-              <MessageCircle className="h-6 w-6" />
+              <ShoppingCart className="h-6 w-6" />
             </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90"
-              onClick={handleShare}
-            >
-              <Share2 className="h-6 w-6" />
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90"
-              onClick={handleToggleMute}
-            >
-              {isMuted ? (
-                <VolumeX className="h-6 w-6" />
-              ) : (
-                <Volume2 className="h-6 w-6" />
-              )}
-            </Button>
-          </div>
+          )}
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full bg-black/30 text-white hover:bg-black/50 h-12 w-12 touch-manipulation transform transition-transform active:scale-90"
+            onClick={handleToggleMute}
+          >
+            {isMuted ? (
+              <VolumeX className="h-6 w-6" />
+            ) : (
+              <Volume2 className="h-6 w-6" />
+            )}
+          </Button>
         </div>
         
-        {/* Bottom overlay - User profile */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-20 bg-gradient-to-t from-black/70 to-transparent">
+        <div className={`absolute bottom-0 left-0 right-0 p-4 z-20 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
           <div className="flex items-center">
             <Avatar className="h-10 w-10 border-2 border-white/30 mr-3">
               {video.creator?.avatar_url ? (
@@ -364,20 +394,19 @@ const ExploreDetail = () => {
               <span className="font-medium text-white text-shadow-sm">
                 {video.creator?.username || 'Anonymous'}
               </span>
-              <p className="text-sm text-white/80 line-clamp-2 max-w-[80vw]">
+              <p className="text-sm text-white/80 line-clamp-2 max-w-[70vw]">
                 {video.description}
               </p>
             </div>
           </div>
         </div>
         
-        {/* Swipe indicators */}
-        <div className="absolute top-1/2 left-3 transform -translate-y-1/2 z-10 opacity-70">
+        <div className={`absolute top-1/2 left-3 transform -translate-y-1/2 z-10 opacity-70 transition-opacity duration-300 ${controlsVisible ? 'opacity-70' : 'opacity-0'}`}>
           {getPrevVideoId() && (
             <div className="bg-white/20 w-1 h-12 rounded-full mb-1"></div>
           )}
         </div>
-        <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 opacity-70">
+        <div className={`absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 opacity-70 transition-opacity duration-300 ${controlsVisible ? 'opacity-70' : 'opacity-0'}`}>
           {getNextVideoId() && (
             <div className="text-white/50 text-xs animate-bounce">
               Swipe up for next video
@@ -386,7 +415,6 @@ const ExploreDetail = () => {
         </div>
       </Swipeable>
       
-      {/* Hidden comments section for scrolling to */}
       <div 
         ref={commentsRef} 
         className={`w-full bg-white dark:bg-dm-background px-4 ${showComments ? 'absolute inset-0 z-30' : 'hidden'} pt-4`}

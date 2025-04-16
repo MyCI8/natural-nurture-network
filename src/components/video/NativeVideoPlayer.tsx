@@ -140,22 +140,20 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   };
   
   const getVideoStyle = () => {
-    const baseStyle: React.CSSProperties = {
-      objectFit,
-      width: '100%',
-      height: '100%',
-    };
-    
     if (isFullscreen) {
       return {
-        ...baseStyle,
+        objectFit: objectFit, 
+        width: '100%',
+        height: '100%',
         maxHeight: '100vh',
-        width: 'auto',
-        maxWidth: '100%',
       };
     }
     
-    return baseStyle;
+    return {
+      objectFit, 
+      width: '100%',
+      height: '100%',
+    };
   };
   
   if (isFullscreen) {
@@ -169,24 +167,10 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         )}
         onClick={() => onClick?.()}
       >
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            className="absolute top-2 right-2 z-20 text-white bg-black/20 hover:bg-black/40 h-6 w-6 p-0.5 rounded-full touch-manipulation"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-        
         <video
           ref={videoRef}
           src={video.video_url || undefined}
-          className="max-h-screen w-auto max-w-full"
+          className="w-full h-full"
           style={getVideoStyle()}
           loop
           muted={isMuted}
@@ -196,38 +180,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           preload="metadata"
         />
         
-        {!showControls && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onMuteToggle}
-            className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center touch-manipulation"
-          >
-            {isMuted ? (
-              <VolumeX className="h-4 w-4 text-white" />
-            ) : (
-              <Volume2 className="h-4 w-4 text-white" />
-            )}
-          </Button>
-        )}
-
-        {productLinks.length > 0 && (
-          <div className="absolute top-3 left-3 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleProductLink(productLinks[0].id);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4 mr-1" />
-              <span className="text-xs">Products</span>
-            </Button>
-          </div>
-        )}
-
         {productLinks.map((link) => (
           <div key={link.id} className={cn(
             "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
@@ -283,52 +235,18 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           autoPlay={autoPlay}
         />
       )}
-      
-      {!showControls && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onMuteToggle}
-          className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center touch-manipulation"
-        >
-          {isMuted ? (
-            <VolumeX className="h-4 w-4 text-white" />
-          ) : (
-            <Volume2 className="h-4 w-4 text-white" />
-          )}
-        </Button>
-      )}
 
-      {productLinks.length > 0 && (
-        <>
-          <div className="absolute top-3 left-3 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleProductLink(productLinks[0].id);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4 mr-1" />
-              <span className="text-xs">Products</span>
-            </Button>
-          </div>
-
-          {productLinks.map((link) => (
-            <div key={link.id} className={cn(
-              "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
-              visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
-            )}>
-              <ProductLinkCard 
-                link={link} 
-                onClose={() => toggleProductLink(link.id)} 
-              />
-            </div>
-          ))}
-        </>
-      )}
+      {productLinks.map((link) => (
+        <div key={link.id} className={cn(
+          "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+          visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+        )}>
+          <ProductLinkCard 
+            link={link} 
+            onClose={() => toggleProductLink(link.id)} 
+          />
+        </div>
+      ))}
     </div>
   );
 };
