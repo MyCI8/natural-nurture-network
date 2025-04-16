@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -46,11 +45,12 @@ const ExploreDetail = () => {
     }
   }, [controlsVisible, isMobile]);
 
-  // Hide side panel in fullscreen mode
+  // Show right section on desktop, hide on mobile
   useEffect(() => {
-    setShowRightSection(false);
+    setShowRightSection(!isMobile);
+    
     return () => setShowRightSection(true);
-  }, [setShowRightSection]);
+  }, [setShowRightSection, isMobile]);
 
   // Handle scroll and hide controls when scrolling
   useEffect(() => {
@@ -338,29 +338,33 @@ const ExploreDetail = () => {
           />
         </div>
         
-        <VideoControls
-          controlsVisible={controlsVisible}
-          handleClose={handleClose}
-          handleLike={handleLike}
-          scrollToComments={scrollToComments}
-          handleShare={handleShare}
-          handleShowProducts={handleShowProducts}
-          handleToggleMute={handleToggleMute}
-          productLinks={productLinks}
-          isMuted={isMuted}
-          userLikeStatus={userLikeStatus}
-        />
-        
-        <VideoProfileInfo 
-          video={video} 
-          controlsVisible={controlsVisible} 
-        />
-        
-        <SwipeIndicators
-          controlsVisible={controlsVisible}
-          hasNextVideo={!!getNextVideoId()}
-          hasPrevVideo={!!getPrevVideoId()}
-        />
+        {isMobile && (
+          <>
+            <VideoControls
+              controlsVisible={controlsVisible}
+              handleClose={handleClose}
+              handleLike={handleLike}
+              scrollToComments={scrollToComments}
+              handleShare={handleShare}
+              handleShowProducts={handleShowProducts}
+              handleToggleMute={handleToggleMute}
+              productLinks={productLinks}
+              isMuted={isMuted}
+              userLikeStatus={userLikeStatus}
+            />
+            
+            <VideoProfileInfo 
+              video={video} 
+              controlsVisible={controlsVisible} 
+            />
+            
+            <SwipeIndicators
+              controlsVisible={controlsVisible}
+              hasNextVideo={!!getNextVideoId()}
+              hasPrevVideo={!!getPrevVideoId()}
+            />
+          </>
+        )}
       </Swipeable>
       
       {isMobile && (
