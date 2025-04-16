@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Video } from '@/types/video';
 import { useGestures } from '@/hooks/useGestures';
 import { useLayout } from '@/contexts/LayoutContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoContainerProps {
   video: Video;
@@ -32,13 +33,14 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const { scale, translateX, translateY, isZoomed } = useGestures(containerRef);
+  const isMobile = useIsMobile();
   
   // Add access to layout context to control mobile header visibility
   const { setMobileHeaderVisible } = useLayout();
   
-  // Hide mobile header when video is interacted with
+  // Hide mobile header when video is interacted with (mobile only)
   useEffect(() => {
-    if (isFullscreen) {
+    if (isFullscreen && isMobile) {
       // Hide the mobile header when in fullscreen mode
       setMobileHeaderVisible(false);
       
@@ -47,7 +49,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         setMobileHeaderVisible(true);
       };
     }
-  }, [isFullscreen, setMobileHeaderVisible]);
+  }, [isFullscreen, setMobileHeaderVisible, isMobile]);
 
   // Track video view status
   useEffect(() => {
@@ -69,7 +71,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
           <div 
             className="absolute inset-0 flex items-center justify-center"
             style={{
-              transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
+              transform: isMobile ? `scale(${scale}) translate(${translateX}px, ${translateY}px)` : 'none',
               transition: isZoomed ? 'none' : 'transform 0.2s ease-out'
             }}
           >
@@ -83,7 +85,8 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
               controls={showControls}
               poster={video?.thumbnail_url}
               className={cn(
-                "max-h-full max-w-full touch-manipulation",
+                "max-h-full max-w-full",
+                isMobile ? "touch-manipulation" : "",
                 objectFit === 'contain' ? 'object-contain' : 'object-cover'
               )}
             >
@@ -93,9 +96,9 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         </div>
       ) : (
         <div 
-          className="absolute inset-0 flex items-center justify-center touch-manipulation"
+          className="absolute inset-0 flex items-center justify-center"
           style={{
-            transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
+            transform: isMobile ? `scale(${scale}) translate(${translateX}px, ${translateY}px)` : 'none',
             transition: isZoomed ? 'none' : 'transform 0.2s ease-out'
           }}
         >
@@ -109,7 +112,8 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
             controls={showControls}
             poster={video?.thumbnail_url}
             className={cn(
-              "max-h-full max-w-full w-full h-full touch-manipulation",
+              "max-h-full max-w-full w-full h-full",
+              isMobile ? "touch-manipulation" : "",
               objectFit === 'contain' ? 'object-contain' : 'object-cover'
             )}
           >

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Video } from '@/types/video';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoProfileInfoProps {
   video: Video;
@@ -9,6 +10,13 @@ interface VideoProfileInfoProps {
 }
 
 const VideoProfileInfo: React.FC<VideoProfileInfoProps> = ({ video, controlsVisible }) => {
+  const isMobile = useIsMobile();
+  
+  // Only show user info overlay on mobile devices
+  if (!isMobile) {
+    return null;
+  }
+
   return (
     <div className={`absolute bottom-0 left-0 right-0 p-4 z-20 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
       <div className="flex items-center">

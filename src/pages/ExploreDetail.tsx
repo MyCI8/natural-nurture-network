@@ -11,6 +11,7 @@ import VideoControls from '@/components/video/explore/VideoControls';
 import VideoProfileInfo from '@/components/video/explore/VideoProfileInfo';
 import SwipeIndicators from '@/components/video/explore/SwipeIndicators';
 import CommentSection from '@/components/video/explore/CommentSection';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -22,25 +23,28 @@ const ExploreDetail = () => {
   const commentsRef = useRef<HTMLDivElement>(null);
   const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(id);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const isMobile = useIsMobile();
   
-  // Hide mobile header when entering fullscreen mode
+  // Hide mobile header when entering fullscreen mode (mobile only)
   useEffect(() => {
-    setMobileHeaderVisible(false);
-    
-    return () => {
-      setMobileHeaderVisible(true);
-    };
-  }, [setMobileHeaderVisible]);
+    if (isMobile) {
+      setMobileHeaderVisible(false);
+      
+      return () => {
+        setMobileHeaderVisible(true);
+      };
+    }
+  }, [setMobileHeaderVisible, isMobile]);
   
-  // Hide controls after 3 seconds of inactivity
+  // Hide controls after 3 seconds of inactivity (mobile only)
   useEffect(() => {
-    if (controlsVisible) {
+    if (controlsVisible && isMobile) {
       const timer = setTimeout(() => {
         setControlsVisible(false);
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [controlsVisible]);
+  }, [controlsVisible, isMobile]);
 
   // Hide side panel in fullscreen mode
   useEffect(() => {
@@ -54,13 +58,13 @@ const ExploreDetail = () => {
       const scrollPosition = window.scrollY;
       setShowComments(scrollPosition > 100);
       
-      if (scrollPosition > 10) {
+      if (scrollPosition > 10 && isMobile) {
         setControlsVisible(false);
       }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMobile]);
 
   // Update URL when currentVideoId changes
   useEffect(() => {
@@ -276,6 +280,9 @@ const ExploreDetail = () => {
   };
 
   const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
+    // Mobile-only swipe handling
+    if (!isMobile) return;
+    
     if (direction === 'up') {
       const nextId = getNextVideoId();
       if (nextId) {
@@ -290,7 +297,10 @@ const ExploreDetail = () => {
   };
 
   const handleScreenTap = () => {
-    setControlsVisible(!controlsVisible);
+    // Only toggle controls visibility on mobile
+    if (isMobile) {
+      setControlsVisible(!controlsVisible);
+    }
   };
 
   if (isVideoLoading) {
@@ -307,6 +317,7 @@ const ExploreDetail = () => {
         onSwipe={handleSwipe} 
         className="relative w-full h-full flex-1 touch-manipulation"
         threshold={60}
+        disabled={!isMobile} // Disable swipe on desktop
       >
         <div 
           className="absolute inset-0 w-full h-full z-0"
@@ -352,13 +363,15 @@ const ExploreDetail = () => {
         />
       </Swipeable>
       
-      <CommentSection
-        showComments={showComments}
-        setShowComments={setShowComments}
-        videoId={video.id}
-        currentUser={currentUser}
-        commentsRef={commentsRef}
-      />
+      {isMobile && (
+        <CommentSection
+          showComments={showComments}
+          setShowComments={setShowComments}
+          videoId={video.id}
+          currentUser={currentUser}
+          commentsRef={commentsRef}
+        />
+      )}
     </div>
   );
 };

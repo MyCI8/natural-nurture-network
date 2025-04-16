@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface SwipeIndicatorsProps {
   controlsVisible: boolean;
@@ -7,27 +9,32 @@ interface SwipeIndicatorsProps {
   hasPrevVideo: boolean;
 }
 
-const SwipeIndicators: React.FC<SwipeIndicatorsProps> = ({ 
-  controlsVisible, 
-  hasNextVideo, 
-  hasPrevVideo 
+const SwipeIndicators: React.FC<SwipeIndicatorsProps> = ({
+  controlsVisible,
+  hasNextVideo,
+  hasPrevVideo
 }) => {
+  const isMobile = useIsMobile();
+  
+  // Only show swipe indicators on mobile devices
+  if (!isMobile) {
+    return null;
+  }
+
   return (
-    <>
+    <div className={`absolute left-1/2 transform -translate-x-1/2 z-20 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
       {hasPrevVideo && (
-        <div className={`absolute top-1/2 left-3 transform -translate-y-1/2 z-10 opacity-70 transition-opacity duration-300 ${controlsVisible ? 'opacity-70' : 'opacity-0'}`}>
-          <div className="bg-white/20 w-1 h-12 rounded-full mb-1"></div>
+        <div className="absolute top-4 animate-bounce-slow">
+          <ArrowUp className="h-6 w-6 text-white opacity-70" />
         </div>
       )}
       
       {hasNextVideo && (
-        <div className={`absolute bottom-24 left-1/2 transform -translate-x-1/2 z-10 opacity-70 transition-opacity duration-300 ${controlsVisible ? 'opacity-70' : 'opacity-0'}`}>
-          <div className="text-white/50 text-xs animate-bounce">
-            Swipe up for next video
-          </div>
+        <div className="absolute bottom-20 animate-bounce-slow">
+          <ArrowDown className="h-6 w-6 text-white opacity-70" />
         </div>
       )}
-    </>
+    </div>
   );
 };
 

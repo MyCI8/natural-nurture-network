@@ -3,6 +3,7 @@ import React from 'react';
 import { X, MoreHorizontal, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductLink } from '@/types/video';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoControlsProps {
   controlsVisible: boolean;
@@ -29,6 +30,26 @@ const VideoControls: React.FC<VideoControlsProps> = ({
   isMuted,
   userLikeStatus
 }) => {
+  const isMobile = useIsMobile();
+  
+  // Only show touch-friendly controls on mobile devices
+  if (!isMobile) {
+    // For desktop, only show the product button if there are products
+    return productLinks.length > 0 ? (
+      <div className="absolute top-3 left-3 z-20">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="rounded-full bg-black/30 text-white hover:bg-black/50"
+          onClick={handleShowProducts}
+        >
+          <ShoppingCart className="h-4 w-4 mr-1" />
+          <span className="text-xs">Products</span>
+        </Button>
+      </div>
+    ) : null;
+  }
+
   return (
     <>
       {/* Top Controls - Only visible when controls are visible */}

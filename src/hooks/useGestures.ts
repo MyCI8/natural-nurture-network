@@ -1,4 +1,6 @@
+
 import { useRef, useState, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function useGestures(containerRef: React.RefObject<HTMLElement>) {
   const [scale, setScale] = useState(1);
@@ -8,8 +10,14 @@ export function useGestures(containerRef: React.RefObject<HTMLElement>) {
   const lastTapTime = useRef(0);
   const initialTouchRef = useRef<{ x: number; y: number } | null>(null);
   const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
+    // Don't enable touch gestures on desktop
+    if (!isMobile) {
+      return;
+    }
+    
     const container = containerRef.current;
     if (!container) return;
     
@@ -75,12 +83,15 @@ export function useGestures(containerRef: React.RefObject<HTMLElement>) {
       if (e.touches.length !== 2) return;
       
       // Calculate distance between two fingers
-      const distance = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
+      const getDistance = (touch1: Touch, touch2: Touch) => {
+        return Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+      };
       
       // Use a base distance value for relative scaling
+      const distance = getDistance(e.touches[0], e.touches[1]);
       const baseDistance = 150;
       const newScale = Math.max(1, Math.min(3, distance / baseDistance));
       
@@ -103,7 +114,7 @@ export function useGestures(containerRef: React.RefObject<HTMLElement>) {
       container.removeEventListener('touchstart', handleDoubleTap);
       container.removeEventListener('touchmove', handlePinchZoom);
     };
-  }, [containerRef, isZoomed, scale, translateX, translateY]);
+  }, [containerRef, isZoomed, scale, translateX, translateY, isMobile]);
 
   // Reset zoom state
   const resetZoom = () => {
