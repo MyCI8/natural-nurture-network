@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -8,9 +7,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const News = () => {
   const navigate = useNavigate();
+  const { setShowRightSection } = useLayout();
+  const isMobile = useIsMobile();
+  
+  useEffect(() => {
+    setShowRightSection(!isMobile);
+    
+    return () => setShowRightSection(false);
+  }, [setShowRightSection, isMobile]);
+  
   const {
     data: newsItems,
     isLoading
