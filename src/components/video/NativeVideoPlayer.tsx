@@ -1,10 +1,13 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Video, ProductLink } from '@/types/video';
 import VideoContainer from './native-player/VideoContainer';
 import ProductLinksOverlay from './native-player/ProductLinksOverlay';
 import { useVideoVisibility } from './native-player/useVideoVisibility';
+import { Volume2, VolumeX, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -39,6 +42,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   className,
   visibleProductLink,
   onClick,
+  onClose,
   onMuteToggle,
   toggleProductLink,
   playbackStarted,
@@ -52,6 +56,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isHovering, setIsHovering] = useState(false);
+  const isMobile = useIsMobile();
   
   // Use the visibility hook to handle autoplay and visibility tracking
   useVideoVisibility(
@@ -98,6 +104,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       onClick={() => {
         if (!isZoomed && onClick) onClick();
       }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
       <VideoContainer 
         video={video}
@@ -111,6 +119,39 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         objectFit={objectFit}
         playbackStarted={playbackStarted}
       />
+
+      {/* Desktop hover controls */}
+      {!isMobile && isFullscreen && (
+        <div 
+          className={cn(
+            "absolute top-0 left-0 right-0 z-20 p-4 flex justify-between transition-opacity duration-300",
+            isHovering ? "opacity-100" : "opacity-0"
+          )}
+        >
+          {onClose && (
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
+
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={onMuteToggle}
+            className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+          >
+            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+          </Button>
+        </div>
+      )}
 
       <ProductLinksOverlay 
         productLinks={productLinks}

@@ -12,6 +12,9 @@ import VideoProfileInfo from '@/components/video/explore/VideoProfileInfo';
 import SwipeIndicators from '@/components/video/explore/SwipeIndicators';
 import CommentSection from '@/components/video/explore/CommentSection';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { X, Volume2, VolumeX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -23,6 +26,7 @@ const ExploreDetail = () => {
   const commentsRef = useRef<HTMLDivElement>(null);
   const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(id);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
   const isMobile = useIsMobile();
   
   // Hide mobile header when entering fullscreen mode (mobile only)
@@ -321,9 +325,39 @@ const ExploreDetail = () => {
         threshold={60}
         disabled={!isMobile} // Disable swipe on desktop
       >
+        {/* Desktop close button and audio control */}
+        {!isMobile && (
+          <div 
+            className={cn(
+              "absolute top-0 left-0 right-0 z-30 p-4 flex justify-between transition-opacity duration-300",
+              (isHovering || controlsVisible) ? "opacity-100" : "opacity-0"
+            )}
+          >
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleClose}
+              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleToggleMute}
+              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+            >
+              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            </Button>
+          </div>
+        )}
+            
         <div 
           className="absolute inset-0 w-full h-full z-0"
           onClick={handleScreenTap}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
         >
           <VideoPlayer 
             video={video} 
