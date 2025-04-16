@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -49,7 +50,8 @@ const ExploreDetail = () => {
   useEffect(() => {
     setShowRightSection(!isMobile);
     
-    return () => setShowRightSection(true);
+    // Clean up when leaving the page
+    return () => setShowRightSection(false);
   }, [setShowRightSection, isMobile]);
 
   // Handle scroll and hide controls when scrolling

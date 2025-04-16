@@ -18,7 +18,7 @@ interface LayoutContextType {
 
 const LayoutContext = createContext<LayoutContextType>({
   layoutMode: 'default',
-  showRightSection: true,
+  showRightSection: false, // Changed default to false
   contentWidth: 'w-full',
   contentMaxWidth: 'max-w-5xl',
   isFullWidth: false,
@@ -35,7 +35,7 @@ export const useLayout = () => useContext(LayoutContext);
 
 export const LayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [layoutMode, setLayoutMode] = useState<'default' | 'compact' | 'fullscreen'>('default');
-  const [showRightSection, setShowRightSection] = useState(true);
+  const [showRightSection, setShowRightSection] = useState(false); // Changed default to false
   const [contentWidth, setContentWidth] = useState('w-full');
   const [contentMaxWidth, setContentMaxWidth] = useState('max-w-5xl');
   const [isFullWidth, setIsFullWidth] = useState(false);
