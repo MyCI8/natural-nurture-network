@@ -33,7 +33,7 @@ export const Swipeable: React.FC<SwipeableProps> = ({
   const minSwipeDistance = threshold;
 
   // Calculate distance between two touch points
-  const getDistance = (touch1: Touch, touch2: Touch) => {
+  const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
     return Math.hypot(
       touch2.clientX - touch1.clientX,
       touch2.clientY - touch1.clientY
