@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Video } from '@/types/video';
 import { useGestures } from '@/hooks/useGestures';
+import { useLayout } from '@/contexts/LayoutContext';
 
 interface VideoContainerProps {
   video: Video;
@@ -31,6 +32,22 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const { scale, translateX, translateY, isZoomed } = useGestures(containerRef);
+  
+  // Add access to layout context to control mobile header visibility
+  const { setMobileHeaderVisible } = useLayout();
+  
+  // Hide mobile header when video is interacted with
+  useEffect(() => {
+    if (isFullscreen) {
+      // Hide the mobile header when in fullscreen mode
+      setMobileHeaderVisible(false);
+      
+      // Show header again when component unmounts or exits fullscreen
+      return () => {
+        setMobileHeaderVisible(true);
+      };
+    }
+  }, [isFullscreen, setMobileHeaderVisible]);
 
   // Track video view status
   useEffect(() => {

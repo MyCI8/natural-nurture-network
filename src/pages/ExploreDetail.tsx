@@ -15,13 +15,22 @@ import CommentSection from '@/components/video/explore/CommentSection';
 const ExploreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { setShowRightSection } = useLayout();
+  const { setShowRightSection, setMobileHeaderVisible } = useLayout();
   const { toast } = useToast();
   const [showComments, setShowComments] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const commentsRef = useRef<HTMLDivElement>(null);
   const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(id);
   const [controlsVisible, setControlsVisible] = useState(true);
+  
+  // Hide mobile header when entering fullscreen mode
+  useEffect(() => {
+    setMobileHeaderVisible(false);
+    
+    return () => {
+      setMobileHeaderVisible(true);
+    };
+  }, [setMobileHeaderVisible]);
   
   // Hide controls after 3 seconds of inactivity
   useEffect(() => {

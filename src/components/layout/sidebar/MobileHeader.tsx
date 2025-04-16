@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Leaf, Search } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useLayout } from "@/contexts/LayoutContext";
 
 interface MobileHeaderProps {
   showMobileHeader: boolean;
@@ -20,6 +21,9 @@ export const MobileHeader = ({
   const [isHomePage, setIsHomePage] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [visible, setVisible] = useState(false);
+  
+  // Get global mobile header visibility from context
+  const { mobileHeaderVisible } = useLayout();
 
   // Determine if we're on the homepage
   useEffect(() => {
@@ -72,8 +76,8 @@ export const MobileHeader = ({
     };
   }, [isHomePage, userInteracted]);
 
-  // Combine the visibility logic
-  const shouldShowHeader = showMobileHeader && visible;
+  // Combine the visibility logic with the global mobile header visibility
+  const shouldShowHeader = showMobileHeader && visible && mobileHeaderVisible;
 
   return (
     <header 
