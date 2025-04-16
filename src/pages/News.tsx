@@ -10,18 +10,16 @@ import { Separator } from "@/components/ui/separator";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 const News = () => {
   const navigate = useNavigate();
-  const { setShowRightSection } = useLayout();
+  const {
+    setShowRightSection
+  } = useLayout();
   const isMobile = useIsMobile();
-  
   useEffect(() => {
     setShowRightSection(!isMobile);
-    
     return () => setShowRightSection(false);
   }, [setShowRightSection, isMobile]);
-  
   const {
     data: newsItems,
     isLoading
@@ -38,7 +36,6 @@ const News = () => {
       return data;
     }
   });
-
   if (isLoading) {
     return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
         <div className="space-y-4 sm:space-y-8">
@@ -53,7 +50,6 @@ const News = () => {
         </div>
       </div>;
   }
-
   if (!newsItems?.length) {
     return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left text-text-dark dark:text-dm-text">News</h1>
@@ -61,30 +57,22 @@ const News = () => {
         <p className="text-center text-text dark:text-dm-text-supporting py-8 sm:py-12">No news articles available.</p>
       </div>;
   }
-
-  return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
+  return <div className="pt-6 sm:pt-12 px-4 w-full h-full py-[16px]">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-3xl font-bold mb-2 text-left text-text-dark dark:text-dm-text sm:text-2xl">News</h1>
         <p className="text-lg text-text dark:text-dm-text-supporting text-left sm:text-xl">Latest Health News Articles</p>
       </div>
 
       <div className="space-y-6">
-        {newsItems.map((article, index) => (
-          <div key={article.id} className="flex flex-col items-center touch-manipulation">
+        {newsItems.map((article, index) => <div key={article.id} className="flex flex-col items-center touch-manipulation">
             <Link to={`/news/${article.id}`} className="w-full thumb-friendly">
               <Card className="overflow-hidden border-0 hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
                 <CardContent className="p-4">
-                  {article.image_url && (
-                    <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
-                      <AspectRatio ratio={16/9} className="w-full">
-                        <img 
-                          src={article.image_url} 
-                          alt={article.thumbnail_description || article.title} 
-                          className="w-full h-full object-cover"
-                        />
+                  {article.image_url && <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
+                      <AspectRatio ratio={16 / 9} className="w-full">
+                        <img src={article.image_url} alt={article.thumbnail_description || article.title} className="w-full h-full object-cover" />
                       </AspectRatio>
-                    </div>
-                  )}
+                    </div>}
                   <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-text-dark dark:text-dm-text">
                     {article.title}
                   </h3>
@@ -94,13 +82,9 @@ const News = () => {
                 </CardContent>
               </Card>
             </Link>
-            {index < newsItems.length - 1 && (
-              <Separator className="my-4 w-1/2 mx-auto bg-gray-200 dark:bg-gray-700" />
-            )}
-          </div>
-        ))}
+            {index < newsItems.length - 1 && <Separator className="my-4 w-1/2 mx-auto bg-gray-200 dark:bg-gray-700" />}
+          </div>)}
       </div>
     </div>;
 };
-
 export default News;
