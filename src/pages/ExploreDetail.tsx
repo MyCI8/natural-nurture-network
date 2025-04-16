@@ -23,6 +23,7 @@ const ExploreDetail = () => {
   const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(id);
   const [controlsVisible, setControlsVisible] = useState(true);
   
+  // Hide controls after 3 seconds of inactivity
   useEffect(() => {
     if (controlsVisible) {
       const timer = setTimeout(() => {
@@ -32,11 +33,13 @@ const ExploreDetail = () => {
     }
   }, [controlsVisible]);
 
+  // Hide side panel in fullscreen mode
   useEffect(() => {
-    setShowRightSection(true);
+    setShowRightSection(false);
     return () => setShowRightSection(true);
   }, [setShowRightSection]);
 
+  // Handle scroll and hide controls when scrolling
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -50,6 +53,7 @@ const ExploreDetail = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Update URL when currentVideoId changes
   useEffect(() => {
     if (currentVideoId && currentVideoId !== id) {
       window.history.replaceState(null, '', `/explore/${currentVideoId}`);
@@ -70,6 +74,7 @@ const ExploreDetail = () => {
     }
   };
 
+  // Fetch current video data
   const { data: video, isLoading: isVideoLoading } = useQuery({
     queryKey: ['video', currentVideoId],
     queryFn: async () => {
@@ -96,6 +101,7 @@ const ExploreDetail = () => {
     enabled: !!currentVideoId
   });
 
+  // Fetch adjacent videos for swipe navigation
   const { data: adjacentVideos = [] } = useQuery({
     queryKey: ['adjacent-videos', currentVideoId],
     queryFn: async () => {
@@ -138,6 +144,7 @@ const ExploreDetail = () => {
     return null;
   };
 
+  // Fetch current user
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -148,6 +155,7 @@ const ExploreDetail = () => {
     }
   });
 
+  // Check if user liked the video
   const { data: userLikeStatus } = useQuery({
     queryKey: ['video-like-status', currentVideoId, currentUser?.id],
     queryFn: async () => {
@@ -160,6 +168,7 @@ const ExploreDetail = () => {
     enabled: !!currentUser && !!currentVideoId
   });
 
+  // Fetch product links for the video
   const { data: productLinks = [] } = useQuery({
     queryKey: ['videoProductLinks', currentVideoId],
     queryFn: async () => {
@@ -178,6 +187,7 @@ const ExploreDetail = () => {
     enabled: !!currentVideoId
   });
 
+  // Prefetch next video's product links
   const { data: nextVideoLinks = [] } = useQuery({
     queryKey: ['nextVideoProductLinks', getNextVideoId()],
     queryFn: async () => {

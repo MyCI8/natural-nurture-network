@@ -66,7 +66,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     <div 
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden bg-black", 
+        "relative overflow-hidden bg-black h-full w-full", 
+        isFullscreen ? "fixed inset-0 z-10" : "",
         className
       )}
       onClick={() => onClick?.()}

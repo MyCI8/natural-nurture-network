@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Video } from '@/types/video';
@@ -53,7 +53,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
       <video
         ref={videoRef}
         src={video.video_url || undefined}
-        className="w-full h-full"
+        className={cn("w-full h-full", className)}
         style={getVideoStyle()}
         loop
         muted={isMuted}
@@ -61,6 +61,7 @@ const VideoContainer: React.FC<VideoContainerProps> = ({
         controls={showControls}
         poster={video.thumbnail_url || undefined}
         preload="metadata"
+        autoPlay={autoPlay}
       />
     );
   }
