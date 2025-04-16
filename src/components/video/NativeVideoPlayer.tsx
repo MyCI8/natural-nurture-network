@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Video, ProductLink } from '@/types/video';
 import VideoContainer from './native-player/VideoContainer';
@@ -25,6 +25,8 @@ interface NativeVideoPlayerProps {
   feedAspectRatio?: number;
   objectFit?: 'contain' | 'cover';
   onInView?: (inView: boolean) => void;
+  onZoomChange?: (isZoomed: boolean) => void;
+  isZoomed?: boolean;
 }
 
 const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
@@ -44,7 +46,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   useAspectRatio = true,
   feedAspectRatio = 4/5,
   objectFit = 'contain',
-  onInView
+  onInView,
+  onZoomChange,
+  isZoomed = false
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,15 +66,38 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     onInView
   );
 
+  // Handle zoom changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'style') {
+          const element = mutation.target as HTMLElement;
+          const transform = element.style.transform;
+          const isCurrentlyZoomed = transform && !transform.includes('scale(1)');
+          onZoomChange?.(isCurrentlyZoomed);
+        }
+      });
+    });
+
+    const videoContainer = containerRef.current?.querySelector('div > div');
+    if (videoContainer) {
+      observer.observe(videoContainer, { attributes: true });
+    }
+
+    return () => observer.disconnect();
+  }, [onZoomChange]);
+
   return (
     <div 
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden bg-black h-full w-full", 
+        "relative overflow-hidden bg-black h-full w-full touch-manipulation", 
         isFullscreen ? "fixed inset-0 z-10" : "",
         className
       )}
-      onClick={() => onClick?.()}
+      onClick={() => {
+        if (!isZoomed && onClick) onClick();
+      }}
     >
       <VideoContainer 
         video={video}
@@ -89,6 +116,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         productLinks={productLinks}
         visibleProductLink={visibleProductLink}
         toggleProductLink={toggleProductLink}
+        disabled={isZoomed}
       />
     </div>
   );

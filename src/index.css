@@ -79,4 +79,7 @@
   }
 }
 
+/* Import the touch styles */
+@import './styles/touch.css';
+
 /* ... keep existing code */

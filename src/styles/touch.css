@@ -1,0 +1,56 @@
+
+/* Improve tap target sizes for mobile */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Scale feedback for buttons */
+.active-scale {
+  transition: transform 0.15s ease;
+}
+
+.active-scale:active {
+  transform: scale(0.95);
+}
+
+/* Custom scrolling for carousels */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+
+/* Prevent text selection during interaction */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Improving thumb zones for mobile */
+.thumb-friendly {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Custom tooltip for gestures */
+.gesture-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gesture-hint.visible {
+  opacity: 1;
+}

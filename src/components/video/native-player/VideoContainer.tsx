@@ -1,16 +1,15 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Video } from '@/types/video';
+import { useGestures } from '@/hooks/useGestures';
 
 interface VideoContainerProps {
   video: Video;
-  autoPlay: boolean;
+  autoPlay?: boolean;
   isMuted: boolean;
-  showControls: boolean;
-  isFullscreen: boolean;
-  className?: string;
+  showControls?: boolean;
+  isFullscreen?: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
   useAspectRatio?: boolean;
   feedAspectRatio?: number;
@@ -20,86 +19,88 @@ interface VideoContainerProps {
 
 const VideoContainer: React.FC<VideoContainerProps> = ({
   video,
-  autoPlay,
+  autoPlay = true,
   isMuted,
-  showControls,
-  isFullscreen,
-  className,
+  showControls = false,
+  isFullscreen = false,
   videoRef,
   useAspectRatio = true,
   feedAspectRatio = 4/5,
   objectFit = 'contain',
-  playbackStarted
+  playbackStarted,
 }) => {
-  const getVideoStyle = () => {
-    if (isFullscreen) {
-      return {
-        objectFit: objectFit, 
-        width: '100%',
-        height: '100%',
-        maxHeight: '100vh',
-      };
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const { scale, translateX, translateY, isZoomed } = useGestures(containerRef);
+
+  // Track video view status
+  useEffect(() => {
+    if (playbackStarted && video?.id) {
+      console.log(`Video ${video.id} playback started, tracking view`);
     }
-    
-    return {
-      objectFit, 
-      width: '100%',
-      height: '100%',
-    };
-  };
-
-  if (isFullscreen) {
-    return (
-      <video
-        ref={videoRef}
-        src={video.video_url || undefined}
-        className={cn("w-full h-full", className)}
-        style={getVideoStyle()}
-        loop
-        muted={isMuted}
-        playsInline
-        controls={showControls}
-        poster={video.thumbnail_url || undefined}
-        preload="metadata"
-        autoPlay={autoPlay}
-      />
-    );
-  }
-
-  if (useAspectRatio) {
-    return (
-      <AspectRatio ratio={feedAspectRatio} className="w-full">
-        <video
-          ref={videoRef}
-          src={video.video_url || undefined}
-          className="w-full h-full"
-          style={getVideoStyle()}
-          loop
-          muted={isMuted}
-          playsInline
-          controls={showControls}
-          poster={video.thumbnail_url || undefined}
-          preload="auto"
-          autoPlay={autoPlay}
-        />
-      </AspectRatio>
-    );
-  }
+  }, [playbackStarted, video?.id]);
 
   return (
-    <video
-      ref={videoRef}
-      src={video.video_url || undefined}
-      className="w-full h-full"
-      style={getVideoStyle()}
-      loop
-      muted={isMuted}
-      playsInline
-      controls={showControls}
-      poster={video.thumbnail_url || undefined}
-      preload="auto"
-      autoPlay={autoPlay}
-    />
+    <div 
+      ref={containerRef}
+      className="relative flex items-center justify-center w-full h-full bg-black"
+    >
+      {useAspectRatio ? (
+        <div
+          className="relative w-full max-w-full overflow-hidden touch-manipulation"
+          style={{ aspectRatio: `${feedAspectRatio}` }}
+        >
+          <div 
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
+              transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
+              transition: isZoomed ? 'none' : 'transform 0.2s ease-out'
+            }}
+          >
+            <video
+              ref={videoRef}
+              src={video?.video_url || ''}
+              autoPlay={autoPlay}
+              loop
+              muted={isMuted}
+              playsInline
+              controls={showControls}
+              poster={video?.thumbnail_url}
+              className={cn(
+                "max-h-full max-w-full touch-manipulation",
+                objectFit === 'contain' ? 'object-contain' : 'object-cover'
+              )}
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      ) : (
+        <div 
+          className="absolute inset-0 flex items-center justify-center touch-manipulation"
+          style={{
+            transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`,
+            transition: isZoomed ? 'none' : 'transform 0.2s ease-out'
+          }}
+        >
+          <video
+            ref={videoRef}
+            src={video?.video_url || ''}
+            autoPlay={autoPlay}
+            loop
+            muted={isMuted}
+            playsInline
+            controls={showControls}
+            poster={video?.thumbnail_url}
+            className={cn(
+              "max-h-full max-w-full w-full h-full touch-manipulation",
+              objectFit === 'contain' ? 'object-contain' : 'object-cover'
+            )}
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      )}
+    </div>
   );
 };
 

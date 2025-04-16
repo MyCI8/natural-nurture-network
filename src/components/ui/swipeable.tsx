@@ -1,162 +1,129 @@
 
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 interface SwipeableProps {
-  onSwipe?: (direction: 'left' | 'right' | 'up' | 'down') => void;
-  onPinch?: (scale: number) => void;
-  threshold?: number;
   children: React.ReactNode;
+  onSwipe?: (direction: 'left' | 'right' | 'up' | 'down') => void;
+  threshold?: number;
   className?: string;
-  enableZoom?: boolean;
+  disabled?: boolean;
 }
 
-export function Swipeable({ 
-  onSwipe, 
-  onPinch,
-  threshold = 50, 
-  children, 
-  className,
-  enableZoom = false
-}: SwipeableProps) {
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const touchEnd = useRef<{ x: number; y: number } | null>(null);
-  const initialDistance = useRef<number | null>(null);
-  const [scale, setScale] = useState(1);
-  const [isInteracting, setIsInteracting] = useState(false);
+export const Swipeable: React.FC<SwipeableProps> = ({
+  children,
+  onSwipe,
+  threshold = 50,
+  className = '',
+  disabled = false
+}) => {
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastTapTime = useRef(0);
+  const gestureInProgress = useRef(false);
 
-  // Reset interaction state after a delay to avoid unintended swipes
-  useEffect(() => {
-    if (isInteracting) {
-      const timer = setTimeout(() => {
-        setIsInteracting(false);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isInteracting]);
+  // Minimum distance required for swipe
+  const minSwipeDistance = threshold;
 
-  // Calculate distance between two touch points
-  const getDistance = (touches: React.TouchList): number => {
-    if (touches.length < 2) return 0;
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (disabled) return;
     
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  // Handle touch start
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    // Single touch for swipe
-    if (e.touches.length === 1) {
-      touchStart.current = { 
-        x: e.targetTouches[0].clientX, 
-        y: e.targetTouches[0].clientY 
-      };
-      touchEnd.current = { 
-        x: e.targetTouches[0].clientX, 
-        y: e.targetTouches[0].clientY 
-      };
-      setIsInteracting(true);
-    } 
-    // Multi-touch for pinch
-    else if (e.touches.length === 2 && enableZoom) {
-      initialDistance.current = getDistance(e.touches);
-      setIsInteracting(true);
-    }
-  }, [enableZoom]);
-
-  // Handle touch move
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    // Only process if we're in an interactive state to avoid accidental swipes
-    if (!isInteracting) return;
-    
-    // Single touch for swipe
-    if (e.touches.length === 1) {
-      touchEnd.current = { 
-        x: e.targetTouches[0].clientX, 
-        y: e.targetTouches[0].clientY 
-      };
-    } 
-    // Multi-touch for pinch
-    else if (e.touches.length === 2 && enableZoom && initialDistance.current) {
-      const currentDistance = getDistance(e.touches);
-      const newScale = (currentDistance / initialDistance.current) * scale;
-      
-      // Limit scale to reasonable bounds
-      if (newScale >= 0.5 && newScale <= 3) {
-        setScale(newScale);
-        if (onPinch) onPinch(newScale);
-      }
-      
-      // Prevent default to stop page zooming
-      e.preventDefault();
-    }
-  }, [enableZoom, scale, onPinch, isInteracting]);
-
-  // Handle touch end
-  const handleTouchEnd = useCallback(() => {
-    if (!touchStart.current || !touchEnd.current || !isInteracting) {
-      setIsInteracting(false);
+    // Check for multitouch (pinch)
+    if (e.touches.length > 1) {
+      gestureInProgress.current = true;
       return;
     }
     
-    // Only process swipe if we have onSwipe handler
-    if (onSwipe) {
-      const distX = touchEnd.current.x - touchStart.current.x;
-      const distY = touchEnd.current.y - touchStart.current.y;
-      
-      // Add a minimum movement check to avoid accidental swipes
-      const minMovement = threshold * 0.6;  // 60% of threshold
-      if (Math.abs(distX) < minMovement && Math.abs(distY) < minMovement) {
-        setIsInteracting(false);
-        return;
-      }
-      
-      // Check if horizontal swipe is larger than vertical swipe
-      if (Math.abs(distX) > Math.abs(distY)) {
-        if (Math.abs(distX) > threshold) {
-          // Right swipe
-          if (distX > 0) {
-            onSwipe('right');
-          } 
-          // Left swipe
-          else {
-            onSwipe('left');
-          }
-        }
+    // Reset gesture flag for single touch
+    gestureInProgress.current = false;
+    
+    // Store touch start position
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    });
+    setTouchEnd(null);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (disabled || gestureInProgress.current) return;
+    
+    // Check for multitouch during movement
+    if (e.touches.length > 1) {
+      gestureInProgress.current = true;
+      return;
+    }
+    
+    // Update end position
+    setTouchEnd({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY
+    });
+  };
+
+  const checkForDoubleTap = useCallback((e: React.TouchEvent) => {
+    const now = new Date().getTime();
+    const timeSince = now - lastTapTime.current;
+    
+    if (timeSince < 300 && e.touches.length === 1) {
+      // Toggle zoom state on double tap
+      setIsZoomed(!isZoomed);
+      e.preventDefault();
+    }
+    
+    lastTapTime.current = now;
+  }, [isZoomed]);
+
+  const onTouchEnd = useCallback(() => {
+    if (disabled || gestureInProgress.current || !touchStart || !touchEnd || !onSwipe) return;
+    
+    const distanceX = touchEnd.x - touchStart.x;
+    const distanceY = touchEnd.y - touchStart.y;
+    const isHorizontal = Math.abs(distanceX) > Math.abs(distanceY);
+    
+    // If zoomed in, don't trigger swipe
+    if (isZoomed) return;
+    
+    if (isHorizontal && Math.abs(distanceX) > minSwipeDistance) {
+      // Horizontal swipe
+      if (distanceX > 0) {
+        onSwipe('right');
       } else {
-        if (Math.abs(distY) > threshold) {
-          // Down swipe
-          if (distY > 0) {
-            onSwipe('down');
-          } 
-          // Up swipe
-          else {
-            onSwipe('up');
-          }
-        }
+        onSwipe('left');
+      }
+    } else if (!isHorizontal && Math.abs(distanceY) > minSwipeDistance) {
+      // Vertical swipe
+      if (distanceY > 0) {
+        onSwipe('down');
+      } else {
+        onSwipe('up');
       }
     }
     
-    // Reset touch points
-    touchStart.current = null;
-    touchEnd.current = null;
-    initialDistance.current = null;
-    setIsInteracting(false);
-  }, [onSwipe, threshold, isInteracting]);
+    // Reset touch state
+    setTouchStart(null);
+    setTouchEnd(null);
+  }, [touchStart, touchEnd, onSwipe, minSwipeDistance, isZoomed, disabled]);
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      setTouchStart(null);
+      setTouchEnd(null);
+    };
+  }, []);
 
   return (
-    <div 
-      className={className} 
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      style={{
-        touchAction: enableZoom ? 'none' : 'pan-y',
-        WebkitOverflowScrolling: 'touch',
-        ...enableZoom ? { transform: `scale(${scale})` } : {}
-      }}
+    <div
+      ref={containerRef}
+      className={`touch-manipulation ${className}`}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{ touchAction: 'manipulation' }}
     >
       {children}
     </div>
   );
-}
+};
