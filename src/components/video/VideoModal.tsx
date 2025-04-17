@@ -38,10 +38,10 @@ const CustomDialogContent = React.forwardRef<
         variant="ghost" 
         size="icon" 
         onClick={onCloseClick}
-        className="absolute top-4 right-4 z-50 text-white hover:bg-black/20 h-10 w-10 p-0 rounded-full"
+        className="absolute top-4 right-4 z-50 text-white hover:bg-black/20 h-10 w-10 p-0 rounded-full touch-manipulation"
         aria-label="Close video"
       >
-        <X className="h-6 w-6 opacity-70 hover:opacity-100" />
+        <X className="h-6 w-6 opacity-100 hover:opacity-70" />
       </Button>
       {children}
     </DialogPrimitive.Content>
@@ -66,7 +66,8 @@ const VideoModal: React.FC<VideoModalProps> = ({
     didMountRef.current = true;
   }, [isOpen]);
 
-  const handleToggleMute = () => {
+  const handleToggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsMuted(!isMuted);
   };
 
@@ -97,7 +98,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
             size="icon"
             onClick={handleToggleMute}
             className={cn(
-              "absolute top-4 left-4 z-50 rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 transition-opacity duration-300",
+              "absolute top-4 left-4 z-50 rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 transition-opacity duration-300 touch-manipulation",
               isHovering ? "opacity-100" : "opacity-0"
             )}
           >

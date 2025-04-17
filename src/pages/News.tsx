@@ -10,16 +10,20 @@ import { Separator } from "@/components/ui/separator";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+
 const News = () => {
   const navigate = useNavigate();
-  const {
-    setShowRightSection
-  } = useLayout();
+  const { setShowRightSection } = useLayout();
   const isMobile = useIsMobile();
+  
   useEffect(() => {
     setShowRightSection(!isMobile);
-    return () => setShowRightSection(false);
+    
+    return () => {
+      setShowRightSection(false);
+    };
   }, [setShowRightSection, isMobile]);
+
   const {
     data: newsItems,
     isLoading
@@ -36,6 +40,7 @@ const News = () => {
       return data;
     }
   });
+
   if (isLoading) {
     return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
         <div className="space-y-4 sm:space-y-8">
@@ -50,6 +55,7 @@ const News = () => {
         </div>
       </div>;
   }
+
   if (!newsItems?.length) {
     return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-left text-text-dark dark:text-dm-text">News</h1>
@@ -57,6 +63,7 @@ const News = () => {
         <p className="text-center text-text dark:text-dm-text-supporting py-8 sm:py-12">No news articles available.</p>
       </div>;
   }
+
   return <div className="pt-6 sm:pt-12 px-4 w-full h-full py-[16px]">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-3xl font-bold mb-2 text-left text-text-dark dark:text-dm-text sm:text-2xl">News</h1>
@@ -87,4 +94,5 @@ const News = () => {
       </div>
     </div>;
 };
+
 export default News;

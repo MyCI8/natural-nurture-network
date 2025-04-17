@@ -22,7 +22,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   return (
     <div 
       ref={commentsRef} 
-      className={`w-full bg-white dark:bg-dm-background px-4 ${showComments ? 'absolute inset-0 z-30' : 'hidden'} pt-4`}
+      className={`w-full bg-background dark:bg-dm-background px-4 ${showComments ? 'absolute inset-0 z-30' : 'hidden'} pt-4`}
     >
       <div className="max-w-3xl mx-auto relative">
         <Button 

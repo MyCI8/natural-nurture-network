@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
@@ -92,7 +91,7 @@ const VideoDialog = ({
   if (!video || !isOpen) return null;
 
   return (
-    <div className="w-full bg-white dark:bg-dm-background min-h-screen">
+    <div className="w-full bg-background dark:bg-dm-background min-h-screen">
       <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto h-[100dvh]">
         <div className="md:hidden p-4 flex justify-end">
           <Button 
@@ -147,7 +146,6 @@ const VideoDialog = ({
               useAspectRatio={false} 
             />
 
-            {/* Overlay control buttons that appear on hover */}
             <div className={cn(
               "absolute top-0 left-0 right-0 z-20 p-4 flex justify-between transition-opacity duration-300",
               isHovering ? "opacity-100" : "opacity-0"
@@ -191,7 +189,7 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        <div className="w-full md:w-[350px] bg-white dark:bg-dm-background flex flex-col h-full border-l border-gray-200 dark:border-dm-mist overflow-y-auto">
+        <div className="w-full md:w-[350px] bg-background dark:bg-dm-background flex flex-col h-full border-l border-gray-200 dark:border-dm-mist overflow-y-auto">
           <div className="p-4 border-b border-gray-200 dark:border-dm-mist">
             <div className="flex items-center mb-2">
               <Avatar className="h-8 w-8 mr-3">

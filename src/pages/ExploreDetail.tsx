@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -40,6 +39,14 @@ const ExploreDetail = () => {
     }
   }, [setMobileHeaderVisible, isMobile]);
   
+  // Always show right section on ExploreDetail on desktop, never on mobile
+  useEffect(() => {
+    setShowRightSection(!isMobile);
+    
+    // Clean up when leaving the page
+    return () => setShowRightSection(false);
+  }, [setShowRightSection, isMobile]);
+
   // Hide controls after 3 seconds of inactivity (mobile only)
   useEffect(() => {
     if (controlsVisible && isMobile) {
@@ -49,14 +56,6 @@ const ExploreDetail = () => {
       return () => clearTimeout(timer);
     }
   }, [controlsVisible, isMobile]);
-
-  // Show right section on desktop, hide on mobile
-  useEffect(() => {
-    setShowRightSection(!isMobile);
-    
-    // Clean up when leaving the page
-    return () => setShowRightSection(false);
-  }, [setShowRightSection, isMobile]);
 
   // Handle scroll and hide controls when scrolling
   useEffect(() => {
