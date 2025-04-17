@@ -1,8 +1,8 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ProductLink } from '@/types/video';
-import VideoDetailHeader from './VideoDetailHeader';
+import { X, Volume2, VolumeX } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import VideoControls from './VideoControls';
 import VideoProfileInfo from './VideoProfileInfo';
 import SwipeIndicators from './SwipeIndicators';
@@ -67,16 +67,39 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
         onAudioStateChange={(muted) => onToggleMute()}
       />
 
-      {/* Desktop header or mobile controls based on device */}
-      {!isMobile ? (
-        <VideoDetailHeader 
-          handleClose={onClose}
-          handleToggleMute={onToggleMute}
-          isMuted={isMuted}
-          isHovering={isHovering}
-          isMobile={isMobile}
-        />
-      ) : (
+      {/* Top Controls */}
+      <div 
+        className={`absolute top-4 left-4 z-20 flex items-center gap-4 transition-opacity duration-300 ${
+          controlsVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={onClose}
+          className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Centered Audio Control */}
+      <div 
+        className={`absolute top-1/2 right-4 transform -translate-y-1/2 z-20 transition-opacity duration-300 ${
+          controlsVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={onToggleMute}
+          className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+        >
+          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        </Button>
+      </div>
+
+      {isMobile && (
         <>
           <VideoControls
             controlsVisible={controlsVisible}
