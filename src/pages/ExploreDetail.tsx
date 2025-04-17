@@ -77,15 +77,15 @@ const ExploreDetail = () => {
   };
 
   if (isVideoLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen bg-white">Loading...</div>;
   }
 
   if (!video) {
-    return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
+    return <div className="flex items-center justify-center min-h-screen bg-white">Video not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-black dark:bg-black w-full h-full flex flex-col touch-manipulation fixed inset-0">
+    <div className="min-h-screen bg-white dark:bg-black w-full h-full flex flex-col touch-manipulation fixed inset-0">
       <VideoSwipeContainer 
         onSwipe={handleSwipe}
         disabled={!isMobile}
