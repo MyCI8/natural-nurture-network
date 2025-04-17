@@ -142,24 +142,6 @@ export function useVideoDetail(videoId: string | undefined) {
     enabled: !!currentVideoId
   });
 
-  // Prefetch next video's product links
-  useQuery({
-    queryKey: ['nextVideoProductLinks', getNextVideoId()],
-    queryFn: async () => {
-      const nextId = getNextVideoId();
-      if (!nextId) return [];
-      
-      const { data, error } = await supabase
-        .from('video_product_links')
-        .select('*')
-        .eq('video_id', nextId);
-        
-      if (error) return [];
-      return data || [];
-    },
-    enabled: !!getNextVideoId()
-  });
-
   // Navigation and control functions
   const getCurrentIndex = () => {
     if (!currentVideoId || adjacentVideos.length === 0) return -1;
@@ -181,6 +163,24 @@ export function useVideoDetail(videoId: string | undefined) {
     }
     return null;
   };
+
+  // Prefetch next video's product links
+  useQuery({
+    queryKey: ['nextVideoProductLinks', getNextVideoId()],
+    queryFn: async () => {
+      const nextId = getNextVideoId();
+      if (!nextId) return [];
+      
+      const { data, error } = await supabase
+        .from('video_product_links')
+        .select('*')
+        .eq('video_id', nextId);
+        
+      if (error) return [];
+      return data || [];
+    },
+    enabled: !!getNextVideoId()
+  });
 
   const handleClose = () => {
     navigate('/explore');
