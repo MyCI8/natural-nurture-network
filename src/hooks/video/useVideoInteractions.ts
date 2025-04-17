@@ -55,13 +55,13 @@ export function useVideoInteractions(
     }
   };
 
-  const handleShare = async (video: any) => {
-    if (!video) return;
+  // Modified handleShare function to work without requiring a video parameter
+  const handleShare = async () => {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: video.title || 'Check out this video',
-          text: video.description || '',
+          title: 'Check out this video',
+          text: '',
           url: window.location.href
         });
       } else {
