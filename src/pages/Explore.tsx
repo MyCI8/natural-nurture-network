@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Swipeable } from '@/components/ui/swipeable';
+import { useLayout } from '@/contexts/LayoutContext'; // Added missing import
 import '../styles/explore.css';
 
 type EnhancedVideo = Video & {
