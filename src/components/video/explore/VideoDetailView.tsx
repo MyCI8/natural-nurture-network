@@ -1,3 +1,4 @@
+
 import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ProductLink } from '@/types/video';
@@ -48,7 +49,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
 }) => {
   return (
     <div 
-      className="absolute inset-0 w-full h-full z-0"
+      className="absolute inset-0 w-full h-full z-0 bg-white dark:bg-black"
       onClick={handleScreenTap}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -67,9 +68,9 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
         onAudioStateChange={(muted) => onToggleMute()}
       />
 
-      {/* Top Controls */}
+      {/* Close Button - Top Left */}
       <div 
-        className={`absolute top-4 left-4 z-20 flex items-center gap-4 transition-opacity duration-300 ${
+        className={`absolute top-4 left-4 z-30 transition-opacity duration-300 ${
           controlsVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -83,9 +84,9 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
         </Button>
       </div>
 
-      {/* Centered Audio Control */}
+      {/* Audio Control - Right Side Center */}
       <div 
-        className={`absolute top-1/2 right-4 transform -translate-y-1/2 z-20 transition-opacity duration-300 ${
+        className={`absolute top-1/2 right-4 transform -translate-y-1/2 z-30 transition-opacity duration-300 ${
           controlsVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >

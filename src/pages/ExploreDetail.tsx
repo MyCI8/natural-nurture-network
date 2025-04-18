@@ -76,6 +76,21 @@ const ExploreDetail = () => {
     }
   };
 
+  // Custom event to send product links to the right section
+  useEffect(() => {
+    if (!isMobile && productLinks.length > 0) {
+      // Send event with product links to be displayed in right section
+      window.dispatchEvent(new CustomEvent('display-product-links', {
+        detail: { productLinks }
+      }));
+    }
+    
+    // Clean up when component unmounts
+    return () => {
+      window.dispatchEvent(new CustomEvent('clear-product-links'));
+    };
+  }, [productLinks, isMobile]);
+
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">Loading...</div>;
   }
@@ -111,49 +126,52 @@ const ExploreDetail = () => {
             handleScreenTap={handleScreenTap}
           />
         </VideoSwipeContainer>
-
-        {/* Product Links Section - Below Comments */}
-        {productLinks.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0">
-            <div className="bg-white dark:bg-black p-4 border-t border-gray-200 dark:border-gray-800">
-              <h3 className="text-sm font-medium mb-3">Featured Products</h3>
-              <div className="space-y-2">
-                {productLinks.map((link) => (
-                  <div 
-                    key={link.id}
-                    className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 flex items-center"
-                  >
-                    {link.image_url && (
-                      <img 
-                        src={link.image_url} 
-                        alt={link.title} 
-                        className="w-16 h-16 object-cover rounded mr-3"
-                      />
-                    )}
-                    <div>
-                      <h4 className="font-medium">{link.title}</h4>
-                      {link.price && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          ${link.price.toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       
       {isMobile && (
-        <CommentSection
-          showComments={showComments}
-          setShowComments={setShowComments}
-          videoId={video.id}
-          currentUser={currentUser}
-          commentsRef={commentsRef}
-        />
+        <>
+          <CommentSection
+            showComments={showComments}
+            setShowComments={setShowComments}
+            videoId={video.id}
+            currentUser={currentUser}
+            commentsRef={commentsRef}
+          />
+          
+          {/* Product Links Section - Only for mobile */}
+          {productLinks.length > 0 && (
+            <div className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800">
+              <div className="p-4">
+                <h3 className="text-sm font-medium mb-3 text-foreground">Featured Products</h3>
+                <div className="space-y-2">
+                  {productLinks.map((link) => (
+                    <div 
+                      key={link.id}
+                      className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 flex items-center"
+                      onClick={() => window.open(link.url, '_blank')}
+                    >
+                      {link.image_url && (
+                        <img 
+                          src={link.image_url} 
+                          alt={link.title} 
+                          className="w-16 h-16 object-cover rounded mr-3"
+                        />
+                      )}
+                      <div>
+                        <h4 className="font-medium text-foreground">{link.title}</h4>
+                        {link.price && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            ${link.price.toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
