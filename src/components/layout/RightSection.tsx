@@ -1,7 +1,7 @@
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import ProductLinksPanel from '@/components/video/explore/ProductLinksPanel';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
@@ -10,10 +10,13 @@ import { cn } from '@/lib/utils';
 
 const RightSection: React.FC = () => {
   const location = useLocation();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isExploreDetail = location.pathname.startsWith('/explore/');
+  
+  // Simple state to simulate auth status
+  // This is a temporary fix until we have a proper auth context
+  const [user, setUser] = React.useState<null | { id: string }>(null);
 
   if (isMobile) return null;
 
