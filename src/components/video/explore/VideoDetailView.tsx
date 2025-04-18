@@ -1,4 +1,3 @@
-
 import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ProductLink } from '@/types/video';
@@ -48,9 +47,9 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   handleScreenTap
 }) => {
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <div className="relative w-full h-full flex items-center justify-center bg-black">
       <div 
-        className="relative w-full h-full md:w-auto md:h-auto md:max-h-[calc(100vh-32px)] md:max-w-[calc(100%-32px)]"
+        className="relative w-full h-full"
         onClick={handleScreenTap}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}

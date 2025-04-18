@@ -84,7 +84,7 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black w-full h-full flex fixed inset-0">
+    <div className="min-h-screen w-full h-full flex fixed inset-0 bg-black">
       {/* Main layout container */}
       <div className="flex flex-1 h-full">
         {/* Center Content - Video Container */}
@@ -117,7 +117,7 @@ const ExploreDetail = () => {
         
         {/* Right Section - Comments and Product Links (Desktop Only) */}
         {!isMobile && (
-          <div className="w-[350px] border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
+          <div className="w-[350px] h-full border-l border-gray-200 dark:border-gray-800 overflow-y-auto bg-background dark:bg-dm-background">
             {/* Comments Section */}
             <CommentSection
               showComments={true}
