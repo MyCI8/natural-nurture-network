@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import CommentSection from '@/components/video/explore/CommentSection';
 import ProductLinksPanel from '@/components/video/explore/ProductLinksPanel';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -17,8 +17,24 @@ const RightSection: React.FC = () => {
   // Simple state to simulate auth status
   // This is a temporary fix until we have a proper auth context
   const [user, setUser] = React.useState<null | { id: string }>(null);
+  const videoId = isExploreDetail ? location.pathname.split('/').pop() : null;
 
   if (isMobile) return null;
+
+  if (isExploreDetail && videoId) {
+    return (
+      <div className="w-full h-full bg-background dark:bg-dm-background overflow-y-auto">
+        <CommentSection
+          showComments={true}
+          setShowComments={() => {}}
+          videoId={videoId}
+          currentUser={null}
+          commentsRef={null}
+        />
+        <ProductLinksPanel />
+      </div>
+    );
+  }
 
   return (
     <div className={cn(
