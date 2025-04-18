@@ -1,9 +1,11 @@
+
 import React, { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLayout } from '@/contexts/LayoutContext';
 import CommentSection from '@/components/video/explore/CommentSection';
 import VideoSwipeContainer from '@/components/video/explore/VideoSwipeContainer';
 import VideoDetailView from '@/components/video/explore/VideoDetailView';
+import ProductLinksPanel from '@/components/video/explore/ProductLinksPanel';
 import { useVideoDetail } from '@/hooks/video/useVideoDetail';
 
 const ExploreDetail = () => {
@@ -53,13 +55,11 @@ const ExploreDetail = () => {
     }
   }, [setMobileHeaderVisible, isMobile]);
   
-  // Always show right section on ExploreDetail on desktop, never on mobile
+  // Always hide right section for ExploreDetail page
   useEffect(() => {
-    setShowRightSection(!isMobile);
-    
-    // Clean up when leaving the page
+    setShowRightSection(false);
     return () => setShowRightSection(false);
-  }, [setShowRightSection, isMobile]);
+  }, [setShowRightSection]);
 
   const scrollToComments = () => {
     setShowComments(true);
@@ -75,21 +75,6 @@ const ExploreDetail = () => {
     }
   };
 
-  // Custom event to send product links to the right section
-  useEffect(() => {
-    if (!isMobile && productLinks.length > 0) {
-      // Send event with product links to be displayed in right section
-      window.dispatchEvent(new CustomEvent('display-product-links', {
-        detail: { productLinks }
-      }));
-    }
-    
-    // Clean up when component unmounts
-    return () => {
-      window.dispatchEvent(new CustomEvent('clear-product-links'));
-    };
-  }, [productLinks, isMobile]);
-
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">Loading...</div>;
   }
@@ -101,47 +86,52 @@ const ExploreDetail = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-black w-full h-full flex flex-col fixed inset-0">
       <div className="flex-1 flex">
-        {/* Video Container */}
-        <div className="flex-1 relative">
-          <VideoSwipeContainer 
-            onSwipe={handleSwipe}
-            disabled={!isMobile}
-          >
-            <VideoDetailView
-              video={video}
-              productLinks={productLinks}
-              isMuted={isMuted}
-              onToggleMute={handleToggleMute}
-              onClose={handleClose}
-              controlsVisible={controlsVisible}
-              handleLike={handleLike}
-              scrollToComments={scrollToComments}
-              handleShare={handleShare}
-              handleShowProducts={handleShowProducts}
-              userLikeStatus={userLikeStatus}
-              isHovering={isHovering}
-              setIsHovering={setIsHovering}
-              hasNextVideo={hasNextVideo}
-              hasPrevVideo={hasPrevVideo}
-              isMobile={isMobile}
-              handleScreenTap={handleScreenTap}
-            />
-          </VideoSwipeContainer>
+        {/* Main Content Area */}
+        <div className="flex-1 flex md:max-w-[calc(100%-350px)]">
+          {/* Video Container */}
+          <div className="w-full relative">
+            <VideoSwipeContainer 
+              onSwipe={handleSwipe}
+              disabled={!isMobile}
+            >
+              <VideoDetailView
+                video={video}
+                productLinks={productLinks}
+                isMuted={isMuted}
+                onToggleMute={handleToggleMute}
+                onClose={handleClose}
+                controlsVisible={controlsVisible}
+                handleLike={handleLike}
+                scrollToComments={scrollToComments}
+                handleShare={handleShare}
+                handleShowProducts={handleShowProducts}
+                userLikeStatus={userLikeStatus}
+                isHovering={isHovering}
+                setIsHovering={setIsHovering}
+                hasNextVideo={hasNextVideo}
+                hasPrevVideo={hasPrevVideo}
+                isMobile={isMobile}
+                handleScreenTap={handleScreenTap}
+              />
+            </VideoSwipeContainer>
+          </div>
         </div>
         
-        {/* Right Section (Desktop) */}
+        {/* Right Section (Desktop Only) */}
         {!isMobile && (
           <div className="w-[350px] border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
+            {/* Comments Section */}
+            <CommentSection
+              showComments={true}
+              setShowComments={setShowComments}
+              videoId={video.id}
+              currentUser={currentUser}
+              commentsRef={commentsRef}
+            />
+            
+            {/* Product Links Panel */}
             {productLinks.length > 0 && (
-              <div className="border-b border-gray-200 dark:border-gray-800">
-                <CommentSection
-                  showComments={true}
-                  setShowComments={setShowComments}
-                  videoId={video.id}
-                  currentUser={currentUser}
-                  commentsRef={commentsRef}
-                />
-              </div>
+              <ProductLinksPanel />
             )}
           </div>
         )}
