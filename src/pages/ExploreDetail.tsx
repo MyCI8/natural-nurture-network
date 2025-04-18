@@ -84,40 +84,38 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black w-full h-full flex flex-col fixed inset-0">
-      <div className="flex-1 flex">
-        {/* Main Content Area */}
-        <div className="flex-1 flex md:max-w-[calc(100%-350px)]">
-          {/* Video Container */}
-          <div className="w-full relative">
-            <VideoSwipeContainer 
-              onSwipe={handleSwipe}
-              disabled={!isMobile}
-            >
-              <VideoDetailView
-                video={video}
-                productLinks={productLinks}
-                isMuted={isMuted}
-                onToggleMute={handleToggleMute}
-                onClose={handleClose}
-                controlsVisible={controlsVisible}
-                handleLike={handleLike}
-                scrollToComments={scrollToComments}
-                handleShare={handleShare}
-                handleShowProducts={handleShowProducts}
-                userLikeStatus={userLikeStatus}
-                isHovering={isHovering}
-                setIsHovering={setIsHovering}
-                hasNextVideo={hasNextVideo}
-                hasPrevVideo={hasPrevVideo}
-                isMobile={isMobile}
-                handleScreenTap={handleScreenTap}
-              />
-            </VideoSwipeContainer>
-          </div>
+    <div className="min-h-screen bg-white dark:bg-black w-full h-full flex fixed inset-0">
+      {/* Main layout container */}
+      <div className="flex flex-1 h-full">
+        {/* Center Content - Video Container */}
+        <div className="flex-1 flex flex-col relative">
+          <VideoSwipeContainer 
+            onSwipe={handleSwipe}
+            disabled={!isMobile}
+          >
+            <VideoDetailView
+              video={video}
+              productLinks={productLinks}
+              isMuted={isMuted}
+              onToggleMute={handleToggleMute}
+              onClose={handleClose}
+              controlsVisible={controlsVisible}
+              handleLike={handleLike}
+              scrollToComments={scrollToComments}
+              handleShare={handleShare}
+              handleShowProducts={handleShowProducts}
+              userLikeStatus={userLikeStatus}
+              isHovering={isHovering}
+              setIsHovering={setIsHovering}
+              hasNextVideo={hasNextVideo}
+              hasPrevVideo={hasPrevVideo}
+              isMobile={isMobile}
+              handleScreenTap={handleScreenTap}
+            />
+          </VideoSwipeContainer>
         </div>
         
-        {/* Right Section (Desktop Only) */}
+        {/* Right Section - Comments and Product Links (Desktop Only) */}
         {!isMobile && (
           <div className="w-[350px] border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
             {/* Comments Section */}
@@ -137,7 +135,7 @@ const ExploreDetail = () => {
         )}
       </div>
       
-      {/* Mobile Comments Section */}
+      {/* Mobile Comments Section - Only shown when mobile and comments are toggled */}
       {isMobile && (
         <CommentSection
           showComments={showComments}
