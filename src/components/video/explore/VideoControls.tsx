@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { X, MoreHorizontal, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,11 +31,9 @@ const VideoControls: React.FC<VideoControlsProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // Only show touch-friendly controls on mobile devices
   if (!isMobile) {
-    // For desktop, only show the product button if there are products
     return productLinks.length > 0 ? (
-      <div className="absolute top-3 left-3 z-20">
+      <div className="absolute top-4 left-4 z-30">
         <Button 
           variant="ghost" 
           size="sm" 
@@ -52,8 +49,8 @@ const VideoControls: React.FC<VideoControlsProps> = ({
 
   return (
     <>
-      {/* Top Controls - Only visible when controls are visible */}
-      <div className={`absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-20 bg-gradient-to-b from-black/70 to-transparent transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      {/* Top Controls */}
+      <div className={`absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-30 bg-gradient-to-b from-black/70 to-transparent transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <Button 
           variant="ghost" 
           size="icon" 
@@ -73,7 +70,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
       </div>
       
       {/* Bottom Right Controls */}
-      <div className={`absolute bottom-[calc(env(safe-area-inset-bottom)+20px)] right-3 flex flex-col items-center space-y-5 z-20 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`absolute bottom-4 right-4 flex flex-col items-center space-y-4 z-30 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <Button 
           variant="ghost" 
           size="icon" 

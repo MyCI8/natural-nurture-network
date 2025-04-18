@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Video, ProductLink } from '@/types/video';
@@ -59,7 +58,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const [isHovering, setIsHovering] = useState(false);
   const isMobile = useIsMobile();
   
-  // Use the visibility hook to handle autoplay and visibility tracking
   useVideoVisibility(
     videoRef,
     containerRef,
@@ -72,7 +70,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     onInView
   );
 
-  // Handle zoom changes
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -97,7 +94,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     <div 
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden bg-black h-full w-full touch-manipulation", 
+        "relative overflow-hidden h-full w-full touch-manipulation", 
         isFullscreen ? "fixed inset-0 z-10" : "",
         className
       )}
@@ -107,6 +104,11 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
+      <div className={cn(
+        "absolute inset-0",
+        playbackStarted ? "bg-black" : "bg-transparent"
+      )} />
+      
       <VideoContainer 
         video={video}
         autoPlay={autoPlay}
@@ -120,7 +122,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         playbackStarted={playbackStarted}
       />
 
-      {/* Desktop hover controls */}
       {!isMobile && isFullscreen && (
         <div 
           className={cn(
