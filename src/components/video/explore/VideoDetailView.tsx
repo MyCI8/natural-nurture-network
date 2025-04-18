@@ -47,12 +47,10 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   handleScreenTap
 }) => {
   return (
-    <div 
-      className="relative w-full h-full flex flex-col md:flex-row overflow-hidden bg-black md:bg-white dark:bg-black"
-    >
-      <div className="relative flex-1 flex items-center justify-center bg-black">
+    <div className="relative w-full h-full flex flex-col md:flex-row overflow-hidden bg-black">
+      <div className="relative flex-1 flex items-center justify-center">
         <div 
-          className="relative w-full h-full"
+          className="relative w-full aspect-[9/16] md:aspect-video max-h-full"
           onClick={handleScreenTap}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
@@ -82,7 +80,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
               </Button>
             </div>
 
-            <div className="absolute top-1/2 right-4 -translate-y-1/2 z-30 pointer-events-auto">
+            <div className="absolute top-4 right-4 z-30 pointer-events-auto">
               <Button 
                 variant="ghost" 
                 size="icon"

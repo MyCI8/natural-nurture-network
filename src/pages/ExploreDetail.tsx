@@ -90,12 +90,6 @@ const ExploreDetail = () => {
     };
   }, [productLinks, isMobile]);
 
-  // Show right section in desktop mode
-  useEffect(() => {
-    setShowRightSection(!isMobile);
-    return () => setShowRightSection(false);
-  }, [setShowRightSection, isMobile]);
-
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">Loading...</div>;
   }
@@ -135,31 +129,33 @@ const ExploreDetail = () => {
           </VideoSwipeContainer>
         </div>
         
-        {/* Desktop Comments Section */}
+        {/* Right Section (Desktop) */}
         {!isMobile && (
           <div className="w-[350px] border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
-            <CommentSection
-              showComments={true}
-              setShowComments={setShowComments}
-              videoId={video.id}
-              currentUser={currentUser}
-              commentsRef={commentsRef}
-            />
+            {productLinks.length > 0 && (
+              <div className="border-b border-gray-200 dark:border-gray-800">
+                <CommentSection
+                  showComments={true}
+                  setShowComments={setShowComments}
+                  videoId={video.id}
+                  currentUser={currentUser}
+                  commentsRef={commentsRef}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
       
       {/* Mobile Comments Section */}
       {isMobile && (
-        <>
-          <CommentSection
-            showComments={showComments}
-            setShowComments={setShowComments}
-            videoId={video.id}
-            currentUser={currentUser}
-            commentsRef={commentsRef}
-          />
-        </>
+        <CommentSection
+          showComments={showComments}
+          setShowComments={setShowComments}
+          videoId={video.id}
+          currentUser={currentUser}
+          commentsRef={commentsRef}
+        />
       )}
     </div>
   );
