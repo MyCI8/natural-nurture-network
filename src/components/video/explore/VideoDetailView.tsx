@@ -1,4 +1,3 @@
-
 import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ProductLink } from '@/types/video';
@@ -49,84 +48,81 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
 }) => {
   return (
     <div 
-      className="absolute inset-0 w-full h-full z-0 bg-white dark:bg-black"
-      onClick={handleScreenTap}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      className="relative w-full h-full flex flex-col md:flex-row overflow-hidden bg-black md:bg-white dark:bg-black"
     >
-      <VideoPlayer 
-        video={video} 
-        productLinks={productLinks}
-        autoPlay={true} 
-        showControls={false}
-        onClose={onClose} 
-        isFullscreen={true} 
-        className="w-full h-full" 
-        objectFit="contain" 
-        useAspectRatio={false}
-        globalAudioEnabled={!isMuted}
-        onAudioStateChange={(muted) => onToggleMute()}
-      />
-
-      {/* Close Button - Top Left */}
-      <div 
-        className={`absolute top-4 left-4 z-30 transition-opacity duration-300 ${
-          controlsVisible ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={onClose}
-          className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+      <div className="relative flex-1 flex items-center justify-center bg-black">
+        <div 
+          className="relative w-full h-full"
+          onClick={handleScreenTap}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
         >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Audio Control - Right Side Center */}
-      <div 
-        className={`absolute top-1/2 right-4 transform -translate-y-1/2 z-30 transition-opacity duration-300 ${
-          controlsVisible ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={onToggleMute}
-          className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
-        >
-          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-        </Button>
-      </div>
-
-      {isMobile && (
-        <>
-          <VideoControls
-            controlsVisible={controlsVisible}
-            handleClose={onClose}
-            handleLike={handleLike}
-            scrollToComments={scrollToComments}
-            handleShare={handleShare}
-            handleShowProducts={handleShowProducts}
-            handleToggleMute={onToggleMute}
-            productLinks={productLinks}
-            isMuted={isMuted}
-            userLikeStatus={userLikeStatus}
-          />
-          
-          <VideoProfileInfo 
+          <VideoPlayer 
             video={video} 
-            controlsVisible={controlsVisible} 
+            productLinks={productLinks}
+            autoPlay={true} 
+            showControls={false}
+            globalAudioEnabled={!isMuted}
+            onAudioStateChange={() => onToggleMute()}
+            isFullscreen={true}
+            className="w-full h-full"
+            objectFit="contain"
+            useAspectRatio={false}
           />
-          
-          <SwipeIndicators
-            controlsVisible={controlsVisible}
-            hasNextVideo={hasNextVideo}
-            hasPrevVideo={hasPrevVideo}
-          />
-        </>
-      )}
+
+          <div className={`absolute inset-0 pointer-events-none ${controlsVisible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
+            <div className="absolute top-4 left-4 z-30 pointer-events-auto">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={onClose}
+                className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="absolute top-1/2 right-4 -translate-y-1/2 z-30 pointer-events-auto">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={onToggleMute}
+                className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10"
+              >
+                {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </Button>
+            </div>
+
+            {isMobile && (
+              <>
+                <VideoControls
+                  controlsVisible={controlsVisible}
+                  handleClose={onClose}
+                  handleLike={handleLike}
+                  scrollToComments={scrollToComments}
+                  handleShare={handleShare}
+                  handleShowProducts={handleShowProducts}
+                  handleToggleMute={onToggleMute}
+                  productLinks={productLinks}
+                  isMuted={isMuted}
+                  userLikeStatus={userLikeStatus}
+                />
+                
+                <VideoProfileInfo 
+                  video={video} 
+                  controlsVisible={controlsVisible}
+                />
+                
+                <SwipeIndicators
+                  controlsVisible={controlsVisible}
+                  hasNextVideo={hasNextVideo}
+                  hasPrevVideo={hasPrevVideo}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

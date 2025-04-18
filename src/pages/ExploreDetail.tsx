@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -91,6 +90,12 @@ const ExploreDetail = () => {
     };
   }, [productLinks, isMobile]);
 
+  // Show right section in desktop mode
+  useEffect(() => {
+    setShowRightSection(!isMobile);
+    return () => setShowRightSection(false);
+  }, [setShowRightSection, isMobile]);
+
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">Loading...</div>;
   }
@@ -100,34 +105,51 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black w-full h-full flex flex-col touch-manipulation fixed inset-0">
-      <div className="flex-1 relative">
-        <VideoSwipeContainer 
-          onSwipe={handleSwipe}
-          disabled={!isMobile}
-        >
-          <VideoDetailView
-            video={video}
-            productLinks={productLinks}
-            isMuted={isMuted}
-            onToggleMute={handleToggleMute}
-            onClose={handleClose}
-            controlsVisible={controlsVisible}
-            handleLike={handleLike}
-            scrollToComments={scrollToComments}
-            handleShare={handleShare}
-            handleShowProducts={handleShowProducts}
-            userLikeStatus={userLikeStatus}
-            isHovering={isHovering}
-            setIsHovering={setIsHovering}
-            hasNextVideo={hasNextVideo}
-            hasPrevVideo={hasPrevVideo}
-            isMobile={isMobile}
-            handleScreenTap={handleScreenTap}
-          />
-        </VideoSwipeContainer>
+    <div className="min-h-screen bg-white dark:bg-black w-full h-full flex flex-col fixed inset-0">
+      <div className="flex-1 flex">
+        {/* Video Container */}
+        <div className="flex-1 relative">
+          <VideoSwipeContainer 
+            onSwipe={handleSwipe}
+            disabled={!isMobile}
+          >
+            <VideoDetailView
+              video={video}
+              productLinks={productLinks}
+              isMuted={isMuted}
+              onToggleMute={handleToggleMute}
+              onClose={handleClose}
+              controlsVisible={controlsVisible}
+              handleLike={handleLike}
+              scrollToComments={scrollToComments}
+              handleShare={handleShare}
+              handleShowProducts={handleShowProducts}
+              userLikeStatus={userLikeStatus}
+              isHovering={isHovering}
+              setIsHovering={setIsHovering}
+              hasNextVideo={hasNextVideo}
+              hasPrevVideo={hasPrevVideo}
+              isMobile={isMobile}
+              handleScreenTap={handleScreenTap}
+            />
+          </VideoSwipeContainer>
+        </div>
+        
+        {/* Desktop Comments Section */}
+        {!isMobile && (
+          <div className="w-[350px] border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
+            <CommentSection
+              showComments={true}
+              setShowComments={setShowComments}
+              videoId={video.id}
+              currentUser={currentUser}
+              commentsRef={commentsRef}
+            />
+          </div>
+        )}
       </div>
       
+      {/* Mobile Comments Section */}
       {isMobile && (
         <>
           <CommentSection
@@ -137,40 +159,6 @@ const ExploreDetail = () => {
             currentUser={currentUser}
             commentsRef={commentsRef}
           />
-          
-          {/* Product Links Section - Only for mobile */}
-          {productLinks.length > 0 && (
-            <div className="bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800">
-              <div className="p-4">
-                <h3 className="text-sm font-medium mb-3 text-foreground">Featured Products</h3>
-                <div className="space-y-2">
-                  {productLinks.map((link) => (
-                    <div 
-                      key={link.id}
-                      className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 flex items-center"
-                      onClick={() => window.open(link.url, '_blank')}
-                    >
-                      {link.image_url && (
-                        <img 
-                          src={link.image_url} 
-                          alt={link.title} 
-                          className="w-16 h-16 object-cover rounded mr-3"
-                        />
-                      )}
-                      <div>
-                        <h4 className="font-medium text-foreground">{link.title}</h4>
-                        {link.price && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ${link.price.toFixed(2)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>
