@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
@@ -41,31 +41,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [visibleProductLink, setVisibleProductLink] = useState<string | null>(null);
   
   // Effect to handle mute state changes based on global audio setting
-  useEffect(() => {
+  React.useEffect(() => {
     setIsMuted(!globalAudioEnabled);
   }, [globalAudioEnabled]);
-  
-  // Effect to log when the fullscreen state changes
-  useEffect(() => {
-    if (isFullscreen) {
-      console.log('Video player is in fullscreen mode');
-    }
-  }, [isFullscreen]);
-  
-  // Effect to listen for product link show events
-  useEffect(() => {
-    const handleShowProductLink = (e: CustomEvent) => {
-      if (e.detail && e.detail.linkId) {
-        setVisibleProductLink(e.detail.linkId);
-      }
-    };
-    
-    window.addEventListener('show-product-link', handleShowProductLink as EventListener);
-    
-    return () => {
-      window.removeEventListener('show-product-link', handleShowProductLink as EventListener);
-    };
-  }, []);
   
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -85,11 +63,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const handleInView = (inView: boolean) => {
     // This can be used for additional visibility logic if needed
     console.log(`Video is ${inView ? 'in view' : 'out of view'}`);
-    
-    // When entering fullscreen view, unmute the video if global audio is enabled
-    if (inView && isFullscreen && globalAudioEnabled) {
-      setIsMuted(false);
-    }
   };
 
   const feedAspectRatio = aspectRatio || 4/5;
