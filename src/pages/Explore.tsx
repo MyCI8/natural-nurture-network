@@ -73,12 +73,6 @@ const Explore = () => {
     };
   }, [currentUser, queryClient]);
 
-  useEffect(() => {
-    return () => {
-      setShowRightSection(false);
-    };
-  }, [setShowRightSection]);
-
   const {
     data: videos = [],
     isLoading

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ProductLink } from '@/types/video';
@@ -67,7 +68,8 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
           useAspectRatio={false}
         />
 
-        <div className={`absolute inset-0 pointer-events-none ${controlsVisible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
+        {/* Always visible controls */}
+        <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-4 left-4 z-30 pointer-events-auto">
             <Button 
               variant="ghost" 
@@ -90,33 +92,29 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
             </Button>
           </div>
 
-          {isMobile && (
-            <>
-              <VideoControls
-                controlsVisible={controlsVisible}
-                handleClose={onClose}
-                handleLike={handleLike}
-                scrollToComments={scrollToComments}
-                handleShare={handleShare}
-                handleShowProducts={handleShowProducts}
-                handleToggleMute={onToggleMute}
-                productLinks={productLinks}
-                isMuted={isMuted}
-                userLikeStatus={userLikeStatus}
-              />
-              
-              <VideoProfileInfo 
-                video={video} 
-                controlsVisible={controlsVisible}
-              />
-              
-              <SwipeIndicators
-                controlsVisible={controlsVisible}
-                hasNextVideo={hasNextVideo}
-                hasPrevVideo={hasPrevVideo}
-              />
-            </>
-          )}
+          <VideoControls
+            controlsVisible={true} // Always show controls
+            handleClose={onClose}
+            handleLike={handleLike}
+            scrollToComments={scrollToComments}
+            handleShare={handleShare}
+            handleShowProducts={handleShowProducts}
+            handleToggleMute={onToggleMute}
+            productLinks={productLinks}
+            isMuted={isMuted}
+            userLikeStatus={userLikeStatus}
+          />
+          
+          <VideoProfileInfo 
+            video={video} 
+            controlsVisible={true} // Always show profile info
+          />
+          
+          <SwipeIndicators
+            controlsVisible={true} // Always show swipe indicators
+            hasNextVideo={hasNextVideo}
+            hasPrevVideo={hasPrevVideo}
+          />
         </div>
       </div>
     </div>

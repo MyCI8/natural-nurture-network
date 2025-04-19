@@ -8,7 +8,7 @@ import { useVideoDetail } from '@/hooks/video/useVideoDetail';
 
 const ExploreDetail = () => {
   const { id } = useParams();
-  const { setMobileHeaderVisible } = useLayout();
+  const { setMobileHeaderVisible, setShowRightSection } = useLayout();
   
   const {
     // State
@@ -49,6 +49,32 @@ const ExploreDetail = () => {
     }
   }, [setMobileHeaderVisible, isMobile]);
 
+  // Show right section on desktop and pass product links
+  useEffect(() => {
+    if (!isMobile && video) {
+      setShowRightSection(true);
+      
+      // Display product links in the right panel if available
+      if (productLinks && productLinks.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent('display-product-links', { 
+            detail: { productLinks } 
+          })
+        );
+      }
+      
+      return () => {
+        window.dispatchEvent(new CustomEvent('clear-product-links'));
+      };
+    }
+    
+    return () => {
+      if (!isMobile) {
+        setShowRightSection(false);
+      }
+    };
+  }, [video, productLinks, setShowRightSection, isMobile]);
+
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">Loading...</div>;
   }
@@ -58,7 +84,7 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="min-h-screen w-full h-full flex fixed inset-0">
+    <div className="min-h-screen w-full h-full flex fixed inset-0 bg-white dark:bg-gray-900">
       {/* Main Content Area */}
       <div className="flex-1 relative">
         <VideoSwipeContainer 
@@ -71,7 +97,7 @@ const ExploreDetail = () => {
             isMuted={isMuted}
             onToggleMute={handleToggleMute}
             onClose={handleClose}
-            controlsVisible={controlsVisible}
+            controlsVisible={true} // Always show controls
             handleLike={handleLike}
             scrollToComments={() => setShowComments(true)}
             handleShare={handleShare}

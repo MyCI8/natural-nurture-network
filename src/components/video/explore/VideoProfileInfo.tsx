@@ -18,7 +18,7 @@ const VideoProfileInfo: React.FC<VideoProfileInfoProps> = ({ video, controlsVisi
   }
 
   return (
-    <div className={`absolute bottom-0 left-0 right-0 p-4 z-20 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+    <div className="absolute bottom-0 left-0 right-0 p-4 z-20 bg-gradient-to-t from-black/70 to-transparent">
       <div className="flex items-center">
         <Avatar className="h-10 w-10 border-2 border-white/30 mr-3">
           {video.creator?.avatar_url ? (
