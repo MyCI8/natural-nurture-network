@@ -1,8 +1,6 @@
 
 import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SwipeIndicatorsProps {
   controlsVisible: boolean;
@@ -10,45 +8,29 @@ interface SwipeIndicatorsProps {
   hasPrevVideo: boolean;
 }
 
-const SwipeIndicator = ({ direction, visible }: { direction: 'up' | 'down'; visible: boolean }) => (
-  <div 
-    className={cn(
-      "absolute flex items-center justify-center w-full",
-      direction === 'up' ? "top-4" : "bottom-4",
-      "pointer-events-none z-20"
-    )}
-  >
-    <div className={cn(
-      "flex items-center justify-center rounded-full h-8 w-8 bg-black/20 text-white"
-    )}>
-      {direction === 'up' ? (
-        <ChevronUp className="h-5 w-5" />
-      ) : (
-        <ChevronDown className="h-5 w-5" />
-      )}
-    </div>
-  </div>
-);
-
 const SwipeIndicators: React.FC<SwipeIndicatorsProps> = ({ 
   controlsVisible,
   hasNextVideo,
-  hasPrevVideo
+  hasPrevVideo 
 }) => {
-  const isMobile = useIsMobile();
-  
-  if (!isMobile) return null;
-  
   return (
-    <>
-      {hasNextVideo && (
-        <SwipeIndicator direction="up" visible={true} />
-      )}
-      
+    <div className="absolute inset-x-0 flex flex-col items-center z-40 pointer-events-none">
       {hasPrevVideo && (
-        <SwipeIndicator direction="down" visible={true} />
+        <div className={`absolute top-4 opacity-100 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="bg-black/60 p-2 rounded-full text-white">
+            <ChevronUp className="h-5 w-5" />
+          </div>
+        </div>
       )}
-    </>
+
+      {hasNextVideo && (
+        <div className={`absolute bottom-20 opacity-100 transition-opacity duration-300 ${controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="bg-black/60 p-2 rounded-full text-white">
+            <ChevronDown className="h-5 w-5" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

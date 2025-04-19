@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -27,6 +28,8 @@ export function useMobileVideoControls() {
   };
 
   const handleScreenTap = () => {
+    // Always show controls (no toggle functionality)
+    setControlsVisible(true);
   };
 
   return {

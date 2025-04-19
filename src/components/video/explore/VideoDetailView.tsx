@@ -68,36 +68,36 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
           useAspectRatio={false}
         />
 
-        {/* Overlay controls - positioned directly on the video */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-4 left-4 z-30 pointer-events-auto">
+        {/* Overlay controls - positioned directly on the video with improved visibility */}
+        <div className="absolute inset-0 z-30">
+          <div className="absolute top-4 left-4 z-40 pointer-events-auto">
             <Button 
               variant="ghost" 
               size="icon"
               onClick={onClose}
-              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+              className="rounded-full bg-black/60 text-white hover:bg-black/80 h-10 w-10 touch-manipulation"
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
 
-          <div className="absolute top-4 right-4 z-30 pointer-events-auto">
+          <div className="absolute top-4 right-4 z-40 pointer-events-auto">
             <Button 
               variant="ghost" 
               size="icon"
               onClick={onToggleMute}
-              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+              className="rounded-full bg-black/60 text-white hover:bg-black/80 h-10 w-10 touch-manipulation"
             >
               {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </Button>
           </div>
 
           {/* Right side action buttons */}
-          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-30 pointer-events-auto">
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-40 pointer-events-auto">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+              className="rounded-full bg-black/60 text-white hover:bg-black/80 h-12 w-12 touch-manipulation"
               onClick={handleLike}
             >
               <Heart className={`h-6 w-6 ${userLikeStatus ? 'fill-current text-red-500' : ''}`} />
@@ -106,7 +106,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+              className="rounded-full bg-black/60 text-white hover:bg-black/80 h-12 w-12 touch-manipulation"
               onClick={scrollToComments}
             >
               <MessageCircle className="h-6 w-6" />
@@ -115,7 +115,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+              className="rounded-full bg-black/60 text-white hover:bg-black/80 h-12 w-12 touch-manipulation"
               onClick={handleShare}
             >
               <Share2 className="h-6 w-6" />
@@ -125,7 +125,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+                className="rounded-full bg-black/60 text-white hover:bg-black/80 h-12 w-12 touch-manipulation"
                 onClick={handleShowProducts}
               >
                 <ShoppingCart className="h-6 w-6" />

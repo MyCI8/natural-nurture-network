@@ -16,7 +16,7 @@ const VideoProfileInfo: React.FC<VideoProfileInfoProps> = ({ video, controlsVisi
   
   return (
     <div className={cn(
-      "absolute bottom-4 left-4 right-16 z-20 p-2 rounded-lg pointer-events-auto",
+      "absolute bottom-4 left-4 right-16 z-40 p-2 rounded-lg pointer-events-auto",
       "transition-opacity duration-300 ease-in-out",
       controlsVisible ? "opacity-100" : "opacity-0"
     )}>
@@ -41,7 +41,7 @@ const VideoProfileInfo: React.FC<VideoProfileInfoProps> = ({ video, controlsVisi
       
       {/* Video Description - Added as requested */}
       {video.description && (
-        <div className="mt-2 text-white text-sm line-clamp-2 text-shadow-sm bg-black/30 p-2 rounded-md">
+        <div className="mt-2 text-white text-sm line-clamp-2 text-shadow-sm bg-black/60 p-2 rounded-md">
           {video.description}
         </div>
       )}
