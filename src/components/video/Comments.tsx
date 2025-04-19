@@ -6,6 +6,7 @@ import { Heart, X, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
 interface Comment {
   id: string;
   content: string;
@@ -19,10 +20,12 @@ interface Comment {
   };
   user_has_liked: boolean;
 }
+
 interface CommentsProps {
   videoId: string;
   currentUser: any | null;
 }
+
 const Comments: React.FC<CommentsProps> = ({
   videoId,
   currentUser
@@ -33,6 +36,7 @@ const Comments: React.FC<CommentsProps> = ({
   const {
     toast
   } = useToast();
+
   const {
     data: comments = [],
     isLoading: isCommentsLoading,
@@ -83,6 +87,7 @@ const Comments: React.FC<CommentsProps> = ({
     enabled: !!videoId,
     staleTime: 1000
   });
+
   const addCommentMutation = useMutation({
     mutationFn: async (commentText: string) => {
       if (!currentUser || !videoId) {
@@ -150,6 +155,7 @@ const Comments: React.FC<CommentsProps> = ({
       });
     }
   });
+
   const likeCommentMutation = useMutation({
     mutationFn: async ({
       commentId,
@@ -221,6 +227,7 @@ const Comments: React.FC<CommentsProps> = ({
       });
     }
   });
+
   const getLikesCount = async (commentId: string): Promise<number> => {
     const {
       count,
@@ -235,6 +242,7 @@ const Comments: React.FC<CommentsProps> = ({
     }
     return count || 0;
   };
+
   const handleSendComment = () => {
     if (!commentText.trim() || !currentUser) {
       console.log('Cannot post comment:', {
@@ -252,6 +260,7 @@ const Comments: React.FC<CommentsProps> = ({
     setIsSubmittingComment(true);
     addCommentMutation.mutate(commentText);
   };
+
   const handleLikeComment = (commentId: string, isLiked: boolean) => {
     if (!currentUser) {
       toast({
@@ -265,6 +274,7 @@ const Comments: React.FC<CommentsProps> = ({
       isLiked
     });
   };
+
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
       if (!currentUser) throw new Error('You must be logged in to delete comments');
@@ -291,8 +301,9 @@ const Comments: React.FC<CommentsProps> = ({
       });
     }
   });
+
   return <div className="w-full">
-      <div className="flex-1 overflow-y-auto px-4 py-1 max-h-[380px] scrollbar-hide" style={{
+      <div className="flex-1 overflow-y-auto px-0 py-1 max-h-[380px] md:max-h-[500px] scrollbar-hide" style={{
       scrollbarWidth: 'none',
       msOverflowStyle: 'none'
     }}>
@@ -330,19 +341,30 @@ const Comments: React.FC<CommentsProps> = ({
             </div>)}
       </div>
       
-      <div className="px-4 border-t border-gray-200 dark:border-gray-800 py-px">
+      <div className="border-t border-gray-200 dark:border-gray-800 py-px">
         <div className="flex items-center">
-          <Input type="text" placeholder="Add a comment..." className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1" value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleSendComment();
-          }
-        }} disabled={isSubmittingComment} />
-          <Button variant="ghost" size="sm" className={`text-blue-500 font-semibold ${!commentText.trim() || isSubmittingComment ? 'opacity-50' : 'opacity-100'}`} onClick={handleSendComment} disabled={!commentText.trim() || isSubmittingComment}>
+          <Input type="text" placeholder="Add a comment..." 
+            className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1 dark:bg-transparent dark:text-dm-text" 
+            value={commentText} 
+            onChange={e => setCommentText(e.target.value)} 
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSendComment();
+              }
+            }} 
+            disabled={isSubmittingComment} 
+          />
+          <Button variant="ghost" size="sm" 
+            className={`text-blue-500 dark:text-blue-400 font-semibold ${!commentText.trim() || isSubmittingComment ? 'opacity-50' : 'opacity-100'}`} 
+            onClick={handleSendComment} 
+            disabled={!commentText.trim() || isSubmittingComment}
+          >
             {isSubmittingComment ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></span> : 'Post'}
           </Button>
         </div>
       </div>
     </div>;
 };
+
 export default Comments;

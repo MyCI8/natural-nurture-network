@@ -67,12 +67,15 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const feedAspectRatio = aspectRatio || 4/5;
 
+  // Filter product links for fullscreen/detail view to remove them from the video player
+  const activeProductLinks = isFullscreen ? [] : productLinks;
+
   // Render the appropriate player based on video type
   if (isYoutubeVideo(video.video_url)) {
     return (
       <YouTubePlayer
         video={video}
-        productLinks={productLinks}
+        productLinks={activeProductLinks}
         autoPlay={autoPlay}
         isMuted={isMuted}
         showControls={showControls}
@@ -91,7 +94,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <NativeVideoPlayer
       video={video}
-      productLinks={productLinks}
+      productLinks={activeProductLinks}
       autoPlay={autoPlay}
       isMuted={isMuted}
       showControls={showControls}

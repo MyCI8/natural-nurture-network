@@ -1,7 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { X, Volume2, VolumeX, ShoppingCart } from 'lucide-react';
+import { Volume2, VolumeX, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Video, ProductLink } from '@/types/video';
@@ -157,14 +157,17 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     
     return baseStyle;
   };
+
+  // Only show product buttons in feed view, not in detail view
+  const shouldShowProductControls = productLinks.length > 0 && !isFullscreen;
   
   if (isFullscreen) {
     return (
       <div 
         ref={containerRef}
         className={cn(
-          "relative overflow-hidden flex items-center justify-center bg-black", 
-          "h-full w-full",
+          "relative overflow-hidden flex items-center justify-center bg-black p-2.5", 
+          "h-full w-full rounded-md",
           className
         )}
         onClick={() => onClick?.()}
@@ -186,7 +189,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         <video
           ref={videoRef}
           src={video.video_url || undefined}
-          className="max-h-screen w-auto max-w-full"
+          className="max-h-screen w-auto max-w-full rounded-md"
           style={getVideoStyle()}
           loop
           muted={isMuted}
@@ -210,35 +213,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             )}
           </Button>
         )}
-
-        {productLinks.length > 0 && (
-          <div className="absolute top-3 left-3 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleProductLink(productLinks[0].id);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4 mr-1" />
-              <span className="text-xs">Products</span>
-            </Button>
-          </div>
-        )}
-
-        {productLinks.map((link) => (
-          <div key={link.id} className={cn(
-            "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
-            visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
-          )}>
-            <ProductLinkCard 
-              link={link} 
-              onClose={() => toggleProductLink(link.id)} 
-            />
-          </div>
-        ))}
       </div>
     );
   }
@@ -247,7 +221,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     <div 
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden bg-black", 
+        "relative overflow-hidden bg-black rounded-md p-2.5", 
         className
       )}
       onClick={() => onClick?.()}
@@ -257,7 +231,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           <video
             ref={videoRef}
             src={video.video_url || undefined}
-            className="w-full h-full"
+            className="w-full h-full rounded-md"
             style={getVideoStyle()}
             loop
             muted={isMuted}
@@ -272,7 +246,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         <video
           ref={videoRef}
           src={video.video_url || undefined}
-          className="w-full h-full"
+          className="w-full h-full rounded-md"
           style={getVideoStyle()}
           loop
           muted={isMuted}
@@ -299,7 +273,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         </Button>
       )}
 
-      {productLinks.length > 0 && (
+      {shouldShowProductControls && (
         <>
           <div className="absolute top-3 left-3 z-10">
             <Button

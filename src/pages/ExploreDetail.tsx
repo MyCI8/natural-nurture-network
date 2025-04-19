@@ -21,30 +21,28 @@ const ExploreDetail = () => {
   const commentsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Show right section for comments when in detail view
     setShowRightSection(true);
     return () => setShowRightSection(true);
   }, [setShowRightSection]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setShowComments(scrollPosition > 100);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const scrollToComments = () => {
-    setShowComments(true);
-    if (commentsRef.current) {
-      commentsRef.current.scrollIntoView({
-        behavior: 'smooth'
-      });
+    // This only scrolls on mobile view now
+    if (window.innerWidth <= 768) {
+      setShowComments(true);
+      if (commentsRef.current) {
+        commentsRef.current.scrollIntoView({
+          behavior: 'smooth'
+        });
+      } else {
+        window.scrollTo({
+          top: window.innerHeight,
+          behavior: 'smooth'
+        });
+      }
     } else {
-      window.scrollTo({
-        top: window.innerHeight,
-        behavior: 'smooth'
-      });
+      // On desktop, just ensure right section is visible
+      setShowRightSection(true);
     }
   };
 
@@ -154,7 +152,7 @@ const ExploreDetail = () => {
 
   return (
     <Swipeable onSwipe={handleSwipe} threshold={100} className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
-      <div className="w-full relative flex items-center justify-center">
+      <div className="w-full relative flex items-center justify-center p-2.5">
         <div className="absolute top-4 left-4 z-20 flex items-center">
           <Avatar className="h-10 w-10 mr-2 border-2 border-white/30">
             {video.creator?.avatar_url ? (
@@ -181,17 +179,17 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <div className="w-full">
+        <div className="w-full max-w-3xl bg-black rounded-md overflow-hidden p-2.5">
           <VideoPlayer 
             video={video} 
-            productLinks={productLinks}
+            productLinks={[]} // No product links directly on video in detail view
             autoPlay={true} 
             showControls={false} 
             onClose={handleClose} 
             isFullscreen={false} 
-            className="w-full" 
+            className="w-full rounded-md overflow-hidden" 
             objectFit="contain" 
-            useAspectRatio={false} 
+            useAspectRatio={true} 
           />
         </div>
       </div>
@@ -230,11 +228,36 @@ const ExploreDetail = () => {
         <p className="text-gray-700 dark:text-dm-text-supporting">{video.description}</p>
       </div>
       
-      <div ref={commentsRef} className={`w-full bg-white dark:bg-dm-background px-4 ${showComments ? 'opacity-100' : 'opacity-0'} pt-4`}>
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-lg font-semibold mb-4 dark:text-dm-text">Comments</h2>
-          <Comments videoId={video.id} currentUser={currentUser} />
+      {/* Comments section - ONLY visible on mobile view */}
+      <div className="md:hidden" ref={commentsRef}>
+        <div className={`w-full bg-white dark:bg-dm-background px-4 ${showComments ? 'opacity-100' : 'opacity-0'} pt-4`}>
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-lg font-semibold mb-4 dark:text-dm-text">Comments</h2>
+            <Comments videoId={video.id} currentUser={currentUser} />
+          </div>
         </div>
+        
+        {/* Product links section - ONLY visible on mobile view */}
+        {productLinks.length > 0 && (
+          <div className="w-full bg-white dark:bg-dm-background px-4 pt-4">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-lg font-semibold mb-4 dark:text-dm-text">Featured Products</h2>
+              {productLinks.map(link => (
+                <div key={link.id} className="mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <h3 className="font-medium text-base">{link.title}</h3>
+                  {link.price && <p className="text-sm font-semibold mt-1">${link.price.toFixed(2)}</p>}
+                  <Button 
+                    size="sm" 
+                    className="mt-2"
+                    onClick={() => window.open(link.url, '_blank')}
+                  >
+                    Shop Now
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </Swipeable>
   );
