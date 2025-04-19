@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { Swipeable } from '@/components/ui/swipeable';
 import '../styles/explore.css';
 
 const Explore = () => {
@@ -285,7 +286,15 @@ const Explore = () => {
   return (
     <div className="flex flex-col items-center w-full bg-white dark:bg-dm-background">
       {videos.map(video => (
-        <div key={video.id} className="instagram-feed-item">
+        <Swipeable 
+          key={video.id} 
+          className="instagram-feed-item" 
+          onSwipe={(direction) => {
+            if (direction === 'left' || direction === 'right') {
+              // Optional: Handle horizontal swipes
+            }
+          }}
+        >
           <div className="instagram-header">
             <Avatar className="h-8 w-8 border border-gray-200 dark:border-dm-mist">
               {video.creator?.avatar_url ? <AvatarImage src={video.creator.avatar_url} alt={video.creator.full_name || ''} /> : <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">
@@ -384,7 +393,7 @@ const Explore = () => {
               Post
             </Button>
           </div>
-        </div>
+        </Swipeable>
       ))}
 
       <VideoDialog 

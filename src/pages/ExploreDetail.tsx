@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Share2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Swipeable } from '@/components/ui/swipeable';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -136,6 +138,12 @@ const ExploreDetail = () => {
     }
   };
 
+  const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
+    if (direction === 'down') {
+      handleClose();
+    }
+  };
+
   if (isVideoLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -145,7 +153,7 @@ const ExploreDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
+    <Swipeable onSwipe={handleSwipe} threshold={100} className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
       <div className="w-full relative flex items-center justify-center">
         <div className="absolute top-4 left-4 z-20 flex items-center">
           <Avatar className="h-10 w-10 mr-2 border-2 border-white/30">
@@ -228,7 +236,7 @@ const ExploreDetail = () => {
           <Comments videoId={video.id} currentUser={currentUser} />
         </div>
       </div>
-    </div>
+    </Swipeable>
   );
 };
 
