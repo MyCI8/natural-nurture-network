@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -9,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const RightSection = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const { show, setShowRightSection } = useLayout();
+  const { showRightSection, setShowRightSection } = useLayout();
   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,7 +68,7 @@ const RightSection = () => {
   });
   
   // Only show comments and product links if we're on the video detail page
-  if (isVideoDetailPage && show) {
+  if (isVideoDetailPage && showRightSection) {
     return (
       <div ref={ref} className="right-section h-screen w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
         <div className="p-4">
@@ -89,7 +90,7 @@ const RightSection = () => {
   
   // Return the original content for non-video pages
   return (
-    <div ref={ref} className={cn("right-section h-screen w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !show ? 'hidden' : '')}>
+    <div ref={ref} className={cn("right-section h-screen w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !showRightSection ? 'hidden' : '')}>
       <div className="p-4">
         <h2 className="text-xl font-semibold mb-4 dark:text-dm-text">Right Section</h2>
         <p className="text-gray-600 dark:text-dm-text-supporting">This is the content of the right section.</p>

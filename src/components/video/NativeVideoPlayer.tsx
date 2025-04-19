@@ -1,7 +1,6 @@
-
 import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Volume2, VolumeX, ShoppingCart } from 'lucide-react';
+import { Volume2, VolumeX, ShoppingCart, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Video, ProductLink } from '@/types/video';
@@ -53,7 +52,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Effect to handle visibility changes
   useEffect(() => {
     if (!videoRef.current || !autoPlay) return;
     
@@ -83,7 +81,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     };
   }, [autoPlay, isFullscreen, showControls]);
   
-  // Effect to attempt autoplay when component mounts
   useEffect(() => {
     if (!autoPlay || !videoRef.current || playbackStarted) return;
     
@@ -158,7 +155,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     return baseStyle;
   };
 
-  // Only show product buttons in feed view, not in detail view
   const shouldShowProductControls = productLinks.length > 0 && !isFullscreen;
   
   if (isFullscreen) {
