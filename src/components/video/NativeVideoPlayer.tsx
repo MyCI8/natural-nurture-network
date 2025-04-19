@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Volume2, VolumeX, ShoppingCart, X } from 'lucide-react';
@@ -162,8 +163,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       <div 
         ref={containerRef}
         className={cn(
-          "relative overflow-hidden flex items-center justify-center bg-black p-2.5", 
-          "h-full w-full rounded-md",
+          "relative overflow-hidden flex items-center justify-center bg-black p-4", 
+          "h-full w-full rounded-lg",
           className
         )}
         onClick={() => onClick?.()}
@@ -217,7 +218,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     <div 
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden bg-black rounded-md p-2.5", 
+        "relative overflow-hidden bg-black rounded-lg p-4", 
         className
       )}
       onClick={() => onClick?.()}

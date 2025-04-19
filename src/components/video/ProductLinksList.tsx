@@ -17,18 +17,18 @@ const ProductLinksList: React.FC<ProductLinksListProps> = ({ productLinks }) => 
   };
 
   return (
-    <div className="mt-6">
-      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+    <div className="mt-4">
+      <h3 className="font-semibold text-base mb-3 flex items-center gap-2 dark:text-dm-text">
         <ShoppingCart className="h-4 w-4" />
         Featured Products
       </h3>
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
         {productLinks.map(link => (
           <Card key={link.id} className="overflow-hidden border border-gray-200 dark:border-gray-700">
             <CardContent className="p-3">
               <div className="flex touch-manipulation" onClick={() => handleProductClick(link.url)}>
                 {link.image_url && (
-                  <div className="w-16 h-16 flex-shrink-0 mr-3">
+                  <div className="w-14 h-14 flex-shrink-0 mr-3">
                     <img 
                       src={link.image_url} 
                       alt={link.title} 
@@ -41,12 +41,12 @@ const ProductLinksList: React.FC<ProductLinksListProps> = ({ productLinks }) => 
                 )}
                 
                 <div className="flex-grow min-w-0">
-                  <h4 className="font-medium text-sm truncate">{link.title}</h4>
+                  <h4 className="font-medium text-sm truncate dark:text-dm-text">{link.title}</h4>
                   {link.price && (
-                    <p className="text-sm font-semibold mt-0.5">${link.price.toFixed(2)}</p>
+                    <p className="text-sm font-semibold mt-0.5 dark:text-dm-text">${link.price.toFixed(2)}</p>
                   )}
                   {link.description && (
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{link.description}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2 dark:text-dm-text-supporting">{link.description}</p>
                   )}
                 </div>
               </div>
@@ -54,10 +54,10 @@ const ProductLinksList: React.FC<ProductLinksListProps> = ({ productLinks }) => 
               <div className="mt-2 flex justify-end">
                 <Button 
                   size="sm" 
-                  className="h-8 gap-1 touch-manipulation"
+                  className="h-7 gap-1 touch-manipulation"
                   onClick={() => handleProductClick(link.url)}
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
+                  <ExternalLink className="h-3 w-3" />
                   <span className="text-xs">Shop Now</span>
                 </Button>
               </div>

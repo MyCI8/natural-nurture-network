@@ -33,9 +33,7 @@ const Comments: React.FC<CommentsProps> = ({
   const queryClient = useQueryClient();
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
   const {
     data: comments = [],
@@ -302,11 +300,12 @@ const Comments: React.FC<CommentsProps> = ({
     }
   });
 
-  return <div className="w-full">
-      <div className="flex-1 overflow-y-auto px-0 py-1 max-h-[380px] md:max-h-[500px] scrollbar-hide" style={{
-      scrollbarWidth: 'none',
-      msOverflowStyle: 'none'
-    }}>
+  return (
+    <div className="w-full flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto px-0 py-1 max-h-[380px] md:max-h-[300px] scrollbar-hide" style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none'
+      }}>
         <style>{`
           .scrollbar-hide::-webkit-scrollbar {
             display: none;
@@ -341,7 +340,7 @@ const Comments: React.FC<CommentsProps> = ({
             </div>)}
       </div>
       
-      <div className="border-t border-gray-200 dark:border-gray-800 py-px">
+      <div className="border-t border-gray-200 dark:border-gray-800 pt-2 pb-1 mt-auto">
         <div className="flex items-center">
           <Input type="text" placeholder="Add a comment..." 
             className="flex-1 text-sm border-none focus-visible:ring-0 px-0 py-1 dark:bg-transparent dark:text-dm-text" 
@@ -364,7 +363,8 @@ const Comments: React.FC<CommentsProps> = ({
           </Button>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Comments;
