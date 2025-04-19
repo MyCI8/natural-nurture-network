@@ -2,9 +2,8 @@
 import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ProductLink } from '@/types/video';
-import { X, Volume2, VolumeX } from 'lucide-react';
+import { X, Volume2, VolumeX, Heart, MessageCircle, Share2, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import VideoControls from './VideoControls';
 import VideoProfileInfo from './VideoProfileInfo';
 import SwipeIndicators from './SwipeIndicators';
 
@@ -48,9 +47,10 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   handleScreenTap
 }) => {
   return (
-    <div className="relative w-full h-full flex items-center justify-center bg-transparent">
+    <div className="relative w-full h-full flex items-center justify-center bg-white dark:bg-dm-background">
+      {/* Only the actual video container has a black background */}
       <div 
-        className="relative w-full h-full md:aspect-[9/16] md:h-auto md:max-h-[calc(100vh-32px)]"
+        className="relative w-full h-full md:w-auto md:h-auto md:aspect-video md:max-h-[calc(100vh-32px)] bg-black overflow-hidden"
         onClick={handleScreenTap}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -68,9 +68,9 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
           useAspectRatio={false}
         />
 
-        {/* Always visible controls */}
-        <div className="absolute inset-0">
-          <div className="absolute top-4 left-4 z-30">
+        {/* Overlay controls - positioned directly on the video */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-4 left-4 z-30 pointer-events-auto">
             <Button 
               variant="ghost" 
               size="icon"
@@ -81,7 +81,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
             </Button>
           </div>
 
-          <div className="absolute top-4 right-4 z-30">
+          <div className="absolute top-4 right-4 z-30 pointer-events-auto">
             <Button 
               variant="ghost" 
               size="icon"
@@ -92,26 +92,56 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
             </Button>
           </div>
 
-          <VideoControls
-            controlsVisible={true} // Always show controls
-            handleClose={onClose}
-            handleLike={handleLike}
-            scrollToComments={scrollToComments}
-            handleShare={handleShare}
-            handleShowProducts={handleShowProducts}
-            handleToggleMute={onToggleMute}
-            productLinks={productLinks}
-            isMuted={isMuted}
-            userLikeStatus={userLikeStatus}
-          />
+          {/* Right side action buttons */}
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-30 pointer-events-auto">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+              onClick={handleLike}
+            >
+              <Heart className={`h-6 w-6 ${userLikeStatus ? 'fill-current text-red-500' : ''}`} />
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+              onClick={scrollToComments}
+            >
+              <MessageCircle className="h-6 w-6" />
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+              onClick={handleShare}
+            >
+              <Share2 className="h-6 w-6" />
+            </Button>
+            
+            {productLinks.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full bg-black/40 text-white hover:bg-black/60 h-12 w-12 touch-manipulation"
+                onClick={handleShowProducts}
+              >
+                <ShoppingCart className="h-6 w-6" />
+              </Button>
+            )}
+          </div>
           
+          {/* Video Profile Info - Bottom left */}
           <VideoProfileInfo 
             video={video} 
-            controlsVisible={true} // Always show profile info
+            controlsVisible={true}
           />
           
+          {/* Swipe indicators for mobile */}
           <SwipeIndicators
-            controlsVisible={true} // Always show swipe indicators
+            controlsVisible={true}
             hasNextVideo={hasNextVideo}
             hasPrevVideo={hasPrevVideo}
           />

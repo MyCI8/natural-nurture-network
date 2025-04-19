@@ -78,17 +78,17 @@ const ExploreDetail = () => {
   }, [video, productLinks, setShowRightSection, isMobile]);
 
   if (isVideoLoading) {
-    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-dm-background">Loading...</div>;
   }
 
   if (!video) {
-    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">Video not found</div>;
+    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-dm-background">Video not found</div>;
   }
 
   return (
     <div className="min-h-screen w-full h-full flex flex-col md:flex-row fixed inset-0 bg-white dark:bg-dm-background">
       {/* Main Content Area - Video Player */}
-      <div className="flex-1 relative flex items-center justify-center">
+      <div className="flex-1 relative flex items-center justify-center bg-white dark:bg-dm-background">
         <VideoSwipeContainer 
           onSwipe={handleSwipe}
           disabled={!isMobile}

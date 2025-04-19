@@ -1,43 +1,50 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Video } from '@/types/video';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface VideoProfileInfoProps {
-  video: Video;
+  video: any;
   controlsVisible: boolean;
 }
 
 const VideoProfileInfo: React.FC<VideoProfileInfoProps> = ({ video, controlsVisible }) => {
-  const isMobile = useIsMobile();
+  if (!video || !video.creator) return null;
   
-  // Only show user info overlay on mobile devices
-  if (!isMobile) {
-    return null;
-  }
-
+  // Get the first letter of the username for the avatar fallback
+  const fallbackText = video.creator.username?.charAt(0).toUpperCase() || '?';
+  
   return (
-    <div className="absolute bottom-0 left-0 right-0 p-4 z-20 bg-gradient-to-t from-black/70 to-transparent">
-      <div className="flex items-center">
-        <Avatar className="h-10 w-10 border-2 border-white/30 mr-3">
-          {video.creator?.avatar_url ? (
-            <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
-          ) : (
-            <AvatarFallback className="bg-black/50 text-white">
-              {(video.creator?.username || '?')[0]}
-            </AvatarFallback>
-          )}
+    <div className={cn(
+      "absolute bottom-4 left-4 right-16 z-20 p-2 rounded-lg pointer-events-auto",
+      "transition-opacity duration-300 ease-in-out",
+      controlsVisible ? "opacity-100" : "opacity-0"
+    )}>
+      <div className="flex items-center space-x-3">
+        <Avatar className="h-10 w-10 border-2 border-white">
+          <AvatarImage src={video.creator.avatar_url} alt={video.creator.username} />
+          <AvatarFallback>{fallbackText}</AvatarFallback>
         </Avatar>
+        
         <div className="flex flex-col">
-          <span className="font-medium text-white text-shadow-sm">
-            {video.creator?.username || 'Anonymous'}
+          <span className="font-semibold text-white text-shadow-sm">
+            {video.creator.username || 'Unknown'}
           </span>
-          <p className="text-sm text-white/80 line-clamp-2 max-w-[70vw]">
-            {video.description}
-          </p>
+          
+          {video.creator.full_name && (
+            <span className="text-sm text-white/80 text-shadow-sm">
+              {video.creator.full_name}
+            </span>
+          )}
         </div>
       </div>
+      
+      {/* Video Description - Added as requested */}
+      {video.description && (
+        <div className="mt-2 text-white text-sm line-clamp-2 text-shadow-sm bg-black/30 p-2 rounded-md">
+          {video.description}
+        </div>
+      )}
     </div>
   );
 };

@@ -105,11 +105,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <div className={cn(
-        "absolute inset-0",
-        playbackStarted ? "bg-black/80" : "bg-transparent"
-      )} />
-      
       <VideoContainer 
         video={video}
         autoPlay={autoPlay}
@@ -124,7 +119,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       />
 
       {!isMobile && isFullscreen && (
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between">
+        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between pointer-events-none">
           {onClose && (
             <Button 
               variant="ghost" 
@@ -133,7 +128,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 e.stopPropagation();
                 onClose();
               }}
-              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation pointer-events-auto"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -143,7 +138,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             variant="ghost" 
             size="icon"
             onClick={onMuteToggle}
-            className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
+            className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation pointer-events-auto"
           >
             {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
           </Button>
