@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export function useMobileVideoControls() {
   const isMobile = useIsMobile();
   const [showComments, setShowComments] = useState(false);
-  const [controlsVisible, setControlsVisible] = useState(true);
+  const [controlsVisible, setControlsVisible] = useState(true); // Always visible
   const [isHovering, setIsHovering] = useState(false);
   
   // Handle scroll and hide comments when scrolling
@@ -29,14 +30,14 @@ export function useMobileVideoControls() {
   };
 
   const handleScreenTap = () => {
-    // Do nothing - controls are always visible
+    // Controls are always visible, so we don't need to toggle them
   };
 
   return {
     isMobile,
     showComments,
     setShowComments,
-    controlsVisible,
+    controlsVisible, // Always true
     setControlsVisible,
     isHovering,
     setIsHovering,

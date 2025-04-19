@@ -69,8 +69,8 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
         />
 
         {/* Always visible controls */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-4 left-4 z-30 pointer-events-auto">
+        <div className="absolute inset-0">
+          <div className="absolute top-4 left-4 z-30">
             <Button 
               variant="ghost" 
               size="icon"
@@ -81,7 +81,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
             </Button>
           </div>
 
-          <div className="absolute top-4 right-4 z-30 pointer-events-auto">
+          <div className="absolute top-4 right-4 z-30">
             <Button 
               variant="ghost" 
               size="icon"

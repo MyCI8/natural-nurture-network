@@ -19,8 +19,7 @@ const SwipeIndicator = ({ direction, visible }: { direction: 'up' | 'down'; visi
     )}
   >
     <div className={cn(
-      "flex items-center justify-center rounded-full h-8 w-8 bg-black/20 text-white",
-      visible ? "opacity-100" : "opacity-0"
+      "flex items-center justify-center rounded-full h-8 w-8 bg-black/20 text-white"
     )}>
       {direction === 'up' ? (
         <ChevronUp className="h-5 w-5" />

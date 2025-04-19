@@ -51,7 +51,7 @@ const VideoControls: React.FC<VideoControlsProps> = ({
   return (
     <>
       {/* Top Controls */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-30 bg-gradient-to-b from-black/70 to-transparent">
+      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-start z-30">
         <Button 
           variant="ghost" 
           size="icon" 

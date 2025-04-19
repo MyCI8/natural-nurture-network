@@ -5,6 +5,8 @@ import { useLayout } from '@/contexts/LayoutContext';
 import VideoSwipeContainer from '@/components/video/explore/VideoSwipeContainer';
 import VideoDetailView from '@/components/video/explore/VideoDetailView';
 import { useVideoDetail } from '@/hooks/video/useVideoDetail';
+import Comments from '@/components/video/Comments';
+import ProductLinkCard from '@/components/video/ProductLinkCard';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -76,17 +78,17 @@ const ExploreDetail = () => {
   }, [video, productLinks, setShowRightSection, isMobile]);
 
   if (isVideoLoading) {
-    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">Loading...</div>;
   }
 
   if (!video) {
-    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-black">Video not found</div>;
+    return <div className="flex items-center justify-center min-h-screen bg-white dark:bg-gray-900">Video not found</div>;
   }
 
   return (
-    <div className="min-h-screen w-full h-full flex fixed inset-0 bg-white dark:bg-gray-900">
-      {/* Main Content Area */}
-      <div className="flex-1 relative">
+    <div className="min-h-screen w-full h-full flex flex-col md:flex-row fixed inset-0 bg-white dark:bg-dm-background">
+      {/* Main Content Area - Video Player */}
+      <div className="flex-1 relative flex items-center justify-center">
         <VideoSwipeContainer 
           onSwipe={handleSwipe}
           disabled={!isMobile}
@@ -97,7 +99,7 @@ const ExploreDetail = () => {
             isMuted={isMuted}
             onToggleMute={handleToggleMute}
             onClose={handleClose}
-            controlsVisible={true} // Always show controls
+            controlsVisible={true} // Always visible
             handleLike={handleLike}
             scrollToComments={() => setShowComments(true)}
             handleShare={handleShare}
@@ -112,6 +114,28 @@ const ExploreDetail = () => {
           />
         </VideoSwipeContainer>
       </div>
+      
+      {/* Right Column - Comments and Products */}
+      {!isMobile && (
+        <div className="hidden md:block w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Comments</h2>
+            <Comments videoId={video.id} currentUser={currentUser} />
+            
+            {/* Product Links (if any) */}
+            {productLinks.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-md font-semibold mb-2 text-foreground">Featured Products</h3>
+                {productLinks.map(link => (
+                  <div key={link.id} className="mb-3">
+                    <ProductLinkCard link={link} onClose={() => {}} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

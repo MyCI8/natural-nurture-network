@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Video, ProductLink } from '@/types/video';
@@ -106,7 +107,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     >
       <div className={cn(
         "absolute inset-0",
-        playbackStarted ? "bg-black" : "bg-transparent"
+        playbackStarted ? "bg-black/80" : "bg-transparent"
       )} />
       
       <VideoContainer 
@@ -123,12 +124,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       />
 
       {!isMobile && isFullscreen && (
-        <div 
-          className={cn(
-            "absolute top-0 left-0 right-0 z-20 p-4 flex justify-between transition-opacity duration-300",
-            isHovering ? "opacity-100" : "opacity-0"
-          )}
-        >
+        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between">
           {onClose && (
             <Button 
               variant="ghost" 
