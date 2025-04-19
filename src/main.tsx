@@ -6,17 +6,6 @@ import { ThemeProvider } from './components/theme-provider'
 import App from './App.tsx'
 import './index.css'
 
-// Set viewport meta tag to handle safe areas properly
-const setViewportMeta = () => {
-  const meta = document.createElement('meta');
-  meta.name = 'viewport';
-  meta.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
-  document.head.appendChild(meta);
-};
-
-// Execute immediately
-setViewportMeta();
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

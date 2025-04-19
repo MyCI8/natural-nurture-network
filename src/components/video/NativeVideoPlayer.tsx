@@ -1,13 +1,13 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Video, ProductLink } from '@/types/video';
-import VideoContainer from './native-player/VideoContainer';
-import ProductLinksOverlay from './native-player/ProductLinksOverlay';
-import { useVideoVisibility } from './native-player/useVideoVisibility';
-import { Volume2, VolumeX, X } from 'lucide-react';
+import { X, Volume2, VolumeX, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Video, ProductLink } from '@/types/video';
+import { supabase } from '@/integrations/supabase/client';
+import { isElementFullyVisible, logVideoView } from './utils/videoPlayerUtils';
+import ProductLinkCard from './ProductLinkCard';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -28,8 +28,6 @@ interface NativeVideoPlayerProps {
   feedAspectRatio?: number;
   objectFit?: 'contain' | 'cover';
   onInView?: (inView: boolean) => void;
-  onZoomChange?: (isZoomed: boolean) => void;
-  isZoomed?: boolean;
 }
 
 const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
@@ -50,107 +48,205 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   useAspectRatio = true,
   feedAspectRatio = 4/5,
   objectFit = 'contain',
-  onInView,
-  onZoomChange,
-  isZoomed = false
+  onInView
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
-  const isMobile = useIsMobile();
   
-  useVideoVisibility(
-    videoRef,
-    containerRef,
-    autoPlay,
-    isFullscreen,
-    showControls,
-    video.id,
-    playbackStarted,
-    setPlaybackStarted,
-    onInView
-  );
-
+  // Effect to handle visibility changes
   useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'style') {
-          const element = mutation.target as HTMLElement;
-          const transform = element.style.transform;
-          const isCurrentlyZoomed = transform && !transform.includes('scale(1)');
-          onZoomChange?.(isCurrentlyZoomed);
+    if (!videoRef.current || !autoPlay) return;
+    
+    const observer = new IntersectionObserver(
+      entries => {
+        const [entry] = entries;
+        const isVisible = entry.isIntersecting;
+        onInView?.(isVisible);
+        
+        if (isVisible && autoPlay) {
+          attemptPlay();
+        } else if (!isVisible && !isFullscreen && videoRef.current && !showControls) {
+          videoRef.current.pause();
         }
-      });
-    });
-
-    const videoContainer = containerRef.current?.querySelector('div > div');
-    if (videoContainer) {
-      observer.observe(videoContainer, { attributes: true });
+      },
+      { threshold: 0.3 }
+    );
+    
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
-
-    return () => observer.disconnect();
-  }, [onZoomChange]);
+    
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current);
+      }
+    };
+  }, [autoPlay, isFullscreen, showControls]);
+  
+  // Effect to attempt autoplay when component mounts
+  useEffect(() => {
+    if (!autoPlay || !videoRef.current || playbackStarted) return;
+    
+    if (isFullscreen || showControls || isElementFullyVisible(videoRef.current)) {
+      attemptPlay();
+    }
+    
+    const timer = setTimeout(() => {
+      if (!playbackStarted && videoRef.current) {
+        attemptPlay();
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [autoPlay, showControls, isFullscreen]);
+  
+  const attemptPlay = async () => {
+    if (!videoRef.current) return;
+    
+    try {
+      const playPromise = videoRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setPlaybackStarted(true);
+          logVideoView(video.id, supabase);
+        }).catch(error => {
+          console.error("First play attempt failed:", error);
+          
+          if (videoRef.current && !videoRef.current.muted) {
+            console.log("Trying again with muted audio");
+            videoRef.current.muted = true;
+            
+            videoRef.current.play().then(() => {
+              setPlaybackStarted(true);
+              logVideoView(video.id, supabase);
+            }).catch(secondError => {
+              console.error("Second play attempt failed:", secondError);
+              
+              setTimeout(() => {
+                if (videoRef.current && !playbackStarted) {
+                  videoRef.current.play().catch(e => 
+                    console.error("Final play attempt failed:", e)
+                  );
+                }
+              }, 1000);
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error during video play:", error);
+    }
+  };
+  
+  const getVideoStyle = () => {
+    if (isFullscreen) {
+      return {
+        objectFit: objectFit, 
+        width: '100%',
+        height: '100%',
+        maxHeight: '100vh',
+      };
+    }
+    
+    return {
+      objectFit, 
+      width: '100%',
+      height: '100%',
+    };
+  };
+  
+  if (isFullscreen) {
+    return (
+      <div 
+        ref={containerRef}
+        className={cn(
+          "relative overflow-hidden flex items-center justify-center bg-black", 
+          "h-full w-full",
+          className
+        )}
+        onClick={() => onClick?.()}
+      >
+        <video
+          ref={videoRef}
+          src={video.video_url || undefined}
+          className="w-full h-full"
+          style={getVideoStyle()}
+          loop
+          muted={isMuted}
+          playsInline
+          controls={showControls}
+          poster={video.thumbnail_url || undefined}
+          preload="metadata"
+        />
+        
+        {productLinks.map((link) => (
+          <div key={link.id} className={cn(
+            "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+            visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+          )}>
+            <ProductLinkCard 
+              link={link} 
+              onClose={() => toggleProductLink(link.id)} 
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div 
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden h-full w-full touch-manipulation", 
-        isFullscreen ? "fixed inset-0 z-10" : "",
+        "relative overflow-hidden bg-black", 
         className
       )}
-      onClick={() => {
-        if (!isZoomed && onClick) onClick();
-      }}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
+      onClick={() => onClick?.()}
     >
-      <VideoContainer 
-        video={video}
-        autoPlay={autoPlay}
-        isMuted={isMuted}
-        showControls={showControls}
-        isFullscreen={isFullscreen}
-        videoRef={videoRef}
-        useAspectRatio={useAspectRatio}
-        feedAspectRatio={feedAspectRatio}
-        objectFit={objectFit}
-        playbackStarted={playbackStarted}
-      />
-
-      {!isMobile && isFullscreen && (
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 flex justify-between pointer-events-none">
-          {onClose && (
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClose();
-              }}
-              className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation pointer-events-auto"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          )}
-
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={onMuteToggle}
-            className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation pointer-events-auto"
-          >
-            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </Button>
-        </div>
+      {useAspectRatio ? (
+        <AspectRatio ratio={feedAspectRatio} className="w-full">
+          <video
+            ref={videoRef}
+            src={video.video_url || undefined}
+            className="w-full h-full"
+            style={getVideoStyle()}
+            loop
+            muted={isMuted}
+            playsInline
+            controls={showControls}
+            poster={video.thumbnail_url || undefined}
+            preload="auto"
+            autoPlay={autoPlay}
+          />
+        </AspectRatio>
+      ) : (
+        <video
+          ref={videoRef}
+          src={video.video_url || undefined}
+          className="w-full h-full"
+          style={getVideoStyle()}
+          loop
+          muted={isMuted}
+          playsInline
+          controls={showControls}
+          poster={video.thumbnail_url || undefined}
+          preload="auto"
+          autoPlay={autoPlay}
+        />
       )}
 
-      <ProductLinksOverlay 
-        productLinks={productLinks}
-        visibleProductLink={visibleProductLink}
-        toggleProductLink={toggleProductLink}
-        disabled={isZoomed}
-      />
+      {productLinks.map((link) => (
+        <div key={link.id} className={cn(
+          "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+          visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+        )}>
+          <ProductLinkCard 
+            link={link} 
+            onClose={() => toggleProductLink(link.id)} 
+          />
+        </div>
+      ))}
     </div>
   );
 };

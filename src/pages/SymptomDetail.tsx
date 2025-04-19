@@ -83,11 +83,8 @@ const SymptomDetail = () => {
   console.log("Symptom ID from params:", id);
 
   useEffect(() => {
-    setShowRightSection(false);
-    
-    return () => {
-      setShowRightSection(false);
-    };
+    setShowRightSection(true);
+    return () => setShowRightSection(false);
   }, [setShowRightSection]);
 
   const { data: symptomDetails, isLoading, error } = useQuery({

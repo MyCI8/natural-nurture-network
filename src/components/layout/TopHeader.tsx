@@ -10,7 +10,6 @@ import { UserProfileButton } from "./sidebar/UserProfileButton";
 import { NavigationButtons } from "./sidebar/NavigationItems";
 import { SettingsPanel } from "./sidebar/SettingsPanel";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useLayout } from "@/contexts/LayoutContext";
 
 const TopHeader = () => {
   const location = useLocation();
@@ -22,9 +21,6 @@ const TopHeader = () => {
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  
-  // Get the mobile header visibility state from layout context
-  const { mobileHeaderVisible } = useLayout();
   
   useEffect(() => {
     setMounted(true);
@@ -131,13 +127,10 @@ const TopHeader = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
   
-  // Apply mobile header visibility from context
-  const shouldShowHeader = visible && mobileHeaderVisible;
-  
   return (
     <header 
       className={`fixed top-0 left-0 right-0 h-14 z-50 border-b flex items-center justify-between px-4 transition-transform duration-300 ${
-        shouldShowHeader ? 'translate-y-0' : '-translate-y-full'
+        visible ? 'translate-y-0' : '-translate-y-full'
       } dark:bg-[#1A1F2C] bg-white`}
     >
       <div className="flex items-center gap-2">

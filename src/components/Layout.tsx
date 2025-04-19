@@ -1,4 +1,3 @@
-
 import { useLocation, Outlet } from "react-router-dom";
 import MainSidebar from "./layout/MainSidebar";
 import RightSection from "./layout/RightSection";
@@ -13,15 +12,7 @@ const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
-  const { 
-    layoutMode, 
-    showRightSection, 
-    contentWidth, 
-    contentMaxWidth, 
-    isFullWidth,
-    mobileHeaderVisible
-  } = useLayout();
-  
+  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth } = useLayout();
   const [isHomePage, setIsHomePage] = useState(false);
   
   // Determine if we're on the home page
@@ -49,8 +40,8 @@ const LayoutContent = () => {
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout - increased max-width to 1400px */}
       <div className="w-full max-w-[1400px] mx-auto flex relative">
-        {/* Mobile Top Header - only on mobile and when visible */}
-        {isMobile && mobileHeaderVisible && <TopHeader />}
+        {/* Mobile Top Header - only on mobile */}
+        {isMobile && <TopHeader />}
         
         {/* Left Sidebar - Hide on mobile */}
         {!isMobile && (
@@ -62,7 +53,7 @@ const LayoutContent = () => {
         {/* Main Content Area */}
         <main 
           className={`flex-1 min-h-screen ${
-            isMobile ? `${isHomePage ? 'pt-0' : (mobileHeaderVisible ? 'pt-14' : 'pt-0')} pb-16 pb-safe` : ''
+            isMobile ? `${isHomePage ? 'pt-0' : 'pt-14'} pb-16` : ''
           } relative z-10 overflow-x-hidden`}
         >
           <div 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,9 +12,9 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Swipeable } from '@/components/ui/swipeable';
-import { useLayout } from '@/contexts/LayoutContext';
 import '../styles/explore.css';
 
+// Enhanced video type with comments_count
 type EnhancedVideo = Video & {
   creator: any;
   comments_count: number;
@@ -37,7 +38,6 @@ const Explore = () => {
     username: string;
   }[]>>({});
   const [preloadedVideoIds, setPreloadedVideoIds] = useState<string[]>([]);
-  const { setShowRightSection } = useLayout();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -60,6 +60,7 @@ const Explore = () => {
     };
     fetchUser();
 
+    // Refetch like status when event is fired
     const refetchHandler = () => {
       if (currentUser) {
         queryClient.invalidateQueries({ queryKey: ['userLikes', currentUser.id] });
@@ -91,7 +92,7 @@ const Explore = () => {
             full_name
           ),
           comments:video_comments(count)
-        `).eq('status', 'published').not('video_type', 'eq', 'news')
+        `).eq('status', 'published').not('video_type', 'eq', 'news') // Exclude news videos
       .order('created_at', {
         ascending: false
       });
@@ -103,13 +104,16 @@ const Explore = () => {
     }
   });
 
+  // When videos load, preload the first few
   useEffect(() => {
     if (videos.length > 0 && preloadedVideoIds.length === 0) {
+      // Preload first 3 videos
       const idsToPreload = videos.slice(0, 3).map(v => v.id);
       setPreloadedVideoIds(idsToPreload);
     }
   }, [videos, preloadedVideoIds]);
 
+  // Preload function
   const preloadNextVideos = (currentIndex: number) => {
     const nextIds = videos
       .slice(currentIndex + 1, currentIndex + 4)
@@ -305,6 +309,7 @@ const Explore = () => {
   };
 
   const handleNavigateToVideo = (videoId: string, index: number) => {
+    // Preload next videos when navigating to a video
     preloadNextVideos(index);
     navigate(`/explore/${videoId}`);
   };
@@ -326,11 +331,13 @@ const Explore = () => {
           onSwipe={(direction) => {
             if (direction === "up" && index < videos.length - 1) {
               preloadNextVideos(index);
+              // Scroll to the next video with smooth animation
               const nextVideo = document.getElementById(`video-${videos[index + 1].id}`);
               if (nextVideo) {
                 nextVideo.scrollIntoView({ behavior: 'smooth' });
               }
             } else if (direction === "down" && index > 0) {
+              // Scroll to the previous video with smooth animation
               const prevVideo = document.getElementById(`video-${videos[index - 1].id}`);
               if (prevVideo) {
                 prevVideo.scrollIntoView({ behavior: 'smooth' });
@@ -438,6 +445,11 @@ const Explore = () => {
           </div>
         </Swipeable>
       ))}
+
+      {/* For debugging: Show preloaded video IDs */}
+      {/* <div className="fixed bottom-20 left-0 bg-black/50 text-white p-2 text-xs z-50">
+        Preloaded: {preloadedVideoIds.join(', ')}
+      </div> */}
 
       <VideoDialog 
         video={selectedVideo} 

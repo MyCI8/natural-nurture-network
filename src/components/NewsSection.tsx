@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,24 +6,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import RemediesSection from "./remedies/RemediesSection";
-import { useLayout } from "@/contexts/LayoutContext";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 
 const NewsSection = () => {
   const remediesSectionRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
-  const { setShowRightSection } = useLayout();
-  
-  useEffect(() => {
-    if (!isMobile) {
-      setShowRightSection(true);
-    }
-    
-    return () => {
-    };
-  }, [setShowRightSection, isMobile]);
   
   const {
     data: newsItems,

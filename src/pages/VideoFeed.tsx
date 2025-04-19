@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -161,7 +162,7 @@ const VideoFeed = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-16 pb-safe">
+    <div className="min-h-screen bg-background pt-16">
       <div className={`mx-auto px-2 sm:px-4 ${isMobile ? 'max-w-full' : 'max-w-[600px]'}`}>
         <div className="space-y-4 sm:space-y-6 py-4 sm:py-6">
           {!videos?.length ? (

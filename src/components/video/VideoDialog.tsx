@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
 import { Video, ProductLink } from '@/types/video';
-import { Heart, MessageCircle, Share2, Bookmark, X, MoreHorizontal, ExternalLink, Volume2, VolumeX } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, X, MoreHorizontal, ExternalLink } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
 
 interface VideoDialogProps {
   video: (Video & { creator?: any }) | null;
@@ -45,8 +44,6 @@ const VideoDialog = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
-  const [isHovering, setIsHovering] = useState(false);
   
   useEffect(() => {
     if (video && isOpen) {
@@ -60,11 +57,6 @@ const VideoDialog = ({
       navigate(`/explore/${video.id}`);
       onClose();
     }
-  };
-
-  const handleToggleMute = () => {
-    setIsMuted(!isMuted);
-    onAudioStateChange?.(!isMuted);
   };
 
   const handleCopyLink = () => {
@@ -91,7 +83,7 @@ const VideoDialog = ({
   if (!video || !isOpen) return null;
 
   return (
-    <div className="w-full bg-background dark:bg-dm-background min-h-screen">
+    <div className="w-full bg-white dark:bg-dm-background min-h-screen">
       <div className="flex flex-col md:flex-row max-w-screen-2xl mx-auto h-[100dvh]">
         <div className="md:hidden p-4 flex justify-end">
           <Button 
@@ -128,11 +120,7 @@ const VideoDialog = ({
         </div>
         
         <div className="video-container flex-1 flex items-center justify-center bg-black h-[60vh] md:h-full relative overflow-hidden">
-          <div 
-            className="absolute inset-0 flex items-center justify-center"
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-          >
+          <div className="absolute inset-0 flex items-center justify-center">
             <VideoPlayer
               video={video}
               productLinks={productLinks}
@@ -145,29 +133,6 @@ const VideoDialog = ({
               objectFit="cover" 
               useAspectRatio={false} 
             />
-
-            <div className={cn(
-              "absolute top-0 left-0 right-0 z-20 p-4 flex justify-between transition-opacity duration-300",
-              isHovering ? "opacity-100" : "opacity-0"
-            )}>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={onClose}
-                className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={handleToggleMute}
-                className="rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 touch-manipulation"
-              >
-                {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-              </Button>
-            </div>
           </div>
           
           <Button 
@@ -189,8 +154,8 @@ const VideoDialog = ({
           </Button>
         </div>
         
-        <div className="w-full md:w-[350px] bg-background dark:bg-dm-background flex flex-col h-full border-l border-gray-200 dark:border-dm-mist overflow-y-auto">
-          <div className="p-4 border-b border-gray-200 dark:border-dm-mist">
+        <div className="w-full md:w-[350px] bg-white dark:bg-dm-background flex flex-col h-full border-l border-gray-200 dark:border-dm-mist overflow-y-auto">
+          <div className="p-4 border-b border-gray-200 dark:border-dm-mist px-0 py-0">
             <div className="flex items-center mb-2">
               <Avatar className="h-8 w-8 mr-3">
                 {video.creator?.avatar_url ? (

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { 
   Dialog, 
@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Video } from '@/types/video';
 import VideoPlayer from '@/components/video/VideoPlayer';
-import { X, Volume2, VolumeX } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -38,10 +38,13 @@ const CustomDialogContent = React.forwardRef<
         variant="ghost" 
         size="icon" 
         onClick={onCloseClick}
-        className="absolute top-4 right-4 z-50 text-white hover:bg-black/20 h-10 w-10 p-0 rounded-full touch-manipulation"
+        className="absolute top-1 right-1 z-50 text-white hover:bg-transparent h-10 w-10 p-0"
         aria-label="Close video"
       >
-        <X className="h-6 w-6 opacity-100 hover:opacity-70" />
+        <div className="relative">
+          <div className="absolute inset-0 bg-white/20 rounded-full animate-pulse"></div>
+          <X className="h-6 w-6 relative z-10 opacity-70 hover:opacity-100" />
+        </div>
       </Button>
       {children}
     </DialogPrimitive.Content>
@@ -56,8 +59,6 @@ const VideoModal: React.FC<VideoModalProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const didMountRef = useRef(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     if (isOpen && didMountRef.current) {
@@ -66,44 +67,22 @@ const VideoModal: React.FC<VideoModalProps> = ({
     didMountRef.current = true;
   }, [isOpen]);
 
-  const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMuted(!isMuted);
-  };
-
   if (!video) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <CustomDialogContent onCloseClick={onClose}>
-        <div 
-          className="w-full h-full flex items-center justify-center relative"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
+        <div className="w-full h-full flex items-center justify-center">
           <VideoPlayer
             video={video}
             autoPlay={true}
-            globalAudioEnabled={!isMuted}
-            showControls={false}
+            globalAudioEnabled={true}
+            showControls={true}
             className="w-full h-full"
             objectFit="contain"
             useAspectRatio={false}
             isFullscreen={true}
           />
-
-          {/* Audio control that appears on hover */}
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleToggleMute}
-            className={cn(
-              "absolute top-4 left-4 z-50 rounded-full bg-black/40 text-white hover:bg-black/60 h-10 w-10 transition-opacity duration-300 touch-manipulation",
-              isHovering ? "opacity-100" : "opacity-0"
-            )}
-          >
-            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </Button>
         </div>
       </CustomDialogContent>
     </Dialog>

@@ -32,7 +32,7 @@ const NewsArticle = () => {
   
   useEffect(() => {
     // Ensure the right layout mode is set for this page
-    setLayoutMode('fullscreen'); // Changed from 'full' to 'fullscreen' to match allowed types
+    setLayoutMode('full');
     setShowRightSection(true);
     
     return () => {

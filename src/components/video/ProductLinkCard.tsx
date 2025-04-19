@@ -68,7 +68,7 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
     <Card className="rounded-t-lg rounded-b-none border-t border-x border-b-0 shadow-up bg-card/95 backdrop-blur-sm touch-manipulation">
       <CardContent className="p-3">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-medium text-sm flex items-center gap-1 text-foreground">
+          <h3 className="font-medium text-sm flex items-center gap-1">
             <ShoppingCart className="h-3.5 w-3.5" />
             Featured Product
           </h3>
@@ -100,9 +100,9 @@ const ProductLinkCard: React.FC<ProductLinkCardProps> = ({ link, onClose }) => {
           )}
           
           <div className="flex-grow min-w-0">
-            <h4 className="font-medium text-sm truncate text-foreground">{productMetadata.title}</h4>
+            <h4 className="font-medium text-sm truncate">{productMetadata.title}</h4>
             {productMetadata.price && (
-              <p className="text-sm font-semibold mt-0.5 text-foreground">${productMetadata.price.toFixed(2)}</p>
+              <p className="text-sm font-semibold mt-0.5">${productMetadata.price.toFixed(2)}</p>
             )}
             {productMetadata.description && (
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{productMetadata.description}</p>
