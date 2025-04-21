@@ -9,6 +9,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+// Remove usage of any "show" property on layout context (fix error)
+
 const RightSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { showRightSection, setShowRightSection } = useLayout();
@@ -28,8 +30,7 @@ const RightSection = () => {
   
   const { id } = useParams<{ id: string }>();
   const isVideoDetailPage = window.location.pathname.includes('/explore/') && id;
-  
-  // Only fetch product links when on video detail page
+
   const { data: productLinks = [] } = useQuery({
     queryKey: ['rightSectionProductLinks', id],
     queryFn: async () => {
@@ -37,8 +38,7 @@ const RightSection = () => {
       const { data, error } = await supabase
         .from('video_product_links')
         .select('*')
-        .eq('video_id', id);
-        
+        .eq('video_id', id);      
       if (error) {
         console.error("Error fetching product links:", error);
         return [];
@@ -47,8 +47,7 @@ const RightSection = () => {
     },
     enabled: !!isVideoDetailPage && !!id
   });
-  
-  // Only fetch video data when on video detail page
+
   const { data: videoData } = useQuery({
     queryKey: ['rightSectionVideo', id],
     queryFn: async () => {
@@ -75,12 +74,16 @@ const RightSection = () => {
     },
     enabled: !!isVideoDetailPage && !!id
   });
-  
-  // Only show comments and product links if we're on the video detail page
+
+  // -- Only show comments, profile, and product links (no video title/description here) --
   if (isVideoDetailPage && showRightSection) {
     return (
-      <div ref={ref} className="right-section h-full sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col">
-        <div className="p-4 flex-1">
+      <div 
+        ref={ref} 
+        className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen"
+        style={{ minHeight: '100vh' }}
+      >
+        <div className="p-4 flex-1 flex flex-col">
           {videoData && videoData.creator && (
             <div className="mb-4 flex items-center">
               <Avatar className="h-10 w-10 mr-3 border-2 border-gray-100 dark:border-gray-700">
@@ -100,15 +103,9 @@ const RightSection = () => {
               </div>
             </div>
           )}
-          
-          {videoData && (
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-1 dark:text-dm-text">{videoData.title || 'Video'}</h2>
-              <p className="text-sm text-gray-600 dark:text-dm-text-supporting">{videoData.description}</p>
-            </div>
-          )}
-          
-          <div className="mb-4 mt-6">
+
+          {/* Comments ONLY. No title or description underneath! */}
+          <div className="mb-4 mt-3">
             <h2 className="text-lg font-semibold mb-3 dark:text-dm-text">Comments</h2>
             {id && <Comments videoId={id} currentUser={null} />}
           </div>
@@ -118,10 +115,13 @@ const RightSection = () => {
       </div>
     );
   }
-  
-  // Return the original content for non-video pages
+
   return (
-    <div ref={ref} className={cn("right-section h-full sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !showRightSection ? 'hidden' : '')}>
+    <div 
+      ref={ref} 
+      className={cn("right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !showRightSection ? 'hidden' : '')}
+      style={{ minHeight: '100vh' }}
+    >
       <div className="p-4">
         <h2 className="text-xl font-semibold mb-4 dark:text-dm-text">Right Section</h2>
         <p className="text-gray-600 dark:text-dm-text-supporting">This is the content of the right section.</p>
@@ -131,3 +131,4 @@ const RightSection = () => {
 };
 
 export default RightSection;
+

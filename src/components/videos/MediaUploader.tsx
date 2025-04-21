@@ -13,6 +13,9 @@ import {
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Label } from "@/components/ui/label";
 
+// Only allow file upload on Explore; remove Add Video Link for explore/general uploads.
+// We'll know it's Explore video if videoUrl is empty and isYoutubeLink is false and there's no URL input.
+
 interface MediaUploaderProps {
   mediaPreview: string | null;
   isYoutubeLink: boolean;
@@ -38,22 +41,16 @@ export function MediaUploader({
     const file = event.target.files?.[0];
     if (file) {
       onMediaUpload(file);
-      // Reset the input value to allow selecting the same file again
       event.target.value = '';
     }
   };
 
-  const handleAddVideoLink = () => {
-    if (tempVideoLink.trim()) {
-      onVideoLinkChange(tempVideoLink);
-      setIsAddLinkDialogOpen(false);
-    }
-  };
+  // For Explore: Only upload video. For 'news' allow both.
+  const isNewsVideo = false; // Not needed for now as we only want Explore to be upload only
 
   return (
     <div className="space-y-4">
       <Label>Video Media</Label>
-      
       {mediaPreview ? (
         <div className="relative">
           <AspectRatio ratio={16/9} className="bg-muted overflow-hidden rounded-md">
@@ -85,7 +82,7 @@ export function MediaUploader({
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4">
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
@@ -97,21 +94,8 @@ export function MediaUploader({
               MP4, WebM or other video formats
             </span>
           </Button>
-          
-          <Button
-            variant="outline"
-            onClick={() => setIsAddLinkDialogOpen(true)}
-            className="h-32 flex flex-col gap-2"
-          >
-            <LinkIcon className="h-5 w-5" />
-            <span>Add Video Link</span>
-            <span className="text-xs text-muted-foreground">
-              YouTube, Vimeo or other video platforms
-            </span>
-          </Button>
         </div>
       )}
-      
       <input
         type="file"
         ref={fileInputRef}
@@ -119,39 +103,6 @@ export function MediaUploader({
         accept="video/*"
         className="hidden"
       />
-      
-      <Dialog open={isAddLinkDialogOpen} onOpenChange={setIsAddLinkDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Video Link</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <Label htmlFor="video-link">Video URL</Label>
-            <Input
-              id="video-link"
-              placeholder="https://youtube.com/watch?v=..."
-              value={tempVideoLink}
-              onChange={(e) => setTempVideoLink(e.target.value)}
-            />
-            <p className="text-sm text-muted-foreground">
-              Paste a YouTube or other video platform link
-            </p>
-          </div>
-          
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsAddLinkDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleAddVideoLink}>
-              Add Link
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

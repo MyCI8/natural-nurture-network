@@ -1,29 +1,26 @@
-
-import React, { useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { Volume2, VolumeX, ShoppingCart, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Video, ProductLink } from '@/types/video';
-import { supabase } from '@/integrations/supabase/client';
-import { isElementFullyVisible, logVideoView } from './utils/videoPlayerUtils';
-import ProductLinkCard from './ProductLinkCard';
+import React, { useRef, useState, useEffect } from "react";
+import { Video, ProductLink } from "@/types/video";
+import { X } from "lucide-react"; // Correct import
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX } from "lucide-react";
+import { useInView } from 'react-intersection-observer';
 
 interface NativeVideoPlayerProps {
   video: Video;
   productLinks?: ProductLink[];
   autoPlay?: boolean;
-  isMuted: boolean;
+  isMuted?: boolean;
   showControls?: boolean;
   isFullscreen?: boolean;
   className?: string;
-  visibleProductLink: string | null;
+  visibleProductLink?: string | null;
   onClick?: () => void;
   onClose?: () => void;
-  onMuteToggle: (e: React.MouseEvent) => void;
-  toggleProductLink: (linkId: string) => void;
-  playbackStarted: boolean;
-  setPlaybackStarted: (started: boolean) => void;
+  onMuteToggle?: (e: React.MouseEvent) => void;
+  toggleProductLink?: (linkId: string) => void;
+  playbackStarted?: boolean;
+  setPlaybackStarted?: (started: boolean) => void;
   useAspectRatio?: boolean;
   feedAspectRatio?: number;
   objectFit?: 'contain' | 'cover';
@@ -34,7 +31,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   video,
   productLinks = [],
   autoPlay = true,
-  isMuted,
+  isMuted = true,
   showControls = false,
   isFullscreen = false,
   className,
@@ -43,7 +40,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   onClose,
   onMuteToggle,
   toggleProductLink,
-  playbackStarted,
+  playbackStarted = false,
   setPlaybackStarted,
   useAspectRatio = true,
   feedAspectRatio = 4/5,
@@ -51,254 +48,173 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   onInView
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showProductOverlay, setShowProductOverlay] = useState(false);
+  const [inViewRef, inView] = useInView({
+    threshold: 0.5, // Adjust as needed
+    onChange: (inView) => {
+      onInView?.(inView);
+    },
+  });
+
   useEffect(() => {
-    if (!videoRef.current || !autoPlay) return;
-    
-    const observer = new IntersectionObserver(
-      entries => {
-        const [entry] = entries;
-        const isVisible = entry.isIntersecting;
-        onInView?.(isVisible);
-        
-        if (isVisible && autoPlay) {
-          attemptPlay();
-        } else if (!isVisible && !isFullscreen && videoRef.current && !showControls) {
-          videoRef.current.pause();
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+      if (autoPlay) {
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true);
+            setPlaybackStarted?.(true);
+          }).catch(error => {
+            console.error("Autoplay was prevented:", error);
+            setIsPlaying(false);
+          });
         }
-      },
-      { threshold: 0.3 }
-    );
-    
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-    
-    return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
       }
-    };
-  }, [autoPlay, isFullscreen, showControls]);
-  
+    }
+  }, [isMuted, autoPlay, setPlaybackStarted]);
+
   useEffect(() => {
-    if (!autoPlay || !videoRef.current || playbackStarted) return;
-    
-    if (isFullscreen || showControls || isElementFullyVisible(videoRef.current)) {
-      attemptPlay();
-    }
-    
-    const timer = setTimeout(() => {
-      if (!playbackStarted && videoRef.current) {
-        attemptPlay();
-      }
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, [autoPlay, showControls, isFullscreen]);
-  
-  const attemptPlay = async () => {
-    if (!videoRef.current) return;
-    
-    try {
+    if (inView && videoRef.current && !isPlaying && autoPlay) {
       const playPromise = videoRef.current.play();
-      
       if (playPromise !== undefined) {
         playPromise.then(() => {
-          setPlaybackStarted(true);
-          logVideoView(video.id, supabase);
+          setIsPlaying(true);
+          setPlaybackStarted?.(true);
         }).catch(error => {
-          console.error("First play attempt failed:", error);
-          
-          if (videoRef.current && !videoRef.current.muted) {
-            console.log("Trying again with muted audio");
-            videoRef.current.muted = true;
-            
-            videoRef.current.play().then(() => {
-              setPlaybackStarted(true);
-              logVideoView(video.id, supabase);
-            }).catch(secondError => {
-              console.error("Second play attempt failed:", secondError);
-              
-              setTimeout(() => {
-                if (videoRef.current && !playbackStarted) {
-                  videoRef.current.play().catch(e => 
-                    console.error("Final play attempt failed:", e)
-                  );
-                }
-              }, 1000);
-            });
-          }
+          console.error("Autoplay was prevented:", error);
+          setIsPlaying(false);
         });
       }
-    } catch (error) {
-      console.error("Error during video play:", error);
+    } else if (!inView && videoRef.current && isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
     }
-  };
-  
-  const getVideoStyle = () => {
-    const baseStyle: React.CSSProperties = {
-      objectFit,
-      width: '100%',
-      height: '100%',
-    };
-    
-    if (isFullscreen) {
-      return {
-        ...baseStyle,
-        maxHeight: '100vh',
-        width: 'auto',
-        maxWidth: '100%',
-      };
+  }, [inView, autoPlay, isPlaying, setPlaybackStarted]);
+
+  const handlePlayPause = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+        setPlaybackStarted?.(true);
+      }
     }
-    
-    return baseStyle;
   };
 
-  const shouldShowProductControls = productLinks.length > 0 && !isFullscreen;
-  
-  if (isFullscreen) {
-    return (
-      <div 
-        ref={containerRef}
-        className={cn(
-          "relative overflow-hidden flex items-center justify-center bg-black p-4", 
-          "h-full w-full rounded-lg",
-          className
-        )}
-        onClick={() => onClick?.()}
-      >
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose();
-            }}
-            className="absolute top-2 right-2 z-20 text-white bg-black/20 hover:bg-black/40 h-6 w-6 p-0.5 rounded-full touch-manipulation"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-        
-        <video
-          ref={videoRef}
-          src={video.video_url || undefined}
-          className="max-h-screen w-auto max-w-full rounded-md"
-          style={getVideoStyle()}
-          loop
-          muted={isMuted}
-          playsInline
-          controls={showControls}
-          poster={video.thumbnail_url || undefined}
-          preload="metadata"
-        />
-        
-        {!showControls && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onMuteToggle}
-            className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center touch-manipulation"
-          >
-            {isMuted ? (
-              <VolumeX className="h-4 w-4 text-white" />
-            ) : (
-              <Volume2 className="h-4 w-4 text-white" />
-            )}
-          </Button>
-        )}
-      </div>
-    );
-  }
+  const handleVideoClick = () => {
+    onClick?.();
+  };
 
   return (
-    <div 
-      ref={containerRef}
-      className={cn(
-        "relative overflow-hidden bg-black rounded-lg p-4", 
-        className
-      )}
-      onClick={() => onClick?.()}
+    <div
+      className={`relative ${className}`}
+      onClick={handleVideoClick}
+      ref={inViewRef}
     >
       {useAspectRatio ? (
-        <AspectRatio ratio={feedAspectRatio} className="w-full">
+        <AspectRatio ratio={feedAspectRatio} className="w-full h-full bg-black overflow-hidden rounded-md">
           <video
             ref={videoRef}
-            src={video.video_url || undefined}
-            className="w-full h-full rounded-md"
-            style={getVideoStyle()}
-            loop
+            src={video.video_url}
             muted={isMuted}
+            loop
             playsInline
-            controls={showControls}
-            poster={video.thumbnail_url || undefined}
-            preload="auto"
-            autoPlay={autoPlay}
+            className="w-full h-full object-cover cursor-pointer"
+            style={{ objectFit: objectFit }}
           />
         </AspectRatio>
       ) : (
         <video
           ref={videoRef}
-          src={video.video_url || undefined}
-          className="w-full h-full rounded-md"
-          style={getVideoStyle()}
-          loop
+          src={video.video_url}
           muted={isMuted}
+          loop
           playsInline
-          controls={showControls}
-          poster={video.thumbnail_url || undefined}
-          preload="auto"
-          autoPlay={autoPlay}
+          className="w-full h-full object-cover cursor-pointer rounded-md"
+          style={{ objectFit: objectFit }}
         />
       )}
-      
-      {!showControls && (
+
+      {showControls && (
+        <div className="absolute bottom-2 left-2 flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={handlePlayPause}>
+            {isPlaying ? 'Pause' : 'Play'}
+          </Button>
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={onMuteToggle}>
+            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </Button>
+        </div>
+      )}
+
+      {productLinks.map(link => (
+        <React.Fragment key={link.id}>
+          <div
+            className="absolute rounded-full bg-white/80 border border-gray-200 shadow-md cursor-pointer transition-all duration-200 ease-in-out"
+            style={{
+              top: `${link.position_y}%`,
+              left: `${link.position_x}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              zIndex: 10,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleProductLink?.(link.id);
+            }}
+          >
+            {visibleProductLink === link.id ?
+              <X className="h-3 w-3" />
+              :
+              <span className="text-black">🛒</span>
+            }
+          </div>
+
+          {visibleProductLink === link.id && (
+            <div
+              className="absolute bg-white border border-gray-200 rounded-md shadow-lg p-4 z-20"
+              style={{
+                top: `${link.position_y}%`,
+                left: `${link.position_x}%`,
+                transform: 'translate(10px, -50%)',
+                width: '200px',
+                maxWidth: '200px'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h4 className="font-semibold text-sm">{link.title}</h4>
+              {link.price && <p className="text-gray-600 text-xs">${link.price.toFixed(2)}</p>}
+              <Button size="sm" className="w-full mt-2" onClick={() => window.open(link.url, '_blank')}>
+                Shop Now
+              </Button>
+            </div>
+          )}
+        </React.Fragment>
+      ))}
+
+      {isFullscreen && (
         <Button
           variant="ghost"
           size="icon"
-          onClick={onMuteToggle}
-          className="absolute bottom-3 right-3 z-10 rounded-full p-1 bg-black/30 hover:bg-black/50 w-8 h-8 flex items-center justify-center touch-manipulation"
+          className="absolute top-2 right-2 text-white bg-black/50 hover:bg-black/70 rounded-full"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose?.();
+          }}
         >
-          {isMuted ? (
-            <VolumeX className="h-4 w-4 text-white" />
-          ) : (
-            <Volume2 className="h-4 w-4 text-white" />
-          )}
+          <X className="h-5 w-5" />
         </Button>
-      )}
-
-      {shouldShowProductControls && (
-        <>
-          <div className="absolute top-3 left-3 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleProductLink(productLinks[0].id);
-              }}
-            >
-              <ShoppingCart className="h-4 w-4 mr-1" />
-              <span className="text-xs">Products</span>
-            </Button>
-          </div>
-
-          {productLinks.map((link) => (
-            <div key={link.id} className={cn(
-              "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
-              visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
-            )}>
-              <ProductLinkCard 
-                link={link} 
-                onClose={() => toggleProductLink(link.id)} 
-              />
-            </div>
-          ))}
-        </>
       )}
     </div>
   );

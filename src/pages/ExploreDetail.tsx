@@ -20,13 +20,11 @@ const ExploreDetail = () => {
   const commentsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Show right section for comments when in detail view
     setShowRightSection(true);
     return () => setShowRightSection(false);
   }, [setShowRightSection]);
 
   const handleCommentsClick = () => {
-    // On desktop, just ensure right section is visible
     setShowRightSection(true);
   };
 
@@ -86,8 +84,7 @@ const ExploreDetail = () => {
       const { data, error } = await supabase
         .from('video_product_links')
         .select('*')
-        .eq('video_id', id);
-        
+        .eq('video_id', id);  
       if (error) {
         console.error("Error fetching product links:", error);
         return [];
@@ -136,9 +133,17 @@ const ExploreDetail = () => {
     return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
   }
 
+  // Remove description UNDER the video (only render VideoPlayer section)
+  // Move action icons to below the comment input area (handled by RightSection), so not here
+
   return (
-    <Swipeable onSwipe={handleSwipe} threshold={100} className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation">
-      <div className="w-full h-full relative flex items-center justify-center p-4">
+    <Swipeable 
+      onSwipe={handleSwipe} 
+      threshold={100} 
+      className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
+    >
+      <div className="flex-1 w-full h-full flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
+        {/* Close Button */}
         <div className="absolute top-4 right-4 z-20">
           <Button 
             variant="ghost" 
@@ -149,53 +154,25 @@ const ExploreDetail = () => {
             <X className="h-5 w-5" />
           </Button>
         </div>
-        
-        <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5">
+        {/* Video Content with min 10px padding and aspect ratio */}
+        <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center">
           <VideoPlayer 
             video={video} 
-            productLinks={[]} // No product links directly on video in detail view
+            productLinks={[]} // No product links overlay in detail view
             autoPlay={true} 
             showControls={false} 
             onClose={handleClose} 
             isFullscreen={false} 
             className="w-full rounded-md overflow-hidden" 
-            objectFit="contain" 
-            useAspectRatio={true} 
+            objectFit="contain"
+            useAspectRatio={true}
           />
         </div>
       </div>
-      
-      <div className="w-full absolute right-0 bottom-20 md:bottom-10 px-4 z-10 flex flex-col items-end">
-        <div className="flex flex-col space-y-4 items-center">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className={`h-10 w-10 rounded-full bg-black/30 hover:bg-black/50 touch-manipulation ${userLikeStatus ? 'text-red-500' : 'text-white'}`}
-          >
-            <Heart className={`h-6 w-6 ${userLikeStatus ? 'fill-current' : ''}`} />
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-10 w-10 rounded-full bg-black/30 hover:bg-black/50 text-white touch-manipulation" 
-            onClick={handleCommentsClick}
-          >
-            <MessageCircle className="h-6 w-6" />
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-10 w-10 rounded-full bg-black/30 hover:bg-black/50 text-white touch-manipulation" 
-            onClick={handleShare}
-          >
-            <Share2 className="h-6 w-6" />
-          </Button>
-        </div>
-      </div>
+      {/* No description or comments here; all in right panel */}
     </Swipeable>
   );
 };
 
 export default ExploreDetail;
+
