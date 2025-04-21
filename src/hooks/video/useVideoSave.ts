@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VideoFormState } from "./useVideoFormState";
+import { generateThumbnailFromVideoFile } from "./useVideoMedia";
 
 export function useVideoSave() {
   const [isSaving, setIsSaving] = useState(false);
@@ -36,10 +37,20 @@ export function useVideoSave() {
       let videoUrl = formState.videoUrl;
       let thumbnailUrl = formState.thumbnailUrl;
       
-      if (mediaFile) {
+      // Only for uploaded videos (not YouTube)
+      if (mediaFile && !isYoutubeLink) {
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
         
+        // Extract thumbnail BEFORE uploading video
+        let thumbnailFile: File | null = null;
+        try {
+          thumbnailFile = await generateThumbnailFromVideoFile(mediaFile);
+        } catch (err) {
+          console.warn('Failed to extract thumbnail from uploaded video, will use placeholder:', err);
+        }
+
+        // Upload video file
         const { error: uploadError, data } = await supabase.storage
           .from('video-media')
           .upload(fileName, mediaFile);
@@ -49,8 +60,26 @@ export function useVideoSave() {
         videoUrl = supabase.storage
           .from('video-media')
           .getPublicUrl(fileName).data.publicUrl;
+
+        // Upload thumbnail if we have it
+        if (thumbnailFile) {
+          // Use same name as video, prefixed
+          const thumbName = `thumbnail_${fileName.replace(/\.[^/.]+$/, "")}.jpg`;
+          const { error: thumbErr } = await supabase.storage
+            .from('video-media')
+            .upload(thumbName, thumbnailFile, { upsert: true });
+          if (!thumbErr) {
+            thumbnailUrl = supabase.storage
+              .from('video-media')
+              .getPublicUrl(thumbName).data.publicUrl;
+          } else {
+            console.warn('Uploading extracted thumbnail failed:', thumbErr);
+          }
+        }
+        // If thumbnail extraction/upload failed, thumbnailUrl stays null (handled by UI fallback logic)
       }
 
+      // For YouTube, set thumbnail if missing
       if (isYoutubeLink && !thumbnailUrl) {
         thumbnailUrl = getYouTubeThumbnail(formState.videoUrl);
       }
@@ -111,3 +140,4 @@ export function useVideoSave() {
     saveVideo
   };
 }
+
