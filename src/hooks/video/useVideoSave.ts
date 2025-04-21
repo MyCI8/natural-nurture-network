@@ -16,7 +16,8 @@ export function useVideoSave() {
     getYouTubeThumbnail: (url: string) => string | null,
     asDraft = false
   ) => {
-    if (!formState.title) {
+    // Only require title for video types other than "explore"
+    if (formState.videoType !== "explore" && !formState.title) {
       toast.error("Please provide a title for the video");
       return false;
     }
@@ -36,12 +37,12 @@ export function useVideoSave() {
 
       let videoUrl = formState.videoUrl;
       let thumbnailUrl = formState.thumbnailUrl;
-      
+
       // Only for uploaded videos (not YouTube)
       if (mediaFile && !isYoutubeLink) {
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
-        
+
         // Extract thumbnail BEFORE uploading video
         let thumbnailFile: File | null = null;
         try {
@@ -99,7 +100,7 @@ export function useVideoSave() {
       };
 
       let result;
-      
+
       if (videoId) {
         const { data, error } = await supabase
           .from('videos')
@@ -107,10 +108,10 @@ export function useVideoSave() {
           .eq('id', videoId)
           .select()
           .single();
-          
+
         if (error) throw error;
         result = data;
-        
+
         toast.success(asDraft ? "Draft saved successfully" : "Video updated successfully");
       } else {
         const { data, error } = await supabase
@@ -118,10 +119,10 @@ export function useVideoSave() {
           .insert(videoData)
           .select()
           .single();
-          
+
         if (error) throw error;
         result = data;
-        
+
         toast.success(asDraft ? "Draft saved successfully" : "Video published successfully");
       }
 
