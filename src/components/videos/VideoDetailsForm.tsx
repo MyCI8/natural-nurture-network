@@ -44,16 +44,19 @@ export function VideoDetailsForm({
   return (
     <form onSubmit={handleSubmit}>
       <div className="pt-4 space-y-4 sm:pt-6 sm:space-y-6 px-4 sm:px-6">
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={formState.title}
-            onChange={(e) => handleInputChange("title", e.target.value)}
-            placeholder="Enter video title"
-            className="border-gray-300"
-          />
-        </div>
+        {/* Only show title if videoType is not 'explore' */}
+        {formState.videoType !== 'explore' && (
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={formState.title}
+              onChange={(e) => handleInputChange("title", e.target.value)}
+              placeholder="Enter video title"
+              className="border-gray-300"
+            />
+          </div>
+        )}
 
         {formState.videoType === 'news' && (
           <div className="space-y-2">
@@ -152,7 +155,11 @@ export function VideoDetailsForm({
         </Button>
         <Button
           type="submit"
-          disabled={isSaving || !formState.title || (!formState.videoUrl && !mediaPreview)}
+          disabled={
+            isSaving ||
+            (formState.videoType !== "explore" && !formState.title) || 
+            (!formState.videoUrl && !mediaPreview)
+          }
           className="touch-manipulation"
         >
           {isSaving ? "Saving..." : videoId ? "Update Video" : "Publish Video"}
