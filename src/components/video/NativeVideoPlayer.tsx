@@ -165,55 +165,28 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         </div>
       )}
 
+      {/* Product overlays: only show overlay panel if visibleProductLink is active (triggered from outside) */}
       {productLinks.map(link => (
-        <React.Fragment key={link.id}>
+        visibleProductLink === link.id && (
           <div
-            className="absolute rounded-full bg-white/80 border border-gray-200 shadow-md cursor-pointer transition-all duration-200 ease-in-out"
+            key={link.id}
+            className="absolute bg-white border border-gray-200 rounded-md shadow-lg p-4 z-20"
             style={{
-              top: `${link.position_y}%`,
-              left: `${link.position_x}%`,
-              transform: 'translate(-50%, -50%)',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.75rem',
-              fontWeight: 'bold',
-              zIndex: 10,
+              top: `${link.position_y ?? 50}%`,
+              left: `${link.position_x ?? 50}%`,
+              transform: 'translate(10px, -50%)',
+              width: '200px',
+              maxWidth: '200px'
             }}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleProductLink?.(link.id);
-            }}
+            onClick={e => e.stopPropagation()}
           >
-            {visibleProductLink === link.id ?
-              <X className="h-3 w-3" />
-              :
-              <span className="text-black">🛒</span>
-            }
+            <h4 className="font-semibold text-sm">{link.title}</h4>
+            {link.price && <p className="text-gray-600 text-xs">${link.price.toFixed(2)}</p>}
+            <Button size="sm" className="w-full mt-2" onClick={() => window.open(link.url, '_blank')}>
+              Shop Now
+            </Button>
           </div>
-
-          {visibleProductLink === link.id && (
-            <div
-              className="absolute bg-white border border-gray-200 rounded-md shadow-lg p-4 z-20"
-              style={{
-                top: `${link.position_y}%`,
-                left: `${link.position_x}%`,
-                transform: 'translate(10px, -50%)',
-                width: '200px',
-                maxWidth: '200px'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h4 className="font-semibold text-sm">{link.title}</h4>
-              {link.price && <p className="text-gray-600 text-xs">${link.price.toFixed(2)}</p>}
-              <Button size="sm" className="w-full mt-2" onClick={() => window.open(link.url, '_blank')}>
-                Shop Now
-              </Button>
-            </div>
-          )}
-        </React.Fragment>
+        )
       ))}
 
       {isFullscreen && (
@@ -221,7 +194,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           variant="ghost"
           size="icon"
           className="absolute top-2 right-2 text-white bg-black/50 hover:bg-black/70 rounded-full"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
             onClose?.();
           }}

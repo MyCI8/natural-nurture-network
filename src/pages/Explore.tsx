@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import VideoDialog from '@/components/video/VideoDialog';
 import type { Video, ProductLink } from '@/types/video';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +32,7 @@ const Explore = () => {
     content: string;
     username: string;
   }[]>>({});
+  const [visibleProductLinkByVideo, setVisibleProductLinkByVideo] = useState<{ [videoId: string]: string | null }>({});
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -279,6 +280,32 @@ const Explore = () => {
     setGlobalAudioEnabled(!isMuted);
   };
 
+  const handleProductButtonClick = (videoId: string) => {
+    const links = getProductLinksForVideo(videoId);
+    if (!links.length) {
+      toast({
+        title: "No products",
+        description: "No products linked to this video.",
+        variant: "default"
+      });
+      return;
+    }
+    setVisibleProductLinkByVideo(prev => {
+      const curr = prev[videoId];
+      return {
+        ...prev,
+        [videoId]: curr ? null : links[0].id
+      };
+    });
+  };
+
+  const handleToggleProductLink = (videoId: string, linkId: string) => {
+    setVisibleProductLinkByVideo(prev => ({
+      ...prev,
+      [videoId]: prev[videoId] === linkId ? null : linkId,
+    }));
+  };
+
   const getProductLinksForVideo = (videoId: string) => {
     return allProductLinks.filter(link => link.video_id === videoId);
   };
@@ -332,15 +359,17 @@ const Explore = () => {
               onClick={() => handleNavigateToVideo(video.id)} 
               className="w-full h-full" 
               productLinks={getProductLinksForVideo(video.id)}
+              visibleProductLink={visibleProductLinkByVideo[video.id] || null}
+              toggleProductLink={id => handleToggleProductLink(video.id, id)}
             />
           </div>
 
-          <div className="instagram-actions">
-            <div className="flex gap-4">
+          <div className="instagram-actions flex items-center gap-4 justify-between w-full px-2 py-2">
+            <div className="flex gap-4 flex-shrink-0">
               <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" onClick={e => {
-            e.stopPropagation();
-            handleNavigateToVideo(video.id);
-          }}>
+                e.stopPropagation();
+                handleNavigateToVideo(video.id);
+              }}>
                 <MessageCircle className="h-6 w-6" />
               </Button>
               
@@ -349,12 +378,25 @@ const Explore = () => {
               </Button>
               
               <Button variant="ghost" size="icon" className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation" onClick={e => {
-            e.stopPropagation();
-            handleShare(video);
-          }}>
+                e.stopPropagation();
+                handleShare(video);
+              }}>
                 <Share2 className="h-6 w-6" />
               </Button>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={e => {
+                e.stopPropagation();
+                handleProductButtonClick(video.id);
+              }}
+              aria-label="View product"
+              className="ml-auto rounded-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white shadow-lg touch-manipulation transition-colors"
+              style={{ minWidth: 44, minHeight: 44 }}
+            >
+              <ShoppingCart className="h-6 w-6" />
+            </Button>
           </div>
 
           <div className="instagram-likes flex items-center gap-2 py-[5px]">
