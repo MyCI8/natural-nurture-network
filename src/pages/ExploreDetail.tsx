@@ -24,6 +24,7 @@ const ExploreDetail = () => {
     return () => setShowRightSection(false);
   }, [setShowRightSection]);
 
+  // When clicking on the comments, we should open the right section
   const handleCommentsClick = () => {
     setShowRightSection(true);
   };
@@ -94,6 +95,7 @@ const ExploreDetail = () => {
     enabled: !!id
   });
 
+  // Redirect back to explore page
   const handleClose = () => {
     navigate('/explore');
   };
@@ -119,10 +121,16 @@ const ExploreDetail = () => {
     }
   };
 
+  // Handle swipe gestures
   const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
     if (direction === 'down') {
       handleClose();
     }
+  };
+
+  // Close on video click
+  const handleVideoClick = () => {
+    handleClose();
   };
 
   if (isVideoLoading) {
@@ -132,9 +140,6 @@ const ExploreDetail = () => {
   if (!video) {
     return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
   }
-
-  // Remove description UNDER the video (only render VideoPlayer section)
-  // Move action icons to below the comment input area (handled by RightSection), so not here
 
   return (
     <Swipeable 
@@ -155,7 +160,10 @@ const ExploreDetail = () => {
           </Button>
         </div>
         {/* Video Content with min 10px padding and aspect ratio */}
-        <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center">
+        <div 
+          className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center"
+          onClick={handleVideoClick}
+        >
           <VideoPlayer 
             video={video} 
             productLinks={[]} // No product links overlay in detail view
@@ -166,6 +174,7 @@ const ExploreDetail = () => {
             className="w-full rounded-md overflow-hidden" 
             objectFit="contain"
             useAspectRatio={true}
+            onClick={handleVideoClick}
           />
         </div>
       </div>
@@ -175,4 +184,3 @@ const ExploreDetail = () => {
 };
 
 export default ExploreDetail;
-

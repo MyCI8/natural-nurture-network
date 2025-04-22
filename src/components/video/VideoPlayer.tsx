@@ -1,12 +1,11 @@
-
-import React, { useState } from 'react';
-import { Video, ProductLink } from '@/types/video';
-import { isYoutubeVideo } from './utils/videoPlayerUtils';
-import YouTubePlayer from './YouTubePlayer';
-import NativeVideoPlayer from './NativeVideoPlayer';
+import React, { useState, useRef, useEffect } from 'react';
+import ReactPlayer from 'react-player';
+import { ProductLink } from '@/types/video';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart } from 'lucide-react';
 
 interface VideoPlayerProps {
-  video: Video;
+  video: any;
   productLinks?: ProductLink[];
   autoPlay?: boolean;
   showControls?: boolean;
@@ -14,116 +13,97 @@ interface VideoPlayerProps {
   onAudioStateChange?: (isMuted: boolean) => void;
   isFullscreen?: boolean;
   className?: string;
-  onClose?: () => void;
-  onClick?: () => void;
-  aspectRatio?: number;
-  objectFit?: 'contain' | 'cover';
+  objectFit?: 'cover' | 'contain';
   useAspectRatio?: boolean;
   visibleProductLink?: string | null;
   toggleProductLink?: (linkId: string) => void;
+  onClick?: () => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
-  video, 
-  productLinks = [], 
-  autoPlay = true,
+const VideoPlayer = ({
+  video,
+  productLinks = [],
+  autoPlay = false,
   showControls = false,
   globalAudioEnabled = false,
   onAudioStateChange,
   isFullscreen = false,
-  className,
-  onClose,
-  onClick,
-  aspectRatio,
-  objectFit = 'contain',
+  className = '',
+  objectFit = 'cover',
   useAspectRatio = true,
   visibleProductLink = null,
-  toggleProductLink
-}) => {
+  toggleProductLink,
+  onClick
+}: VideoPlayerProps) => {
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
-  const [playbackStarted, setPlaybackStarted] = useState(false);
-  const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
-  
-  // Effect to handle mute state changes based on global audio setting
-  React.useEffect(() => {
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const [showProductButton, setShowProductButton] = useState(false);
+  const playerRef = useRef<ReactPlayer>(null);
+
+  useEffect(() => {
     setIsMuted(!globalAudioEnabled);
   }, [globalAudioEnabled]);
-  
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newMutedState = !isMuted;
-    setIsMuted(newMutedState);
-    onAudioStateChange?.(!newMutedState);
+
+  const handleToggleMute = () => {
+    setIsMuted(!isMuted);
+    onAudioStateChange?.(!isMuted);
   };
 
-  const handleToggleProductLink = (linkId: string) => {
-    if (toggleProductLink) {
-      toggleProductLink(linkId);
-    } else {
-      // Use local state if no external handler is provided
-      if (localVisibleProductLink === linkId) {
-        setLocalVisibleProductLink(null);
-      } else {
-        setLocalVisibleProductLink(linkId);
-      }
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const toggleProductButton = () => {
+    setShowProductButton(!showProductButton);
+  };
+
+  const handleProductButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    toggleProductButton();
+  };
+
+  const handleVideoClick = () => {
+    if (onClick) {
+      onClick();
     }
   };
-  
-  const handleInView = (inView: boolean) => {
-    // This can be used for additional visibility logic if needed
-    console.log(`Video is ${inView ? 'in view' : 'out of view'}`);
-  };
-
-  const feedAspectRatio = aspectRatio || 4/5;
-  
-  // Use provided visibleProductLink if available, otherwise fall back to local state
-  const activeProductLink = visibleProductLink !== undefined ? visibleProductLink : localVisibleProductLink;
-
-  // Filter product links for fullscreen/detail view to remove them from the video player
-  const activeProductLinks = isFullscreen ? [] : productLinks;
-
-  // Render the appropriate player based on video type
-  if (isYoutubeVideo(video.video_url)) {
-    return (
-      <YouTubePlayer
-        video={video}
-        productLinks={activeProductLinks}
-        autoPlay={autoPlay}
-        isMuted={isMuted}
-        showControls={showControls}
-        isFullscreen={isFullscreen}
-        className={className}
-        visibleProductLink={activeProductLink}
-        onClick={onClick}
-        onClose={onClose}
-        toggleProductLink={handleToggleProductLink}
-        useAspectRatio={useAspectRatio}
-        feedAspectRatio={feedAspectRatio}
-      />
-    );
-  }
 
   return (
-    <NativeVideoPlayer
-      video={video}
-      productLinks={activeProductLinks}
-      autoPlay={autoPlay}
-      isMuted={isMuted}
-      showControls={showControls}
-      isFullscreen={isFullscreen}
-      className={className}
-      visibleProductLink={activeProductLink}
-      onClick={onClick}
-      onClose={onClose}
-      onMuteToggle={toggleMute}
-      toggleProductLink={handleToggleProductLink}
-      playbackStarted={playbackStarted}
-      setPlaybackStarted={setPlaybackStarted}
-      useAspectRatio={useAspectRatio}
-      feedAspectRatio={feedAspectRatio}
-      objectFit={objectFit}
-      onInView={handleInView}
-    />
+    <div
+      className={`video-container relative ${className}`}
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#000',
+        cursor: onClick ? 'pointer' : 'auto'
+      }}
+      onClick={handleVideoClick}
+    >
+      <ReactPlayer
+        ref={playerRef}
+        url={video?.video_url}
+        playing={isPlaying}
+        muted={isMuted}
+        controls={showControls}
+        width="100%"
+        height="100%"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          objectFit: objectFit,
+        }}
+        config={{
+          file: {
+            attributes: {
+              crossOrigin: 'anonymous',
+            },
+          },
+        }}
+      />
+    </div>
   );
 };
 

@@ -4,21 +4,41 @@ import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
 import Comments from '@/components/video/Comments';
 import ProductLinksList from '@/components/video/ProductLinksList';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // Remove usage of any "show" property on layout context (fix error)
 
 const RightSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { showRightSection, setShowRightSection } = useLayout();
+  const navigate = useNavigate();
+  
+  const { id } = useParams<{ id: string }>();
+  const isVideoDetailPage = window.location.pathname.includes('/explore/') && id;
+
+  // Close the entire view and navigate back to explore
+  const handleClose = () => {
+    if (isVideoDetailPage) {
+      navigate('/explore');
+    } else {
+      setShowRightSection(false);
+    }
+  };
   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
-        setShowRightSection(false);
+        if (isVideoDetailPage) {
+          // On detail page, don't close on outside click
+          // This is handled by the video component
+        } else {
+          setShowRightSection(false);
+        }
       }
     };
 
@@ -26,10 +46,7 @@ const RightSection = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [ref, setShowRightSection]);
-  
-  const { id } = useParams<{ id: string }>();
-  const isVideoDetailPage = window.location.pathname.includes('/explore/') && id;
+  }, [ref, setShowRightSection, isVideoDetailPage]);
 
   const { data: productLinks = [] } = useQuery({
     queryKey: ['rightSectionProductLinks', id],
@@ -83,7 +100,19 @@ const RightSection = () => {
         className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen"
         style={{ minHeight: '100vh' }}
       >
-        <div className="p-4 flex-1 flex flex-col">
+        <div className="p-4 pb-0 mb-2 flex justify-end">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleClose}
+            className="touch-manipulation"
+          >
+            <X className="h-5 w-5" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </div>
+        
+        <div className="p-4 pt-0 flex-1 flex flex-col">
           {videoData && videoData.creator && (
             <div className="mb-4 flex items-center">
               <Avatar className="h-10 w-10 mr-3 border-2 border-gray-100 dark:border-gray-700">
@@ -131,4 +160,3 @@ const RightSection = () => {
 };
 
 export default RightSection;
-
