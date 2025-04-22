@@ -33,8 +33,8 @@ const Explore = () => {
     username: string;
   }[]>>({});
   const [visibleProductLinkByVideo, setVisibleProductLinkByVideo] = useState<{ [videoId: string]: string | null }>({});
-
   const [productCardOpenFor, setProductCardOpenFor] = useState<string | null>(null);
+  const [productCardOverlayAnimatingFor, setProductCardOverlayAnimatingFor] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -282,28 +282,17 @@ const Explore = () => {
     setGlobalAudioEnabled(!isMuted);
   };
 
-  const openProductCard = (videoId: string) => {
-    const links = getProductLinksForVideo(videoId);
-    if (!links.length) {
-      toast({
-        title: "No products",
-        description: "No products linked to this video.",
-        variant: "default",
-      });
-      return;
+  const openOrToggleProductCard = (videoId: string) => {
+    if (productCardOpenFor === videoId) {
+      setProductCardOverlayAnimatingFor(videoId);
+      setTimeout(() => {
+        setProductCardOpenFor(null);
+        setProductCardOverlayAnimatingFor(null);
+      }, 320);
+    } else {
+      setProductCardOpenFor(videoId);
+      setProductCardOverlayAnimatingFor(null);
     }
-    setProductCardOpenFor(videoId);
-  };
-
-  const closeProductCard = () => {
-    setProductCardOpenFor(null);
-  };
-
-  const handleToggleProductLink = (videoId: string, linkId: string) => {
-    setVisibleProductLinkByVideo(prev => ({
-      ...prev,
-      [videoId]: prev[videoId] === linkId ? null : linkId,
-    }));
   };
 
   const getProductLinksForVideo = (videoId: string) => {
@@ -319,6 +308,7 @@ const Explore = () => {
       {videos.map(video => {
         const productLinks = getProductLinksForVideo(video.id);
         const isProductCardOpen = productCardOpenFor === video.id;
+        const isAnimatingOut = productCardOverlayAnimatingFor === video.id && !isProductCardOpen;
         const firstProductLink = productLinks[0];
 
         return (
@@ -368,9 +358,29 @@ const Explore = () => {
                 toggleProductLink={(linkId) => handleToggleProductLink(video.id, linkId)}
               />
 
-              {isProductCardOpen && firstProductLink && (
-                <div className="product-card-overlay-fullwidth">
-                  <div className="product-card-blur-full bg-white/80 dark:bg-dm-mist/80 glass-morphism">
+              {(isProductCardOpen || isAnimatingOut) && firstProductLink && (
+                <div
+                  className="product-card-overlay-fullwidth"
+                  style={{
+                    bottom: 0,
+                    width: '100%',
+                    pointerEvents: 'auto',
+                    left: 0,
+                    right: 0,
+                    zIndex: 50,
+                  }}
+                >
+                  <div
+                    className={
+                      `product-card-blur-full bg-white/80 dark:bg-dm-mist/80 glass-morphism
+                      ${isAnimatingOut ? "slide-out-down-product-card" : "slide-in-up"}`
+                    }
+                    style={{
+                      position: 'relative',
+                      pointerEvents: 'auto'
+                    }}
+                    onClick={e => e.stopPropagation()}
+                  >
                     <div className="flex justify-between items-center mb-2">
                       <span className="font-medium flex items-center gap-1 text-black dark:text-white">
                         <span>
@@ -384,7 +394,7 @@ const Explore = () => {
                         className="rounded bg-transparent hover:bg-muted transition-colors p-1 ml-2"
                         onClick={e => {
                           e.stopPropagation();
-                          closeProductCard();
+                          openOrToggleProductCard(video.id);
                         }}
                         aria-label="Close product info"
                       >
@@ -394,9 +404,13 @@ const Explore = () => {
                         </svg>
                       </button>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-4 items-center">
                       {firstProductLink.image_url &&
-                        <img src={firstProductLink.image_url} alt={firstProductLink.title} className="w-16 h-16 object-contain rounded" />}
+                        <img
+                          src={firstProductLink.image_url}
+                          alt={firstProductLink.title}
+                          className="product-image-2x"
+                        />}
                       <div>
                         <div className="font-semibold text-base text-black dark:text-white">{firstProductLink.title}</div>
                         {firstProductLink.price &&
@@ -406,10 +420,13 @@ const Explore = () => {
                     </div>
                     <div className="mt-3">
                       <button
-                        className="product-btn-bw w-full inline-flex items-center justify-center gap-2 px-4 py-2 font-semibold shadow text-black dark:text-white border border-black dark:border-white bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-900 focus:outline-none touch-manipulation"
+                        className="product-btn-bw-outline w-full inline-flex items-center justify-center gap-2 px-4 py-2 font-semibold border-black dark:border-white bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-900 focus:outline-none touch-manipulation"
                         onClick={e => {
                           e.stopPropagation();
                           window.open(firstProductLink.url, '_blank');
+                        }}
+                        style={{
+                          borderRadius: 6,
                         }}
                       >
                         <svg width="18" height="18" fill="none">
@@ -449,16 +466,17 @@ const Explore = () => {
                 </Button>
               </div>
               <button
-                className="product-btn-bw ml-auto touch-manipulation flex items-center gap-2 border border-black dark:border-white text-black dark:text-white bg-transparent px-4 py-2 rounded-md"
+                className="product-btn-bw-outline ml-auto touch-manipulation flex items-center gap-2 border border-black dark:border-white text-black dark:text-white bg-transparent px-3 py-[8px] rounded-[6px]"
                 style={{
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: 48,
+                  minHeight: 38,
+                  borderRadius: 6
                 }}
                 onClick={e => {
                   e.stopPropagation();
-                  openProductCard(video.id);
+                  openOrToggleProductCard(video.id);
                 }}
-                aria-label="View product"
+                aria-label={isProductCardOpen ? "Hide product info" : "View product"}
               >
                 <ShoppingCart className="h-5 w-5" />
                 <span className="hidden sm:inline text-sm font-semibold">Product</span>
