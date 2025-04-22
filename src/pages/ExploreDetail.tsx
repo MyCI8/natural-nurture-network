@@ -162,14 +162,12 @@ const ExploreDetail = () => {
         {/* Video Content with min 10px padding and aspect ratio */}
         <div 
           className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center"
-          onClick={handleVideoClick}
         >
           <VideoPlayer 
             video={video} 
             productLinks={[]} // No product links overlay in detail view
             autoPlay={true} 
             showControls={false} 
-            onClose={handleClose} 
             isFullscreen={false} 
             className="w-full rounded-md overflow-hidden" 
             objectFit="contain"

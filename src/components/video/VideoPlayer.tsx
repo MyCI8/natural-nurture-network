@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import ReactPlayer from 'react-player';
 import { ProductLink } from '@/types/video';
@@ -18,6 +19,7 @@ interface VideoPlayerProps {
   visibleProductLink?: string | null;
   toggleProductLink?: (linkId: string) => void;
   onClick?: () => void;
+  onClose?: () => void; // Added this prop to fix the type error
 }
 
 const VideoPlayer = ({
@@ -33,7 +35,8 @@ const VideoPlayer = ({
   useAspectRatio = true,
   visibleProductLink = null,
   toggleProductLink,
-  onClick
+  onClick,
+  onClose
 }: VideoPlayerProps) => {
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
@@ -65,6 +68,9 @@ const VideoPlayer = ({
   const handleVideoClick = () => {
     if (onClick) {
       onClick();
+    } else if (onClose) {
+      // Use onClose as fallback if provided
+      onClose();
     }
   };
 
@@ -77,7 +83,7 @@ const VideoPlayer = ({
         width: '100%',
         height: '100%',
         backgroundColor: '#000',
-        cursor: onClick ? 'pointer' : 'auto'
+        cursor: (onClick || onClose) ? 'pointer' : 'auto'
       }}
       onClick={handleVideoClick}
     >
