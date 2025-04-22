@@ -36,6 +36,13 @@ const Explore = () => {
   const [productCardOpenFor, setProductCardOpenFor] = useState<string | null>(null);
   const [productCardOverlayAnimatingFor, setProductCardOverlayAnimatingFor] = useState<string | null>(null);
 
+  const handleToggleProductLink = (videoId: string, linkId: string) => {
+    setVisibleProductLinkByVideo(prev => ({
+      ...prev,
+      [videoId]: prev[videoId] === linkId ? null : linkId
+    }));
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const {
