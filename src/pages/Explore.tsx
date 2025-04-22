@@ -34,7 +34,6 @@ const Explore = () => {
   }[]>>({});
   const [visibleProductLinkByVideo, setVisibleProductLinkByVideo] = useState<{ [videoId: string]: string | null }>({});
 
-  // Add dedicated state for which product card modal is open for which video
   const [productCardOpenFor, setProductCardOpenFor] = useState<string | null>(null);
 
   useEffect(() => {
@@ -283,7 +282,6 @@ const Explore = () => {
     setGlobalAudioEnabled(!isMuted);
   };
 
-  // Remove handleProductButtonClick and use this:
   const openProductCard = (videoId: string) => {
     const links = getProductLinksForVideo(videoId);
     if (!links.length) {
@@ -350,7 +348,7 @@ const Explore = () => {
             </div>
 
             <div
-              className="instagram-video-container"
+              className="instagram-video-container relative"
               style={{
                 aspectRatio: '4/5',
                 position: 'relative'
@@ -370,21 +368,20 @@ const Explore = () => {
                 toggleProductLink={(linkId) => handleToggleProductLink(video.id, linkId)}
               />
 
-              {/* Sliding Product Card Overlay */}
               {isProductCardOpen && firstProductLink && (
-                <div className="product-card-overlay">
-                  <div className="product-card-blur bg-white/80 dark:bg-dm-mist/80 glass-morphism">
+                <div className="product-card-overlay-fullwidth">
+                  <div className="product-card-blur-full bg-white/80 dark:bg-dm-mist/80 glass-morphism">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium flex items-center gap-1 text-primary">
+                      <span className="font-medium flex items-center gap-1 text-black dark:text-white">
                         <span>
-                          <svg width="18" height="18" fill="none" className="inline">
+                          <svg width="18" height="18" fill="none">
                             <use href="#lucide-shopping-cart" />
                           </svg>
                         </span>
                         Product
                       </span>
                       <button
-                        className="rounded-full bg-transparent hover:bg-muted transition-colors p-1 ml-2"
+                        className="rounded bg-transparent hover:bg-muted transition-colors p-1 ml-2"
                         onClick={e => {
                           e.stopPropagation();
                           closeProductCard();
@@ -401,15 +398,15 @@ const Explore = () => {
                       {firstProductLink.image_url &&
                         <img src={firstProductLink.image_url} alt={firstProductLink.title} className="w-16 h-16 object-contain rounded" />}
                       <div>
-                        <div className="font-semibold text-base">{firstProductLink.title}</div>
+                        <div className="font-semibold text-base text-black dark:text-white">{firstProductLink.title}</div>
                         {firstProductLink.price &&
-                          <div className="text-sm font-medium text-primary mt-0.5">${firstProductLink.price.toFixed(2)}</div>}
+                          <div className="text-sm font-medium mt-0.5 text-black dark:text-white">${firstProductLink.price.toFixed(2)}</div>}
                         <div className="text-xs text-muted-foreground mt-1">{firstProductLink.description}</div>
                       </div>
                     </div>
                     <div className="mt-3">
                       <button
-                        className="w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold bg-[#9b87f5] shadow-md text-white hover:bg-[#7E69AB] focus:outline-none touch-manipulation"
+                        className="product-btn-bw w-full inline-flex items-center justify-center gap-2 px-4 py-2 font-semibold shadow text-black dark:text-white border border-black dark:border-white bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-900 focus:outline-none touch-manipulation"
                         onClick={e => {
                           e.stopPropagation();
                           window.open(firstProductLink.url, '_blank');
@@ -426,7 +423,6 @@ const Explore = () => {
               )}
             </div>
 
-            {/* Row with comment, save, share, and new PRODUCT BUTTON */}
             <div className="instagram-actions flex items-center gap-4 justify-between w-full px-2 py-2">
               <div className="flex gap-4 flex-shrink-0">
                 <Button variant="ghost" size="icon"
@@ -452,11 +448,9 @@ const Explore = () => {
                   <Share2 className="h-6 w-6" />
                 </Button>
               </div>
-              {/* PRODUCT BUTTON */}
               <button
-                className="rounded-full px-4 py-2 font-semibold product-btn-gradient shadow-lg text-white touch-manipulation flex items-center gap-2 ml-auto"
+                className="product-btn-bw ml-auto touch-manipulation flex items-center gap-2 border border-black dark:border-white text-black dark:text-white bg-transparent px-4 py-2 rounded-md"
                 style={{
-                  background: "linear-gradient(90deg, #9b87f5 70%, #7E69AB 100%)",
                   minWidth: 44,
                   minHeight: 44,
                 }}
@@ -467,7 +461,7 @@ const Explore = () => {
                 aria-label="View product"
               >
                 <ShoppingCart className="h-5 w-5" />
-                <span className="hidden sm:inline text-sm">Product</span>
+                <span className="hidden sm:inline text-sm font-semibold">Product</span>
               </button>
             </div>
 
