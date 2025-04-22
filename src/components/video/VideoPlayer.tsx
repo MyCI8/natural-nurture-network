@@ -19,6 +19,8 @@ interface VideoPlayerProps {
   aspectRatio?: number;
   objectFit?: 'contain' | 'cover';
   useAspectRatio?: boolean;
+  visibleProductLink?: string | null;
+  toggleProductLink?: (linkId: string) => void;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -34,11 +36,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onClick,
   aspectRatio,
   objectFit = 'contain',
-  useAspectRatio = true
+  useAspectRatio = true,
+  visibleProductLink = null,
+  toggleProductLink
 }) => {
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
-  const [visibleProductLink, setVisibleProductLink] = useState<string | null>(null);
+  const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
   
   // Effect to handle mute state changes based on global audio setting
   React.useEffect(() => {
@@ -52,11 +56,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     onAudioStateChange?.(!newMutedState);
   };
 
-  const toggleProductLink = (linkId: string) => {
-    if (visibleProductLink === linkId) {
-      setVisibleProductLink(null);
+  const handleToggleProductLink = (linkId: string) => {
+    if (toggleProductLink) {
+      toggleProductLink(linkId);
     } else {
-      setVisibleProductLink(linkId);
+      // Use local state if no external handler is provided
+      if (localVisibleProductLink === linkId) {
+        setLocalVisibleProductLink(null);
+      } else {
+        setLocalVisibleProductLink(linkId);
+      }
     }
   };
   
@@ -66,6 +75,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   const feedAspectRatio = aspectRatio || 4/5;
+  
+  // Use provided visibleProductLink if available, otherwise fall back to local state
+  const activeProductLink = visibleProductLink !== undefined ? visibleProductLink : localVisibleProductLink;
 
   // Filter product links for fullscreen/detail view to remove them from the video player
   const activeProductLinks = isFullscreen ? [] : productLinks;
@@ -81,10 +93,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         showControls={showControls}
         isFullscreen={isFullscreen}
         className={className}
-        visibleProductLink={visibleProductLink}
+        visibleProductLink={activeProductLink}
         onClick={onClick}
         onClose={onClose}
-        toggleProductLink={toggleProductLink}
+        toggleProductLink={handleToggleProductLink}
         useAspectRatio={useAspectRatio}
         feedAspectRatio={feedAspectRatio}
       />
@@ -100,11 +112,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       showControls={showControls}
       isFullscreen={isFullscreen}
       className={className}
-      visibleProductLink={visibleProductLink}
+      visibleProductLink={activeProductLink}
       onClick={onClick}
       onClose={onClose}
       onMuteToggle={toggleMute}
-      toggleProductLink={toggleProductLink}
+      toggleProductLink={handleToggleProductLink}
       playbackStarted={playbackStarted}
       setPlaybackStarted={setPlaybackStarted}
       useAspectRatio={useAspectRatio}

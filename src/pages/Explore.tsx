@@ -360,7 +360,7 @@ const Explore = () => {
               className="w-full h-full" 
               productLinks={getProductLinksForVideo(video.id)}
               visibleProductLink={visibleProductLinkByVideo[video.id] || null}
-              toggleProductLink={id => handleToggleProductLink(video.id, id)}
+              toggleProductLink={(linkId) => handleToggleProductLink(video.id, linkId)}
             />
           </div>
 
