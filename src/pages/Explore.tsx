@@ -275,6 +275,10 @@ const Explore = () => {
     navigate(`/explore/${videoId}`);
   };
 
+  const handleAudioStateChange = (isMuted: boolean) => {
+    setGlobalAudioEnabled(!isMuted);
+  };
+
   const getProductLinksForVideo = (videoId: string) => {
     return allProductLinks.filter(link => link.video_id === videoId);
   };
@@ -323,8 +327,8 @@ const Explore = () => {
               video={video} 
               autoPlay 
               showControls={false} 
-              globalAudioEnabled={globalAudioEnabled} 
-              onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
+              globalAudioEnabled={globalAudioEnabled}
+              onAudioStateChange={handleAudioStateChange}
               onClick={() => handleNavigateToVideo(video.id)} 
               className="w-full h-full" 
               productLinks={getProductLinksForVideo(video.id)}
@@ -401,7 +405,7 @@ const Explore = () => {
         isOpen={!!selectedVideo} 
         onClose={() => setSelectedVideo(null)} 
         globalAudioEnabled={globalAudioEnabled} 
-        onAudioStateChange={isMuted => setGlobalAudioEnabled(!isMuted)} 
+        onAudioStateChange={handleAudioStateChange}
         userLikes={userLikes} 
         onLikeToggle={handleLike} 
         currentUser={currentUser} 

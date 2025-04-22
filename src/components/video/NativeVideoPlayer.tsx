@@ -141,13 +141,26 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         />
       )}
 
+      {/* Show mute/unmute button at bottom right, always visible */}
+      <div className="absolute bottom-3 right-3 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation`}
+          onClick={e => {
+            e.stopPropagation();
+            onMuteToggle?.(e);
+          }}
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+        </Button>
+      </div>
+
       {showControls && (
         <div className="absolute bottom-2 left-2 flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={handlePlayPause}>
             {isPlaying ? 'Pause' : 'Play'}
-          </Button>
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={onMuteToggle}>
-            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </Button>
         </div>
       )}
