@@ -133,9 +133,6 @@ const ExploreDetail = () => {
     return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
   }
 
-  // Remove description UNDER the video (only render VideoPlayer section)
-  // Move action icons to below the comment input area (handled by RightSection), so not here
-
   return (
     <Swipeable 
       onSwipe={handleSwipe} 
@@ -158,7 +155,7 @@ const ExploreDetail = () => {
         <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center">
           <VideoPlayer 
             video={video} 
-            productLinks={[]} // No product links overlay in detail view
+            productLinks={[]} 
             autoPlay={true} 
             showControls={false} 
             onClose={handleClose} 
@@ -166,13 +163,12 @@ const ExploreDetail = () => {
             className="w-full rounded-md overflow-hidden" 
             objectFit="contain"
             useAspectRatio={true}
+            onClick={handleClose}
           />
         </div>
       </div>
-      {/* No description or comments here; all in right panel */}
     </Swipeable>
   );
 };
 
 export default ExploreDetail;
-

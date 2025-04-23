@@ -82,6 +82,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Filter product links for fullscreen/detail view to remove them from the video player
   const activeProductLinks = isFullscreen ? [] : productLinks;
 
+  // Handle touch interactions
+  const handleVideoTouch = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
   // Render the appropriate player based on video type
   if (isYoutubeVideo(video.video_url)) {
     return (
