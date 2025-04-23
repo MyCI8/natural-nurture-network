@@ -95,6 +95,7 @@ const ExploreDetail = () => {
   });
 
   const handleClose = () => {
+    // Navigate back to the explore page
     navigate('/explore');
   };
 
@@ -158,7 +159,6 @@ const ExploreDetail = () => {
             productLinks={[]} 
             autoPlay={true} 
             showControls={false} 
-            onClose={handleClose} 
             isFullscreen={false} 
             className="w-full rounded-md overflow-hidden" 
             objectFit="contain"

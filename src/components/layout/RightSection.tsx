@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -79,6 +78,7 @@ const RightSection = () => {
   const handleClose = () => {
     setShowRightSection(false);
     if (isVideoDetailPage) {
+      // Always navigate back to explore when on the detail page
       navigate('/explore');
     }
   };
