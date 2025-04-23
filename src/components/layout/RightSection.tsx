@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
 import Comments from '@/components/video/Comments';
 import ProductLinksList from '@/components/video/ProductLinksList';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,6 +15,7 @@ const RightSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { showRightSection, setShowRightSection } = useLayout();
   const navigate = useNavigate();
+  const location = useLocation();
   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,7 +31,7 @@ const RightSection = () => {
   }, [ref, setShowRightSection]);
   
   const { id } = useParams<{ id: string }>();
-  const isVideoDetailPage = window.location.pathname.includes('/explore/') && id;
+  const isVideoDetailPage = location.pathname.includes('/explore/') && id;
 
   const { data: productLinks = [] } = useQuery({
     queryKey: ['rightSectionProductLinks', id],
@@ -77,10 +78,12 @@ const RightSection = () => {
   });
 
   const handleClose = () => {
-    setShowRightSection(false);
+    // Always navigate back to explore when on a video detail page
     if (isVideoDetailPage) {
-      // Always navigate back to explore when on the detail page
       navigate('/explore');
+    } else {
+      // Just hide the right section for non-detail pages
+      setShowRightSection(false);
     }
   };
 

@@ -1,10 +1,10 @@
+
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { useLayout } from '@/contexts/LayoutContext';
-import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Swipeable } from '@/components/ui/swipeable';
@@ -72,17 +72,6 @@ const ExploreDetail = () => {
       className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
     >
       <div className="flex-1 w-full h-full flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
-        {/* Close Button - Placed on top right */}
-        <div className="absolute top-4 right-4 z-20">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleClose} 
-            className="rounded-full bg-black/50 text-white hover:bg-black/70 touch-manipulation"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
         {/* Video Content with min 10px padding and aspect ratio */}
         <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center">
           <VideoPlayer 
