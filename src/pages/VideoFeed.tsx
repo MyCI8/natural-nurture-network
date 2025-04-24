@@ -1,23 +1,16 @@
-
-import React, { useCallback, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import VideoPlayer from '@/components/video/VideoPlayer';
-import { Video } from '@/types/video';
-import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import Comments from '@/components/video/Comments';
-import VideoDialog from '@/components/video/VideoDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+import MobileVideoFeed from '@/components/video/MobileVideoFeed';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
   const isMobile = useIsMobile();
 
   const { data: videos, isLoading, error } = useQuery({
@@ -79,11 +72,11 @@ const VideoFeed = () => {
     enabled: !!currentUser,
   });
 
-  const handleVideoClick = useCallback((video: Video) => {
+  const handleVideoClick = useCallback((video) => {
     setSelectedVideo(video);
   }, []);
 
-  const handleLike = async (videoId: string, e: React.MouseEvent) => {
+  const handleLike = async (videoId, e) => {
     e.stopPropagation();
     if (!currentUser) {
       navigate('/auth');
@@ -114,7 +107,7 @@ const VideoFeed = () => {
     }
   };
 
-  const handleSave = async (videoId: string, e: React.MouseEvent) => {
+  const handleSave = async (videoId, e) => {
     e.stopPropagation();
     if (!currentUser) {
       navigate('/auth');
@@ -159,6 +152,19 @@ const VideoFeed = () => {
       variant: "destructive",
     });
     return null;
+  }
+
+  if (isMobile) {
+    return (
+      <MobileVideoFeed
+        videos={videos || []}
+        userLikes={userLikes}
+        onLikeToggle={handleLike}
+        currentUser={currentUser}
+        globalAudioEnabled={globalAudioEnabled}
+        onAudioStateChange={handleAudioStateChange}
+      />
+    );
   }
 
   return (
