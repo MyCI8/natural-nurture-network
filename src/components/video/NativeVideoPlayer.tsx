@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Video, ProductLink } from "@/types/video";
-import { X } from "lucide-react"; // Correct import
+import { X, Heart, MessageCircle, Share2, ShoppingCart } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX } from "lucide-react";
 import { useInView } from 'react-intersection-observer';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -51,11 +52,12 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [showProductOverlay, setShowProductOverlay] = useState(false);
   const [inViewRef, inView] = useInView({
-    threshold: 0.5, // Adjust as needed
+    threshold: 0.5,
     onChange: (inView) => {
       onInView?.(inView);
     },
   });
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (videoRef.current) {
@@ -111,6 +113,63 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     onClick?.();
   };
 
+  const renderMobileActions = () => {
+    if (!isMobile) return null;
+    
+    return (
+      <div className="absolute right-4 bottom-20 flex flex-col gap-6 items-center z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
+          onClick={e => {
+            e.stopPropagation();
+            onMuteToggle?.(e);
+          }}
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick?.();
+          }}
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleProductLink?.(productLinks[0]?.id);
+          }}
+        >
+          <ShoppingCart className="h-6 w-6" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Handle share action
+          }}
+        >
+          <Share2 className="h-6 w-6" />
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div
       className={`relative ${className}`}
@@ -141,31 +200,35 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         />
       )}
 
-      {/* Show mute/unmute button at bottom right, always visible */}
-      <div className="absolute bottom-3 right-3 z-20">
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation`}
-          onClick={e => {
-            e.stopPropagation();
-            onMuteToggle?.(e);
-          }}
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-        </Button>
-      </div>
+      {renderMobileActions()}
 
-      {showControls && (
-        <div className="absolute bottom-2 left-2 flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={handlePlayPause}>
-            {isPlaying ? 'Pause' : 'Play'}
-          </Button>
-        </div>
+      {!isMobile && (
+        <>
+          <div className="absolute bottom-3 right-3 z-20">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation"
+              onClick={e => {
+                e.stopPropagation();
+                onMuteToggle?.(e);
+              }}
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            </Button>
+          </div>
+
+          {showControls && (
+            <div className="absolute bottom-2 left-2 flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={handlePlayPause}>
+                {isPlaying ? 'Pause' : 'Play'}
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Product overlays: only show overlay panel if visibleProductLink is active (triggered from outside) */}
       {productLinks.map(link => (
         visibleProductLink === link.id && (
           <div
