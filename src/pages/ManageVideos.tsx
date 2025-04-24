@@ -21,12 +21,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Video } from "@/types/video";
 
-import StatsCard from "@/components/explore/dashboard/StatsCard";
-import VideoMetricsChart from "@/components/explore/dashboard/VideoMetricsChart";
-import TopVideosCard from "@/components/explore/dashboard/TopVideosCard";
-import CategoryPerformanceCard from "@/components/explore/dashboard/CategoryPerformanceCard";
-import EnhancedVideoTable from "@/components/explore/table/EnhancedVideoTable";
-import AdvancedFilters, { VideoFilters } from "@/components/explore/filters/AdvancedFilters";
+import StatsCard from "@/components/videos/dashboard/StatsCard";
+import VideoMetricsChart from "@/components/videos/dashboard/VideoMetricsChart";
+import TopVideosCard from "@/components/videos/dashboard/TopVideosCard";
+import CategoryPerformanceCard from "@/components/videos/dashboard/CategoryPerformanceCard";
+import EnhancedVideoTable from "@/components/videos/table/EnhancedVideoTable";
+import AdvancedFilters, { VideoFilters } from "@/components/videos/filters/AdvancedFilters";
 
 const generateChartData = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -481,7 +481,7 @@ const EyeIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-7 3-7 10-7 10-7Z" />
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
   );
