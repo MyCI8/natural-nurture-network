@@ -1,15 +1,14 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVideoForm } from "@/hooks/useVideoForm";
 import { toast } from "@/hooks/use-toast";
-import ProductLinksEditor from "@/components/videos/ProductLinksEditor";
-import VideoInfoPanel from "@/components/videos/VideoInfoPanel";
-import { BackButton } from "@/components/videos/BackButton";
-import { VideoLoadingState } from "@/components/videos/VideoLoadingState";
-import { VideoDetailsForm } from "@/components/videos/VideoDetailsForm";
+import ProductLinksEditor from "@/components/explore/ProductLinksEditor";
+import VideoInfoPanel from "@/components/explore/VideoInfoPanel";
+import { BackButton } from "@/components/explore/BackButton";
+import { VideoLoadingState } from "@/components/explore/VideoLoadingState";
+import { VideoDetailsForm } from "@/components/video/VideoDetailsForm";
 
 const EditVideo = () => {
   const navigate = useNavigate();
@@ -17,10 +16,8 @@ const EditVideo = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("details");
   
-  // Determine video type from location state or default to 'explore'
   const videoType = location.state?.videoType || 'explore';
   
-  // Always set the correct return path based on video type
   const getCorrectReturnPath = () => {
     if (videoType === 'news') {
       return "/admin/news/videos";
@@ -58,19 +55,16 @@ const EditVideo = () => {
     e.preventDefault();
     const result = await saveVideo(false);
     if (result) {
-      // Determine the correct return path based on the video type
       const correctReturnPath = formState.videoType === 'news' 
         ? "/admin/news/videos" 
         : "/admin/videos";
         
       console.log("Video saved, navigating to:", correctReturnPath);
       
-      // Force a refetch of the videos list then navigate
       if (correctReturnPath.includes("news/videos")) {
         window.dispatchEvent(new CustomEvent("refetch-news-videos"));
       }
       
-      // Add a small delay to ensure event processing before navigation
       setTimeout(() => {
         navigate(correctReturnPath);
       }, 100);
@@ -81,7 +75,6 @@ const EditVideo = () => {
     const result = await saveVideo(true);
     if (result) {
       if (!id) {
-        // For new videos, navigate to edit page with correct returnTo state
         const correctReturnPath = formState.videoType === 'news' 
           ? "/admin/news/videos" 
           : "/admin/videos";
@@ -93,7 +86,6 @@ const EditVideo = () => {
           }
         });
       } else {
-        // Stay on the same page with toast notification
         toast({
           title: "Draft saved",
           description: "Your video has been saved as a draft."
@@ -106,13 +98,11 @@ const EditVideo = () => {
     return <VideoLoadingState />;
   }
   
-  // Determine page title based on video type
   const pageTitle = id 
     ? `Edit ${formState.videoType === 'news' ? 'News' : 'Explore'} Video` 
     : `Create New ${formState.videoType === 'news' ? 'News' : 'Explore'} Video`;
 
   const handleThumbnailUpdated = (newThumbnailUrl: string) => {
-    // Update the form state with the new thumbnail URL
     handleInputChange("thumbnailUrl", newThumbnailUrl);
   };
 
