@@ -21,12 +21,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Video } from "@/types/video";
 
-import StatsCard from "@/components/videos/dashboard/StatsCard";
-import VideoMetricsChart from "@/components/videos/dashboard/VideoMetricsChart";
-import TopVideosCard from "@/components/videos/dashboard/TopVideosCard";
-import CategoryPerformanceCard from "@/components/videos/dashboard/CategoryPerformanceCard";
-import EnhancedVideoTable from "@/components/videos/table/EnhancedVideoTable";
-import AdvancedFilters, { VideoFilters } from "@/components/videos/filters/AdvancedFilters";
+import StatsCard from "@/components/explore/dashboard/StatsCard";
+import VideoMetricsChart from "@/components/explore/dashboard/VideoMetricsChart";
+import TopVideosCard from "@/components/explore/dashboard/TopVideosCard";
+import CategoryPerformanceCard from "@/components/explore/dashboard/CategoryPerformanceCard";
+import EnhancedVideoTable from "@/components/explore/table/EnhancedVideoTable";
+import AdvancedFilters, { VideoFilters } from "@/components/explore/filters/AdvancedFilters";
 
 const generateChartData = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
