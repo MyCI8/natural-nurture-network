@@ -1,9 +1,8 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Video, ProductLink } from "@/types/video";
-import { X, Heart, MessageCircle, Share2, ShoppingCart } from "lucide-react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX } from "lucide-react";
+import React, { useRef, useState, useEffect } from 'react';
+import { Video, ProductLink } from '@/types/video';
+import { X, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Button } from '@/components/ui/button';
 import { useInView } from 'react-intersection-observer';
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -113,8 +112,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     onClick?.();
   };
 
-  const renderMobileActions = () => {
-    if (!isMobile) return null;
+  const renderMobileControls = () => {
+    if (!isMobile || !isFullscreen) return null;
     
     return (
       <div className="absolute right-4 bottom-20 flex flex-col gap-6 items-center z-20">
@@ -143,17 +142,19 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           <MessageCircle className="h-6 w-6" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleProductLink?.(productLinks[0]?.id);
-          }}
-        >
-          <ShoppingCart className="h-6 w-6" />
-        </Button>
+        {productLinks.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleProductLink?.(productLinks[0]?.id);
+            }}
+          >
+            <ShoppingCart className="h-6 w-6" />
+          </Button>
+        )}
 
         <Button
           variant="ghost"
@@ -200,7 +201,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         />
       )}
 
-      {renderMobileActions()}
+      {renderMobileControls()}
 
       {!isMobile && (
         <>
