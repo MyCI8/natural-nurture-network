@@ -312,32 +312,38 @@ const Comments: React.FC<CommentsProps> = ({
           }
         `}</style>
         
-        {isCommentsLoading ? <p className="text-center text-gray-500 py-2">Loading comments...</p> : comments.length === 0 ? <p className="text-center text-gray-500 py-2">No comments yet</p> : comments.map((comment: Comment) => <div key={comment.id} className="flex items-start mb-2 relative">
-              <Avatar className="h-6 w-6 mr-2">
-                {comment.user?.avatar_url ? <AvatarImage src={comment.user.avatar_url} alt={comment.user.username || ''} /> : <AvatarFallback>{(comment.user?.username || '?')[0]}</AvatarFallback>}
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-start">
-                  <p className="text-sm text-left">
-                    <span className="font-semibold mr-1.5">{comment.user?.username}</span>
-                    {comment.content}
-                  </p>
-                </div>
-                <div className="flex items-center mt-0.5 text-xs text-gray-500 space-x-2">
-                  <span>{new Date(comment.created_at).toLocaleDateString()}</span>
-                  {comment.likes_count > 0 && <span>{comment.likes_count} likes</span>}
-                  <button className="font-medium">Reply</button>
-                </div>
+        {isCommentsLoading ? <p className="text-center text-gray-500 py-2">Loading comments...</p> : comments.length === 0 ? <p className="text-center text-gray-500 py-2">No comments yet</p> : comments.map((comment: Comment) => (
+          <div key={comment.id} className="flex items-start mb-2 relative">
+            <Avatar className="h-6 w-6 mr-2">
+              {comment.user?.avatar_url ? (
+                <AvatarImage src={comment.user.avatar_url} alt={comment.user.username || ''} />
+              ) : (
+                <AvatarFallback>{(comment.user?.username || '?')[0]}</AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex-1">
+              <div className="flex items-start">
+                <p className="text-sm text-left">
+                  <span className="font-semibold mr-1.5">{comment.user?.username}</span>
+                  {comment.content}
+                </p>
               </div>
-              <div className="flex flex-col items-center absolute right-0 bottom-0">
-                {comment.user?.id === currentUser?.id && <Button variant="ghost" size="icon" className="h-4 w-4 p-0 mb-1 hover:bg-transparent hover:text-red-500" onClick={() => deleteCommentMutation.mutate(comment.id)}>
-                    <X className="h-3 w-3" />
-                  </Button>}
-                <Button variant="ghost" size="icon" className={`p-0 h-4 w-4 hover:bg-transparent ${comment.user_has_liked ? 'text-red-500' : 'text-black dark:text-white'}`} onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}>
-                  <Heart className={`h-3 w-3 ${comment.user_has_liked ? 'fill-current' : ''}`} />
-                </Button>
+              <div className="flex items-center mt-0.5 text-xs text-gray-500 space-x-2">
+                <span>{new Date(comment.created_at).toLocaleDateString()}</span>
+                {comment.likes_count > 0 && <span>{comment.likes_count} likes</span>}
+                <button className="font-medium">Reply</button>
               </div>
-            </div>)}
+            </div>
+            <div className="flex flex-col items-center absolute right-0 bottom-0">
+              {comment.user?.id === currentUser?.id && <Button variant="ghost" size="icon" className="h-4 w-4 p-0 mb-1 hover:bg-transparent hover:text-red-500" onClick={() => deleteCommentMutation.mutate(comment.id)}>
+                  <X className="h-3 w-3" />
+                </Button>}
+              <Button variant="ghost" size="icon" className={`p-0 h-4 w-4 hover:bg-transparent ${comment.user_has_liked ? 'text-red-500' : 'text-black dark:text-white'}`} onClick={() => handleLikeComment(comment.id, comment.user_has_liked)}>
+                <Heart className={`h-3 w-3 ${comment.user_has_liked ? 'fill-current' : ''}`} />
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
       
       <div className="border-t border-gray-200 dark:border-gray-800 pt-2 pb-1 mt-auto">
