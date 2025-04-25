@@ -10,7 +10,7 @@ import { Swipeable } from '@/components/ui/swipeable';
 interface MobileVideoFeedProps {
   videos: Video[];
   userLikes: Record<string, boolean>;
-  onLikeToggle: (videoId: string) => void;
+  onLikeToggle: (videoId: string, e?: React.MouseEvent) => void;
   currentUser: any;
   globalAudioEnabled: boolean;
   onAudioStateChange: (isMuted: boolean) => void;
