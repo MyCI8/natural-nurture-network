@@ -21,16 +21,11 @@ export function useVideoFeed(initialVideos: Video[]) {
     }
   }, [initialVideos]);
 
-  const handleAudioStateChange = useCallback((isMuted: boolean) => {
-    setGlobalAudioEnabled(!isMuted);
-  }, []);
-
   return {
     activeVideoId,
     globalAudioEnabled,
     setGlobalAudioEnabled,
     handleVideoClick,
     handleSwipe,
-    handleAudioStateChange
   };
 }

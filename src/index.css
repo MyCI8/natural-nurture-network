@@ -26,19 +26,15 @@
 /* Light mode specific text styles to ensure readability */
 .news-section:not(.dark .news-section) h2,
 .news-section:not(.dark .news-section) h3 {
-  @apply text-[#222222];
-}
-
-.news-section:not(.dark .news-section) h1 {
-  @apply text-[#1A1F2C];
+  @apply text-text-dark;
 }
 
 .news-section:not(.dark .news-section) p {
-  @apply text-[#333333];
+  @apply text-text;
 }
 
 .news-section:not(.dark .news-section) .card h3 {
-  @apply text-[#1A1F2C];
+  @apply text-primary;
 }
 
 /* Add touch-friendly styles */

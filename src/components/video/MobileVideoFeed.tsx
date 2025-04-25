@@ -6,13 +6,11 @@ import { useToast } from '@/hooks/use-toast';
 import VideoPlayer from './VideoPlayer';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Swipeable } from '@/components/ui/swipeable';
-import { Button } from '@/components/ui/button';
-import { X, Share2, MessageCircle, Heart, MoreHorizontal, ShoppingCart } from 'lucide-react';
 
 interface MobileVideoFeedProps {
   videos: Video[];
   userLikes: Record<string, boolean>;
-  onLikeToggle: (videoId: string, e?: React.MouseEvent) => void;
+  onLikeToggle: (videoId: string) => void;
   currentUser: any;
   globalAudioEnabled: boolean;
   onAudioStateChange: (isMuted: boolean) => void;
@@ -45,10 +43,6 @@ const MobileVideoFeed: React.FC<MobileVideoFeedProps> = ({
     }
   }, [videos]);
 
-  const closeFullscreen = () => {
-    setActiveVideoId(null);
-  };
-
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="mx-auto max-w-full">
@@ -80,92 +74,22 @@ const MobileVideoFeed: React.FC<MobileVideoFeedProps> = ({
                   objectFit="cover"
                 />
                 
-                {/* Fullscreen overlay controls */}
-                {activeVideoId === video.id && (
-                  <>
-                    {/* Top controls */}
-                    <div className="absolute top-4 left-4 right-4 flex justify-between z-20">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-full bg-black/50 text-white hover:bg-black/70"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          closeFullscreen();
-                        }}
-                      >
-                        <X className="h-5 w-5" />
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-full bg-black/50 text-white hover:bg-black/70"
-                      >
-                        <MoreHorizontal className="h-5 w-5" />
-                      </Button>
-                    </div>
-
-                    {/* Right side controls */}
-                    <div className="absolute bottom-20 right-4 flex flex-col gap-6 z-20">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-12 w-12 rounded-full bg-black/50 text-white hover:bg-black/70"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onLikeToggle(video.id, e);
-                        }}
-                      >
-                        <Heart 
-                          className="h-6 w-6" 
-                          fill={userLikes[video.id] ? "currentColor" : "none"}
-                        />
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-12 w-12 rounded-full bg-black/50 text-white hover:bg-black/70"
-                      >
-                        <MessageCircle className="h-6 w-6" />
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-12 w-12 rounded-full bg-black/50 text-white hover:bg-black/70"
-                      >
-                        <Share2 className="h-6 w-6" />
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-12 w-12 rounded-full bg-black/50 text-white hover:bg-black/70"
-                      >
-                        <ShoppingCart className="h-6 w-6" />
-                      </Button>
-                    </div>
-
-                    {/* Creator info */}
-                    <div className="absolute bottom-20 left-4 z-20 flex items-center space-x-3">
-                      <Avatar className="h-10 w-10 border-2 border-white">
-                        {video.creator?.avatar_url ? (
-                          <AvatarImage src={video.creator.avatar_url} alt={video.creator?.full_name || ''} />
-                        ) : (
-                          <AvatarFallback>
-                            {video.creator?.full_name?.[0] || '?'}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div className="text-white">
-                        <div className="font-semibold">{video.creator?.full_name || 'Anonymous'}</div>
-                        <div className="text-sm opacity-90">{video.description}</div>
-                      </div>
-                    </div>
-                  </>
-                )}
+                {/* Creator info overlay */}
+                <div className="absolute bottom-20 left-4 z-20 flex items-center space-x-3">
+                  <Avatar className="h-10 w-10 border-2 border-white">
+                    {video.creator?.avatar_url ? (
+                      <AvatarImage src={video.creator.avatar_url} alt={video.creator?.full_name || ''} />
+                    ) : (
+                      <AvatarFallback>
+                        {video.creator?.full_name?.[0] || '?'}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="text-white">
+                    <div className="font-semibold">{video.creator?.full_name || 'Anonymous'}</div>
+                    <div className="text-sm opacity-90">{video.description}</div>
+                  </div>
+                </div>
               </div>
             </Swipeable>
           ))}

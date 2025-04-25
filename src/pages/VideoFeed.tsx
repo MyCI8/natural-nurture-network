@@ -1,18 +1,10 @@
-
-import React, { useState, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileVideoFeed from '@/components/video/MobileVideoFeed';
-import { Video } from '@/types/video';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
-import VideoPlayer from '@/components/video/VideoPlayer';
-import VideoDialog from '@/components/video/VideoDialog';
-import Comments from '@/components/video/Comments';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
@@ -20,7 +12,6 @@ const VideoFeed = () => {
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState(null);
   const isMobile = useIsMobile();
-  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
 
   const { data: videos, isLoading, error } = useQuery({
     queryKey: ['videos'],
@@ -51,7 +42,7 @@ const VideoFeed = () => {
     },
   });
 
-  const { data: userLikeIds } = useQuery({
+  const { data: userLikes } = useQuery({
     queryKey: ['userLikes', currentUser?.id],
     queryFn: async () => {
       if (!currentUser) return [];
@@ -65,14 +56,6 @@ const VideoFeed = () => {
     },
     enabled: !!currentUser,
   });
-
-  // Convert likes array to Record for MobileVideoFeed component
-  const userLikes: Record<string, boolean> = {};
-  if (userLikeIds) {
-    userLikeIds.forEach(id => {
-      userLikes[id] = true;
-    });
-  }
 
   const { data: userSaves } = useQuery({
     queryKey: ['userSaves', currentUser?.id],
@@ -93,14 +76,14 @@ const VideoFeed = () => {
     setSelectedVideo(video);
   }, []);
 
-  const handleLike = async (videoId: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const handleLike = async (videoId, e) => {
+    e.stopPropagation();
     if (!currentUser) {
       navigate('/auth');
       return;
     }
 
-    const isLiked = userLikeIds?.includes(videoId);
+    const isLiked = userLikes?.includes(videoId);
     try {
       if (isLiked) {
         await supabase
@@ -144,7 +127,7 @@ const VideoFeed = () => {
           .from('saved_posts')
           .insert({ user_id: currentUser.id, video_id: videoId });
       }
-      queryClient.invalidateQueries({ queryKey: ['userSaves'] });
+      queryClient.invalidateQueries({ queryKey: ['userSaves', currentUser.id] });
     } catch (error) {
       toast({
         title: "Error",
@@ -152,10 +135,6 @@ const VideoFeed = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const handleAudioStateChange = (isEnabled: boolean) => {
-    setGlobalAudioEnabled(isEnabled);
   };
 
   if (isLoading) {
@@ -287,13 +266,13 @@ const VideoFeed = () => {
                       variant="ghost"
                       size="icon"
                       className={`h-8 w-8 p-0 transition-transform hover:scale-110 ${
-                        userLikeIds?.includes(video.id) 
+                        userLikes?.includes(video.id) 
                           ? 'text-red-500' 
                           : 'text-[#666666] hover:text-[#4CAF50]'
                       }`}
                       onClick={(e) => handleLike(video.id, e)}
                     >
-                      <Heart className="h-5 w-5" fill={userLikeIds?.includes(video.id) ? "currentColor" : "none"} />
+                      <Heart className="h-5 w-5" fill={userLikes?.includes(video.id) ? "currentColor" : "none"} />
                     </Button>
                     <span className="ml-2">{video.views_count || 0} views</span>
                   </div>

@@ -17,25 +17,21 @@ const RightSection = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Only apply click-outside closing for non-news pages
   useEffect(() => {
-    if (!location.pathname.includes('/news')) {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (ref.current && !ref.current.contains(event.target as Node)) {
-          setShowRightSection(false);
-        }
-      };
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setShowRightSection(false);
+      }
+    };
 
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
-  }, [ref, setShowRightSection, location]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref, setShowRightSection]);
   
   const { id } = useParams<{ id: string }>();
   const isVideoDetailPage = location.pathname.includes('/explore/') && id;
-  const isNewsPage = location.pathname.includes('/news');
 
   const { data: productLinks = [] } = useQuery({
     queryKey: ['rightSectionProductLinks', id],
@@ -80,43 +76,9 @@ const RightSection = () => {
     },
     enabled: !!isVideoDetailPage && !!id
   });
-  
-  // Get latest videos for news page
-  const { data: latestVideos = [] } = useQuery({
-    queryKey: ['latestVideos'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('videos')
-        .select(`
-          id,
-          title,
-          description,
-          thumbnail_url,
-          video_url,
-          created_at,
-          creator:creator_id (
-            id,
-            username,
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('status', 'published')
-        .eq('show_in_latest', true)
-        .order('created_at', { ascending: false })
-        .limit(5);
-      
-      if (error) {
-        console.error("Error fetching latest videos:", error);
-        return [];
-      }
-      return data;
-    },
-    enabled: isNewsPage
-  });
 
   const handleClose = () => {
-    // Only navigate back to explore when on a video detail page
+    // Always navigate back to explore when on a video detail page
     if (isVideoDetailPage) {
       navigate('/explore');
     } else {
@@ -174,65 +136,15 @@ const RightSection = () => {
     );
   }
 
-  if (isNewsPage && showRightSection) {
-    return (
-      <div 
-        ref={ref} 
-        className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto"
-      >
-        <div className="p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-text-dark dark:text-dm-text">Latest Videos</h2>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setShowRightSection(false)} 
-              className="text-gray-500 hover:bg-gray-100 dark:hover:bg-dm-mist rounded-full"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          <div className="space-y-4">
-            {latestVideos.length > 0 ? (
-              latestVideos.map(video => (
-                <div 
-                  key={video.id} 
-                  className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow dark:border-dm-mist"
-                  onClick={() => navigate(`/news/videos/${video.id}`)}
-                >
-                  {video.thumbnail_url && (
-                    <div className="aspect-video w-full bg-gray-100 dark:bg-dm-mist-extra">
-                      <img 
-                        src={video.thumbnail_url} 
-                        alt={video.title} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <h3 className="font-medium text-sm mb-1 text-text-dark dark:text-dm-text line-clamp-2">{video.title}</h3>
-                    <p className="text-xs text-text dark:text-dm-text-supporting line-clamp-1">{video.creator?.full_name || 'Anonymous'}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-text dark:text-dm-text-supporting py-4">No latest videos available</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div 
       ref={ref} 
       className={cn("right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !showRightSection ? 'hidden' : '')}
+      style={{ minHeight: '100vh' }}
     >
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-text-dark dark:text-dm-text">Right Section</h2>
+          <h2 className="text-xl font-semibold dark:text-dm-text">Right Section</h2>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -242,7 +154,7 @@ const RightSection = () => {
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <p className="text-text dark:text-dm-text-supporting">This is the content of the right section.</p>
+        <p className="text-gray-600 dark:text-dm-text-supporting">This is the content of the right section.</p>
       </div>
     </div>
   );
