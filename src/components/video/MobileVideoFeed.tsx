@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import type { Video } from '@/types/video';
+import { Video } from '@/types/video';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import VideoPlayer from './VideoPlayer';

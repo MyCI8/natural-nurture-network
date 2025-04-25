@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import type { Video } from '@/types/video';
+import { Video } from '@/types/video';
 
 export function useVideoFeed(initialVideos: Video[]) {
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
