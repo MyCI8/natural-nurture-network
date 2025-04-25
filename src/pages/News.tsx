@@ -8,9 +8,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
+import { useLayout } from "@/contexts/LayoutContext";
+import { useEffect } from "react";
 
 const News = () => {
   const navigate = useNavigate();
+  const { setShowRightSection } = useLayout();
+  
+  // Ensure the right section is always shown on news page
+  useEffect(() => {
+    setShowRightSection(true);
+    
+    // No cleanup needed as we want the right section to stay visible
+  }, [setShowRightSection]);
+  
   const {
     data: newsItems,
     isLoading
@@ -53,8 +64,8 @@ const News = () => {
 
   return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-left text-text-dark dark:text-dm-text sm:text-2xl">News</h1>
-        <p className="text-lg text-text dark:text-dm-text-supporting text-left sm:text-xl">Latest Health News Articles</p>
+        <h1 className="text-3xl font-bold mb-2 text-left text-[#1A1F2C] dark:text-dm-text sm:text-2xl">News</h1>
+        <p className="text-lg text-[#333333] dark:text-dm-text-supporting text-left sm:text-xl">Latest Health News Articles</p>
       </div>
 
       <div className="space-y-6">
@@ -74,10 +85,10 @@ const News = () => {
                       </AspectRatio>
                     </div>
                   )}
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-text-dark dark:text-dm-text">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-[#222222] dark:text-dm-text">
                     {article.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-text dark:text-dm-text-supporting text-left">
+                  <p className="text-sm sm:text-base text-[#333333] dark:text-dm-text-supporting text-left">
                     {article.summary}
                   </p>
                 </CardContent>

@@ -38,7 +38,6 @@ const NewsArticle = () => {
     return () => {
       // Clean up when leaving the page
       setLayoutMode('default');
-      setShowRightSection(false);
     };
   }, [setLayoutMode, setShowRightSection]);
 
@@ -97,7 +96,7 @@ const NewsArticle = () => {
     return (
       <div className="pt-4 sm:pt-8 lg:pt-12 news-article-container mx-auto">
         <div className="px-4 sm:px-6">
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">Article not found</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4 text-[#1A1F2C] dark:text-dm-text">Article not found</h1>
         </div>
       </div>
     );
@@ -142,11 +141,11 @@ const NewsArticle = () => {
             <ArrowLeft className="h-4 sm:h-5 w-4 sm:w-5 mr-2" />
             Back
           </button>
-          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-left text-primary dark:text-primary">News</h1>
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 lg:mb-6 text-left text-[#1A1F2C] dark:text-primary">News</h1>
         </div>
 
         <article className="w-full text-left">
-          <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-left text-primary dark:text-primary">
+          <h2 className="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 text-left text-[#1A1F2C] dark:text-primary">
             {article.title}
           </h2>
           
@@ -167,7 +166,7 @@ const NewsArticle = () => {
           )}
 
           <div 
-            className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-6 sm:mb-10 text-left"
+            className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-6 sm:mb-10 text-left text-[#333333] dark:text-dm-text"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
 
