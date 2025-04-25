@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
 import { Video, ProductLink } from '@/types/video';
-import { Heart, MessageCircle, Share2, Bookmark, X, MoreHorizontal, ExternalLink } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from "@/hooks/use-toast";
 import { 
   DropdownMenu,
@@ -84,9 +83,7 @@ const VideoDialog = ({
                   <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">{(video.creator?.username || '?')[0]}</AvatarFallback>
                 )}
               </Avatar>
-              <div>
-                <p className="font-semibold text-sm dark:text-dm-text">{video.creator?.username || 'Anonymous'}</p>
-              </div>
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="ml-auto dark:text-dm-text touch-manipulation">
