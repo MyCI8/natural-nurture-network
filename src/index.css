@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -26,15 +25,19 @@
 /* Light mode specific text styles to ensure readability */
 .news-section:not(.dark .news-section) h2,
 .news-section:not(.dark .news-section) h3 {
-  @apply text-text-dark;
+  @apply text-[#222222]; // Dark gray for headings in light mode
+}
+
+.news-section:not(.dark .news-section) h1 {
+  @apply text-[#1A1F2C]; // Very dark purple for main headings
 }
 
 .news-section:not(.dark .news-section) p {
-  @apply text-text;
+  @apply text-[#333333]; // Slightly lighter dark gray for paragraphs
 }
 
 .news-section:not(.dark .news-section) .card h3 {
-  @apply text-primary;
+  @apply text-[#1A1F2C]; // Dark purple for card titles
 }
 
 /* Add touch-friendly styles */
