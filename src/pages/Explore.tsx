@@ -22,7 +22,7 @@ const Explore = () => {
   const isMobile = useIsMobile();
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [localUserState, setLocalUserState] = useState<any>(null);
   const [userLikes, setUserLikes] = useState<Record<string, boolean>>({});
 
   const { data: videos, isLoading, error } = useQuery({
@@ -46,13 +46,15 @@ const Explore = () => {
     }
   });
 
-  const { data: currentUser } = useQuery({
+  const { data: currentUserData } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       return session?.user || null;
     },
   });
+
+  const currentUser = currentUserData || localUserState;
 
   const { data: userLikeIds } = useQuery({
     queryKey: ['userLikes', currentUser?.id],
@@ -161,7 +163,6 @@ const Explore = () => {
     handleSwipe
   } = useVideoFeed(videos || []);
 
-  // Convert likes array to Record for MobileVideoFeed component
   const videoLikes: Record<string, boolean> = {};
   if (userLikeIds) {
     userLikeIds.forEach(id => {
@@ -186,7 +187,6 @@ const Explore = () => {
     return null;
   }
 
-  // Render mobile view
   if (isMobile && videos) {
     return (
       <MobileVideoFeed
@@ -200,7 +200,6 @@ const Explore = () => {
     );
   }
 
-  // Desktop view
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className={`mx-auto px-2 sm:px-4 ${isMobile ? 'max-w-full' : 'max-w-[600px]'}`}>
@@ -215,7 +214,6 @@ const Explore = () => {
                 key={video.id} 
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
               >
-                {/* User Info */}
                 <div 
                   className="flex items-center space-x-3 p-3 sm:p-4 cursor-pointer"
                   onClick={(e) => {
@@ -239,7 +237,6 @@ const Explore = () => {
                   </span>
                 </div>
 
-                {/* Video Container */}
                 <div 
                   className="w-full relative cursor-pointer" 
                   onClick={() => handleVideoClick(video)}
@@ -251,7 +248,6 @@ const Explore = () => {
                   />
                 </div>
 
-                {/* Rearranged action buttons: chat, save, share directly below media */}
                 <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 pt-3 px-3 sm:px-4">
                   <Button 
                     variant="ghost"
@@ -286,14 +282,12 @@ const Explore = () => {
                   </Button>
                 </div>
 
-                {/* Video Description and Likes */}
                 <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                   <p className="text-sm text-[#666666] text-left mb-2">
                     {video.description?.substring(0, 100)}
                     {video.description?.length > 100 && '...'}
                   </p>
                   
-                  {/* Moved likes count with heart icon to the bottom */}
                   <div className="mt-2 mb-3 text-sm text-[#666666] flex items-center space-x-2">
                     <span className="mr-1">{video.likes_count || 0} likes</span>
                     <Button 
@@ -311,7 +305,6 @@ const Explore = () => {
                     <span className="ml-2">{video.views_count || 0} views</span>
                   </div>
 
-                  {/* Comments Section */}
                   <div className="mt-1">
                     <Comments videoId={video.id} currentUser={currentUser} />
                   </div>
