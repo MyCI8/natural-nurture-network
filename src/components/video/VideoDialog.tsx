@@ -70,15 +70,22 @@ const VideoDialog = ({
         </div>
         
         <div className="w-full md:w-[350px] bg-white dark:bg-dm-background flex flex-col h-full border-l border-gray-200 dark:border-dm-mist overflow-y-auto">
-          <div className="p-4 border-b border-gray-200 dark:border-dm-mist px-0 py-0">
-            <div className="flex items-center mb-2">
-              <Avatar className="h-8 w-8 mr-3">
-                {video.creator?.avatar_url ? (
-                  <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
-                ) : (
-                  <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">{(video.creator?.username || '?')[0]}</AvatarFallback>
-                )}
-              </Avatar>
+          <div className="p-4 border-b border-gray-200 dark:border-dm-mist">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-8 w-8">
+                  {video.creator?.avatar_url ? (
+                    <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+                  ) : (
+                    <AvatarFallback className="dark:bg-dm-mist dark:text-dm-text">
+                      {(video.creator?.username || '?')[0]}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="font-medium dark:text-dm-text">
+                  {video.creator?.username || 'Anonymous User'}
+                </span>
+              </div>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
