@@ -2,7 +2,7 @@ import React from 'react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
 import { Video, ProductLink } from '@/types/video';
-import { X } from 'lucide-react';
+import { X, MoreHorizontal, MessageCircle, Bookmark, Share2, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
