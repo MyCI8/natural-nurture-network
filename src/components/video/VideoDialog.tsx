@@ -6,8 +6,6 @@ import { X, MoreHorizontal, MessageCircle, Bookmark, Share2, Heart } from 'lucid
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from "@/hooks/use-toast";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -38,8 +36,6 @@ const VideoDialog = ({
   currentUser?: any;
   productLinks?: ProductLink[];
 }) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const isMobile = useIsMobile();
 
   if (!video || !isOpen) return null;
