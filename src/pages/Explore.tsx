@@ -317,6 +317,7 @@ const Explore = () => {
         const isProductCardOpen = productCardOpenFor === video.id;
         const isAnimatingOut = productCardOverlayAnimatingFor === video.id && !isProductCardOpen;
         const firstProductLink = productLinks[0];
+        const hasProductLinks = productLinks.length > 0;
 
         return (
           <Swipeable
@@ -472,22 +473,25 @@ const Explore = () => {
                   <Share2 className="h-6 w-6" />
                 </Button>
               </div>
-              <button
-                className="product-btn-bw-outline ml-auto touch-manipulation flex items-center gap-2 border border-black dark:border-white text-black dark:text-white bg-transparent px-3 py-[8px] rounded-[6px]"
-                style={{
-                  minWidth: 48,
-                  minHeight: 38,
-                  borderRadius: 6
-                }}
-                onClick={e => {
-                  e.stopPropagation();
-                  openOrToggleProductCard(video.id);
-                }}
-                aria-label={isProductCardOpen ? "Hide product info" : "View product"}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="hidden sm:inline text-sm font-semibold">Product</span>
-              </button>
+              
+              {hasProductLinks && (
+                <button
+                  className="product-btn-bw-outline ml-auto touch-manipulation flex items-center gap-2 border border-black dark:border-white text-black dark:text-white bg-transparent px-3 py-[8px] rounded-[6px]"
+                  style={{
+                    minWidth: 48,
+                    minHeight: 38,
+                    borderRadius: 6
+                  }}
+                  onClick={e => {
+                    e.stopPropagation();
+                    openOrToggleProductCard(video.id);
+                  }}
+                  aria-label={isProductCardOpen ? "Hide product info" : "View product"}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="hidden sm:inline text-sm font-semibold">Product</span>
+                </button>
+              )}
             </div>
 
             <div className="instagram-likes flex items-center gap-2 py-[5px]">
