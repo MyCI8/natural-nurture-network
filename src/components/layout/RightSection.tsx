@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+
 const RightSection = () => {
   const ref = useRef<HTMLDivElement>(null);
   const {
@@ -89,17 +90,15 @@ const RightSection = () => {
     },
     enabled: isNewsPage
   });
+
   const handleClose = () => {
-    // Only navigate back to explore when on a video detail page
     if (isVideoDetailPage) {
       navigate('/explore');
     } else {
-      // Just hide the right section for non-detail pages (except news)
       setShowRightSection(false);
     }
   };
 
-  // News page specific right section
   if (isNewsPage && showRightSection) {
     return <div ref={ref} className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen touch-manipulation" style={{
       minHeight: '100vh'
@@ -126,24 +125,29 @@ const RightSection = () => {
         </div>
       </div>;
   }
+
   if (isVideoDetailPage && showRightSection) {
     return <div ref={ref} className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen touch-manipulation" style={{
       minHeight: '100vh'
     }}>
         <div className="p-4 flex-1 flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            {videoData && videoData.creator && <div className="flex items-center">
+            {videoData && videoData.creator && (
+              <div className="flex items-center">
                 <Avatar className="h-10 w-10 mr-3 border-2 border-gray-100 dark:border-gray-700">
-                  {videoData.creator.avatar_url ? <AvatarImage src={videoData.creator.avatar_url} alt={videoData.creator.username || ''} /> : <AvatarFallback className="bg-primary/10 text-primary">
+                  {videoData.creator.avatar_url ? (
+                    <AvatarImage src={videoData.creator.avatar_url} alt={videoData.creator.username || ''} />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary">
                       {(videoData.creator.username || '?')[0]}
-                    </AvatarFallback>}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
-                <div>
-                  <h3 className="font-medium text-base text-text-dark dark:text-dm-text">{videoData.creator.username || 'Anonymous'}</h3>
-                  {videoData.creator.full_name}
-                </div>
-              </div>}
-            
+                <span className="font-medium text-base text-text-dark dark:text-dm-text">
+                  {videoData.creator.username || 'Anonymous'}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="mb-4 mt-3">
@@ -155,6 +159,7 @@ const RightSection = () => {
         </div>
       </div>;
   }
+
   return <div ref={ref} className={cn("right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !showRightSection ? 'hidden' : '')} style={{
     minHeight: '100vh'
   }}>
@@ -169,4 +174,5 @@ const RightSection = () => {
       </div>
     </div>;
 };
+
 export default RightSection;
