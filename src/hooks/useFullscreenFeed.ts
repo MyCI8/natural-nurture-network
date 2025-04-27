@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Video } from '@/types/video';
@@ -8,7 +8,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 export function useFullscreenFeed(initialVideoId: string) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const isMobile = useIsMobile();
+  const preloadingRef = useRef<boolean>(false);
   
+  // Fetch all videos
   const { data: videos = [] } = useQuery({
     queryKey: ['explore-videos'],
     queryFn: async () => {
@@ -34,6 +36,8 @@ export function useFullscreenFeed(initialVideoId: string) {
 
   // Find initial index based on the video ID
   useEffect(() => {
+    if (!videos || videos.length === 0) return;
+    
     const index = videos.findIndex((v: Video) => v.id === initialVideoId);
     if (index !== -1) {
       setCurrentIndex(index);
@@ -41,47 +45,74 @@ export function useFullscreenFeed(initialVideoId: string) {
   }, [initialVideoId, videos]);
 
   const handleSwipe = useCallback((direction: 'up' | 'down') => {
+    if (!videos || videos.length === 0) return;
+    
+    console.log(`Swiping ${direction}, currentIndex: ${currentIndex}, total videos: ${videos.length}`);
+    
     if (direction === 'up' && currentIndex < videos.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else if (direction === 'down' && currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
     }
-  }, [currentIndex, videos.length]);
+  }, [currentIndex, videos]);
 
   // Preload next videos
   useEffect(() => {
-    if (!isMobile) return;
-
-    const preloadCount = 2; // Number of videos to preload
-    const videosToPreload = videos.slice(
-      currentIndex + 1,
-      currentIndex + 1 + preloadCount
-    );
+    if (!isMobile || !videos || videos.length === 0 || preloadingRef.current) return;
+    
+    preloadingRef.current = true;
+    
+    const preloadCount = 3; // Number of videos to preload in each direction
+    const videosToPreload = [];
+    
+    // Add next videos to preload
+    for (let i = 1; i <= preloadCount; i++) {
+      const nextIndex = currentIndex + i;
+      if (nextIndex < videos.length) {
+        videosToPreload.push(videos[nextIndex]);
+      }
+    }
+    
+    // Add previous videos to preload
+    for (let i = 1; i <= preloadCount; i++) {
+      const prevIndex = currentIndex - i;
+      if (prevIndex >= 0) {
+        videosToPreload.push(videos[prevIndex]);
+      }
+    }
 
     videosToPreload.forEach((video: Video) => {
       if (video.video_url) {
+        const videoEl = document.createElement('video');
+        videoEl.preload = 'metadata';
+        videoEl.src = video.video_url;
+        videoEl.load();
+        
+        // Create a link element for preloading
         const link = document.createElement('link');
         link.rel = 'preload';
         link.as = 'video';
         link.href = video.video_url;
         document.head.appendChild(link);
+        
+        // Remove link after 10 seconds
+        setTimeout(() => {
+          document.head.removeChild(link);
+        }, 10000);
       }
     });
 
-    return () => {
-      // Clean up preload links when component unmounts
-      const links = document.head.querySelectorAll('link[rel="preload"][as="video"]');
-      links.forEach(link => link.remove());
-    };
+    preloadingRef.current = false;
   }, [currentIndex, videos, isMobile]);
 
   return {
-    currentVideo: videos[currentIndex],
-    nextVideo: videos[currentIndex + 1],
-    prevVideo: videos[currentIndex - 1],
+    currentVideo: videos && videos.length > 0 ? videos[currentIndex] : null,
+    nextVideo: videos && videos.length > 0 && currentIndex < videos.length - 1 ? videos[currentIndex + 1] : null,
+    prevVideo: videos && videos.length > 0 && currentIndex > 0 ? videos[currentIndex - 1] : null,
     handleSwipe,
     isFirst: currentIndex === 0,
-    isLast: currentIndex === videos.length - 1,
-    videos
+    isLast: videos && videos.length > 0 ? currentIndex === videos.length - 1 : true,
+    videos,
+    currentIndex
   };
 }

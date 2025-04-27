@@ -44,6 +44,7 @@ export function Swipeable({
         x: e.targetTouches[0].clientX, 
         y: e.targetTouches[0].clientY 
       };
+      console.log("Touch started:", touchStart.current);
     } 
     // Multi-touch for pinch
     else if (e.touches.length === 2 && enableZoom) {
@@ -59,6 +60,14 @@ export function Swipeable({
         x: e.targetTouches[0].clientX, 
         y: e.targetTouches[0].clientY 
       };
+      
+      // Log move for debugging
+      if (touchStart.current && touchEnd.current) {
+        const diffY = touchStart.current.y - touchEnd.current.y;
+        if (Math.abs(diffY) > 50) {
+          console.log(`Moving ${diffY > 0 ? 'up' : 'down'}, distance: ${Math.abs(diffY)}`);
+        }
+      }
     } 
     // Multi-touch for pinch
     else if (e.touches.length === 2 && enableZoom && initialDistance.current) {
@@ -77,7 +86,7 @@ export function Swipeable({
   }, [enableZoom, scale, onPinch]);
 
   // Handle touch end
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (!touchStart.current || !touchEnd.current) return;
     
     // Only process swipe if we have onSwipe handler
@@ -85,8 +94,23 @@ export function Swipeable({
       const distX = touchEnd.current.x - touchStart.current.x;
       const distY = touchEnd.current.y - touchStart.current.y;
       
-      // Check if horizontal swipe is larger than vertical swipe
-      if (Math.abs(distX) > Math.abs(distY)) {
+      console.log(`Touch end: distX=${distX}, distY=${distY}, threshold=${threshold}`);
+      
+      // Check if vertical swipe is larger than horizontal swipe
+      if (Math.abs(distY) > Math.abs(distX)) {
+        if (Math.abs(distY) > threshold) {
+          // Down swipe
+          if (distY > 0) {
+            console.log("SWIPE DOWN DETECTED");
+            onSwipe('down');
+          } 
+          // Up swipe
+          else {
+            console.log("SWIPE UP DETECTED");
+            onSwipe('up');
+          }
+        }
+      } else {
         if (Math.abs(distX) > threshold) {
           // Right swipe
           if (distX > 0) {
@@ -95,17 +119,6 @@ export function Swipeable({
           // Left swipe
           else {
             onSwipe('left');
-          }
-        }
-      } else {
-        if (Math.abs(distY) > threshold) {
-          // Down swipe
-          if (distY > 0) {
-            onSwipe('down');
-          } 
-          // Up swipe
-          else {
-            onSwipe('up');
           }
         }
       }
@@ -123,7 +136,7 @@ export function Swipeable({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      style={enableZoom ? { touchAction: 'none' } : undefined}
+      style={{ touchAction: 'none' }} // Important: prevent browser handling
     >
       {children}
     </div>

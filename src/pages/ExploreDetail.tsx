@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useFullscreenFeed } from '@/hooks/useFullscreenFeed';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -13,14 +14,48 @@ const ExploreDetail = () => {
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [swipingInProgress, setSwipingInProgress] = useState(false);
 
   const {
     currentVideo,
     handleSwipe,
+    isFirst,
+    isLast,
+    videos,
+    currentIndex
   } = useFullscreenFeed(id || '');
 
   const handleClose = () => {
     navigate('/explore');
+  };
+
+  const handleVideoSwipe = (direction: 'up' | 'down') => {
+    if (swipingInProgress) return;
+    
+    setSwipingInProgress(true);
+    console.log(`ExploreDetail: Handling swipe ${direction}`);
+    
+    handleSwipe(direction);
+    
+    // If there's a current video after swiping, update the URL without reloading
+    setTimeout(() => {
+      if (videos && videos.length > 0) {
+        let newIndex = currentIndex;
+        
+        if (direction === 'up' && currentIndex < videos.length - 1) {
+          newIndex = currentIndex + 1;
+        } else if (direction === 'down' && currentIndex > 0) {
+          newIndex = currentIndex - 1;
+        }
+        
+        const nextVideo = videos[newIndex];
+        if (nextVideo && nextVideo.id !== id) {
+          // Update URL without triggering a full page reload
+          navigate(`/explore/${nextVideo.id}`, { replace: true });
+        }
+      }
+      setSwipingInProgress(false);
+    }, 50);
   };
 
   const handleShare = async () => {
@@ -133,6 +168,11 @@ const ExploreDetail = () => {
     });
   };
 
+  // Add logging to debug swipe issues
+  useEffect(() => {
+    console.log(`Current video index: ${currentIndex}, total videos: ${videos?.length || 0}`);
+  }, [currentIndex, videos]);
+
   if (!currentVideo) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -140,24 +180,35 @@ const ExploreDetail = () => {
   if (!isMobile) {
     return (
       <div className="min-h-screen bg-white dark:bg-dm-background flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
-        {/* Video Content with min 10px padding and aspect ratio */}
         <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center">
-          {currentVideo.video_url}
+          <VideoPlayer
+            video={currentVideo}
+            autoPlay={true}
+            showControls={true}
+            className="w-full h-full"
+            productLinks={[]}
+            objectFit="contain"
+          />
         </div>
       </div>
     );
   }
 
+  // Get product links for the current video
+  const productLinks = [];
+
   return (
     <FullscreenVideoFeed
       video={currentVideo}
       onClose={handleClose}
-      onSwipe={handleSwipe}
-      productLinks={[]} // Pass actual product links here
+      onSwipe={handleVideoSwipe}
+      productLinks={productLinks}
       onLike={handleLike}
       onComment={handleComment}
       onShare={handleShare}
       onProductClick={handleProductClick}
+      isFirst={isFirst}
+      isLast={isLast}
     />
   );
 };
