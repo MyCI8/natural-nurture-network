@@ -7,6 +7,7 @@ import FullscreenVideoFeed from '@/components/video/FullscreenVideoFeed';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import VideoPlayer from '@/components/video/VideoPlayer';
 
 const ExploreDetail = () => {
   const { id } = useParams();

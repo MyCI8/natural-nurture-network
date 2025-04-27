@@ -21,6 +21,7 @@ interface VideoPlayerProps {
   useAspectRatio?: boolean;
   visibleProductLink?: string | null;
   toggleProductLink?: (linkId: string) => void;
+  isMuted?: boolean; // Added isMuted prop to the interface
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -38,16 +39,25 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   objectFit = 'contain',
   useAspectRatio = true,
   visibleProductLink = null,
-  toggleProductLink
+  toggleProductLink,
+  isMuted: propIsMuted // Renamed to avoid conflict with internal state
 }) => {
-  const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
+  // If prop is provided, use it, otherwise default based on globalAudioEnabled
+  const [isMuted, setIsMuted] = useState(
+    propIsMuted !== undefined ? propIsMuted : !globalAudioEnabled
+  );
+  
   const [playbackStarted, setPlaybackStarted] = useState(false);
   const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
   
-  // Effect to handle mute state changes based on global audio setting
+  // Effect to handle mute state changes based on external props or global audio setting
   React.useEffect(() => {
-    setIsMuted(!globalAudioEnabled);
-  }, [globalAudioEnabled]);
+    if (propIsMuted !== undefined) {
+      setIsMuted(propIsMuted);
+    } else {
+      setIsMuted(!globalAudioEnabled);
+    }
+  }, [globalAudioEnabled, propIsMuted]);
   
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();

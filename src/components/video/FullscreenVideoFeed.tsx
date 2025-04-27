@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
@@ -40,7 +39,6 @@ const FullscreenVideoFeed: React.FC<FullscreenVideoFeedProps> = ({
   const swipeStartY = useRef<number | null>(null);
   const [swipeDirection, setSwipeDirection] = useState<string | null>(null);
 
-  // Handle manual swipe detection for more reliable behavior
   const handleTouchStart = (e: React.TouchEvent) => {
     swipeStartY.current = e.touches[0].clientY;
   };
@@ -99,7 +97,6 @@ const FullscreenVideoFeed: React.FC<FullscreenVideoFeedProps> = ({
             className="w-full h-full"
             productLinks={[]}
             objectFit="contain"
-            isMuted={isMuted}
           />
 
           {/* Top Controls */}
