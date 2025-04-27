@@ -1,93 +1,164 @@
-
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import VideoPlayer from '@/components/video/VideoPlayer';
-import { useLayout } from '@/contexts/LayoutContext';
-import { Button } from '@/components/ui/button';
+import { useFullscreenFeed } from '@/hooks/useFullscreenFeed';
+import { useIsMobile } from '@/hooks/use-mobile';
+import FullscreenVideoFeed from '@/components/video/FullscreenVideoFeed';
 import { useToast } from '@/hooks/use-toast';
-import { Swipeable } from '@/components/ui/swipeable';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const ExploreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { setShowRightSection } = useLayout();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setShowRightSection(true);
-    return () => setShowRightSection(false);
-  }, [setShowRightSection]);
+  const {
+    currentVideo,
+    handleSwipe,
+  } = useFullscreenFeed(id || '');
 
   const handleClose = () => {
-    // Always navigate back to explore page
     navigate('/explore');
   };
 
-  const { data: video, isLoading: isVideoLoading } = useQuery({
-    queryKey: ['video', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('videos')
-        .select(`
-          *,
-          related_article_id,
-          creator:creator_id (
-            id,
-            username,
-            avatar_url,
-            full_name
-          )
-        `)
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-
-      return {
-        ...data,
-        related_article_id: data.related_article_id || null
-      };
-    }
-  });
-
-  const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
-    if (direction === 'down' || direction === 'right') {
-      handleClose();
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: currentVideo?.title || 'Check out this video',
+          text: currentVideo?.description || '',
+          url: window.location.href
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link copied",
+          description: "Video link copied to clipboard"
+        });
+      } catch (err) {
+        console.error('Error copying to clipboard:', err);
+      }
     }
   };
 
-  if (isVideoLoading) {
+  const handleLike = async () => {
+    if (!currentVideo) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to like videos"
+      });
+      return;
+    }
+
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to like videos"
+      });
+      return;
+    }
+
+    const userId = user.user.id;
+    const videoId = currentVideo.id;
+
+    // Optimistically update the UI
+    queryClient.setQueryData(['explore-videos'], (old: any) => {
+      if (!old) return old;
+
+      const updatedVideos = old.map((video: any) => {
+        if (video.id === videoId) {
+          const isLiked = video.likes_count && video.likes_count > 0;
+          return {
+            ...video,
+            likes_count: isLiked ? video.likes_count - 1 : video.likes_count + 1,
+          };
+        }
+        return video;
+      });
+      return updatedVideos;
+    });
+
+    // Execute the like/unlike mutation
+    try {
+      const { data: existingLike } = await supabase
+        .from('video_likes')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('video_id', videoId)
+        .single();
+
+      if (existingLike) {
+        await supabase
+          .from('video_likes')
+          .delete()
+          .eq('user_id', userId)
+          .eq('video_id', videoId);
+      } else {
+        await supabase
+          .from('video_likes')
+          .insert([{ user_id: userId, video_id: videoId }]);
+      }
+
+      // Invalidate the query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['explore-videos'] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update like",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleComment = () => {
+    // Show comment dialog or navigate to comments view
+    toast({
+      title: "Comments",
+      description: "Comment feature coming soon"
+    });
+  };
+
+  const handleProductClick = () => {
+    // Show product overlay
+    toast({
+      title: "Products",
+      description: "Product details coming soon"
+    });
+  };
+
+  if (!currentVideo) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  if (!video) {
-    return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
+  if (!isMobile) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-dm-background flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
+        {/* Video Content with min 10px padding and aspect ratio */}
+        <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center">
+          {currentVideo.video_url}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <Swipeable 
-      onSwipe={handleSwipe} 
-      threshold={100} 
-      className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
-    >
-      <div className="flex-1 w-full h-full flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
-        {/* Video Content with min 10px padding and aspect ratio */}
-        <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center">
-          <VideoPlayer 
-            video={video} 
-            productLinks={[]} 
-            autoPlay={true} 
-            showControls={false} 
-            isFullscreen={false} 
-            className="w-full rounded-md overflow-hidden" 
-            objectFit="contain"
-            useAspectRatio={true}
-            onClick={handleClose}
-          />
-        </div>
-      </div>
-    </Swipeable>
+    <FullscreenVideoFeed
+      video={currentVideo}
+      onClose={handleClose}
+      onSwipe={handleSwipe}
+      productLinks={[]} // Pass actual product links here
+      onLike={handleLike}
+      onComment={handleComment}
+      onShare={handleShare}
+      onProductClick={handleProductClick}
+    />
   );
 };
 
