@@ -40,7 +40,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   useAspectRatio = true,
   visibleProductLink = null,
   toggleProductLink,
-  isMuted: propIsMuted // Renamed to avoid conflict with internal state
+  isMuted: propIsMuted
 }) => {
   // If prop is provided, use it, otherwise default based on globalAudioEnabled
   const [isMuted, setIsMuted] = useState(

@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useFullscreenFeed } from '@/hooks/useFullscreenFeed';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -34,11 +33,9 @@ const ExploreDetail = () => {
     if (swipingInProgress) return;
     
     setSwipingInProgress(true);
-    console.log(`ExploreDetail: Handling swipe ${direction}`);
     
     handleSwipe(direction);
     
-    // If there's a current video after swiping, update the URL without reloading
     setTimeout(() => {
       if (videos && videos.length > 0) {
         let newIndex = currentIndex;
@@ -51,12 +48,11 @@ const ExploreDetail = () => {
         
         const nextVideo = videos[newIndex];
         if (nextVideo && nextVideo.id !== id) {
-          // Update URL without triggering a full page reload
           navigate(`/explore/${nextVideo.id}`, { replace: true });
         }
       }
       setSwipingInProgress(false);
-    }, 50);
+    }, 300);
   };
 
   const handleShare = async () => {
@@ -104,7 +100,6 @@ const ExploreDetail = () => {
     const userId = user.user.id;
     const videoId = currentVideo.id;
 
-    // Optimistically update the UI
     queryClient.setQueryData(['explore-videos'], (old: any) => {
       if (!old) return old;
 
@@ -121,7 +116,6 @@ const ExploreDetail = () => {
       return updatedVideos;
     });
 
-    // Execute the like/unlike mutation
     try {
       const { data: existingLike } = await supabase
         .from('video_likes')
@@ -142,7 +136,6 @@ const ExploreDetail = () => {
           .insert([{ user_id: userId, video_id: videoId }]);
       }
 
-      // Invalidate the query to refresh the data
       queryClient.invalidateQueries({ queryKey: ['explore-videos'] });
     } catch (error: any) {
       toast({
@@ -154,7 +147,6 @@ const ExploreDetail = () => {
   };
 
   const handleComment = () => {
-    // Show comment dialog or navigate to comments view
     toast({
       title: "Comments",
       description: "Comment feature coming soon"
@@ -162,14 +154,12 @@ const ExploreDetail = () => {
   };
 
   const handleProductClick = () => {
-    // Show product overlay
     toast({
       title: "Products",
       description: "Product details coming soon"
     });
   };
 
-  // Add logging to debug swipe issues
   useEffect(() => {
     console.log(`Current video index: ${currentIndex}, total videos: ${videos?.length || 0}`);
   }, [currentIndex, videos]);
@@ -195,15 +185,12 @@ const ExploreDetail = () => {
     );
   }
 
-  // Get product links for the current video
-  const productLinks = [];
-
   return (
     <FullscreenVideoFeed
       video={currentVideo}
       onClose={handleClose}
       onSwipe={handleVideoSwipe}
-      productLinks={productLinks}
+      productLinks={[]}
       onLike={handleLike}
       onComment={handleComment}
       onShare={handleShare}
