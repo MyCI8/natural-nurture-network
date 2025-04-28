@@ -1,5 +1,5 @@
 
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 
 interface SwipeableProps {
   onSwipe?: (direction: 'left' | 'right' | 'up' | 'down') => void;
@@ -8,6 +8,7 @@ interface SwipeableProps {
   children: React.ReactNode;
   className?: string;
   enableZoom?: boolean;
+  disableScroll?: boolean;
 }
 
 export function Swipeable({ 
@@ -16,12 +17,15 @@ export function Swipeable({
   threshold = 50, 
   children, 
   className,
-  enableZoom = false
+  enableZoom = false,
+  disableScroll = false
 }: SwipeableProps) {
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const touchEnd = useRef<{ x: number; y: number } | null>(null);
+  const touchStart = useRef<{ x: number; y: number; time: number } | null>(null);
+  const touchEnd = useRef<{ x: number; y: number; time: number } | null>(null);
   const initialDistance = useRef<number | null>(null);
   const [scale, setScale] = useState(1);
+  const [swipeInProgress, setSwipeInProgress] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | 'down' | null>(null);
 
   // Calculate distance between two touch points
   const getDistance = (touches: React.TouchList): number => {
@@ -38,27 +42,49 @@ export function Swipeable({
     if (e.touches.length === 1) {
       touchStart.current = { 
         x: e.targetTouches[0].clientX, 
-        y: e.targetTouches[0].clientY 
+        y: e.targetTouches[0].clientY,
+        time: Date.now()
       };
       touchEnd.current = { 
         x: e.targetTouches[0].clientX, 
-        y: e.targetTouches[0].clientY 
+        y: e.targetTouches[0].clientY,
+        time: Date.now()
       };
+      setSwipeInProgress(true);
+      setSwipeDirection(null);
     } 
     // Multi-touch for pinch
     else if (e.touches.length === 2 && enableZoom) {
       initialDistance.current = getDistance(e.touches);
     }
-  }, [enableZoom]);
+
+    // Disable scroll if needed
+    if (disableScroll) {
+      document.body.style.overflow = 'hidden';
+    }
+  }, [enableZoom, disableScroll]);
 
   // Handle touch move
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     // Single touch for swipe
-    if (e.touches.length === 1) {
+    if (e.touches.length === 1 && touchStart.current) {
       touchEnd.current = { 
         x: e.targetTouches[0].clientX, 
-        y: e.targetTouches[0].clientY 
+        y: e.targetTouches[0].clientY,
+        time: Date.now()
       };
+
+      // Calculate current direction to provide visual feedback
+      const distX = touchEnd.current.x - touchStart.current.x;
+      const distY = touchEnd.current.y - touchStart.current.y;
+
+      if (Math.abs(distX) > Math.abs(distY) && Math.abs(distX) > threshold / 2) {
+        setSwipeDirection(distX > 0 ? 'right' : 'left');
+      } else if (Math.abs(distY) > threshold / 2) {
+        setSwipeDirection(distY > 0 ? 'down' : 'up');
+      } else {
+        setSwipeDirection(null);
+      }
     } 
     // Multi-touch for pinch
     else if (e.touches.length === 2 && enableZoom && initialDistance.current) {
@@ -74,20 +100,26 @@ export function Swipeable({
       // Prevent default to stop page zooming
       e.preventDefault();
     }
-  }, [enableZoom, scale, onPinch]);
+  }, [enableZoom, scale, onPinch, threshold]);
 
   // Handle touch end
   const handleTouchEnd = useCallback(() => {
     if (!touchStart.current || !touchEnd.current) return;
     
+    setSwipeInProgress(false);
+    
     // Only process swipe if we have onSwipe handler
     if (onSwipe) {
       const distX = touchEnd.current.x - touchStart.current.x;
       const distY = touchEnd.current.y - touchStart.current.y;
+      const elapsedTime = touchEnd.current.time - touchStart.current.time;
+      
+      // Faster swipes need less distance
+      const adjustedThreshold = elapsedTime < 300 ? threshold * 0.7 : threshold;
       
       // Check if horizontal swipe is larger than vertical swipe
       if (Math.abs(distX) > Math.abs(distY)) {
-        if (Math.abs(distX) > threshold) {
+        if (Math.abs(distX) > adjustedThreshold) {
           // Right swipe
           if (distX > 0) {
             onSwipe('right');
@@ -98,7 +130,7 @@ export function Swipeable({
           }
         }
       } else {
-        if (Math.abs(distY) > threshold) {
+        if (Math.abs(distY) > adjustedThreshold) {
           // Down swipe
           if (distY > 0) {
             onSwipe('down');
@@ -115,16 +147,45 @@ export function Swipeable({
     touchStart.current = null;
     touchEnd.current = null;
     initialDistance.current = null;
-  }, [onSwipe, threshold]);
+    setSwipeDirection(null);
+
+    // Re-enable scrolling
+    if (disableScroll) {
+      document.body.style.overflow = '';
+    }
+  }, [onSwipe, threshold, disableScroll]);
+
+  // Clean up scroll lock on unmount
+  useEffect(() => {
+    return () => {
+      if (disableScroll) {
+        document.body.style.overflow = '';
+      }
+    };
+  }, [disableScroll]);
 
   return (
     <div 
-      className={className} 
+      className={`${className || ''} ${swipeInProgress ? 'touch-manipulation' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       style={enableZoom ? { touchAction: 'none' } : undefined}
     >
+      {swipeDirection && (
+        <div className="fixed inset-0 pointer-events-none z-50">
+          {swipeDirection === 'up' && (
+            <div className="absolute top-10 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+              Next video
+            </div>
+          )}
+          {swipeDirection === 'down' && (
+            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+              Previous video
+            </div>
+          )}
+        </div>
+      )}
       {children}
     </div>
   );

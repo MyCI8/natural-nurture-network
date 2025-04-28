@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
@@ -21,6 +21,9 @@ interface VideoPlayerProps {
   useAspectRatio?: boolean;
   visibleProductLink?: string | null;
   toggleProductLink?: (linkId: string) => void;
+  onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+  showProgress?: boolean;
+  progressValue?: number;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -38,14 +41,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   objectFit = 'contain',
   useAspectRatio = true,
   visibleProductLink = null,
-  toggleProductLink
+  toggleProductLink,
+  onTimeUpdate,
+  showProgress = false,
+  progressValue
 }) => {
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
   const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
   
   // Effect to handle mute state changes based on global audio setting
-  React.useEffect(() => {
+  useEffect(() => {
     setIsMuted(!globalAudioEnabled);
   }, [globalAudioEnabled]);
   
@@ -130,6 +136,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       feedAspectRatio={feedAspectRatio}
       objectFit={objectFit}
       onInView={handleInView}
+      onTimeUpdate={onTimeUpdate}
+      showProgress={showProgress}
+      progressValue={progressValue}
     />
   );
 };

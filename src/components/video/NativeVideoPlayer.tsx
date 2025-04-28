@@ -5,6 +5,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { useInView } from 'react-intersection-observer';
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Progress } from '@/components/ui/progress';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -25,6 +26,9 @@ interface NativeVideoPlayerProps {
   feedAspectRatio?: number;
   objectFit?: 'contain' | 'cover';
   onInView?: (inView: boolean) => void;
+  onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+  showProgress?: boolean;
+  progressValue?: number;
 }
 
 const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
@@ -45,11 +49,16 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   useAspectRatio = true,
   feedAspectRatio = 4/5,
   objectFit = 'contain',
-  onInView
+  onInView,
+  onTimeUpdate,
+  showProgress = false,
+  progressValue
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showProductOverlay, setShowProductOverlay] = useState(false);
+  const [currentProgress, setCurrentProgress] = useState(0);
+  const [buffering, setBuffering] = useState(false);
   const [inViewRef, inView] = useInView({
     threshold: 0.5,
     onChange: (inView) => {
@@ -57,6 +66,25 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     },
   });
   const isMobile = useIsMobile();
+
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    if (onTimeUpdate) {
+      onTimeUpdate(e);
+    } else {
+      const video = e.currentTarget;
+      if (video.duration) {
+        setCurrentProgress((video.currentTime / video.duration) * 100);
+      }
+    }
+  };
+
+  const handleWaiting = () => {
+    setBuffering(true);
+  };
+
+  const handlePlaying = () => {
+    setBuffering(false);
+  };
 
   useEffect(() => {
     if (videoRef.current) {
@@ -171,6 +199,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     );
   };
 
+  const displayProgress = progressValue !== undefined ? progressValue : currentProgress;
+
   return (
     <div
       className={`relative ${className}`}
@@ -186,19 +216,43 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             loop
             playsInline
             className="w-full h-full object-cover cursor-pointer"
-            style={{ objectFit: objectFit }}
+            style={{ objectFit }}
+            onTimeUpdate={handleTimeUpdate}
+            onWaiting={handleWaiting}
+            onPlaying={handlePlaying}
           />
+          {showProgress && (
+            <div className="absolute bottom-0 left-0 right-0 z-10">
+              <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
+            </div>
+          )}
         </AspectRatio>
       ) : (
-        <video
-          ref={videoRef}
-          src={video.video_url}
-          muted={isMuted}
-          loop
-          playsInline
-          className="w-full h-full object-cover cursor-pointer rounded-md"
-          style={{ objectFit: objectFit }}
-        />
+        <div className="relative w-full h-full">
+          <video
+            ref={videoRef}
+            src={video.video_url}
+            muted={isMuted}
+            loop
+            playsInline
+            className="w-full h-full object-cover cursor-pointer rounded-md"
+            style={{ objectFit }}
+            onTimeUpdate={handleTimeUpdate}
+            onWaiting={handleWaiting}
+            onPlaying={handlePlaying}
+          />
+          {showProgress && (
+            <div className="absolute bottom-0 left-0 right-0 z-10">
+              <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {buffering && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-20">
+          <div className="h-12 w-12 rounded-full border-4 border-white border-t-transparent animate-spin"></div>
+        </div>
       )}
 
       {renderMobileControls()}
