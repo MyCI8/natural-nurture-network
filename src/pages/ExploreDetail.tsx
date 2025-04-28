@@ -105,17 +105,18 @@ const ExploreDetail = () => {
       return;
     }
     
-    if (direction === 'up') {
+    if (direction === 'up' && currentIndex < adjacentVideos.length - 1) {
       // Navigate to next video
-      if (currentIndex < adjacentVideos.length - 1) {
-        const nextVideo = adjacentVideos[currentIndex + 1];
-        if (nextVideo) {
-          navigate(`/explore/${nextVideo.id}`, { replace: true });
-        }
+      const nextVideo = adjacentVideos[currentIndex + 1];
+      if (nextVideo) {
+        navigate(`/explore/${nextVideo.id}`, { replace: true });
       }
-    } else if (direction === 'left') {
-      // For left swipe, use the same behavior as down/right
-      handleClose();
+    } else if (direction === 'down' && currentIndex > 0) {
+      // Navigate to previous video
+      const prevVideo = adjacentVideos[currentIndex - 1];
+      if (prevVideo) {
+        navigate(`/explore/${prevVideo.id}`, { replace: true });
+      }
     }
   };
 
