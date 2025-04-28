@@ -1,5 +1,5 @@
 
-import React, { useState, forwardRef } from 'react';
+import React, { useState } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
@@ -21,10 +21,9 @@ interface VideoPlayerProps {
   useAspectRatio?: boolean;
   visibleProductLink?: string | null;
   toggleProductLink?: (linkId: string) => void;
-  isMuted?: boolean; // Added isMuted prop to the interface
 }
 
-const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({ 
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
   video, 
   productLinks = [], 
   autoPlay = true,
@@ -39,25 +38,16 @@ const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({
   objectFit = 'contain',
   useAspectRatio = true,
   visibleProductLink = null,
-  toggleProductLink,
-  isMuted: propIsMuted
-}, ref) => {
-  // If prop is provided, use it, otherwise default based on globalAudioEnabled
-  const [isMuted, setIsMuted] = useState(
-    propIsMuted !== undefined ? propIsMuted : !globalAudioEnabled
-  );
-  
+  toggleProductLink
+}) => {
+  const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
   const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
   
-  // Effect to handle mute state changes based on external props or global audio setting
+  // Effect to handle mute state changes based on global audio setting
   React.useEffect(() => {
-    if (propIsMuted !== undefined) {
-      setIsMuted(propIsMuted);
-    } else {
-      setIsMuted(!globalAudioEnabled);
-    }
-  }, [globalAudioEnabled, propIsMuted]);
+    setIsMuted(!globalAudioEnabled);
+  }, [globalAudioEnabled]);
   
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -140,11 +130,8 @@ const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({
       feedAspectRatio={feedAspectRatio}
       objectFit={objectFit}
       onInView={handleInView}
-      ref={ref}
     />
   );
-});
-
-VideoPlayer.displayName = 'VideoPlayer';
+};
 
 export default VideoPlayer;

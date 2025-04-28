@@ -54,11 +54,11 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setIsFullWidth(false);
     } 
     else if (path.startsWith('/explore/')) {
-      setLayoutMode('full');
-      setShowRightSection(false);
-      setContentWidth('p-0');
-      setContentMaxWidth('max-w-full');
-      setIsFullWidth(true);
+      setLayoutMode('three-column');
+      setShowRightSection(!isMobile);
+      setContentWidth(isMobile ? 'p-0' : 'p-0 sm:px-2');
+      setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
+      setIsFullWidth(isMobile);
     }
     else if (path.startsWith('/symptoms/')) {
       setLayoutMode('three-column');
