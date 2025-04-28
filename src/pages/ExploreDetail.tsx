@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useFullscreenFeed } from '@/hooks/useFullscreenFeed';
@@ -29,7 +28,6 @@ const ExploreDetail = () => {
     currentIndex
   } = useFullscreenFeed(id || '');
 
-  // Hide header and set full layout when in fullscreen mode
   useEffect(() => {
     if (isMobile) {
       setLayoutMode('full');
@@ -37,7 +35,6 @@ const ExploreDetail = () => {
     }
     
     return () => {
-      // Restore default layout when component unmounts
       setLayoutMode('default');
       setShowRightSection(false);
     };
@@ -72,7 +69,7 @@ const ExploreDetail = () => {
       }
       setSwipingInProgress(false);
       setTransitionDirection(null);
-    }, 300); // Match transition duration
+    }, 300);
   };
 
   const handleShare = async () => {

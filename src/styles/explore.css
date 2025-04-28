@@ -124,6 +124,14 @@
 }
 
 /* New video swipe transition animations */
+.transition-none {
+  transition: none !important;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease-out;
+}
+
 @keyframes slide-up {
   from {
     transform: translateY(0);

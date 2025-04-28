@@ -41,39 +41,19 @@ const FullscreenVideoFeed: React.FC<FullscreenVideoFeedProps> = ({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const swipeThreshold = 80; // Minimum distance to trigger swipe
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const swipeThreshold = 80;
   const touchStartTimeRef = useRef<number>(0);
   
-  // Track video progress
-  useEffect(() => {
-    const updateProgress = () => {
-      if (videoRef.current) {
-        const currentTime = videoRef.current.currentTime;
-        const duration = videoRef.current.duration || 1;
-        const calculatedProgress = (currentTime / duration) * 100;
-        setProgress(calculatedProgress);
-      }
-    };
-
-    const videoElement = videoRef.current;
-    if (videoElement) {
-      videoElement.addEventListener('timeupdate', updateProgress);
-    }
-
-    return () => {
-      if (videoElement) {
-        videoElement.removeEventListener('timeupdate', updateProgress);
-      }
-    };
-  }, []);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     swipeStartY.current = e.touches[0].clientY;
     touchStartTimeRef.current = Date.now();
+    setSwipeOffset(0);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!swipeStartY.current) return;
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!swipeStartY.current || !containerRef.current) return;
     
     const currentY = e.touches[0].clientY;
     const diffY = swipeStartY.current - currentY;
@@ -82,36 +62,36 @@ const FullscreenVideoFeed: React.FC<FullscreenVideoFeedProps> = ({
     // Apply resistance at the edges
     if ((swipeDirection === 'up' && isLast) || (swipeDirection === 'down' && isFirst)) {
       // Add resistance by reducing movement
-      const element = e.currentTarget;
-      const translateY = Math.abs(diffY) > swipeThreshold 
-        ? diffY / 3 // Apply resistance
-        : 0;
-      
-      element.style.transform = `translateY(${-translateY}px)`;
-      element.style.transition = 'none';
+      const resistance = 3;
+      const newOffset = -diffY / resistance;
+      setSwipeOffset(newOffset);
+      containerRef.current.classList.add('transition-none');
+      containerRef.current.classList.remove('transition-transform');
+    } else {
+      setSwipeOffset(-diffY);
+      containerRef.current.classList.add('transition-none');
+      containerRef.current.classList.remove('transition-transform');
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!swipeStartY.current) return;
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!swipeStartY.current || !containerRef.current) return;
     
     const touchEndTime = Date.now();
     const touchDuration = touchEndTime - touchStartTimeRef.current;
     const endY = e.changedTouches[0].clientY;
     const diffY = swipeStartY.current - endY;
     const isFastSwipe = touchDuration < 250 && Math.abs(diffY) > swipeThreshold / 2;
-    
-    // Reset any transform we applied during touchmove
-    e.currentTarget.style.transform = '';
-    e.currentTarget.style.transition = '';
+
+    containerRef.current.classList.remove('transition-none');
+    containerRef.current.classList.add('transition-transform');
+    setSwipeOffset(0);
     
     if (Math.abs(diffY) > swipeThreshold || isFastSwipe) {
       setIsTransitioning(true);
       if (diffY > 0 && !isLast) {
-        // Up swipe - Next video
         onSwipe('up');
       } else if (diffY < 0 && !isFirst) {
-        // Down swipe - Previous video
         onSwipe('down');
       }
       setTimeout(() => setIsTransitioning(false), 300);
@@ -124,19 +104,16 @@ const FullscreenVideoFeed: React.FC<FullscreenVideoFeedProps> = ({
     setIsMuted(!isMuted);
   };
 
-  const getSwipeTransitionClass = () => {
-    if (!isTransitioning) return '';
-    return 'transition-transform duration-300 ease-in-out';
-  };
-
   return (
     <div 
-      className="fixed inset-0 bg-black touch-manipulation z-50 overflow-hidden"
+      ref={containerRef}
+      className={`fixed inset-0 bg-black touch-manipulation z-50 overflow-hidden transition-transform duration-300 ease-out`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      style={{ transform: `translateY(${swipeOffset}px)` }}
     >
-      <div className={`relative w-full h-full ${getSwipeTransitionClass()}`}>
+      <div className="relative w-full h-full">
         <VideoPlayer
           video={video}
           autoPlay={true}
@@ -178,7 +155,7 @@ const FullscreenVideoFeed: React.FC<FullscreenVideoFeedProps> = ({
           </Button>
         </div>
 
-        {/* Bottom Right Controls */}
+        {/* Right Controls */}
         <div className="absolute bottom-20 right-4 flex flex-col items-center gap-6 z-20">
           <Button
             variant="ghost"
