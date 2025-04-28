@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
+
+import React, { useRef, useState, useEffect, forwardRef } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { X, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -27,7 +28,7 @@ interface NativeVideoPlayerProps {
   onInView?: (inView: boolean) => void;
 }
 
-const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
+const NativeVideoPlayer = forwardRef<HTMLVideoElement, NativeVideoPlayerProps>(({
   video,
   productLinks = [],
   autoPlay = true,
@@ -46,8 +47,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   feedAspectRatio = 4/5,
   objectFit = 'contain',
   onInView
-}) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+}, ref) => {
+  const videoInternalRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showProductOverlay, setShowProductOverlay] = useState(false);
   const [inViewRef, inView] = useInView({
@@ -57,12 +58,33 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     },
   });
   const isMobile = useIsMobile();
+  
+  // Merge refs
+  const setRefs = (element: HTMLVideoElement | null) => {
+    // Update the internal ref
+    if (videoInternalRef) {
+      (videoInternalRef as React.MutableRefObject<HTMLVideoElement | null>).current = element;
+    }
+    
+    // Forward the ref to the parent component
+    if (typeof ref === 'function') {
+      ref(element);
+    } else if (ref) {
+      ref.current = element;
+    }
+    
+    // Update the intersection observer ref
+    if (typeof inViewRef === 'function') {
+      inViewRef(element);
+    }
+  };
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted;
+    const videoRef = videoInternalRef.current;
+    if (videoRef) {
+      videoRef.muted = isMuted;
       if (autoPlay) {
-        const playPromise = videoRef.current.play();
+        const playPromise = videoRef.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
             setIsPlaying(true);
@@ -77,8 +99,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   }, [isMuted, autoPlay, setPlaybackStarted]);
 
   useEffect(() => {
-    if (inView && videoRef.current && !isPlaying && autoPlay) {
-      const playPromise = videoRef.current.play();
+    const videoRef = videoInternalRef.current;
+    if (inView && videoRef && !isPlaying && autoPlay) {
+      const playPromise = videoRef.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
           setIsPlaying(true);
@@ -88,20 +111,21 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           setIsPlaying(false);
         });
       }
-    } else if (!inView && videoRef.current && isPlaying) {
-      videoRef.current.pause();
+    } else if (!inView && videoRef && isPlaying) {
+      videoRef.pause();
       setIsPlaying(false);
     }
   }, [inView, autoPlay, isPlaying, setPlaybackStarted]);
 
   const handlePlayPause = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (videoRef.current) {
+    const videoRef = videoInternalRef.current;
+    if (videoRef) {
       if (isPlaying) {
-        videoRef.current.pause();
+        videoRef.pause();
         setIsPlaying(false);
       } else {
-        videoRef.current.play();
+        videoRef.play();
         setIsPlaying(true);
         setPlaybackStarted?.(true);
       }
@@ -175,12 +199,11 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     <div
       className={`relative ${className}`}
       onClick={handleVideoClick}
-      ref={inViewRef}
     >
       {useAspectRatio ? (
         <AspectRatio ratio={feedAspectRatio} className="w-full h-full bg-black overflow-hidden rounded-md">
           <video
-            ref={videoRef}
+            ref={setRefs}
             src={video.video_url}
             muted={isMuted}
             loop
@@ -191,7 +214,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         </AspectRatio>
       ) : (
         <video
-          ref={videoRef}
+          ref={setRefs}
           src={video.video_url}
           muted={isMuted}
           loop
@@ -268,6 +291,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       )}
     </div>
   );
-};
+});
+
+NativeVideoPlayer.displayName = 'NativeVideoPlayer';
 
 export default NativeVideoPlayer;

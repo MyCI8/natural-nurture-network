@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useFullscreenFeed } from '@/hooks/useFullscreenFeed';
@@ -7,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
+import { useLayout } from '@/contexts/LayoutContext';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -15,6 +17,8 @@ const ExploreDetail = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [swipingInProgress, setSwipingInProgress] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'up' | 'down' | null>(null);
+  const { setLayoutMode, setShowRightSection } = useLayout();
 
   const {
     currentVideo,
@@ -25,6 +29,20 @@ const ExploreDetail = () => {
     currentIndex
   } = useFullscreenFeed(id || '');
 
+  // Hide header and set full layout when in fullscreen mode
+  useEffect(() => {
+    if (isMobile) {
+      setLayoutMode('full');
+      setShowRightSection(false);
+    }
+    
+    return () => {
+      // Restore default layout when component unmounts
+      setLayoutMode('default');
+      setShowRightSection(false);
+    };
+  }, [isMobile, setLayoutMode, setShowRightSection]);
+
   const handleClose = () => {
     navigate('/explore');
   };
@@ -33,6 +51,7 @@ const ExploreDetail = () => {
     if (swipingInProgress) return;
     
     setSwipingInProgress(true);
+    setTransitionDirection(direction);
     
     handleSwipe(direction);
     
@@ -52,7 +71,8 @@ const ExploreDetail = () => {
         }
       }
       setSwipingInProgress(false);
-    }, 300);
+      setTransitionDirection(null);
+    }, 300); // Match transition duration
   };
 
   const handleShare = async () => {
@@ -164,6 +184,14 @@ const ExploreDetail = () => {
     console.log(`Current video index: ${currentIndex}, total videos: ${videos?.length || 0}`);
   }, [currentIndex, videos]);
 
+  const getTransitionClasses = () => {
+    if (!swipingInProgress || !transitionDirection) return '';
+    
+    return transitionDirection === 'up' 
+      ? 'animate-slide-up' 
+      : 'animate-slide-down';
+  };
+
   if (!currentVideo) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -186,18 +214,20 @@ const ExploreDetail = () => {
   }
 
   return (
-    <FullscreenVideoFeed
-      video={currentVideo}
-      onClose={handleClose}
-      onSwipe={handleVideoSwipe}
-      productLinks={[]}
-      onLike={handleLike}
-      onComment={handleComment}
-      onShare={handleShare}
-      onProductClick={handleProductClick}
-      isFirst={isFirst}
-      isLast={isLast}
-    />
+    <div className={`${getTransitionClasses()}`}>
+      <FullscreenVideoFeed
+        video={currentVideo}
+        onClose={handleClose}
+        onSwipe={handleVideoSwipe}
+        productLinks={[]}
+        onLike={handleLike}
+        onComment={handleComment}
+        onShare={handleShare}
+        onProductClick={handleProductClick}
+        isFirst={isFirst}
+        isLast={isLast}
+      />
+    </div>
   );
 };
 

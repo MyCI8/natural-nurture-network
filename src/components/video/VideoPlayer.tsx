@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
@@ -24,7 +24,7 @@ interface VideoPlayerProps {
   isMuted?: boolean; // Added isMuted prop to the interface
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
+const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(({ 
   video, 
   productLinks = [], 
   autoPlay = true,
@@ -41,7 +41,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   visibleProductLink = null,
   toggleProductLink,
   isMuted: propIsMuted
-}) => {
+}, ref) => {
   // If prop is provided, use it, otherwise default based on globalAudioEnabled
   const [isMuted, setIsMuted] = useState(
     propIsMuted !== undefined ? propIsMuted : !globalAudioEnabled
@@ -140,8 +140,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       feedAspectRatio={feedAspectRatio}
       objectFit={objectFit}
       onInView={handleInView}
+      ref={ref}
     />
   );
-};
+});
+
+VideoPlayer.displayName = 'VideoPlayer';
 
 export default VideoPlayer;

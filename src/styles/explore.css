@@ -1,402 +1,184 @@
+/* Instagram feed animations and styles */
 .instagram-feed-item {
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto 20px;
-  background-color: white;
-  border: 1px solid #dbdbdb;
-  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
   overflow: hidden;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .dark .instagram-feed-item {
-  background-color: #1E1E1E;
-  border-color: #404040;
+  background-color: #1A1F2C;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .instagram-header {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
-  gap: 8px;
+  padding: 0.75rem 1rem;
 }
 
 .instagram-username {
   font-weight: 600;
+  font-size: 0.875rem;
+  margin-left: 0.5rem;
   cursor: pointer;
-}
-
-.instagram-username:hover {
-  text-decoration: underline;
 }
 
 .instagram-video-container {
+  position: relative;
   width: 100%;
   background-color: black;
+  cursor: pointer;
 }
 
 .instagram-actions {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(219, 219, 219, 0.3);
-}
-
-.dark .instagram-actions {
-  border-color: rgba(64, 64, 64, 0.3);
+  padding: 0.5rem 1rem;
 }
 
 .instagram-likes {
-  padding: 0 12px 4px;
-  font-weight: 600;
-  font-size: 14px;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.dark .instagram-likes,
-.dark .instagram-description,
-.dark .instagram-username {
-  color: #E5E5E5;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .instagram-description {
-  padding: 0 12px 8px;
-  font-size: 14px;
-  text-align: left;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
 }
 
 .instagram-view-comments {
-  padding: 0 12px 8px;
-  font-size: 14px;
+  padding: 0 1rem;
+  font-size: 0.75rem;
   color: #8e8e8e;
+  margin-bottom: 0.5rem;
   cursor: pointer;
-  text-align: left;
-}
-
-.dark .instagram-view-comments {
-  color: #A0A0A0;
 }
 
 .instagram-comment-input {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-top: 1px solid #dbdbdb;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid #efefef;
 }
 
 .dark .instagram-comment-input {
-  border-color: #404040;
+  border-color: #2d2d2d;
 }
 
-.video-container {
-  background-color: #000 !important;
-  position: relative !important;
-  overflow: hidden !important;
+/* Product card styling */
+.product-card-overlay-fullwidth {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
 }
 
-.video-container video {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
+.product-card-blur-full {
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
 }
 
-.dark input::placeholder {
-  color: #A0A0A0;
-}
-
-.aspect-16-9 {
-  aspect-ratio: 16/9;
-  width: 100%;
-  height: auto;
-  overflow: hidden;
-}
-
-.aspect-16-9 img,
-.aspect-16-9 video {
-  width: 100%;
-  height: 100%;
+.product-image-2x {
+  width: 60px;
+  height: 60px;
   object-fit: cover;
+  border-radius: 0.5rem;
 }
 
+.product-btn-bw-outline {
+  border: 1px solid currentColor;
+  transition: background-color 0.2s ease;
+}
+
+/* Slide animations for fullscreen video feed */
+.slide-in-up {
+  animation: slide-in-up 0.3s ease-in-out forwards;
+}
+
+.slide-out-down-product-card {
+  animation: slide-out-down 0.3s ease-in-out forwards;
+}
+
+@keyframes slide-in-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+/* New video swipe transition animations */
+@keyframes slide-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-in-out forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-in-out forwards;
+}
+
+/* Ensure videos use hardware acceleration */
+video {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Touch optimization to remove tap delay */
 .touch-manipulation {
   touch-action: manipulation;
 }
 
-@media (max-width: 768px) {
-  .thumb-friendly {
-    margin-bottom: 1rem;
-  }
-  
-  .instagram-actions {
-    padding-bottom: 10px;
-  }
+/* Active scale effect for buttons */
+.active-scale {
+  transition: transform 0.1s ease;
 }
 
-@media (min-width: 768px) {
-  .instagram-feed-item {
-    margin-bottom: 28px;
-  }
+.active-scale:active {
+  transform: scale(0.95);
 }
 
-.action-button {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+/* Glass morphism effect */
+.glass-morphism {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 0.5rem;
 }
 
-@media (max-width: 768px) {
-  .instagram-actions button,
-  .video-dialog-actions button {
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .instagram-likes button {
-    min-width: 32px;
-    min-height: 32px;
-  }
-}
-
-.shadow-up {
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.product-button-pulse {
-  animation: product-pulse 2s ease-in-out infinite;
-}
-
-.slide-in-up {
-  animation: slide-in-up 0.3s ease-out forwards;
-}
-
-.slide-out-down {
-  animation: slide-out-down 0.3s ease-out forwards;
-}
-
-.product-card-overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 40;
-  min-height: 0;
-  pointer-events: all;
-  display: flex;
-  justify-content: center;
-  transition: opacity .25s cubic-bezier(.4,0,.2,1);
-  animation: slide-in-up 0.33s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.product-card-blur {
-  min-width: 240px;
-  max-width: 320px;
-  width: 96vw;
-  margin: 0 auto 16px;
-  background: rgba(255,255,255,0.92);
-  border-radius: 16px 16px 10px 10px;
-  box-shadow: 0 6px 32px 0 rgba(0,0,0,0.30);
-  padding: 18px 16px 16px 16px;
-  position: relative;
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  border: 1.5px solid rgba(155, 135, 245, 0.3);
-  font-size: 1rem;
-}
-
-.dark .product-card-blur {
-  background: rgba(40,40,40,0.95);
-  color: #E5E5E5;
-}
-
-.product-btn-bw,
-.product-btn-bw-outline {
-  background: transparent;
-  color: #111;
-  border: 1.5px solid #111;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: background 0.1s, color 0.1s, border 0.1s;
-  outline: none;
-  box-shadow: none;
-  min-width: 48px;
-  min-height: 38px;
-  padding: 7px 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.product-btn-bw-outline {
-  border-radius: 6px;
-}
-
-.product-btn-bw:hover,
-.product-btn-bw:focus-visible,
-.product-btn-bw-outline:hover,
-.product-btn-bw-outline:focus-visible {
-  background: #fafafa;
-  color: #111;
-  border-color: #222;
-}
-
-.dark .product-btn-bw,
-.dark .product-btn-bw-outline {
-  color: #fff;
-  border-color: #fff;
-  background: transparent;
-}
-
-.dark .product-btn-bw:hover,
-.dark .product-btn-bw:focus-visible,
-.dark .product-btn-bw-outline:hover,
-.dark .product-btn-bw-outline:focus-visible {
-  background: #191919;
-  color: #fff;
-  border-color: #fff;
-}
-
-.product-card-overlay-fullwidth {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  z-index: 50;
-  display: flex;
-  justify-content: center;
-  pointer-events: all;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.product-card-blur-full {
-  width: 100vw;
-  max-width: 100%;
-  margin: 0;
-  background: rgba(255,255,255,0.87);
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 6px 32px 0 rgba(0,0,0,0.18);
-  padding: 30px 20px 18px 20px;
-  position: relative;
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
-  border: 1.5px solid rgba(55, 36, 78, 0.20);
-  font-size: 1rem;
-  left: 0;
-  right: 0;
-  min-width: 0;
-  animation: slide-in-up 0.33s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  transition: opacity .24s cubic-bezier(.4,0,.2,1), transform .33s cubic-bezier(.4,0,.2,1);
-  opacity: 1;
-}
-
-.dark .product-card-blur-full {
-  background: rgba(28,28,32,0.95);
-  color: #E5E5E5;
-  border-color: rgba(235, 235, 235, 0.18);
-}
-
-.product-card-blur-full .product-image-2x {
-  width: 128px !important;
-  height: 128px !important;
-  min-width: 128px !important;
-  min-height: 128px !important;
-  max-width: 130px !important;
-  max-height: 130px !important;
-  object-fit: contain;
-  border-radius: 12px !important;
-  background: #fff;
-  margin-right: 1rem;
-}
-
-.dark .product-card-blur-full .product-image-2x {
-  background: #222;
-}
-
-@keyframes slide-out-down-product-card {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(80px);
-    opacity: 0;
-  }
-}
-.slide-out-down-product-card {
-  animation: slide-out-down-product-card 0.32s cubic-bezier(.4,0,.2,1) forwards;
-}
-
-@media (max-width: 768px) {
-  .product-card-blur-full {
-    width: 100vw;
-    border-radius: 12px 12px 0 0;
-    padding: 16px 4vw 18px 4vw;
-    max-width: 100vw;
-  }
-  .product-card-blur-full .product-image-2x {
-    width: 90px !important;
-    height: 90px !important;
-    min-width: 90px !important;
-    min-height: 90px !important;
-    max-width: 92px !important;
-    max-height: 92px !important;
-  }
-}
-
-.product-btn-gradient {
-  display: none !important;
-}
-
-.fullscreen-video-feed {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #000;
-  z-index: 50;
-  touch-action: manipulation;
-}
-
-.fullscreen-video-player {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.video-controls-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 51;
-  pointer-events: none;
-}
-
-.video-controls-overlay button {
-  pointer-events: auto;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.fade-in {
-  animation: fade-in 0.3s ease-out;
+.dark .glass-morphism {
+  background-color: rgba(26, 31, 44, 0.8);
 }
