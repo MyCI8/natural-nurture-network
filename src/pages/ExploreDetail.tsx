@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +10,8 @@ import { Swipeable } from '@/components/ui/swipeable';
 import { Progress } from '@/components/ui/progress';
 import { Video } from '@/types/video';
 import { X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileReelsView from '@/components/video/MobileReelsView';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -20,6 +21,8 @@ const ExploreDetail = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
+  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
 
   useEffect(() => {
     setShowRightSection(true);
@@ -120,6 +123,10 @@ const ExploreDetail = () => {
     }
   };
 
+  const handleAudioStateChange = (isMuted: boolean) => {
+    setGlobalAudioEnabled(!isMuted);
+  };
+
   useEffect(() => {
     // Reset progress when video changes
     setProgress(0);
@@ -134,6 +141,22 @@ const ExploreDetail = () => {
     return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
   }
 
+  // Use a more Instagram Reels-like experience on mobile
+  if (isMobile) {
+    return (
+      <MobileReelsView 
+        currentVideo={video} 
+        adjacentVideos={adjacentVideos}
+        currentIndex={currentIndex}
+        onClose={handleClose}
+        globalAudioEnabled={globalAudioEnabled}
+        onAudioStateChange={handleAudioStateChange}
+        onSwipeNavigate={handleSwipe}
+      />
+    );
+  }
+
+  // Desktop experience remains unchanged
   return (
     <Swipeable 
       onSwipe={handleSwipe} 
