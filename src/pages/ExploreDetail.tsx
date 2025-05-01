@@ -103,23 +103,32 @@ const ExploreDetail = () => {
   };
 
   const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
+    // Close the detail view if swiping down or right
     if (direction === 'down' || direction === 'right') {
       handleClose();
       return;
     }
     
-    if (direction === 'up' && currentIndex < adjacentVideos.length - 1) {
-      // Navigate to next video
-      const nextVideo = adjacentVideos[currentIndex + 1];
-      if (nextVideo) {
-        navigate(`/explore/${nextVideo.id}`, { replace: true });
+    // Navigate to next video if swiping up
+    if (direction === 'up') {
+      if (currentIndex < adjacentVideos.length - 1) {
+        const nextVideo = adjacentVideos[currentIndex + 1];
+        if (nextVideo) {
+          navigate(`/explore/${nextVideo.id}`, { replace: true });
+        }
       }
-    } else if (direction === 'down' && currentIndex > 0) {
-      // Navigate to previous video
-      const prevVideo = adjacentVideos[currentIndex - 1];
-      if (prevVideo) {
-        navigate(`/explore/${prevVideo.id}`, { replace: true });
+      return;
+    }
+    
+    // Navigate to previous video if swiping left
+    if (direction === 'left') {
+      if (currentIndex > 0) {
+        const prevVideo = adjacentVideos[currentIndex - 1];
+        if (prevVideo) {
+          navigate(`/explore/${prevVideo.id}`, { replace: true });
+        }
       }
+      return;
     }
   };
 
