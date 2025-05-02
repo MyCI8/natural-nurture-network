@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Video } from '@/types/video';
 import { Swipeable } from '@/components/ui/swipeable';
@@ -9,23 +10,21 @@ import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
 
 interface MobileReelsViewProps {
-  currentVideo: Video;
-  adjacentVideos: Video[];
+  currentId: string;
+  videos: Video[];
   currentIndex: number;
   onClose: () => void;
   globalAudioEnabled: boolean;
   onAudioStateChange: (isMuted: boolean) => void;
-  onSwipeNavigate: (direction: 'left' | 'right' | 'up' | 'down') => void;
 }
 
 const MobileReelsView: React.FC<MobileReelsViewProps> = ({
-  currentVideo,
-  adjacentVideos,
+  currentId,
+  videos,
   currentIndex,
   onClose,
   globalAudioEnabled,
-  onAudioStateChange,
-  onSwipeNavigate
+  onAudioStateChange
 }) => {
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
   const [swipeHint, setSwipeHint] = useState<boolean>(true);
@@ -33,10 +32,14 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   const [swipingDirection, setSwipingDirection] = useState<'up' | 'down' | null>(null);
   const [swipeProgress, setSwipeProgress] = useState(0); // 0 to 1
   const containerRef = useRef<HTMLDivElement>(null);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(currentIndex);
+  
+  // Get current video from videos array
+  const currentVideo = videos[activeVideoIndex] || videos[0];
   
   // Videos to display (current, previous, next)
-  const prevVideo = adjacentVideos[currentIndex - 1];
-  const nextVideo = adjacentVideos[currentIndex + 1];
+  const prevVideo = videos[activeVideoIndex - 1];
+  const nextVideo = videos[activeVideoIndex + 1];
 
   const toggleLike = (videoId: string) => {
     setLikedVideos(prev => ({
@@ -47,14 +50,40 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
 
   // Handle swipe with smooth transition
   const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
-    // For horizontal swipes, just use the provided handler
+    // For horizontal swipes, just close the modal
     if (direction === 'left' || direction === 'right') {
-      onSwipeNavigate(direction);
+      onClose();
       return;
     }
     
-    // For vertical swipes, we're handling the transitions in CSS
-    onSwipeNavigate(direction);
+    // For vertical swipes, update the active video index
+    if (direction === 'up' && activeVideoIndex < videos.length - 1) {
+      setActiveVideoIndex(activeVideoIndex + 1);
+      
+      // Update URL without navigation
+      const nextVideo = videos[activeVideoIndex + 1];
+      if (nextVideo) {
+        window.history.replaceState(
+          {}, 
+          '', 
+          `/explore/${nextVideo.id}`
+        );
+      }
+    }
+    
+    if (direction === 'down' && activeVideoIndex > 0) {
+      setActiveVideoIndex(activeVideoIndex - 1);
+      
+      // Update URL without navigation
+      const prevVideo = videos[activeVideoIndex - 1];
+      if (prevVideo) {
+        window.history.replaceState(
+          {}, 
+          '', 
+          `/explore/${prevVideo.id}`
+        );
+      }
+    }
     
     // Reset swipe state
     setSwipingDirection(null);
@@ -76,6 +105,16 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
     };
   }, [setIsInReelsMode]);
 
+  // Reset to the correct index when videos or currentId changes
+  useEffect(() => {
+    if (videos.length > 0) {
+      const index = videos.findIndex(v => v.id === currentId);
+      if (index >= 0) {
+        setActiveVideoIndex(index);
+      }
+    }
+  }, [currentId, videos]);
+
   // Hide swipe hint after 3 seconds
   useEffect(() => {
     if (swipeHint) {
@@ -89,7 +128,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   // Reset swipe hint when video changes
   useEffect(() => {
     setSwipeHint(true);
-  }, [currentVideo.id]);
+  }, [currentVideo?.id]);
 
   // Calculate transform styles based on swipe progress
   const getTransformStyle = (position: 'prev' | 'current' | 'next') => {
@@ -162,26 +201,28 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
           )}
           
           {/* Current video */}
-          <div 
-            className="absolute inset-0 z-20 transition-transform duration-300 ease-out"
-            style={getTransformStyle('current')}
-          >
-            <VideoPlayer 
-              video={currentVideo} 
-              productLinks={[]} 
-              autoPlay={true} 
-              showControls={false}
-              globalAudioEnabled={globalAudioEnabled}
-              onAudioStateChange={onAudioStateChange}
-              isFullscreen={true}
-              className="w-full h-full" 
-              objectFit="contain"
-              useAspectRatio={false}
-              showProgress={true}
-              hideControls={true}
-              onClick={() => {}}
-            />
-          </div>
+          {currentVideo && (
+            <div 
+              className="absolute inset-0 z-20 transition-transform duration-300 ease-out"
+              style={getTransformStyle('current')}
+            >
+              <VideoPlayer 
+                video={currentVideo} 
+                productLinks={[]} 
+                autoPlay={true} 
+                showControls={false}
+                globalAudioEnabled={globalAudioEnabled}
+                onAudioStateChange={onAudioStateChange}
+                isFullscreen={true}
+                className="w-full h-full" 
+                objectFit="contain"
+                useAspectRatio={false}
+                showProgress={true}
+                hideControls={true}
+                onClick={() => {}}
+              />
+            </div>
+          )}
           
           {/* Next video (visible when swiping up) */}
           {nextVideo && (
@@ -223,58 +264,62 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
         )}
         
         {/* Video info overlay */}
-        <div className="absolute bottom-28 left-4 right-16 z-20 pointer-events-none">
-          <div className="flex items-start space-x-3">
-            <Avatar className="h-10 w-10 border-2 border-white">
-              {currentVideo.creator?.avatar_url ? (
-                <AvatarImage src={currentVideo.creator.avatar_url} alt={currentVideo.creator?.username || ''} />
-              ) : (
-                <AvatarFallback>
-                  {currentVideo.creator?.username?.[0] || '?'}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <div className="text-white">
-              <div className="font-semibold text-sm">
-                {currentVideo.creator?.username || 'Anonymous'}
-              </div>
-              <div className="mt-1 text-sm opacity-90 line-clamp-2">
-                {currentVideo.description || currentVideo.title}
+        {currentVideo && (
+          <div className="absolute bottom-28 left-4 right-16 z-20 pointer-events-none">
+            <div className="flex items-start space-x-3">
+              <Avatar className="h-10 w-10 border-2 border-white">
+                {currentVideo.creator?.avatar_url ? (
+                  <AvatarImage src={currentVideo.creator.avatar_url} alt={currentVideo.creator?.username || ''} />
+                ) : (
+                  <AvatarFallback>
+                    {currentVideo.creator?.username?.[0] || '?'}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="text-white">
+                <div className="font-semibold text-sm">
+                  {currentVideo.creator?.username || 'Anonymous'}
+                </div>
+                <div className="mt-1 text-sm opacity-90 line-clamp-2">
+                  {currentVideo.description || currentVideo.title}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
         
         {/* Action buttons on right side */}
-        <div className="absolute right-4 bottom-28 flex flex-col gap-6 items-center z-20">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => toggleLike(currentVideo.id)}
-            className={cn(
-              "bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12",
-              likedVideos[currentVideo.id] && "text-red-500"
-            )}
-          >
-            <Heart className={cn("h-6 w-6", likedVideos[currentVideo.id] && "fill-current")} />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            className="bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12"
-          >
-            <MessageCircle className="h-6 w-6" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            className="bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12"
-          >
-            <Share2 className="h-6 w-6" />
-          </Button>
-        </div>
+        {currentVideo && (
+          <div className="absolute right-4 bottom-28 flex flex-col gap-6 items-center z-20">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toggleLike(currentVideo.id)}
+              className={cn(
+                "bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12",
+                likedVideos[currentVideo.id] && "text-red-500"
+              )}
+            >
+              <Heart className={cn("h-6 w-6", likedVideos[currentVideo.id] && "fill-current")} />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12"
+            >
+              <MessageCircle className="h-6 w-6" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12"
+            >
+              <Share2 className="h-6 w-6" />
+            </Button>
+          </div>
+        )}
       </Swipeable>
     </div>
   );
