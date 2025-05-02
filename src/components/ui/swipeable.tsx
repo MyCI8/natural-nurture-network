@@ -4,6 +4,7 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 interface SwipeableProps {
   onSwipe?: (direction: 'left' | 'right' | 'up' | 'down') => void;
   onPinch?: (scale: number) => void;
+  onSwipeProgress?: (direction: 'up' | 'down' | null, progress: number) => void;
   threshold?: number;
   children: React.ReactNode;
   className?: string;
@@ -14,6 +15,7 @@ interface SwipeableProps {
 export function Swipeable({ 
   onSwipe, 
   onPinch,
+  onSwipeProgress,
   threshold = 50, 
   children, 
   className,
@@ -78,13 +80,24 @@ export function Swipeable({
       const distX = touchEnd.current.x - touchStart.current.x;
       const distY = touchEnd.current.y - touchStart.current.y;
 
+      // Determine current swipe direction and progress for animation
+      let currentDirection = null;
+      let progress = 0;
+      
       if (Math.abs(distX) > Math.abs(distY) && Math.abs(distX) > threshold / 2) {
-        setSwipeDirection(distX > 0 ? 'right' : 'left');
+        currentDirection = distX > 0 ? 'right' : 'left';
+        progress = Math.abs(distX) / (window.innerWidth / 2); // Scale by half screen width
       } else if (Math.abs(distY) > threshold / 2) {
-        setSwipeDirection(distY > 0 ? 'down' : 'up');
-      } else {
-        setSwipeDirection(null);
+        currentDirection = distY > 0 ? 'down' : 'up';
+        progress = Math.abs(distY) / (window.innerHeight / 2); // Scale by half screen height
+        
+        // Call the swipe progress callback for vertical swipes
+        if (onSwipeProgress && (currentDirection === 'up' || currentDirection === 'down')) {
+          onSwipeProgress(currentDirection, Math.min(1, progress));
+        }
       }
+      
+      setSwipeDirection(currentDirection as any);
     } 
     // Multi-touch for pinch
     else if (e.touches.length === 2 && enableZoom && initialDistance.current) {
@@ -100,13 +113,18 @@ export function Swipeable({
       // Prevent default to stop page zooming
       e.preventDefault();
     }
-  }, [enableZoom, scale, onPinch, threshold]);
+  }, [enableZoom, scale, onPinch, threshold, onSwipeProgress]);
 
   // Handle touch end
   const handleTouchEnd = useCallback(() => {
     if (!touchStart.current || !touchEnd.current) return;
     
     setSwipeInProgress(false);
+    
+    // Reset swipe progress
+    if (onSwipeProgress) {
+      onSwipeProgress(null, 0);
+    }
     
     // Only process swipe if we have onSwipe handler
     if (onSwipe) {
@@ -153,7 +171,7 @@ export function Swipeable({
     if (disableScroll) {
       document.body.style.overflow = '';
     }
-  }, [onSwipe, threshold, disableScroll]);
+  }, [onSwipe, threshold, disableScroll, onSwipeProgress]);
 
   // Clean up scroll lock on unmount
   useEffect(() => {

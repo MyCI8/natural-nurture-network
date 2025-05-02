@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Video } from '@/types/video';
 import { Swipeable } from '@/components/ui/swipeable';
 import VideoPlayer from '@/components/video/VideoPlayer';
@@ -31,8 +31,13 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
   const [swipeHint, setSwipeHint] = useState<boolean>(true);
   const { setIsInReelsMode } = useLayout();
-  const [transitionActive, setTransitionActive] = useState(false);
-  const [transitionDirection, setTransitionDirection] = useState<'up' | 'down' | null>(null);
+  const [swipingDirection, setSwipingDirection] = useState<'up' | 'down' | null>(null);
+  const [swipeProgress, setSwipeProgress] = useState(0); // 0 to 1
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Videos to display (current, previous, next)
+  const prevVideo = adjacentVideos[currentIndex - 1];
+  const nextVideo = adjacentVideos[currentIndex + 1];
 
   const toggleLike = (videoId: string) => {
     setLikedVideos(prev => ({
@@ -41,27 +46,26 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
     }));
   };
 
-  // Handle swipe with transition effect
-  const handleSwipeWithTransition = (direction: 'left' | 'right' | 'up' | 'down') => {
-    // Only do transition effect for up/down navigation
-    if (direction === 'up' || direction === 'down') {
-      setTransitionDirection(direction);
-      setTransitionActive(true);
-      
-      // Delay the actual navigation to allow the transition to play
-      setTimeout(() => {
-        onSwipeNavigate(direction);
-        
-        // Reset transition after a short delay
-        setTimeout(() => {
-          setTransitionActive(false);
-          setTransitionDirection(null);
-        }, 300); // Slightly shorter than the CSS transition
-      }, 300);
-    } else {
-      // For left/right just do the navigation immediately
+  // Handle swipe with smooth transition
+  const handleSwipe = (direction: 'left' | 'right' | 'up' | 'down') => {
+    // For horizontal swipes, just use the provided handler
+    if (direction === 'left' || direction === 'right') {
       onSwipeNavigate(direction);
+      return;
     }
+    
+    // For vertical swipes, we're handling the transitions in CSS
+    onSwipeNavigate(direction);
+    
+    // Reset swipe state
+    setSwipingDirection(null);
+    setSwipeProgress(0);
+  };
+  
+  // This handles the swipe in progress to update UI
+  const handleTouchMove = (direction: 'up' | 'down' | null, progress: number) => {
+    setSwipingDirection(direction);
+    setSwipeProgress(Math.min(1, Math.max(0, progress)));
   };
 
   // Enable reels mode on mount, disable on unmount
@@ -88,8 +92,31 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
     setSwipeHint(true);
   }, [currentVideo.id]);
 
+  // Calculate transform styles based on swipe progress
+  const getTransformStyle = (position: 'prev' | 'current' | 'next') => {
+    if (!swipingDirection) return {};
+
+    const distance = 100 * swipeProgress; // percentage of screen height
+    
+    if (position === 'current') {
+      return { 
+        transform: swipingDirection === 'up' 
+          ? `translateY(-${distance}%)` 
+          : `translateY(${distance}%)`
+      };
+    } 
+    else if (position === 'next' && swipingDirection === 'up') {
+      return { transform: `translateY(${100 - distance}%)` };
+    } 
+    else if (position === 'prev' && swipingDirection === 'down') {
+      return { transform: `translateY(-${100 - distance}%)` };
+    }
+    
+    return {};
+  };
+
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col" ref={containerRef}>
       {/* Close button at top */}
       <div className="absolute top-4 left-4 z-50">
         <Button
@@ -102,31 +129,83 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
         </Button>
       </div>
       
-      {/* Remove the navigation indicator that was here */}
-      
-      {/* Main video display with swipe gestures */}
+      {/* Main video carousel with swipe gestures */}
       <Swipeable 
-        onSwipe={handleSwipeWithTransition} 
+        onSwipe={handleSwipe}
         threshold={80}
         disableScroll={true}
-        className="flex-1 touch-manipulation relative"
+        className="flex-1 touch-manipulation relative overflow-hidden"
       >
-        <div className="w-full h-full bg-black flex items-center justify-center">
-          <VideoPlayer 
-            video={currentVideo} 
-            productLinks={[]} 
-            autoPlay={true} 
-            showControls={false}
-            globalAudioEnabled={globalAudioEnabled}
-            onAudioStateChange={onAudioStateChange}
-            isFullscreen={true}
-            className="w-full h-full" 
-            objectFit="contain"
-            useAspectRatio={false}
-            showProgress={true}
-            hideControls={true}
-            onClick={() => {}}
-          />
+        <div className="relative w-full h-full">
+          {/* Previous video (visible when swiping down) */}
+          {prevVideo && (
+            <div 
+              className="absolute inset-0 z-10 transform translate-y-[-100%] transition-transform duration-300 ease-out"
+              style={getTransformStyle('prev')}
+            >
+              <VideoPlayer 
+                video={prevVideo} 
+                productLinks={[]} 
+                autoPlay={false} 
+                showControls={false}
+                globalAudioEnabled={false}
+                onAudioStateChange={() => {}}
+                isFullscreen={true}
+                className="w-full h-full" 
+                objectFit="contain"
+                useAspectRatio={false}
+                showProgress={false}
+                hideControls={true}
+                onClick={() => {}}
+              />
+            </div>
+          )}
+          
+          {/* Current video */}
+          <div 
+            className="absolute inset-0 z-20 transition-transform duration-300 ease-out"
+            style={getTransformStyle('current')}
+          >
+            <VideoPlayer 
+              video={currentVideo} 
+              productLinks={[]} 
+              autoPlay={true} 
+              showControls={false}
+              globalAudioEnabled={globalAudioEnabled}
+              onAudioStateChange={onAudioStateChange}
+              isFullscreen={true}
+              className="w-full h-full" 
+              objectFit="contain"
+              useAspectRatio={false}
+              showProgress={true}
+              hideControls={true}
+              onClick={() => {}}
+            />
+          </div>
+          
+          {/* Next video (visible when swiping up) */}
+          {nextVideo && (
+            <div 
+              className="absolute inset-0 z-10 transform translate-y-[100%] transition-transform duration-300 ease-out"
+              style={getTransformStyle('next')}
+            >
+              <VideoPlayer 
+                video={nextVideo} 
+                productLinks={[]} 
+                autoPlay={false} 
+                showControls={false}
+                globalAudioEnabled={false}
+                onAudioStateChange={() => {}}
+                isFullscreen={true}
+                className="w-full h-full" 
+                objectFit="contain"
+                useAspectRatio={false}
+                showProgress={false}
+                hideControls={true}
+                onClick={() => {}}
+              />
+            </div>
+          )}
         </div>
         
         {/* Swipe hint overlay - shows briefly on load */}
@@ -141,15 +220,6 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
               </div>
             </div>
           </div>
-        )}
-        
-        {/* Elder Scrolls-style transition overlay */}
-        {transitionActive && (
-          <div 
-            className={`absolute inset-0 bg-black z-40 pointer-events-none transition-opacity duration-500 ease-in-out ${
-              transitionActive ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
         )}
         
         {/* Video info overlay */}

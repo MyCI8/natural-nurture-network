@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -76,6 +77,7 @@ const ExploreDetail = () => {
         .select(`
           id,
           title,
+          description,
           video_url,
           thumbnail_url,
           creator_id,
