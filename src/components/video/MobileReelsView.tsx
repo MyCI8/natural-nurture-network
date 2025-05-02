@@ -31,12 +31,37 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
   const [swipeHint, setSwipeHint] = useState<boolean>(true);
   const { setIsInReelsMode } = useLayout();
+  const [transitionActive, setTransitionActive] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'up' | 'down' | null>(null);
 
   const toggleLike = (videoId: string) => {
     setLikedVideos(prev => ({
       ...prev,
       [videoId]: !prev[videoId]
     }));
+  };
+
+  // Handle swipe with transition effect
+  const handleSwipeWithTransition = (direction: 'left' | 'right' | 'up' | 'down') => {
+    // Only do transition effect for up/down navigation
+    if (direction === 'up' || direction === 'down') {
+      setTransitionDirection(direction);
+      setTransitionActive(true);
+      
+      // Delay the actual navigation to allow the transition to play
+      setTimeout(() => {
+        onSwipeNavigate(direction);
+        
+        // Reset transition after a short delay
+        setTimeout(() => {
+          setTransitionActive(false);
+          setTransitionDirection(null);
+        }, 300); // Slightly shorter than the CSS transition
+      }, 300);
+    } else {
+      // For left/right just do the navigation immediately
+      onSwipeNavigate(direction);
+    }
   };
 
   // Enable reels mode on mount, disable on unmount
@@ -81,7 +106,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
       
       {/* Main video display with swipe gestures */}
       <Swipeable 
-        onSwipe={onSwipeNavigate} 
+        onSwipe={handleSwipeWithTransition} 
         threshold={80}
         disableScroll={true}
         className="flex-1 touch-manipulation relative"
@@ -99,8 +124,8 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
             objectFit="contain"
             useAspectRatio={false}
             showProgress={true}
-            hideControls={true}  // Hide the built-in controls from NativeVideoPlayer
-            onClick={() => {}} // Prevent default click behavior
+            hideControls={true}
+            onClick={() => {}}
           />
         </div>
         
@@ -116,6 +141,15 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
               </div>
             </div>
           </div>
+        )}
+        
+        {/* Elder Scrolls-style transition overlay */}
+        {transitionActive && (
+          <div 
+            className={`absolute inset-0 bg-black z-40 pointer-events-none transition-opacity duration-500 ease-in-out ${
+              transitionActive ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
         )}
         
         {/* Video info overlay */}
