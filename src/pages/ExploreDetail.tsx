@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -16,7 +17,7 @@ import MobileReelsView from '@/components/video/MobileReelsView';
 const ExploreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { setShowRightSection } = useLayout();
+  const { setShowRightSection, setIsInReelsMode } = useLayout();
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
@@ -26,8 +27,13 @@ const ExploreDetail = () => {
 
   useEffect(() => {
     setShowRightSection(true);
-    return () => setShowRightSection(false);
-  }, [setShowRightSection]);
+    
+    // When component unmounts, ensure we reset the reels mode
+    return () => {
+      setShowRightSection(false);
+      setIsInReelsMode(false);
+    };
+  }, [setShowRightSection, setIsInReelsMode]);
 
   const handleClose = () => {
     // Always navigate back to explore page

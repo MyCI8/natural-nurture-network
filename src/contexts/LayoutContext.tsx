@@ -9,8 +9,10 @@ export type LayoutMode = 'default' | 'wide' | 'full' | 'three-column';
 interface LayoutContextProps {
   layoutMode: LayoutMode;
   showRightSection: boolean;
+  isInReelsMode: boolean;
   setLayoutMode: (mode: LayoutMode) => void;
   setShowRightSection: (show: boolean) => void;
+  setIsInReelsMode: (isInReels: boolean) => void;
   contentWidth: string;
   contentMaxWidth: string;
   isFullWidth: boolean;
@@ -19,8 +21,10 @@ interface LayoutContextProps {
 const defaultContext: LayoutContextProps = {
   layoutMode: 'default',
   showRightSection: false,
+  isInReelsMode: false,
   setLayoutMode: () => {},
   setShowRightSection: () => {},
+  setIsInReelsMode: () => {},
   contentWidth: 'px-4',
   contentMaxWidth: 'max-w-3xl',
   isFullWidth: false
@@ -33,6 +37,7 @@ export const useLayout = () => useContext(LayoutContext);
 export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const [showRightSection, setShowRightSection] = useState(false);
+  const [isInReelsMode, setIsInReelsMode] = useState(false);
   const [contentWidth, setContentWidth] = useState('px-4');
   const [contentMaxWidth, setContentMaxWidth] = useState('max-w-3xl');
   const [isFullWidth, setIsFullWidth] = useState(false);
@@ -115,8 +120,10 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       value={{
         layoutMode,
         showRightSection,
+        isInReelsMode,
         setLayoutMode,
         setShowRightSection,
+        setIsInReelsMode,
         contentWidth,
         contentMaxWidth,
         isFullWidth

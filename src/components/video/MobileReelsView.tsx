@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Video } from '@/types/video';
 import { Swipeable } from '@/components/ui/swipeable';
 import VideoPlayer from '@/components/video/VideoPlayer';
@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLayout } from '@/contexts/LayoutContext';
 
 interface MobileReelsViewProps {
   currentVideo: Video;
@@ -29,6 +30,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
 }) => {
   const [likedVideos, setLikedVideos] = useState<Record<string, boolean>>({});
   const [swipeHint, setSwipeHint] = useState<boolean>(true);
+  const { setIsInReelsMode } = useLayout();
 
   const toggleLike = (videoId: string) => {
     setLikedVideos(prev => ({
@@ -37,8 +39,17 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
     }));
   };
 
+  // Enable reels mode on mount, disable on unmount
+  useEffect(() => {
+    setIsInReelsMode(true);
+    
+    return () => {
+      setIsInReelsMode(false);
+    };
+  }, [setIsInReelsMode]);
+
   // Hide swipe hint after 3 seconds
-  React.useEffect(() => {
+  useEffect(() => {
     if (swipeHint) {
       const timer = setTimeout(() => {
         setSwipeHint(false);
@@ -48,7 +59,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   }, [swipeHint]);
 
   // Reset swipe hint when video changes
-  React.useEffect(() => {
+  useEffect(() => {
     setSwipeHint(true);
   }, [currentVideo.id]);
 
@@ -95,6 +106,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
             objectFit="contain"
             useAspectRatio={false}
             showProgress={true}
+            hideControls={true}  // Hide the built-in controls from NativeVideoPlayer
             onClick={() => {}} // Prevent default click behavior
           />
         </div>

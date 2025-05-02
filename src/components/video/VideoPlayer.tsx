@@ -24,6 +24,7 @@ interface VideoPlayerProps {
   onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
   showProgress?: boolean;
   progressValue?: number;
+  hideControls?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -44,7 +45,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   toggleProductLink,
   onTimeUpdate,
   showProgress = false,
-  progressValue
+  progressValue,
+  hideControls = false
 }) => {
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
@@ -139,6 +141,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onTimeUpdate={onTimeUpdate}
       showProgress={showProgress}
       progressValue={progressValue}
+      hideControls={hideControls}
     />
   );
 };

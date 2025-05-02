@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { X, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
@@ -29,6 +30,7 @@ interface NativeVideoPlayerProps {
   onTimeUpdate?: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
   showProgress?: boolean;
   progressValue?: number;
+  hideControls?: boolean;
 }
 
 const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
@@ -52,7 +54,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   onInView,
   onTimeUpdate,
   showProgress = false,
-  progressValue
+  progressValue,
+  hideControls = false
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -141,7 +144,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   };
 
   const renderMobileControls = () => {
-    if (!isMobile || !isFullscreen) return null;
+    // If hideControls is true, don't render mobile controls
+    if (!isMobile || !isFullscreen || hideControls) return null;
     
     return (
       <div className="absolute right-4 bottom-20 flex flex-col gap-6 items-center z-20">
@@ -257,7 +261,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
 
       {renderMobileControls()}
 
-      {!isMobile && (
+      {!isMobile && !hideControls && (
         <>
           <div className="absolute bottom-3 right-3 z-20">
             <Button
@@ -307,7 +311,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         )
       ))}
 
-      {isFullscreen && (
+      {isFullscreen && !hideControls && (
         <Button
           variant="ghost"
           size="icon"

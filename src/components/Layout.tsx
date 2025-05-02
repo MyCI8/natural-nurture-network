@@ -1,3 +1,4 @@
+
 import { useLocation, Outlet } from "react-router-dom";
 import MainSidebar from "./layout/MainSidebar";
 import RightSection from "./layout/RightSection";
@@ -12,7 +13,7 @@ const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
-  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth } = useLayout();
+  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth, isInReelsMode } = useLayout();
   const [isHomePage, setIsHomePage] = useState(false);
   
   // Determine if we're on the home page
@@ -40,8 +41,8 @@ const LayoutContent = () => {
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout - increased max-width to 1400px */}
       <div className="w-full max-w-[1400px] mx-auto flex relative">
-        {/* Mobile Top Header - only on mobile */}
-        {isMobile && <TopHeader />}
+        {/* Mobile Top Header - only on mobile and not in reels mode */}
+        {isMobile && !isInReelsMode && <TopHeader />}
         
         {/* Left Sidebar - Hide on mobile */}
         {!isMobile && (
@@ -53,7 +54,7 @@ const LayoutContent = () => {
         {/* Main Content Area */}
         <main 
           className={`flex-1 min-h-screen ${
-            isMobile ? `${isHomePage ? 'pt-0' : 'pt-14'} pb-16` : ''
+            isMobile ? `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : ''
           } relative z-10 overflow-x-hidden`}
         >
           <div 
@@ -75,8 +76,8 @@ const LayoutContent = () => {
           </aside>
         )}
         
-        {/* Mobile Bottom Navigation - only on mobile */}
-        {isMobile && <BottomNav />}
+        {/* Mobile Bottom Navigation - only on mobile and not in reels mode */}
+        {isMobile && !isInReelsMode && <BottomNav />}
       </div>
     </div>
   );
