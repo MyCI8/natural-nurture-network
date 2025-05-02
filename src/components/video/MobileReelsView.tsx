@@ -77,14 +77,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
         </Button>
       </div>
       
-      {/* Navigation indicator */}
-      {adjacentVideos.length > 1 && (
-        <div className="absolute top-4 right-4 z-40">
-          <div className="text-white bg-black/30 px-3 py-1 rounded-full text-xs">
-            {currentIndex + 1} / {adjacentVideos.length}
-          </div>
-        </div>
-      )}
+      {/* Remove the navigation indicator that was here */}
       
       {/* Main video display with swipe gestures */}
       <Swipeable 

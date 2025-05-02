@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -209,14 +208,6 @@ const ExploreDetail = () => {
           </div>
         </div>
       </div>
-      
-      {adjacentVideos.length > 1 && (
-        <div className="absolute bottom-20 left-0 right-0 flex justify-center">
-          <div className="text-white bg-black/30 px-3 py-1 rounded-full text-xs">
-            {currentIndex + 1} / {adjacentVideos.length}
-          </div>
-        </div>
-      )}
     </Swipeable>
   );
 };
