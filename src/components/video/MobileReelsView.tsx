@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Video } from '@/types/video';
 import { Swipeable } from '@/components/ui/swipeable';
@@ -132,6 +131,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
       {/* Main video carousel with swipe gestures */}
       <Swipeable 
         onSwipe={handleSwipe}
+        onSwipeProgress={handleTouchMove}
         threshold={80}
         disableScroll={true}
         className="flex-1 touch-manipulation relative overflow-hidden"

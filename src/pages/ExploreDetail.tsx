@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -90,7 +89,7 @@ const ExploreDetail = () => {
         `)
         .not('video_type', 'eq', 'news') // Exclude news videos
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(20);
         
       if (error) throw error;
       return data as Video[];
@@ -161,13 +160,12 @@ const ExploreDetail = () => {
   if (isMobile) {
     return (
       <MobileReelsView 
-        currentVideo={video} 
-        adjacentVideos={adjacentVideos}
+        currentId={id || ''}
+        videos={adjacentVideos}
         currentIndex={currentIndex}
         onClose={handleClose}
         globalAudioEnabled={globalAudioEnabled}
         onAudioStateChange={handleAudioStateChange}
-        onSwipeNavigate={handleSwipe}
       />
     );
   }
