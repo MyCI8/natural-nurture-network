@@ -82,7 +82,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     console.log(`Video is ${inView ? 'in view' : 'out of view'}`);
   };
 
-  const feedAspectRatio = aspectRatio || 4/5;
+  // Default to 9:16 (portrait) for fullscreen mobile view, or use provided aspectRatio
+  const feedAspectRatio = aspectRatio || (isFullscreen ? 9/16 : 4/5);
   
   // Use provided visibleProductLink if available, otherwise fall back to local state
   const activeProductLink = visibleProductLink !== undefined ? visibleProductLink : localVisibleProductLink;

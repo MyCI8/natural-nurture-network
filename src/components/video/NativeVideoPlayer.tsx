@@ -62,6 +62,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const [showProductOverlay, setShowProductOverlay] = useState(false);
   const [currentProgress, setCurrentProgress] = useState(0);
   const [buffering, setBuffering] = useState(false);
+  const [videoNaturalAspectRatio, setVideoNaturalAspectRatio] = useState<number | null>(null);
   const [inViewRef, inView] = useInView({
     threshold: 0.5,
     onChange: (inView) => {
@@ -69,6 +70,17 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     },
   });
   const isMobile = useIsMobile();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle video metadata load to get natural dimensions
+  const handleMetadataLoaded = () => {
+    if (videoRef.current) {
+      const { videoWidth, videoHeight } = videoRef.current;
+      if (videoWidth && videoHeight) {
+        setVideoNaturalAspectRatio(videoWidth / videoHeight);
+      }
+    }
+  };
 
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     if (onTimeUpdate) {
@@ -143,6 +155,39 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     onClick?.();
   };
 
+  // Target aspect ratio is 9:16 (portrait) for full-screen mobile view
+  const targetAspectRatio = isFullscreen ? 9/16 : feedAspectRatio;
+  
+  // Calculate black padding for letterboxing/pillarboxing
+  const getPaddingStyles = () => {
+    // If we don't know the video's natural aspect ratio yet, return no padding
+    if (!videoNaturalAspectRatio) return {};
+    
+    // If video is wider than container (landscape video in portrait container)
+    if (videoNaturalAspectRatio > targetAspectRatio) {
+      // Add letterboxing (black bars on top and bottom)
+      const heightPercentage = (targetAspectRatio / videoNaturalAspectRatio) * 100;
+      const verticalPadding = (100 - heightPercentage) / 2;
+      return {
+        paddingTop: `${verticalPadding}%`,
+        paddingBottom: `${verticalPadding}%`,
+      };
+    } 
+    // If video is taller than container (portrait video wider than container)
+    else if (videoNaturalAspectRatio < targetAspectRatio) {
+      // Add pillarboxing (black bars on sides)
+      const widthPercentage = (videoNaturalAspectRatio / targetAspectRatio) * 100;
+      const horizontalPadding = (100 - widthPercentage) / 2;
+      return {
+        paddingLeft: `${horizontalPadding}%`,
+        paddingRight: `${horizontalPadding}%`,
+      };
+    }
+    
+    // If aspect ratios match, no padding needed
+    return {};
+  };
+
   const renderMobileControls = () => {
     // If hideControls is true, don't render mobile controls
     if (!isMobile || !isFullscreen || hideControls) return null;
@@ -213,18 +258,25 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     >
       {useAspectRatio ? (
         <AspectRatio ratio={feedAspectRatio} className="w-full h-full bg-black overflow-hidden rounded-md">
-          <video
-            ref={videoRef}
-            src={video.video_url}
-            muted={isMuted}
-            loop
-            playsInline
-            className="w-full h-full object-cover cursor-pointer"
-            style={{ objectFit }}
-            onTimeUpdate={handleTimeUpdate}
-            onWaiting={handleWaiting}
-            onPlaying={handlePlaying}
-          />
+          <div 
+            ref={containerRef}
+            className="w-full h-full flex items-center justify-center bg-black"
+            style={getPaddingStyles()}
+          >
+            <video
+              ref={videoRef}
+              src={video.video_url}
+              muted={isMuted}
+              loop
+              playsInline
+              className="w-full h-full"
+              style={{ objectFit }}
+              onTimeUpdate={handleTimeUpdate}
+              onWaiting={handleWaiting}
+              onPlaying={handlePlaying}
+              onLoadedMetadata={handleMetadataLoaded}
+            />
+          </div>
           {showProgress && (
             <div className="absolute bottom-0 left-0 right-0 z-10">
               <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
@@ -233,18 +285,25 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         </AspectRatio>
       ) : (
         <div className="relative w-full h-full">
-          <video
-            ref={videoRef}
-            src={video.video_url}
-            muted={isMuted}
-            loop
-            playsInline
-            className="w-full h-full object-cover cursor-pointer rounded-md"
-            style={{ objectFit }}
-            onTimeUpdate={handleTimeUpdate}
-            onWaiting={handleWaiting}
-            onPlaying={handlePlaying}
-          />
+          <div 
+            ref={containerRef}
+            className="w-full h-full flex items-center justify-center bg-black"
+            style={getPaddingStyles()}
+          >
+            <video
+              ref={videoRef}
+              src={video.video_url}
+              muted={isMuted}
+              loop
+              playsInline
+              className="max-w-full max-h-full"
+              style={{ objectFit }}
+              onTimeUpdate={handleTimeUpdate}
+              onWaiting={handleWaiting}
+              onPlaying={handlePlaying}
+              onLoadedMetadata={handleMetadataLoaded}
+            />
+          </div>
           {showProgress && (
             <div className="absolute bottom-0 left-0 right-0 z-10">
               <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
