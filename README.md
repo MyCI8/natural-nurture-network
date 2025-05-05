@@ -1,22 +1,15 @@
-# Welcome to your project
+
+# Welcome to BetterTogether
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/e2aa6698-58f6-4f37-98af-d095bb103b42
+This is a web application built with modern web technologies.
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/e2aa6698-58f6-4f37-98af-d095bb103b42) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+## How to edit this code
 
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+If you want to work locally using your own IDE, you can clone this repo and push changes.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -50,9 +43,9 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## Technologies used in this project
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
@@ -60,10 +53,7 @@ This project is built with .
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+## Deployment
 
-Simply open [Lovable](https://lovable.dev/projects/e2aa6698-58f6-4f37-98af-d095bb103b42) and click on Share -> Publish.
+You can deploy this application to any hosting service that supports static websites, such as Netlify, Vercel, or GitHub Pages.
 
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
