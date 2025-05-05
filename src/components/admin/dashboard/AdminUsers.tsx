@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -123,7 +124,7 @@ const AdminUsers = () => {
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Role" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="solid-dropdown">
               <SelectItem value="all">All Roles</SelectItem>
               <SelectItem value="user">User</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
@@ -137,7 +138,7 @@ const AdminUsers = () => {
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="solid-dropdown">
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
@@ -188,7 +189,7 @@ const AdminUsers = () => {
                         <SelectTrigger className="w-24 h-8">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="solid-dropdown">
                           <SelectItem value="user">User</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
                           <SelectItem value="super_admin">Super Admin</SelectItem>
@@ -210,13 +211,14 @@ const AdminUsers = () => {
                           variant="ghost" 
                           size="sm" 
                           onClick={() => navigate(`/admin/users/${user.id}`)}
+                          className="touch-friendly"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </Button>
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 touch-friendly"
                           onClick={() => navigate(`/admin/users/${user.id}`)}
                         >
                           <UserX className="h-4 w-4" />

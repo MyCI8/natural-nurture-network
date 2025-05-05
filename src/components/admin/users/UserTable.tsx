@@ -1,3 +1,4 @@
+
 import { User, UserRole } from "@/types/user";
 import {
   Table,
@@ -132,7 +133,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="solid-dropdown">
                     <SelectItem value="user">User</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="super_admin">Super Admin</SelectItem>
@@ -148,7 +149,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="solid-dropdown">
                     <SelectItem value="active">
                       <div className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-green-500" />
@@ -170,6 +171,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
                     variant="ghost"
                     size="icon"
                     onClick={() => onEditUser(user.id)}
+                    className="touch-friendly"
                   >
                     <UserCog className="h-4 w-4" />
                   </Button>
@@ -177,6 +179,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
                     variant="ghost"
                     size="icon"
                     onClick={() => onDeactivateUser(user.id)}
+                    className="touch-friendly"
                   >
                     <UserMinus className="h-4 w-4" />
                   </Button>

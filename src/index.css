@@ -8,6 +8,15 @@
     @apply bg-background text-foreground antialiased;
     /* Removed transition to eliminate animation between modes */
   }
+  
+  /* Ensure solid backgrounds for dropdown/popover components */
+  :root {
+    --popover-solid-background: 0 0% 100%; /* White for light mode */
+  }
+  
+  .dark {
+    --popover-solid-background: 222 47% 11%; /* Dark color for dark mode */
+  }
 }
 
 /* Dark mode specific styles */
@@ -73,3 +82,10 @@
   @apply fixed top-0 bottom-0 left-0 w-16 z-30 opacity-0;
   touch-action: pan-y;
 }
+
+/* Dropdown/popover solid background styles */
+.solid-dropdown {
+  @apply bg-white dark:bg-[#1A1F2C];
+  background-color: hsl(var(--popover-solid-background));
+}
+
