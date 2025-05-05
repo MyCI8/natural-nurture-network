@@ -40,7 +40,7 @@ export const VideoActions = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0 touch-manipulation">
+        <Button variant="ghost" className="h-8 w-8 p-0 min-w-[44px] min-h-[44px] touch-manipulation">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -53,40 +53,41 @@ export const VideoActions = ({
               state: { returnTo: "/admin/news/videos", videoType: "news" },
             })
           }
-          className="cursor-pointer touch-manipulation"
+          className="cursor-pointer touch-manipulation min-h-[44px]"
         >
           <Edit className="mr-2 h-4 w-4" /> Edit
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <DropdownMenuItem className="focus:bg-destructive focus:text-destructive-foreground touch-manipulation">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-              </DropdownMenuItem>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  the video from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="touch-manipulation">Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    onDelete(video.id);
-                  }}
-                  className="touch-manipulation"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </DropdownMenuItem>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem 
+              className="cursor-pointer focus:bg-destructive focus:text-destructive-foreground touch-manipulation min-h-[44px]"
+              onSelect={(e) => e.preventDefault()}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete
+                the video from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="touch-manipulation min-h-[44px]">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  onDelete(video.id);
+                }}
+                className="touch-manipulation min-h-[44px]"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DropdownMenuContent>
     </DropdownMenu>
   );
