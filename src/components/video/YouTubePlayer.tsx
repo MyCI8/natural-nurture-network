@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { X, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Video, ProductLink } from '@/types/video';
-import { getYoutubeVideoId } from './utils/videoPlayerUtils';
+import { getYouTubeVideoId } from './utils/videoPlayerUtils';
 import ProductLinkCard from './ProductLinkCard';
 
 interface YouTubePlayerProps {
