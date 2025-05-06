@@ -38,7 +38,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
   useAspectRatio = true,
   feedAspectRatio = 4/5
 }) => {
-  const youtubeId = getYoutubeVideoId(video.video_url || '');
+  const youtubeId = getYouTubeVideoId(video.video_url || '');
   
   if (!youtubeId) {
     return <div className="p-4 bg-black text-white">Invalid YouTube URL</div>;
