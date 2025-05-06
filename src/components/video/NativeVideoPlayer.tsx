@@ -74,7 +74,12 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Check if this is an image post
-  const isImage = isImagePost(video.video_url);
+  const isImage = isImagePost(video.video_url || '');
+
+  // Log for debugging
+  useEffect(() => {
+    console.log(`NativeVideoPlayer: video_url=${video.video_url}, isImage=${isImage}`);
+  }, [video.video_url, isImage]);
 
   // Handle video metadata load to get natural dimensions
   const handleMetadataLoaded = () => {
@@ -164,6 +169,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   
   // Calculate black padding for letterboxing/pillarboxing
   const getPaddingStyles = () => {
+    // For images, don't apply padding, just let them display naturally
+    if (isImage) return {};
+    
     // If we don't know the video's natural aspect ratio yet, return no padding
     if (!videoNaturalAspectRatio) return {};
     
@@ -271,16 +279,22 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           >
             {isImage ? (
               <img 
-                src={video.video_url} 
+                src={video.video_url || ''} 
                 alt={video.title || ''} 
                 className="w-full h-full"
                 style={{ objectFit }}
-                onLoad={() => onInView?.(true)}
+                onLoad={() => {
+                  console.log("Image loaded successfully:", video.video_url);
+                  onInView?.(true);
+                }}
+                onError={(e) => {
+                  console.error("Error loading image:", video.video_url, e);
+                }}
               />
             ) : (
               <video
                 ref={videoRef}
-                src={video.video_url}
+                src={video.video_url || ''}
                 muted={isMuted}
                 loop
                 playsInline
@@ -308,16 +322,22 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           >
             {isImage ? (
               <img 
-                src={video.video_url} 
+                src={video.video_url || ''} 
                 alt={video.title || ''} 
                 className="max-w-full max-h-full"
                 style={{ objectFit }}
-                onLoad={() => onInView?.(true)}
+                onLoad={() => {
+                  console.log("Image loaded successfully:", video.video_url);
+                  onInView?.(true);
+                }}
+                onError={(e) => {
+                  console.error("Error loading image:", video.video_url, e);
+                }}
               />
             ) : (
               <video
                 ref={videoRef}
-                src={video.video_url}
+                src={video.video_url || ''}
                 muted={isMuted}
                 loop
                 playsInline

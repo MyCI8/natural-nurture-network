@@ -21,11 +21,11 @@ export const VideoThumbnail = ({
   const thumbnailUrl = getThumbnailUrl(video);
   
   // For debugging
-  console.log(`Video ${video.id}: thumbnailUrl = ${thumbnailUrl}, video_url = ${video.video_url}, video_type = ${video.video_type}`);
+  console.log(`VideoThumbnail for ${video.id}: thumbnailUrl = ${thumbnailUrl}, video_url = ${video.video_url}, isImage = ${isImagePost(video.video_url || '')}`);
   
-  const isImage = isImagePost(video.video_url);
-  const videoType = isYoutubeVideo(video.video_url) ? 'youtube' : 
-                    isUploadedVideo(video.video_url) ? 'uploaded' : 
+  const isImage = isImagePost(video.video_url || '');
+  const videoType = isYoutubeVideo(video.video_url || '') ? 'youtube' : 
+                    isUploadedVideo(video.video_url || '') ? 'uploaded' : 
                     isImage ? 'image' : 'unknown';
   
   if (thumbnailUrl) {
@@ -33,13 +33,13 @@ export const VideoThumbnail = ({
       <div className={`${width} ${height} relative overflow-hidden rounded ${className}`}>
         <img 
           src={thumbnailUrl} 
-          alt={video.title} 
+          alt={video.title || ''} 
           className="w-full h-full object-cover"
           onError={(e) => {
             console.log(`Error loading thumbnail for video ${video.id}`);
             // Generate a colored background based on video title
-            const bgColor = stringToColor(video.title);
-            const initials = video.title.substring(0, 2).toUpperCase();
+            const bgColor = stringToColor(video.title || '');
+            const initials = (video.title || '??').substring(0, 2).toUpperCase();
             
             // Create a colored placeholder with initials
             (e.target as HTMLImageElement).src = 
@@ -52,6 +52,9 @@ export const VideoThumbnail = ({
             {videoType === 'youtube' && (
               <span className="absolute -bottom-6 text-xs text-white bg-black/60 px-1 rounded">YouTube</span>
             )}
+            {videoType === 'image' && (
+              <span className="absolute -bottom-6 text-xs text-white bg-black/60 px-1 rounded">Image</span>
+            )}
           </div>
         </div>
       </div>
@@ -59,8 +62,8 @@ export const VideoThumbnail = ({
   }
   
   // Generate a color and initials from title for consistent placeholders
-  const bgColor = stringToColor(video.title);
-  const initials = video.title.substring(0, 2).toUpperCase();
+  const bgColor = stringToColor(video.title || '');
+  const initials = (video.title || '??').substring(0, 2).toUpperCase();
   
   return (
     <div 
