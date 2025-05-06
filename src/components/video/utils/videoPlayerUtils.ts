@@ -1,53 +1,74 @@
 
-import { Video } from "@/types/video";
-
 /**
- * Checks if a video URL is from YouTube
+ * Check if URL is YouTube video
  */
-export const isYoutubeVideo = (videoUrl: string | null): boolean => {
-  if (!videoUrl) return false;
-  return videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+export const isYoutubeVideo = (url: string): boolean => {
+  if (!url) return false;
+  
+  return url.includes('youtube.com/') || url.includes('youtu.be/');
 };
 
 /**
- * Extracts YouTube video ID from a URL
+ * Check if URL is an uploaded video file
  */
-export const getYoutubeVideoId = (url: string | null): string | null => {
+export const isUploadedVideo = (url: string): boolean => {
+  if (!url) return false;
+  
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+  return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+};
+
+/**
+ * Check if URL is an image file
+ */
+export const isImagePost = (url: string): boolean => {
+  if (!url) return false;
+  
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+  return imageExtensions.some(ext => url.toLowerCase().endsWith(ext));
+};
+
+/**
+ * Extract YouTube video ID from URL
+ */
+export const getYouTubeVideoId = (url: string): string | null => {
   if (!url) return null;
   
   try {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    let videoId = "";
+    if (url.includes("youtube.com/watch")) {
+      const urlParams = new URLSearchParams(new URL(url).search);
+      videoId = urlParams.get("v") || "";
+    } else if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1].split("?")[0];
+    }
+    
+    if (videoId) {
+      return videoId;
+    }
   } catch (error) {
     console.error("Error parsing YouTube URL:", error);
-    return null;
   }
+  
+  return null;
 };
 
 /**
- * Checks if an element is fully visible in the viewport
+ * Get thumbnail URL for a video
  */
-export const isElementFullyVisible = (element: HTMLElement): boolean => {
-  const rect = element.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
-};
-
-/**
- * Logs a video view to the database if not already logged in this session
- */
-export const logVideoView = async (videoId: string, supabase: any) => {
-  const viewSessionKey = `video_${videoId}_viewed`;
-  if (!sessionStorage.getItem(viewSessionKey)) {
-    const { error } = await supabase.rpc('increment_video_views', { 
-      video_id: videoId 
-    });
-    if (error) console.error('Error incrementing views:', error);
-    sessionStorage.setItem(viewSessionKey, 'true');
+export const getThumbnailUrl = (video: { thumbnail_url?: string | null; video_url: string }): string | null => {
+  if (video.thumbnail_url) return video.thumbnail_url;
+  
+  if (isYoutubeVideo(video.video_url)) {
+    const videoId = getYouTubeVideoId(video.video_url);
+    if (videoId) {
+      return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    }
   }
+  
+  if (isImagePost(video.video_url)) {
+    return video.video_url;
+  }
+  
+  return null;
 };

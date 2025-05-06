@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useInView } from 'react-intersection-observer';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Progress } from '@/components/ui/progress';
+import { isImagePost } from './utils/videoPlayerUtils';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -71,6 +72,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   });
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Check if this is an image post
+  const isImage = isImagePost(video.video_url);
 
   // Handle video metadata load to get natural dimensions
   const handleMetadataLoaded = () => {
@@ -102,7 +106,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   };
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef.current && !isImage) {
       videoRef.current.muted = isMuted;
       if (autoPlay) {
         const playPromise = videoRef.current.play();
@@ -117,10 +121,10 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         }
       }
     }
-  }, [isMuted, autoPlay, setPlaybackStarted]);
+  }, [isMuted, autoPlay, setPlaybackStarted, isImage]);
 
   useEffect(() => {
-    if (inView && videoRef.current && !isPlaying && autoPlay) {
+    if (inView && videoRef.current && !isPlaying && autoPlay && !isImage) {
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
@@ -131,15 +135,15 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           setIsPlaying(false);
         });
       }
-    } else if (!inView && videoRef.current && isPlaying) {
+    } else if (!inView && videoRef.current && isPlaying && !isImage) {
       videoRef.current.pause();
       setIsPlaying(false);
     }
-  }, [inView, autoPlay, isPlaying, setPlaybackStarted]);
+  }, [inView, autoPlay, isPlaying, setPlaybackStarted, isImage]);
 
   const handlePlayPause = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (videoRef.current) {
+    if (videoRef.current && !isImage) {
       if (isPlaying) {
         videoRef.current.pause();
         setIsPlaying(false);
@@ -194,18 +198,20 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     
     return (
       <div className="absolute right-4 bottom-20 flex flex-col gap-6 items-center z-20">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
-          onClick={e => {
-            e.stopPropagation();
-            onMuteToggle?.(e);
-          }}
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
-        </Button>
+        {!isImage && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
+            onClick={e => {
+              e.stopPropagation();
+              onMuteToggle?.(e);
+            }}
+            aria-label={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+          </Button>
+        )}
 
         <Button
           variant="ghost"
@@ -263,21 +269,31 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             className="w-full h-full flex items-center justify-center bg-black"
             style={getPaddingStyles()}
           >
-            <video
-              ref={videoRef}
-              src={video.video_url}
-              muted={isMuted}
-              loop
-              playsInline
-              className="w-full h-full"
-              style={{ objectFit }}
-              onTimeUpdate={handleTimeUpdate}
-              onWaiting={handleWaiting}
-              onPlaying={handlePlaying}
-              onLoadedMetadata={handleMetadataLoaded}
-            />
+            {isImage ? (
+              <img 
+                src={video.video_url} 
+                alt={video.title || ''} 
+                className="w-full h-full"
+                style={{ objectFit }}
+                onLoad={() => onInView?.(true)}
+              />
+            ) : (
+              <video
+                ref={videoRef}
+                src={video.video_url}
+                muted={isMuted}
+                loop
+                playsInline
+                className="w-full h-full"
+                style={{ objectFit }}
+                onTimeUpdate={handleTimeUpdate}
+                onWaiting={handleWaiting}
+                onPlaying={handlePlaying}
+                onLoadedMetadata={handleMetadataLoaded}
+              />
+            )}
           </div>
-          {showProgress && (
+          {showProgress && !isImage && (
             <div className="absolute bottom-0 left-0 right-0 z-10">
               <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
             </div>
@@ -290,21 +306,31 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             className="w-full h-full flex items-center justify-center bg-black"
             style={getPaddingStyles()}
           >
-            <video
-              ref={videoRef}
-              src={video.video_url}
-              muted={isMuted}
-              loop
-              playsInline
-              className="max-w-full max-h-full"
-              style={{ objectFit }}
-              onTimeUpdate={handleTimeUpdate}
-              onWaiting={handleWaiting}
-              onPlaying={handlePlaying}
-              onLoadedMetadata={handleMetadataLoaded}
-            />
+            {isImage ? (
+              <img 
+                src={video.video_url} 
+                alt={video.title || ''} 
+                className="max-w-full max-h-full"
+                style={{ objectFit }}
+                onLoad={() => onInView?.(true)}
+              />
+            ) : (
+              <video
+                ref={videoRef}
+                src={video.video_url}
+                muted={isMuted}
+                loop
+                playsInline
+                className="max-w-full max-h-full"
+                style={{ objectFit }}
+                onTimeUpdate={handleTimeUpdate}
+                onWaiting={handleWaiting}
+                onPlaying={handlePlaying}
+                onLoadedMetadata={handleMetadataLoaded}
+              />
+            )}
           </div>
-          {showProgress && (
+          {showProgress && !isImage && (
             <div className="absolute bottom-0 left-0 right-0 z-10">
               <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
             </div>
@@ -312,7 +338,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         </div>
       )}
 
-      {buffering && (
+      {buffering && !isImage && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-20">
           <div className="h-12 w-12 rounded-full border-4 border-white border-t-transparent animate-spin"></div>
         </div>
@@ -320,7 +346,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
 
       {renderMobileControls()}
 
-      {!isMobile && !hideControls && (
+      {!isMobile && !hideControls && !isImage && (
         <>
           <div className="absolute bottom-3 right-3 z-20">
             <Button

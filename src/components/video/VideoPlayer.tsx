@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
-import { isYoutubeVideo } from './utils/videoPlayerUtils';
+import { isYoutubeVideo, isImagePost } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
 import NativeVideoPlayer from './NativeVideoPlayer';
 
@@ -51,6 +51,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
   const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
+  
+  // Check if this is an image post
+  const isImage = isImagePost(video.video_url);
   
   // Effect to handle mute state changes based on global audio setting
   useEffect(() => {
@@ -123,7 +126,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <NativeVideoPlayer
       video={video}
       productLinks={activeProductLinks}
-      autoPlay={autoPlay}
+      autoPlay={autoPlay && !isImage} // Don't autoplay images
       isMuted={isMuted}
       showControls={showControls}
       isFullscreen={isFullscreen}
