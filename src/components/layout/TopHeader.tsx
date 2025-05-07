@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -127,6 +126,19 @@ const TopHeader = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
   
+  // Prevent body scrolling when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+  
   return (
     <header 
       className={`fixed top-0 left-0 right-0 h-14 z-50 border-b flex items-center justify-between px-4 transition-transform duration-300 ${
@@ -149,18 +161,21 @@ const TopHeader = () => {
         </Avatar>
       </div>
       
+      {/* Improved overlay with higher z-index */}
       <div 
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] transition-opacity duration-300 ${
           isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMenuOpen(false)}
       />
       
+      {/* Improved sidebar with solid background and higher z-index */}
       <div 
         data-menu="sidebar"
-        className={`fixed top-0 left-0 bottom-0 w-[280px] border-r z-50 transition-all duration-300 ease-in-out p-4 ${
+        className={`fixed top-0 left-0 bottom-0 w-[280px] border-r z-[150] transition-all duration-300 ease-in-out p-4 shadow-lg ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } dark:bg-[#1A1F2C] bg-white`}
+        style={{ isolation: 'isolate' }}
       >
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center p-4 border-b">

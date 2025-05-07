@@ -125,23 +125,23 @@ export const MobileSidebar = ({
       className={`fixed inset-0 z-[200] ${
         isExpanded ? 'visible' : 'invisible'
       } transition-all duration-300`} 
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'none', isolation: 'isolate' }}
     >
-      {/* Backdrop with solid background */}
+      {/* Improved backdrop with increased opacity */}
       <div 
-        className={`absolute inset-0 bg-black/50 backdrop-blur-sm ${
+        className={`absolute inset-0 bg-black/70 backdrop-blur-sm ${
           isExpanded ? 'opacity-100' : 'opacity-0'
         } transition-opacity duration-300`}
         onClick={() => setIsExpanded(false)}
         aria-hidden="true"
       />
       
-      {/* Sidebar with solid white/dark background */}
+      {/* Enhanced sidebar with solid background and shadow */}
       <div 
         ref={sidebarRef}
         className={`absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] shadow-xl transition-transform duration-300 ease-out h-full flex flex-col ${
           isExpanded ? 'translate-x-0' : '-translate-x-full'
-        } dark:bg-[#1A1F2C] bg-white z-[250]`} // Added z-index and solid backgrounds
+        } dark:bg-[#1A1F2C] bg-white z-[250]`}
       >
         <div className="flex justify-between items-center p-4 border-b">
           <div className="text-lg font-semibold">Menu</div>
