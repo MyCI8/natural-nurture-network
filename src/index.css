@@ -51,9 +51,17 @@
 }
 
 /* Add touch-friendly styles */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
 .thumb-friendly {
   @apply min-h-[48px] min-w-[48px] py-2;
   touch-action: manipulation;
+}
+
+.active-scale:active {
+  transform: scale(0.96);
 }
 
 /* Add styles for thumb zones on mobile */
@@ -89,3 +97,14 @@
   background-color: hsl(var(--popover-solid-background));
 }
 
+/* Ensure modal overlays sit above everything */
+#mobile-menu-overlay {
+  isolation: isolate;
+  z-index: 9999 !important;
+}
+
+#mobile-menu-sidebar {
+  isolation: isolate;
+  z-index: 10000 !important;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+}

@@ -40,7 +40,7 @@ const LayoutContent = () => {
   return (
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout - increased max-width to 1400px */}
-      <div className="w-full max-w-[1400px] mx-auto flex relative" style={{ zIndex: 1 }}>
+      <div className="w-full max-w-[1400px] mx-auto flex relative" style={{ isolation: 'isolate' }}>
         {/* Mobile Top Header - only on mobile and not in reels mode */}
         {isMobile && !isInReelsMode && <TopHeader />}
         

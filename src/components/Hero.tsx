@@ -13,6 +13,7 @@ const Hero = () => {
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: 0 }}
         >
           <source
             src="https://tdnuswekfcjgvqyiotoj.supabase.co/storage/v1/object/public/site-assets/hero-background.mp4"
@@ -21,11 +22,11 @@ const Hero = () => {
           Your browser does not support the video tag.
         </video>
         {/* Dark overlay */}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-black/40" style={{ zIndex: 1 }} />
       </div>
 
       {/* Content */}
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 2 }}>
         <div className="lg:grid lg:grid-cols-2 lg:gap-8">
           <div className="mx-auto max-w-md sm:max-w-2xl sm:text-center lg:text-left lg:flex lg:items-center">
             <div className="lg:py-24">
