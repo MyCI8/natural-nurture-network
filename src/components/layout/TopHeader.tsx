@@ -140,42 +140,62 @@ const TopHeader = () => {
   }, [isMenuOpen]);
   
   return (
-    <header 
-      className={`fixed top-0 left-0 right-0 h-14 z-50 border-b flex items-center justify-between px-4 transition-transform duration-300 ${
-        visible ? 'translate-y-0' : '-translate-y-full'
-      } dark:bg-[#1A1F2C] bg-white`}
-    >
-      <div className="flex items-center gap-2">
-        <Avatar 
-          className="h-8 w-8 cursor-pointer active-scale" 
-          onClick={() => setIsMenuOpen(true)}
-          role="button"
-          aria-label="Open menu"
-          tabIndex={0}
+    <>
+      {/* Fixed header bar */}
+      <header 
+        className={`fixed top-0 left-0 right-0 h-14 z-[100] border-b flex items-center justify-between px-4 transition-transform duration-300 ${
+          visible ? 'translate-y-0' : '-translate-y-full'
+        } dark:bg-[#1A1F2C] bg-white`}
+      >
+        <div className="flex items-center gap-2">
+          <Avatar 
+            className="h-8 w-8 cursor-pointer active-scale" 
+            onClick={() => setIsMenuOpen(true)}
+            role="button"
+            aria-label="Open menu"
+            tabIndex={0}
+          >
+            {profile?.avatar_url ? (
+              <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
+            ) : (
+              <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
+            )}
+          </Avatar>
+        </div>
+        
+        <Link to="/" className="flex items-center">
+          <Leaf className="h-6 w-6 text-primary" />
+        </Link>
+        
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-full"
+          asChild
         >
-          {profile?.avatar_url ? (
-            <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
-          ) : (
-            <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
-          )}
-        </Avatar>
-      </div>
+          <Link to="/search">
+            <Search className="h-5 w-5" />
+          </Link>
+        </Button>
+      </header>
       
-      {/* Improved overlay with higher z-index */}
-      <div 
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] transition-opacity duration-300 ${
-          isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsMenuOpen(false)}
-      />
+      {/* Modal overlay - separate from the header */}
+      {isMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000]"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
       
-      {/* Improved sidebar with solid background and higher z-index */}
+      {/* Sidebar content - positioned at the root level for better stacking */}
       <div 
         data-menu="sidebar"
-        className={`fixed top-0 left-0 bottom-0 w-[280px] border-r z-[150] transition-all duration-300 ease-in-out p-4 shadow-lg ${
+        className={`fixed inset-y-0 left-0 w-[280px] border-r shadow-xl z-[1001] transition-all duration-300 ease-in-out p-4 ${
           isMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } dark:bg-[#1A1F2C] bg-white`}
-        style={{ isolation: 'isolate' }}
+        style={{ 
+          visibility: isMenuOpen ? 'visible' : 'hidden'
+        }}
       >
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-center p-4 border-b">
@@ -259,22 +279,7 @@ const TopHeader = () => {
           )}
         </div>
       </div>
-      
-      <Link to="/" className="flex items-center">
-        <Leaf className="h-6 w-6 text-primary" />
-      </Link>
-      
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className="rounded-full"
-        asChild
-      >
-        <Link to="/search">
-          <Search className="h-5 w-5" />
-        </Link>
-      </Button>
-    </header>
+    </>
   );
 };
 

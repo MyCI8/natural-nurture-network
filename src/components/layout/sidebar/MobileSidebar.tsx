@@ -121,27 +121,27 @@ export const MobileSidebar = ({
   };
 
   return (
-    <div 
-      className={`fixed inset-0 z-[200] ${
-        isExpanded ? 'visible' : 'invisible'
-      } transition-all duration-300`} 
-      style={{ touchAction: 'none', isolation: 'isolate' }}
-    >
-      {/* Improved backdrop with increased opacity */}
-      <div 
-        className={`absolute inset-0 bg-black/70 backdrop-blur-sm ${
-          isExpanded ? 'opacity-100' : 'opacity-0'
-        } transition-opacity duration-300`}
-        onClick={() => setIsExpanded(false)}
-        aria-hidden="true"
-      />
+    <>
+      {/* Using a portal approach with two separate elements for better stacking */}
+      {/* Backdrop overlay - positioned at the root level of the DOM */}
+      {isExpanded && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000] transition-opacity duration-300"
+          onClick={() => setIsExpanded(false)}
+          aria-hidden="true"
+        />
+      )}
       
-      {/* Enhanced sidebar with solid background and shadow */}
+      {/* Sidebar content - positioned at the root level with even higher z-index */}
       <div 
         ref={sidebarRef}
-        className={`absolute left-0 top-0 bottom-0 w-[80%] max-w-[320px] shadow-xl transition-transform duration-300 ease-out h-full flex flex-col ${
+        className={`fixed inset-y-0 left-0 w-[80%] max-w-[320px] shadow-2xl transition-transform duration-300 ease-out flex flex-col z-[1001] ${
           isExpanded ? 'translate-x-0' : '-translate-x-full'
-        } dark:bg-[#1A1F2C] bg-white z-[250]`}
+        } dark:bg-[#1A1F2C] bg-white`}
+        style={{ 
+          visibility: isExpanded ? 'visible' : 'hidden',
+          touchAction: 'auto'
+        }}
       >
         <div className="flex justify-between items-center p-4 border-b">
           <div className="text-lg font-semibold">Menu</div>
@@ -160,7 +160,7 @@ export const MobileSidebar = ({
         </div>
 
         {showSettings ? (
-          <div className="flex-1 px-4 py-4">
+          <div className="flex-1 px-4 py-4 overflow-y-auto">
             <Button 
               variant="ghost" 
               className="mb-4 flex items-center mt-4 touch-manipulation active:scale-95 transition-transform"
@@ -183,7 +183,7 @@ export const MobileSidebar = ({
               />
             </div>
             
-            <div className="flex-1 px-4 py-2">
+            <div className="flex-1 px-4 py-2 overflow-y-auto">
               <NavigationButtons 
                 onItemClick={() => {
                   setIsExpanded(false);
@@ -253,6 +253,6 @@ export const MobileSidebar = ({
           </>
         )}
       </div>
-    </div>
+    </>
   );
 };

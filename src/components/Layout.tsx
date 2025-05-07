@@ -40,13 +40,13 @@ const LayoutContent = () => {
   return (
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout - increased max-width to 1400px */}
-      <div className="w-full max-w-[1400px] mx-auto flex relative">
+      <div className="w-full max-w-[1400px] mx-auto flex relative" style={{ zIndex: 1 }}>
         {/* Mobile Top Header - only on mobile and not in reels mode */}
         {isMobile && !isInReelsMode && <TopHeader />}
         
         {/* Left Sidebar - Hide on mobile */}
         {!isMobile && (
-          <div className={`${isTablet ? 'w-16' : 'w-64'} shrink-0 sticky top-0 h-screen z-50`}>
+          <div className={`${isTablet ? 'w-16' : 'w-64'} shrink-0 sticky top-0 h-screen z-10`}>
             <MainSidebar />
           </div>
         )}
@@ -55,7 +55,7 @@ const LayoutContent = () => {
         <main 
           className={`flex-1 min-h-screen ${
             isMobile ? `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : ''
-          } relative z-10 overflow-x-hidden`}
+          } relative z-0 overflow-x-hidden`}
         >
           <div 
             className={`
@@ -71,7 +71,7 @@ const LayoutContent = () => {
 
         {/* Right Section - Only shown when enabled and not on mobile */}
         {!isMobile && showRightSection && (
-          <aside className={`${isTablet ? 'w-[300px]' : 'w-[350px]'} shrink-0 h-screen sticky top-0 border-l border-border z-20 overflow-hidden`}>
+          <aside className={`${isTablet ? 'w-[300px]' : 'w-[350px]'} shrink-0 h-screen sticky top-0 border-l border-border z-10 overflow-hidden`}>
             <RightSection />
           </aside>
         )}
