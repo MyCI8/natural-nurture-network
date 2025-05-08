@@ -15,8 +15,9 @@ export const SettingsNavButton = ({ icon: Icon, path, children }: SettingsNavBut
   return (
     <Button
       variant="ghost"
-      className="w-full justify-start space-x-4 dark:text-dm-text dark:hover:bg-dm-mist active-scale"
+      className="w-full justify-start space-x-4 dark:text-dm-text dark:hover:bg-dm-mist active-scale thumb-friendly"
       onClick={() => navigate(path)}
+      aria-label={typeof children === 'string' ? children : 'Navigation button'}
     >
       {Icon && <Icon className="h-5 w-5 mr-2" />}
       <span>{children}</span>

@@ -13,11 +13,11 @@ export const HeaderMenuButton = ({ profile, onClick }: HeaderMenuButtonProps) =>
     <Button 
       variant="ghost" 
       size="icon" 
-      className="rounded-full h-10 w-10 flex items-center justify-center touch-manipulation active:scale-95 transition-transform"
+      className="rounded-full h-12 w-12 flex items-center justify-center touch-manipulation active:scale-95 transition-transform touch-button"
       onClick={onClick}
       aria-label="Open menu"
     >
-      <Avatar className="h-8 w-8">
+      <Avatar className="h-10 w-10">
         {profile?.avatar_url ? (
           <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
         ) : (
@@ -26,4 +26,4 @@ export const HeaderMenuButton = ({ profile, onClick }: HeaderMenuButtonProps) =>
       </Avatar>
     </Button>
   );
-};
+}

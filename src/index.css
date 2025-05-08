@@ -83,6 +83,21 @@
   .thumb-zone-side-right {
     @apply right-0;
   }
+  
+  /* Increase touch targets for common interactive elements */
+  button, 
+  a, 
+  [role="button"], 
+  input[type="submit"], 
+  input[type="button"] {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Add special styles for floating action buttons in thumb zone */
+  .fab-button {
+    @apply fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg flex items-center justify-center;
+    touch-action: manipulation;
+  }
 }
 
 /* Add swipe detection area styles */
@@ -107,4 +122,26 @@
   isolation: isolate;
   z-index: 10000 !important;
   box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+}
+
+/* Styles for circular touch buttons */
+.touch-button {
+  @apply h-12 w-12 rounded-full flex items-center justify-center touch-manipulation active:scale-95 transition-transform;
+}
+
+/* Special back button with larger touch target */
+.back-button {
+  @apply h-12 w-12 rounded-full flex items-center justify-center;
+  touch-action: manipulation;
+}
+
+/* Prevent text selection while swiping */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Handle for draggable elements */
+.drag-handle {
+  @apply w-full h-6 flex items-center justify-center cursor-grab touch-manipulation;
 }
