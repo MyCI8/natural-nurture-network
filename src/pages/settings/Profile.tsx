@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -387,7 +386,7 @@ export default function ProfileSettings() {
                               <Button
                                 variant="outline"
                                 className={cn(
-                                  "w-full pl-3 text-left font-normal",
+                                  "w-full pl-3 text-left font-normal touch-manipulation",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
@@ -400,7 +399,7 @@ export default function ProfileSettings() {
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent className="w-auto p-0 bg-background" align="start">
                             <Calendar
                               mode="single"
                               selected={field.value}
@@ -409,7 +408,8 @@ export default function ProfileSettings() {
                                 date > new Date() || date < new Date("1900-01-01")
                               }
                               initialFocus
-                              className="p-3 pointer-events-auto"
+                              className="p-3 pointer-events-auto touch-manipulation"
+                              captionLayout="dropdown"
                             />
                           </PopoverContent>
                         </Popover>

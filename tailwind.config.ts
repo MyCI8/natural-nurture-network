@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -112,6 +111,25 @@ export default {
         fadeIn: "fadeIn 0.5s ease-out forwards",
         marquee: "marquee 40s linear infinite",
         "marquee-fast": "marquee 10s linear infinite",
+      },
+    },
+    /* Add custom utilities for touch handling */
+    utilities: {
+      '.touch-manipulation': {
+        'touch-action': 'manipulation',
+      },
+      '.active-scale': {
+        '@media (hover: none)': {
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+        },
+      },
+      '.touch-button': {
+        '&': {
+          minHeight: '44px',
+          minWidth: '44px',
+        }
       },
     },
   },

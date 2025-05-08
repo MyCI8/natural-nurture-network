@@ -32,6 +32,7 @@ export const PublishingOptionsSection = ({
           id="published"
           checked={status === "published"}
           onCheckedChange={(checked) => setStatus(checked ? "published" : "draft")}
+          className="touch-manipulation"
         />
         <Label htmlFor="published">
           {status === "published" ? "Published" : "Draft"}
@@ -45,7 +46,7 @@ export const PublishingOptionsSection = ({
             <Button
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal",
+                "w-full justify-start text-left font-normal touch-manipulation",
                 !scheduledDate && "text-muted-foreground"
               )}
             >
@@ -53,12 +54,14 @@ export const PublishingOptionsSection = ({
               {scheduledDate ? format(scheduledDate, "PPP") : "Pick a date"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
+          <PopoverContent className="w-auto p-0 bg-background" align="start">
             <Calendar
               mode="single"
               selected={scheduledDate}
               onSelect={setScheduledDate}
               initialFocus
+              className="p-3 pointer-events-auto touch-manipulation"
+              captionLayout="dropdown"
             />
           </PopoverContent>
         </Popover>

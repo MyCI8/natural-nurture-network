@@ -210,6 +210,7 @@ const Auth = () => {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       required
+                      className="touch-manipulation"
                     />
                   </div>
                   <div className="space-y-2">
@@ -221,6 +222,7 @@ const Auth = () => {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       required
+                      className="touch-manipulation"
                     />
                   </div>
                 </div>
@@ -232,7 +234,7 @@ const Auth = () => {
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal touch-manipulation",
                           !dob && "text-muted-foreground"
                         )}
                       >
@@ -240,7 +242,7 @@ const Auth = () => {
                         {dob ? format(dob, "PPP") : <span>Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
+                    <PopoverContent className="w-auto p-0 bg-background" align="start">
                       <Calendar
                         mode="single"
                         selected={dob}
@@ -249,7 +251,8 @@ const Auth = () => {
                           date > new Date() || date < new Date("1900-01-01")
                         }
                         initialFocus
-                        className="p-3 pointer-events-auto"
+                        className="p-3 pointer-events-auto touch-manipulation"
+                        captionLayout="dropdown"
                       />
                     </PopoverContent>
                   </Popover>
@@ -264,6 +267,7 @@ const Auth = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
+                    className="touch-manipulation"
                   />
                 </div>
               </>
@@ -277,6 +281,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="touch-manipulation"
               />
             </div>
             <div className="space-y-2">
@@ -289,9 +294,10 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
+                className="touch-manipulation"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full touch-manipulation" disabled={loading}>
               {loading
                 ? "Loading..."
                 : isSignUp
@@ -314,7 +320,7 @@ const Auth = () => {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full touch-manipulation"
             onClick={handleGoogleSignIn}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -342,7 +348,7 @@ const Auth = () => {
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-primary hover:underline"
+              className="text-sm text-primary hover:underline touch-manipulation"
             >
               {isSignUp
                 ? "Already have an account? Sign in"
