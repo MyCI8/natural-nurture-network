@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, DropdownProps } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
@@ -76,20 +76,23 @@ function Calendar({
       return <ChevronRight size={16} strokeWidth={2} {...props} aria-hidden="true" />;
     },
     // Implement custom dropdown component for months and years
-    Dropdown: ({ value, onChange, children, ...props }: DropdownProps) => {
+    Dropdown: ({ value, onChange, children, ...props }: any) => {
+      // Create options array from the available options in props
+      const dropdownItems = props.options || [];
+      
       return (
         <Select
           value={String(value)}
           onValueChange={(newValue) => {
             // Convert string value back to number before calling onChange
-            onChange?.(Number(newValue));
+            if (onChange) onChange(Number(newValue));
           }}
         >
           <SelectTrigger className="h-8 min-w-[110px] px-3 py-1 text-sm focus:ring-0 touch-manipulation">
             <SelectValue>{children}</SelectValue>
           </SelectTrigger>
           <SelectContent className="touch-manipulation" position="popper">
-            {props.items?.map((item) => (
+            {dropdownItems.map((item: any) => (
               <SelectItem 
                 key={item.value}
                 value={String(item.value)}
