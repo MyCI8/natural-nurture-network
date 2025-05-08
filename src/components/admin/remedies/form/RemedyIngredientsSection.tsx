@@ -16,22 +16,56 @@ import IngredientForm from "@/components/admin/IngredientForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+// Update the interface to match how it's used in EditRemedy.tsx
 interface RemedyIngredientsSectionProps {
   ingredients: string[];
-  availableIngredients: any[];
-  onIngredientsChange: (ingredients: string[]) => void;
+  setIngredients?: (ingredients: string[]) => void;
+  onIngredientsChange?: (ingredients: string[]) => void;
+  availableIngredients?: any[];
 }
 
 export const RemedyIngredientsSection = ({
   ingredients,
-  availableIngredients,
+  setIngredients,
   onIngredientsChange,
+  availableIngredients = [],
 }: RemedyIngredientsSectionProps) => {
   const [isIngredientFormOpen, setIsIngredientFormOpen] = useState(false);
   const queryClient = useQueryClient();
+  
+  // Use the data from query if availableIngredients is not provided
+  const { data: fetchedIngredients } = useQuery({
+    queryKey: ["ingredients"],
+    queryFn: async () => {
+      if (availableIngredients && availableIngredients.length > 0) return availableIngredients;
+      
+      const { data, error } = await supabase
+        .from("ingredients")
+        .select("id, name")
+        .order("name");
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !availableIngredients || availableIngredients.length === 0,
+  });
+
+  const ingredientsList = availableIngredients?.length > 0 
+    ? availableIngredients 
+    : fetchedIngredients || [];
 
   const handleIngredientAdded = () => {
     queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+  };
+
+  // Handle ingredient changes and call the appropriate callback
+  const handleIngredientsChange = (newIngredients: string[]) => {
+    if (setIngredients) {
+      setIngredients(newIngredients);
+    }
+    if (onIngredientsChange) {
+      onIngredientsChange(newIngredients);
+    }
   };
 
   return (
@@ -53,9 +87,9 @@ export const RemedyIngredientsSection = ({
         value="select-ingredient"
         onValueChange={(value) => {
           if (value !== "select-ingredient") {
-            const ingredient = availableIngredients?.find(i => i.id === value);
+            const ingredient = ingredientsList?.find(i => i.id === value);
             if (ingredient && !ingredients.includes(ingredient.name)) {
-              onIngredientsChange([...ingredients, ingredient.name]);
+              handleIngredientsChange([...ingredients, ingredient.name]);
             }
           }
         }}
@@ -65,7 +99,7 @@ export const RemedyIngredientsSection = ({
         </SelectTrigger>
         <SelectContent className="bg-background max-h-60 overflow-y-auto">
           <SelectItem value="select-ingredient">Select an ingredient</SelectItem>
-          {availableIngredients?.map((ingredient) => (
+          {ingredientsList?.map((ingredient) => (
             <SelectItem key={ingredient.id} value={ingredient.id}>
               {ingredient.name}
             </SelectItem>
@@ -83,7 +117,7 @@ export const RemedyIngredientsSection = ({
             {ingredient}
             <X
               className="h-3 w-3 cursor-pointer ml-1"
-              onClick={() => onIngredientsChange(ingredients.filter((_, i) => i !== index))}
+              onClick={() => handleIngredientsChange(ingredients.filter((_, i) => i !== index))}
             />
           </Badge>
         ))}
