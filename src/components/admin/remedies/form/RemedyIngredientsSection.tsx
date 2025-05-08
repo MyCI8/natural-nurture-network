@@ -42,7 +42,7 @@ export const RemedyIngredientsSection = ({
           variant="outline" 
           size="sm" 
           onClick={() => setIsIngredientFormOpen(true)}
-          className="touch-manipulation active:scale-95 transition-transform"
+          className="touch-manipulation active-scale touch-button"
         >
           <Plus className="h-4 w-4 mr-1.5" />
           Add New
@@ -60,7 +60,7 @@ export const RemedyIngredientsSection = ({
           }
         }}
       >
-        <SelectTrigger className="bg-background w-full min-h-10">
+        <SelectTrigger className="bg-background w-full min-h-10 touch-manipulation">
           <SelectValue placeholder="Select ingredients" />
         </SelectTrigger>
         <SelectContent className="bg-background max-h-60 overflow-y-auto">

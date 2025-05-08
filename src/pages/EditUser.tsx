@@ -48,7 +48,7 @@ const EditUser = () => {
           variant="ghost"
           size="icon"
           onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-10 h-10"
+          className="mb-6 hover:bg-accent/50 transition-all rounded-full w-12 h-12 touch-button touch-manipulation"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RemedyDetailsSection } from "@/components/admin/remedies/RemedyDetailsSection";
 import { RemedyContentSection } from "@/components/admin/remedies/RemedyContentSection";
 import { RemedyImageSection } from "@/components/admin/remedies/RemedyImageSection";
-import { RemedyIngredientsSection } from "@/components/admin/remedies/RemedyIngredientsSection";
+import { RemedyIngredientsSection } from "@/components/admin/remedies/form/RemedyIngredientsSection";
 import { RemedyExpertsSection } from "@/components/admin/remedies/RemedyExpertsSection";
 
 const EditRemedy = () => {
@@ -120,7 +120,7 @@ const EditRemedy = () => {
         <Button
           variant="ghost"
           onClick={() => navigate("/admin/remedies")}
-          className="mb-6"
+          className="mb-6 flex items-center touch-manipulation active-scale touch-button"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Remedies

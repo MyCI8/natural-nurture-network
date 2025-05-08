@@ -38,7 +38,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
               <Button
                 variant={variant}
                 size={compact ? "icon" : "default"}
-                className={compact ? "h-9 w-9 rounded-full active-scale" : "active-scale"}
+                className={compact ? "h-9 w-9 rounded-full active-scale touch-button touch-manipulation" : "active-scale touch-manipulation"}
                 aria-label="Settings"
               >
                 <Settings className="h-[1.2rem] w-[1.2rem]" />
@@ -51,7 +51,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra touch-manipulation" 
                   onClick={() => handleNavigate('/settings/profile')}
                 >
                   <User className="h-4 w-4 mr-2" />
@@ -60,7 +60,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra touch-manipulation" 
                   onClick={() => handleNavigate('/settings/security')}
                 >
                   <Shield className="h-4 w-4 mr-2" />
@@ -71,7 +71,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra touch-manipulation" 
                   onClick={() => handleNavigate('/settings/notifications')}
                 >
                   <Bell className="h-4 w-4 mr-2" />
@@ -80,7 +80,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra touch-manipulation" 
                   onClick={() => handleNavigate('/settings/privacy')}
                 >
                   <Eye className="h-4 w-4 mr-2" />
@@ -96,7 +96,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra" 
+                  className="w-full justify-start text-sm active-scale dark:text-dm-text dark:hover:bg-dm-mist-extra touch-manipulation" 
                   onClick={() => window.open('mailto:support@bettertogether.com')}
                 >
                   <HelpCircle className="h-4 w-4 mr-2" />
@@ -106,7 +106,7 @@ export function SettingsButton({ userId, compact = false, variant = "ghost" }: S
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full justify-start text-sm text-destructive hover:text-destructive active-scale dark:text-dm-alert dark:hover:text-dm-alert" 
+                  className="w-full justify-start text-sm text-destructive hover:text-destructive active-scale dark:text-dm-alert dark:hover:text-dm-alert touch-manipulation" 
                   onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4 mr-2" />

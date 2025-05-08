@@ -80,4 +80,12 @@
   .solid-dropdown {
     @apply bg-background border-border;
   }
+  
+  .calendar-touch-friendly .rdp-button {
+    @apply min-w-[44px] min-h-[44px] touch-manipulation;
+  }
+  
+  .calendar-touch-friendly .rdp-nav button {
+    @apply min-w-[44px] min-h-[44px] touch-manipulation;
+  }
 }
