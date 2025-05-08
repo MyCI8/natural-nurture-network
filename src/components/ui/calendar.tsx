@@ -18,6 +18,22 @@ import {
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+// Define proper types for the dropdown props
+interface DropdownOption {
+  value: number;
+  text?: string;
+  label?: string;
+  disabled?: boolean;
+}
+
+interface CustomDropdownProps {
+  value?: number;
+  onChange?: (value: number) => void;
+  children?: React.ReactNode;
+  options?: DropdownOption[];
+  [key: string]: any;
+}
+
 function Calendar({
   className,
   classNames,
@@ -76,29 +92,30 @@ function Calendar({
       return <ChevronRight size={16} strokeWidth={2} {...props} aria-hidden="true" />;
     },
     // Implement custom dropdown component for months and years
-    Dropdown: ({ value, onChange, children, ...props }: any) => {
-      // Create options array from the available options in props
-      const dropdownItems = props.options || [];
+    Dropdown: ({ value, onChange, children, ...props }: CustomDropdownProps) => {
+      const dropdownOptions = props.options || [];
       
       return (
         <Select
           value={String(value)}
           onValueChange={(newValue) => {
             // Convert string value back to number before calling onChange
-            if (onChange) onChange(Number(newValue));
+            if (onChange) {
+              onChange(Number(newValue));
+            }
           }}
         >
           <SelectTrigger className="h-8 min-w-[110px] px-3 py-1 text-sm focus:ring-0 touch-manipulation">
             <SelectValue>{children}</SelectValue>
           </SelectTrigger>
           <SelectContent className="touch-manipulation" position="popper">
-            {dropdownItems.map((item: any) => (
+            {dropdownOptions.map((option) => (
               <SelectItem 
-                key={item.value}
-                value={String(item.value)}
+                key={option.value}
+                value={String(option.value)}
                 className="touch-manipulation"
               >
-                {item.text || item.label}
+                {option.text || option.label || String(option.value)}
               </SelectItem>
             ))}
           </SelectContent>
