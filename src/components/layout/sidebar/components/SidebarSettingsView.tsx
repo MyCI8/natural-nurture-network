@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { SettingsPanel } from "../SettingsPanel";
+import { ArrowLeft } from "lucide-react";
 
 interface SidebarSettingsViewProps {
   onBackClick: () => void;
@@ -12,10 +13,12 @@ export const SidebarSettingsView = ({ onBackClick }: SidebarSettingsViewProps) =
     <div className="flex-1 px-4 py-4 overflow-y-auto">
       <Button 
         variant="ghost" 
-        className="mb-4 flex items-center mt-4 touch-manipulation active:scale-95 transition-transform"
+        className="mb-6 flex items-center mt-4 touch-manipulation active:scale-95 transition-transform px-2 py-2"
         onClick={onBackClick}
+        aria-label="Go back"
       >
-        ← Back
+        <ArrowLeft size={20} className="mr-2" />
+        <span>Back</span>
       </Button>
       <SettingsPanel />
     </div>
