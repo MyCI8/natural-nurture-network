@@ -80,19 +80,22 @@ function Calendar({
       return (
         <Select
           value={String(value)}
-          onValueChange={(newValue) => onChange(Number(newValue))}
+          onValueChange={(newValue) => {
+            // Convert string value back to number before calling onChange
+            onChange?.(Number(newValue));
+          }}
         >
           <SelectTrigger className="h-8 min-w-[110px] px-3 py-1 text-sm focus:ring-0 touch-manipulation">
             <SelectValue>{children}</SelectValue>
           </SelectTrigger>
           <SelectContent className="touch-manipulation" position="popper">
-            {props.options?.map((option, index) => (
+            {props.items?.map((item) => (
               <SelectItem 
-                key={option.value}
-                value={String(option.value)}
+                key={item.value}
+                value={String(item.value)}
                 className="touch-manipulation"
               >
-                {option.text}
+                {item.text || item.label}
               </SelectItem>
             ))}
           </SelectContent>
