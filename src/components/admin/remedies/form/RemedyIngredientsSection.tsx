@@ -16,7 +16,6 @@ import IngredientForm from "@/components/admin/IngredientForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-// Update the interface to match how it's used in EditRemedy.tsx
 interface RemedyIngredientsSectionProps {
   ingredients: string[];
   setIngredients?: (ingredients: string[]) => void;

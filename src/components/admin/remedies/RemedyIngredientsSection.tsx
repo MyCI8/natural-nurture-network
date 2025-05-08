@@ -17,12 +17,15 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface RemedyIngredientsSectionProps {
   ingredients: string[];
-  setIngredients: (ingredients: string[]) => void;
+  setIngredients?: (ingredients: string[]) => void;
+  onIngredientsChange?: (ingredients: string[]) => void;
+  availableIngredients?: any[];
 }
 
 export const RemedyIngredientsSection = ({
   ingredients,
   setIngredients,
+  onIngredientsChange,
 }: RemedyIngredientsSectionProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newIngredient, setNewIngredient] = useState({
@@ -32,8 +35,15 @@ export const RemedyIngredientsSection = ({
 
   const handleAddIngredient = async () => {
     if (newIngredient.name.trim()) {
-      // Add to ingredients array
-      setIngredients([...ingredients, newIngredient.name.trim()]);
+      const updatedIngredients = [...ingredients, newIngredient.name.trim()];
+      
+      // Call appropriate handlers
+      if (setIngredients) {
+        setIngredients(updatedIngredients);
+      }
+      if (onIngredientsChange) {
+        onIngredientsChange(updatedIngredients);
+      }
       
       // Also save to ingredients table
       try {
@@ -55,7 +65,15 @@ export const RemedyIngredientsSection = ({
   };
 
   const removeIngredient = (index: number) => {
-    setIngredients(ingredients.filter((_, i) => i !== index));
+    const updatedIngredients = ingredients.filter((_, i) => i !== index);
+    
+    // Call appropriate handlers
+    if (setIngredients) {
+      setIngredients(updatedIngredients);
+    }
+    if (onIngredientsChange) {
+      onIngredientsChange(updatedIngredients);
+    }
   };
 
   return (
@@ -64,7 +82,11 @@ export const RemedyIngredientsSection = ({
         <h3 className="text-lg font-semibold">Ingredients</h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="bg-background">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-background touch-manipulation active-scale"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Ingredient
             </Button>
@@ -94,7 +116,12 @@ export const RemedyIngredientsSection = ({
                   className="bg-background"
                 />
               </div>
-              <Button onClick={handleAddIngredient}>Add Ingredient</Button>
+              <Button 
+                onClick={handleAddIngredient}
+                className="touch-manipulation active-scale"
+              >
+                Add Ingredient
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -105,11 +132,11 @@ export const RemedyIngredientsSection = ({
           <Badge
             key={index}
             variant="secondary"
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 px-3 py-1.5 touch-manipulation"
           >
             {ingredient}
             <X
-              className="h-3 w-3 cursor-pointer"
+              className="h-3 w-3 cursor-pointer ml-1"
               onClick={() => removeIngredient(index)}
             />
           </Badge>
