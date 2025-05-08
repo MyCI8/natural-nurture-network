@@ -2,146 +2,82 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.75rem;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.4 71.8% 29.2%;
+  }
+}
 
 @layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    @apply bg-background text-foreground antialiased;
-    /* Removed transition to eliminate animation between modes */
-  }
-  
-  /* Ensure solid backgrounds for dropdown/popover components */
-  :root {
-    --popover-solid-background: 0 0% 100%; /* White for light mode */
-  }
-  
-  .dark {
-    --popover-solid-background: 222 47% 11%; /* Dark color for dark mode */
+    @apply bg-background text-foreground;
   }
 }
 
-/* Dark mode specific styles */
-.dark .news-section {
-  @apply bg-dm-background text-dm-text;
-}
-
-.dark .remedies-section {
-  @apply bg-dm-foreground text-dm-text;
-}
-
-.dark .symptoms-marquee {
-  @apply bg-dm-mist text-dm-text;
-}
-
-/* Light mode specific text styles to ensure readability */
-.news-section:not(.dark .news-section) h2,
-.news-section:not(.dark .news-section) h3 {
-  @apply text-[#222222];
-}
-
-.news-section:not(.dark .news-section) h1 {
-  @apply text-[#1A1F2C];
-}
-
-.news-section:not(.dark .news-section) p {
-  @apply text-[#333333];
-}
-
-.news-section:not(.dark .news-section) .card h3 {
-  @apply text-[#1A1F2C];
-}
-
-/* Add touch-friendly styles */
-.touch-manipulation {
-  touch-action: manipulation;
-}
-
-.thumb-friendly {
-  @apply min-h-[48px] min-w-[48px] py-2;
-  touch-action: manipulation;
-}
-
-.active-scale:active {
-  transform: scale(0.96);
-}
-
-/* Add styles for thumb zones on mobile */
-@media (max-width: 768px) {
-  .thumb-zone-bottom {
-    @apply fixed bottom-0 left-0 right-0 z-50;
-    height: 80px; /* Thumb-reachable zone */
-  }
-  
-  .thumb-zone-side {
-    @apply fixed top-[30%] bottom-[30%] z-40;
-    width: 20px; /* Side swipe detection area */
-  }
-  
-  .thumb-zone-side-left {
-    @apply left-0;
-  }
-  
-  .thumb-zone-side-right {
-    @apply right-0;
-  }
-  
-  /* Increase touch targets for common interactive elements */
-  button, 
-  a, 
-  [role="button"], 
-  input[type="submit"], 
-  input[type="button"] {
-    @apply min-h-[44px] min-w-[44px];
-  }
-  
-  /* Add special styles for floating action buttons in thumb zone */
-  .fab-button {
-    @apply fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg flex items-center justify-center;
+@layer components {
+  .touch-manipulation {
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-}
-
-/* Add swipe detection area styles */
-.swipe-detection-area {
-  @apply fixed top-0 bottom-0 left-0 w-16 z-30 opacity-0;
-  touch-action: pan-y;
-}
-
-/* Dropdown/popover solid background styles */
-.solid-dropdown {
-  @apply bg-white dark:bg-[#1A1F2C];
-  background-color: hsl(var(--popover-solid-background));
-}
-
-/* Ensure modal overlays sit above everything */
-#mobile-menu-overlay {
-  isolation: isolate;
-  z-index: 9999 !important;
-}
-
-#mobile-menu-sidebar {
-  isolation: isolate;
-  z-index: 10000 !important;
-  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
-}
-
-/* Styles for circular touch buttons */
-.touch-button {
-  @apply h-12 w-12 rounded-full flex items-center justify-center touch-manipulation active:scale-95 transition-transform;
-}
-
-/* Special back button with larger touch target */
-.back-button {
-  @apply h-12 w-12 rounded-full flex items-center justify-center;
-  touch-action: manipulation;
-}
-
-/* Prevent text selection while swiping */
-.no-select {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Handle for draggable elements */
-.drag-handle {
-  @apply w-full h-6 flex items-center justify-center cursor-grab touch-manipulation;
+  
+  .touch-button {
+    @apply min-w-[44px] min-h-[44px] flex items-center justify-center;
+  }
+  
+  .thumb-friendly {
+    @apply p-3;
+  }
+  
+  .active-scale {
+    @apply active:scale-95 transition-transform duration-100;
+  }
+  
+  .solid-dropdown {
+    @apply bg-background border-border;
+  }
 }

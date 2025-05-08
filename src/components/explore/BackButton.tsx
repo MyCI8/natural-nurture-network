@@ -1,5 +1,5 @@
 
-import { ArrowLeft, Move } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BackButtonProps {
