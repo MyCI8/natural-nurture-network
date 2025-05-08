@@ -1,29 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Search, Leaf, X, Shield } from "lucide-react";
+
+import React from 'react';
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { UserProfileButton } from "./sidebar/UserProfileButton";
-import { NavigationButtons } from "./sidebar/NavigationItems";
-import { SettingsPanel } from "./sidebar/SettingsPanel";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { HeaderMenuButton } from "./header/HeaderMenuButton";
+import { HeaderLogo } from "./header/HeaderLogo";
+import { HeaderSearch } from "./header/HeaderSearch";
+import { HeaderMenuContent } from "./header/HeaderMenuContent";
+import { useHeaderVisibility } from "./header/useHeaderVisibility";
+import { useMenuState } from "./header/useMenuState";
 
 const TopHeader = () => {
-  const location = useLocation();
   const navigate = useNavigate();
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [visible, setVisible] = useState(true);
-  const [isHomePage, setIsHomePage] = useState(false);
-  const [initialHideComplete, setInitialHideComplete] = useState(false);
-  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { visible } = useHeaderVisibility();
+  const { isMenuOpen, setIsMenuOpen, mounted } = useMenuState();
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -59,53 +49,6 @@ const TopHeader = () => {
     enabled: !!currentUser?.id,
   });
   
-  useEffect(() => {
-    const path = location.pathname;
-    setIsHomePage(path === '/' || path === '/home');
-  }, [location]);
-  
-  useEffect(() => {
-    if (isHomePage) {
-      setVisible(false);
-      
-      const timer = setTimeout(() => {
-        setInitialHideComplete(true);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    } else {
-      setVisible(true);
-      setInitialHideComplete(true);
-    }
-  }, [isHomePage]);
-  
-  useEffect(() => {
-    if (!initialHideComplete) return;
-    
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (isHomePage) {
-        if (currentScrollY < lastScrollY) {
-          setVisible(true);
-        } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
-          setVisible(false);
-        }
-      } else {
-        if (currentScrollY < 50 || currentScrollY < lastScrollY) {
-          setVisible(true);
-        } else {
-          setVisible(false);
-        }
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY, isHomePage, initialHideComplete]);
-  
   const handlePost = () => {
     if (!currentUser) {
       navigate('/auth');
@@ -113,31 +56,8 @@ const TopHeader = () => {
     }
     navigate('/admin/videos/new');
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (isMenuOpen && !target.closest('[data-menu="sidebar"]')) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
   
-  // Prevent body scrolling when menu is open
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMenuOpen]);
+  if (!mounted) return null;
   
   return (
     <>
@@ -147,36 +67,12 @@ const TopHeader = () => {
           visible ? 'translate-y-0' : '-translate-y-full'
         } dark:bg-[#1A1F2C] bg-white`}
       >
-        <div className="flex items-center gap-2">
-          <Avatar 
-            className="h-8 w-8 cursor-pointer active-scale" 
-            onClick={() => setIsMenuOpen(true)}
-            role="button"
-            aria-label="Open menu"
-            tabIndex={0}
-          >
-            {profile?.avatar_url ? (
-              <AvatarImage src={profile.avatar_url} alt={profile.full_name || ''} />
-            ) : (
-              <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
-            )}
-          </Avatar>
-        </div>
-        
-        <Link to="/" className="flex items-center">
-          <Leaf className="h-6 w-6 text-primary" />
-        </Link>
-        
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full"
-          asChild
-        >
-          <Link to="/search">
-            <Search className="h-5 w-5" />
-          </Link>
-        </Button>
+        <HeaderMenuButton 
+          profile={profile} 
+          onClick={() => setIsMenuOpen(true)}
+        />
+        <HeaderLogo />
+        <HeaderSearch />
       </header>
       
       {/* Modal overlay - separate from the header */}
@@ -187,7 +83,7 @@ const TopHeader = () => {
         />
       )}
       
-      {/* Sidebar content - positioned at the root level for better stacking */}
+      {/* Sidebar content */}
       <div 
         data-menu="sidebar"
         className={`fixed inset-y-0 left-0 w-[280px] border-r shadow-xl z-[1001] transition-all duration-300 ease-in-out p-4 ${
@@ -197,87 +93,13 @@ const TopHeader = () => {
           visibility: isMenuOpen ? 'visible' : 'hidden'
         }}
       >
-        <div className="flex flex-col h-full">
-          <div className="flex justify-between items-center p-4 border-b">
-            <UserProfileButton 
-              userId={currentUser?.id}
-              profile={profile}
-              onClick={() => {
-                navigate(currentUser ? `/users/${currentUser.id}` : '/auth');
-                setIsMenuOpen(false);
-              }}
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          {showSettingsPanel ? (
-            <div className="flex-1 px-4 py-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="mb-4"
-                onClick={() => setShowSettingsPanel(false)}
-              >
-                ← Back
-              </Button>
-              <SettingsPanel />
-            </div>
-          ) : (
-            <div className="flex-1 px-4 py-2">
-              <NavigationButtons 
-                onItemClick={() => {
-                  setIsMenuOpen(false);
-                }}
-              />
-              
-              <div className="mt-6">
-                <Button
-                  className="w-full rounded-full mb-6 bg-primary text-primary-foreground hover:bg-primary/90 py-5 active-scale"
-                  onClick={() => {
-                    handlePost();
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  Post
-                </Button>
-                
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start rounded-full py-3 mb-2"
-                    onClick={() => {
-                      navigate('/admin');
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <Shield className="h-5 w-5 mr-2" />
-                    Admin Panel
-                  </Button>
-                )}
-                
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start rounded-full py-3 mb-2"
-                  onClick={() => setShowSettingsPanel(true)}
-                >
-                  Settings
-                </Button>
-                
-                <div className="flex items-center justify-between px-3 py-2 rounded-lg mt-4">
-                  <span>Theme</span>
-                  <ThemeToggle />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <HeaderMenuContent
+          currentUser={currentUser}
+          profile={profile}
+          isAdmin={isAdmin}
+          onClose={() => setIsMenuOpen(false)}
+          onPostClick={handlePost}
+        />
       </div>
     </>
   );
