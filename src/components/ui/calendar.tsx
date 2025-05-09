@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, DropdownProps } from "react-day-picker";
 import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
@@ -26,13 +26,8 @@ interface DropdownOption {
   disabled?: boolean;
 }
 
-interface CustomDropdownProps {
-  value?: string | number; // Changed from just number to string | number
-  onChange?: (value: string | number) => void; // Updated parameter type
-  children?: React.ReactNode;
-  options?: DropdownOption[];
-  [key: string]: any;
-}
+// Removing our custom dropdown props and using the original type
+// This is the key change - we won't try to redefine the props
 
 function Calendar({
   className,
@@ -91,25 +86,30 @@ function Calendar({
       }
       return <ChevronRight size={16} strokeWidth={2} {...props} aria-hidden="true" />;
     },
-    // Implement custom dropdown component for months and years
-    Dropdown: ({ value, onChange, children, ...props }: CustomDropdownProps) => {
-      const dropdownOptions = props.options || [];
+    // Implement custom dropdown component for months and years using correct type
+    Dropdown: (props: DropdownProps) => {
+      // Create the proper event handler to pass to our Dropdown
+      const handleSelectChange = (newValue: string) => {
+        if (props.onChange) {
+          // Create a synthetic event that matches what react-day-picker expects
+          const syntheticEvent = {
+            target: { value: newValue }
+          } as React.ChangeEvent<HTMLSelectElement>;
+          
+          props.onChange(syntheticEvent);
+        }
+      };
       
       return (
         <Select
-          value={String(value)}
-          onValueChange={(newValue) => {
-            // Convert string value back to number before calling onChange
-            if (onChange) {
-              onChange(newValue);
-            }
-          }}
+          value={String(props.value)}
+          onValueChange={handleSelectChange}
         >
           <SelectTrigger className="h-8 min-w-[110px] px-3 py-1 text-sm focus:ring-0 touch-manipulation">
-            <SelectValue>{children}</SelectValue>
+            <SelectValue>{props.children}</SelectValue>
           </SelectTrigger>
           <SelectContent className="touch-manipulation" position="popper">
-            {dropdownOptions.map((option) => (
+            {props.options?.map((option) => (
               <SelectItem 
                 key={option.value}
                 value={String(option.value)}
