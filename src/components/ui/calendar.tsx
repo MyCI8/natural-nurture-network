@@ -18,14 +18,6 @@ import {
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-// Define the DropdownOption interface matching what react-day-picker expects
-interface DropdownOption {
-  value: string | number;
-  text?: string;
-  label?: string;
-  disabled?: boolean;
-}
-
 function Calendar({
   className,
   classNames,
@@ -84,39 +76,23 @@ function Calendar({
       return <ChevronRight size={16} strokeWidth={2} {...props} aria-hidden="true" />;
     },
     // Implement custom dropdown component for months and years
-    Dropdown: (props: DropdownProps) => {
-      // Create the proper event handler to pass to our Dropdown
-      const handleSelectChange = (newValue: string) => {
-        if (props.onChange) {
-          // Create a synthetic event that matches what react-day-picker expects
-          const syntheticEvent = {
-            target: { value: newValue }
-          } as React.ChangeEvent<HTMLSelectElement>;
-          
-          props.onChange(syntheticEvent);
-        }
-      };
-      
-      // Check if props.options exists, otherwise create options from value property
-      // This handles compatibility with react-day-picker's different versions
-      const options = Array.isArray(props.options) ? props.options : [];
-      
+    Dropdown: ({ value, onChange, children, ...props }: DropdownProps) => {
       return (
         <Select
-          value={String(props.value)}
-          onValueChange={handleSelectChange}
+          value={String(value)}
+          onValueChange={(newValue) => onChange(Number(newValue))}
         >
           <SelectTrigger className="h-8 min-w-[110px] px-3 py-1 text-sm focus:ring-0 touch-manipulation">
-            <SelectValue>{props.children}</SelectValue>
+            <SelectValue>{children}</SelectValue>
           </SelectTrigger>
           <SelectContent className="touch-manipulation" position="popper">
-            {options.map((option) => (
+            {props.options?.map((option, index) => (
               <SelectItem 
                 key={option.value}
                 value={String(option.value)}
                 className="touch-manipulation"
               >
-                {option.text || option.label || String(option.value)}
+                {option.text}
               </SelectItem>
             ))}
           </SelectContent>
@@ -144,4 +120,3 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
-
