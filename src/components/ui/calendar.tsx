@@ -109,13 +109,13 @@ function Calendar({
             <SelectValue>{props.children}</SelectValue>
           </SelectTrigger>
           <SelectContent className="touch-manipulation" position="popper">
-            {props.options?.map((option) => (
+            {props.items?.map((item) => (
               <SelectItem 
-                key={option.value}
-                value={String(option.value)}
+                key={item.value}
+                value={String(item.value)}
                 className="touch-manipulation"
               >
-                {option.text || option.label || String(option.value)}
+                {item.text || item.label || String(item.value)}
               </SelectItem>
             ))}
           </SelectContent>
