@@ -22,6 +22,13 @@ interface TouchPosition {
   time: number;
 }
 
+// Define a touch point interface to handle both React.Touch and Touch
+interface TouchPoint {
+  clientX: number;
+  clientY: number;
+  identifier: number;
+}
+
 /**
  * Hook for handling touch gesture interactions on mobile devices
  */
@@ -41,7 +48,7 @@ export function useTouchGestures({
 }: TouchGestureOptions) {
   const touchStartRef = useRef<TouchPosition | null>(null);
   const prevTouchEndTimeRef = useRef<number>(0);
-  const touchesRef = useRef<Touch[]>([]);
+  const touchesRef = useRef<TouchPoint[]>([]);
   const longPressTimerRef = useRef<number | null>(null);
   const [isSwiping, setIsSwiping] = useState(false);
 
@@ -54,9 +61,13 @@ export function useTouchGestures({
     };
     setIsSwiping(true);
     
-    // Store all touches for pinch detection
+    // Store all touches for pinch detection - convert to our TouchPoint interface
     if (e.touches.length > 1) {
-      const touchesArray = Array.from(e.touches);
+      const touchesArray = Array.from(e.touches).map(t => ({
+        clientX: t.clientX,
+        clientY: t.clientY,
+        identifier: t.identifier
+      }));
       touchesRef.current = touchesArray;
     }
     
@@ -83,7 +94,11 @@ export function useTouchGestures({
     
     // Handle pinch events
     if (e.touches.length > 1 && (onPinchIn || onPinchOut)) {
-      const currentTouches = Array.from(e.touches);
+      const currentTouches = Array.from(e.touches).map(t => ({
+        clientX: t.clientX,
+        clientY: t.clientY,
+        identifier: t.identifier
+      }));
       
       if (touchesRef.current.length > 1) {
         // Calculate distance between fingers for current and previous touches
@@ -177,7 +192,7 @@ export function useTouchGestures({
   }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onTap, onDoubleTap, threshold, preventScroll]);
 
   // Function to calculate distance between two touch points
-  const getDistance = (touch1: Touch, touch2: Touch): number => {
+  const getDistance = (touch1: TouchPoint, touch2: TouchPoint): number => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
