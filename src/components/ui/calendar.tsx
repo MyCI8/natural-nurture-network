@@ -18,17 +18,17 @@ import {
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-// Define proper types for the dropdown props
+// Updated interface to match react-day-picker's DropdownProps
 interface DropdownOption {
-  value: number;
+  value: string | number;
   text?: string;
   label?: string;
   disabled?: boolean;
 }
 
 interface CustomDropdownProps {
-  value?: number;
-  onChange?: (value: number) => void;
+  value?: string | number; // Changed from just number to string | number
+  onChange?: (value: string | number) => void; // Updated parameter type
   children?: React.ReactNode;
   options?: DropdownOption[];
   [key: string]: any;
@@ -101,7 +101,7 @@ function Calendar({
           onValueChange={(newValue) => {
             // Convert string value back to number before calling onChange
             if (onChange) {
-              onChange(Number(newValue));
+              onChange(newValue);
             }
           }}
         >
