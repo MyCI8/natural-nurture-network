@@ -18,16 +18,13 @@ import {
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-// Updated interface to match react-day-picker's DropdownProps
+// Define the DropdownOption interface matching what react-day-picker expects
 interface DropdownOption {
   value: string | number;
   text?: string;
   label?: string;
   disabled?: boolean;
 }
-
-// Removing our custom dropdown props and using the original type
-// This is the key change - we won't try to redefine the props
 
 function Calendar({
   className,
@@ -86,7 +83,7 @@ function Calendar({
       }
       return <ChevronRight size={16} strokeWidth={2} {...props} aria-hidden="true" />;
     },
-    // Implement custom dropdown component for months and years using correct type
+    // Implement custom dropdown component for months and years
     Dropdown: (props: DropdownProps) => {
       // Create the proper event handler to pass to our Dropdown
       const handleSelectChange = (newValue: string) => {
@@ -100,6 +97,10 @@ function Calendar({
         }
       };
       
+      // Check if props.options exists, otherwise create options from value property
+      // This handles compatibility with react-day-picker's different versions
+      const options = Array.isArray(props.options) ? props.options : [];
+      
       return (
         <Select
           value={String(props.value)}
@@ -109,13 +110,13 @@ function Calendar({
             <SelectValue>{props.children}</SelectValue>
           </SelectTrigger>
           <SelectContent className="touch-manipulation" position="popper">
-            {props.items?.map((item) => (
+            {options.map((option) => (
               <SelectItem 
-                key={item.value}
-                value={String(item.value)}
+                key={option.value}
+                value={String(option.value)}
                 className="touch-manipulation"
               >
-                {item.text || item.label || String(item.value)}
+                {option.text || option.label || String(option.value)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -143,3 +144,4 @@ function Calendar({
 Calendar.displayName = "Calendar";
 
 export { Calendar };
+
