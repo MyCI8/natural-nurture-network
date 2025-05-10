@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 
@@ -55,7 +55,7 @@ function Calendar({
     nav: "space-x-1 flex items-center",
     nav_button: cn(
       buttonVariants({ variant: "outline" }),
-      "h-10 w-10 p-0 opacity-50 hover:opacity-100 touch-manipulation min-h-[40px] min-w-[40px]"
+      "h-10 w-10 p-0 opacity-50 hover:opacity-100 touch-manipulation min-h-[44px] min-w-[44px]"
     ),
     nav_button_previous: "absolute left-1",
     nav_button_next: "absolute right-1",
@@ -67,7 +67,7 @@ function Calendar({
     cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
     day: cn(
       buttonVariants({ variant: "ghost" }),
-      "h-10 w-10 p-0 font-normal aria-selected:opacity-100 touch-manipulation min-h-[40px] min-w-[40px]"
+      "h-10 w-10 p-0 font-normal aria-selected:opacity-100 touch-manipulation min-h-[44px] min-w-[44px]"
     ),
     day_range_end: "day-range-end",
     day_selected:
@@ -79,7 +79,7 @@ function Calendar({
     day_range_middle:
       "aria-selected:bg-accent aria-selected:text-accent-foreground",
     day_hidden: "invisible",
-    caption_dropdowns: "flex justify-center gap-2 py-2"
+    caption_dropdowns: "flex justify-center gap-4 py-2"
   };
   
   const mergedClassNames: typeof defaultClassNames = Object.keys(defaultClassNames).reduce(
@@ -112,11 +112,11 @@ function Calendar({
         });
       }, []);
       
-      // Create year options (10 years back, 10 years forward)
+      // Create year options (100 years back, 20 years forward)
       const years = React.useMemo(() => {
         const currentYear = new Date().getFullYear();
-        return Array.from({ length: 21 }, (_, i) => {
-          const year = currentYear - 10 + i;
+        return Array.from({ length: 121 }, (_, i) => {
+          const year = currentYear - 100 + i;
           return {
             value: year,
             text: year.toString(),
@@ -132,17 +132,45 @@ function Calendar({
           onValueChange={(newValue) => onChange(Number(newValue))}
         >
           <SelectTrigger 
-            className="h-9 min-w-[120px] px-3 py-1 text-sm bg-background border-border hover:bg-accent focus:ring-0 touch-manipulation"
+            className="h-9 min-w-[110px] px-3 py-1 text-sm bg-background border-border hover:bg-accent focus:ring-0 touch-manipulation"
             aria-label={props.name === "months" ? "Select month" : "Select year"}
           >
             <SelectValue>{children}</SelectValue>
           </SelectTrigger>
-          <SelectContent className="max-h-60 overflow-auto touch-manipulation bg-background" position="popper">
+          <SelectContent 
+            className="max-h-60 overflow-auto touch-manipulation bg-background solid-dropdown z-[100]" 
+            position="popper"
+            align="center"
+          >
+            {props.name === "years" && (
+              <div className="sticky top-0 bg-background z-10 p-1 border-b">
+                <input
+                  type="text"
+                  placeholder="Search year..."
+                  className="w-full p-2 text-sm border rounded-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  onChange={(e) => {
+                    const yearContainer = e.currentTarget.closest('[role="listbox"]');
+                    if (yearContainer) {
+                      const yearValue = e.currentTarget.value.trim();
+                      if (yearValue) {
+                        const yearItem = Array.from(yearContainer.children).find(
+                          (item) => item.textContent?.includes(yearValue)
+                        ) as HTMLElement;
+                        
+                        if (yearItem) {
+                          yearItem.scrollIntoView({ block: "center" });
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            )}
             {options?.map((option) => (
               <SelectItem 
                 key={option.value}
                 value={String(option.value)}
-                className="touch-manipulation min-h-[40px] text-base flex items-center"
+                className="touch-manipulation min-h-[44px] text-base flex items-center"
               >
                 {option.text}
               </SelectItem>

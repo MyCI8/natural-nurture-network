@@ -46,7 +46,7 @@ export const PublishingOptionsSection = ({
             <Button
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal touch-manipulation",
+                "w-full justify-start text-left font-normal touch-manipulation min-h-[44px]",
                 !scheduledDate && "text-muted-foreground"
               )}
             >
@@ -54,13 +54,14 @@ export const PublishingOptionsSection = ({
               {scheduledDate ? format(scheduledDate, "PPP") : "Pick a date"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-background" align="start">
+          <PopoverContent className="w-auto p-0 bg-background solid-dropdown" align="start">
             <Calendar
               mode="single"
               selected={scheduledDate}
               onSelect={setScheduledDate}
               initialFocus
               className="touch-manipulation"
+              captionLayout="dropdown"
             />
           </PopoverContent>
         </Popover>
