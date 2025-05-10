@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -303,7 +302,7 @@ function Calendar({
         className={cn("w-full p-3 touch-manipulation", className)}
         classNames={mergedClassNames}
         components={mergedComponents}
-        captionLayout="custom" // Use custom to enable our Caption component
+        captionLayout={captionLayout}
         month={currentMonth}
         onMonthChange={(month) => {
           setCurrentMonth(month);
