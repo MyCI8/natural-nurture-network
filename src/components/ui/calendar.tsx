@@ -27,22 +27,26 @@ function Calendar({
   captionLayout = "dropdown",
   ...props
 }: CalendarProps) {
-  const captionRef = React.useRef<HTMLDivElement>(null);
   const [currentMonth, setCurrentMonth] = React.useState<Date>(props.defaultMonth || new Date());
+  const [view, setView] = React.useState<"days" | "months" | "years">("days");
   
   // Handle touch swipe gestures for month navigation
   const { handlers: swipeHandlers } = useTouchGestures({
     onSwipeLeft: () => {
-      const nextMonth = new Date(currentMonth);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      setCurrentMonth(nextMonth);
-      props.onMonthChange?.(nextMonth);
+      if (view === "days") {
+        const nextMonth = new Date(currentMonth);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        setCurrentMonth(nextMonth);
+        props.onMonthChange?.(nextMonth);
+      }
     },
     onSwipeRight: () => {
-      const prevMonth = new Date(currentMonth);
-      prevMonth.setMonth(prevMonth.getMonth() - 1);
-      setCurrentMonth(prevMonth);
-      props.onMonthChange?.(prevMonth);
+      if (view === "days") {
+        const prevMonth = new Date(currentMonth);
+        prevMonth.setMonth(prevMonth.getMonth() - 1);
+        setCurrentMonth(prevMonth);
+        props.onMonthChange?.(prevMonth);
+      }
     },
     threshold: 40,
   });
@@ -51,7 +55,10 @@ function Calendar({
     months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
     month: "space-y-4",
     caption: "flex justify-center pt-1 relative items-center",
-    caption_label: "text-sm font-medium",
+    caption_label: cn(
+      "text-sm font-medium cursor-pointer px-3 py-1 rounded-md hover:bg-accent",
+      view !== "days" && "hidden"
+    ),
     nav: "space-x-1 flex items-center",
     nav_button: cn(
       buttonVariants({ variant: "outline" }),
@@ -130,6 +137,12 @@ function Calendar({
         <Select
           value={String(value)}
           onValueChange={(newValue) => onChange(Number(newValue))}
+          open={props.name === "years" && view === "years" ? true : undefined}
+          onOpenChange={props.name === "years" ? 
+            (isOpen) => {
+              if (!isOpen) setView("days");
+            } : undefined
+          }
         >
           <SelectTrigger 
             className="h-9 min-w-[110px] px-3 py-1 text-sm bg-background border-border hover:bg-accent focus:ring-0 touch-manipulation"
@@ -179,6 +192,25 @@ function Calendar({
         </Select>
       );
     },
+    Caption: (props: any) => {
+      const { displayMonth } = props;
+      
+      // Create a custom caption component that opens year selection when clicked
+      return (
+        <div className="flex justify-center items-center py-1 relative">
+          <div className="flex items-center">
+            <button 
+              type="button" 
+              className="text-sm font-medium cursor-pointer px-3 py-1 rounded-md hover:bg-accent min-h-[44px] min-w-[120px] touch-manipulation"
+              onClick={() => setView("years")}
+              aria-label="Open year selection"
+            >
+              {format(displayMonth, "MMMM yyyy")}
+            </button>
+          </div>
+        </div>
+      );
+    }
   };
 
   const mergedComponents = {
@@ -192,6 +224,78 @@ function Calendar({
     }
   }, [props.month]);
 
+  // When year view is active, render the year selection directly
+  if (view === "years") {
+    return (
+      <div className="calendar-container touch-manipulation p-3 w-full">
+        <div className="flex justify-between items-center mb-4">
+          <button
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-10 w-10 p-0 touch-manipulation min-h-[44px] min-w-[44px]"
+            )}
+            onClick={() => setView("days")}
+            aria-label="Back to calendar"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <h2 className="text-lg font-medium">Select Year</h2>
+          <div className="h-10 w-10"></div> {/* Empty div for alignment */}
+        </div>
+        
+        <div className="sticky top-0 bg-background z-10 p-1 mb-2">
+          <input
+            type="text"
+            placeholder="Search year..."
+            className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-primary min-h-[44px]"
+            onChange={(e) => {
+              const yearValue = e.currentTarget.value.trim();
+              const yearContainer = document.getElementById('year-grid');
+              if (yearContainer && yearValue) {
+                const yearItems = yearContainer.querySelectorAll('[data-year]');
+                for (let item of yearItems) {
+                  if (item.textContent?.includes(yearValue)) {
+                    item.scrollIntoView({ block: "center" });
+                    break;
+                  }
+                }
+              }
+            }}
+          />
+        </div>
+        
+        <div 
+          id="year-grid" 
+          className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[300px] py-2"
+        >
+          {(() => {
+            const currentYear = new Date().getFullYear();
+            const years = Array.from({ length: 121 }, (_, i) => currentYear - 100 + i);
+            return years.map(year => (
+              <button
+                key={year}
+                data-year={year}
+                className={cn(
+                  "py-2 px-1 rounded-md text-center touch-manipulation min-h-[44px]",
+                  currentMonth.getFullYear() === year ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                )}
+                onClick={() => {
+                  const newDate = new Date(currentMonth);
+                  newDate.setFullYear(year);
+                  setCurrentMonth(newDate);
+                  props.onMonthChange?.(newDate);
+                  setView("days");
+                }}
+              >
+                {year}
+              </button>
+            ));
+          })()}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="calendar-container touch-manipulation">
       <DayPicker
@@ -199,7 +303,7 @@ function Calendar({
         className={cn("w-full p-3 touch-manipulation", className)}
         classNames={mergedClassNames}
         components={mergedComponents}
-        captionLayout={captionLayout}
+        captionLayout="custom" // Use custom to enable our Caption component
         month={currentMonth}
         onMonthChange={(month) => {
           setCurrentMonth(month);
