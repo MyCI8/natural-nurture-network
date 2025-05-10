@@ -48,34 +48,40 @@ function Calendar({
   });
   
   const defaultClassNames = {
-    months: "relative flex flex-col sm:flex-row gap-4",
-    month: "w-full",
-    month_caption: "flex items-center justify-center relative h-12 px-4 text-base font-semibold",
+    months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+    month: "space-y-4",
+    caption: "flex justify-center pt-1 relative items-center",
     caption_label: "text-sm font-medium",
-    nav: "absolute top-0 flex w-full justify-between",
-    button_previous: cn(
-      buttonVariants({ variant: "ghost" }),
-      "size-12 text-muted-foreground/80 hover:text-foreground p-0 touch-manipulation min-h-[48px] min-w-[48px]",
+    nav: "space-x-1 flex items-center",
+    nav_button: cn(
+      buttonVariants({ variant: "outline" }),
+      "h-10 w-10 p-0 opacity-50 hover:opacity-100 touch-manipulation min-h-[40px] min-w-[40px]"
     ),
-    button_next: cn(
+    nav_button_previous: "absolute left-1",
+    nav_button_next: "absolute right-1",
+    table: "w-full border-collapse space-y-1",
+    head_row: "flex",
+    head_cell:
+      "text-muted-foreground rounded-md w-10 font-normal text-[0.8rem]",
+    row: "flex w-full mt-2",
+    cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+    day: cn(
       buttonVariants({ variant: "ghost" }),
-      "size-12 text-muted-foreground/80 hover:text-foreground p-0 touch-manipulation min-h-[48px] min-w-[48px]",
+      "h-10 w-10 p-0 font-normal aria-selected:opacity-100 touch-manipulation min-h-[40px] min-w-[40px]"
     ),
-    weekday: "w-10 h-10 font-medium text-sm text-muted-foreground flex items-center justify-center",
-    day_button:
-      "relative flex h-10 w-10 items-center justify-center rounded-full p-0 text-base font-normal outline-offset-2 group-[[data-selected]:not(.range-middle)]:[transition-property:color,background-color,border-radius,box-shadow] group-[[data-selected]:not(.range-middle)]:duration-150 focus:outline-none hover:bg-accent group-data-[selected]:bg-primary hover:text-foreground group-data-[selected]:text-primary-foreground group-data-[disabled]:text-foreground/30 group-data-[disabled]:line-through group-data-[outside]:text-foreground/30 group-data-[outside]:group-data-[selected]:text-primary-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 group-[.range-start:not(.range-end)]:rounded-e-none group-[.range-end:not(.range-start)]:rounded-s-none group-[.range-middle]:rounded-none group-data-[selected]:group-[.range-middle]:bg-accent group-data-[selected]:group-[.range-middle]:text-foreground touch-manipulation",
-    day: "group h-10 w-10 p-0 text-sm font-medium aria-selected:opacity-100 min-h-[40px]",
-    range_start: "range-start",
-    range_end: "range-end",
-    range_middle: "range-middle",
-    today:
-      "*:after:pointer-events-none *:after:absolute *:after:bottom-1 *:after:start-1/2 *:after:z-10 *:after:h-1 *:after:w-1 *:after:-translate-x-1/2 *:after:rounded-full *:after:bg-primary [&[data-selected]:not(.range-middle)>*]:after:bg-background [&[data-disabled]>*]:after:bg-foreground/30 *:after:transition-colors",
-    outside: "text-muted-foreground data-selected:bg-accent/50 data-selected:text-muted-foreground",
-    hidden: "invisible",
-    week_number: "flex h-10 w-10 items-center justify-center text-xs font-medium text-muted-foreground",
-    caption_dropdowns: "flex justify-center gap-2 p-2",
+    day_range_end: "day-range-end",
+    day_selected:
+      "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+    day_today: "bg-accent text-accent-foreground",
+    day_outside:
+      "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+    day_disabled: "text-muted-foreground opacity-50",
+    day_range_middle:
+      "aria-selected:bg-accent aria-selected:text-accent-foreground",
+    day_hidden: "invisible",
+    caption_dropdowns: "flex justify-center gap-2 py-2"
   };
-
+  
   const mergedClassNames: typeof defaultClassNames = Object.keys(defaultClassNames).reduce(
     (acc, key) => ({
       ...acc,
@@ -88,22 +94,11 @@ function Calendar({
     }),
     {} as typeof defaultClassNames,
   );
-
+  
   // Custom components for the calendar
   const defaultComponents = {
-    Chevron: (props: React.SVGProps<SVGSVGElement> & { orientation: "left" | "right" }) => {
-      if (props.orientation === "left") {
-        return <ChevronLeft size={24} strokeWidth={2} {...props} aria-hidden="true" />;
-      }
-      return <ChevronRight size={24} strokeWidth={2} {...props} aria-hidden="true" />;
-    },
-    YearChevrons: (props: React.SVGProps<SVGSVGElement> & { orientation: "left" | "right" }) => {
-      if (props.orientation === "left") {
-        return <ChevronsLeft size={20} strokeWidth={2} {...props} aria-hidden="true" />;
-      }
-      return <ChevronsRight size={20} strokeWidth={2} {...props} aria-hidden="true" />;
-    },
-    // Custom dropdown component for months
+    IconLeft: (props: React.ComponentProps<typeof ChevronLeft>) => <ChevronLeft className="h-6 w-6" />,
+    IconRight: (props: React.ComponentProps<typeof ChevronRight>) => <ChevronRight className="h-6 w-6" />,
     Dropdown: ({ value, onChange, children, ...props }: any) => {
       // Create month options
       const months = React.useMemo(() => {
@@ -137,7 +132,7 @@ function Calendar({
           onValueChange={(newValue) => onChange(Number(newValue))}
         >
           <SelectTrigger 
-            className="h-9 min-w-[120px] px-3 py-1 text-sm bg-transparent border-none hover:bg-accent focus:ring-0 touch-manipulation"
+            className="h-9 min-w-[120px] px-3 py-1 text-sm bg-background border-border hover:bg-accent focus:ring-0 touch-manipulation"
             aria-label={props.name === "months" ? "Select month" : "Select year"}
           >
             <SelectValue>{children}</SelectValue>
@@ -173,7 +168,7 @@ function Calendar({
     <div className="calendar-container touch-manipulation">
       <DayPicker
         showOutsideDays={showOutsideDays}
-        className={cn("w-fit touch-manipulation", className)}
+        className={cn("w-full p-3 touch-manipulation", className)}
         classNames={mergedClassNames}
         components={mergedComponents}
         captionLayout={captionLayout}

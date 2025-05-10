@@ -60,8 +60,7 @@ export const PublishingOptionsSection = ({
               selected={scheduledDate}
               onSelect={setScheduledDate}
               initialFocus
-              className="p-3 pointer-events-auto touch-manipulation"
-              captionLayout="dropdown"
+              className="touch-manipulation"
             />
           </PopoverContent>
         </Popover>
