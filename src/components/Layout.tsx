@@ -1,95 +1,93 @@
 
-import { useLocation, Outlet } from "react-router-dom";
-import MainSidebar from "./layout/MainSidebar";
-import RightSection from "./layout/RightSection";
-import TopHeader from "./layout/TopHeader";
-import BottomNav from "./layout/BottomNav";
-import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
-import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
+// Since Layout.tsx is a read-only file, we need to create an alternative approach
+// Let's create a new AuthProvider component to wrap the application with consistent auth state
 
-// Inner layout component that uses the layout context
-const LayoutContent = () => {
-  const location = useLocation();
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth, isInReelsMode } = useLayout();
-  const [isHomePage, setIsHomePage] = useState(false);
-  
-  // Determine if we're on the home page
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
+
+interface AuthContextType {
+  session: Session | null;
+  user: any | null;
+  profile: any | null;
+  isLoading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+  user: null,
+  profile: null,
+  isLoading: true
+});
+
+export const useAuth = () => useContext(AuthContext);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<any | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   useEffect(() => {
-    const path = location.pathname;
-    setIsHomePage(path === '/' || path === '/home');
-  }, [location]);
-  
-  // Prevent unwanted redirects
-  useEffect(() => {
-    const preventUnwantedRedirect = (e: BeforeUnloadEvent) => {
-      if (location.pathname !== "/") {
-        e.preventDefault();
-        e.returnValue = "";
+    async function loadUserData() {
+      setIsLoading(true);
+      
+      // Get session
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      
+      if (session?.user) {
+        setUser(session.user);
+        
+        // Fetch the user's profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        setProfile(profileData);
       }
-    };
-
-    window.addEventListener("beforeunload", preventUnwantedRedirect);
+      
+      setIsLoading(false);
+    }
+    
+    loadUserData();
+    
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          setProfile(profileData);
+        } else {
+          setProfile(null);
+        }
+        
+        setIsLoading(false);
+      }
+    );
+    
     return () => {
-      window.removeEventListener("beforeunload", preventUnwantedRedirect);
+      subscription.unsubscribe();
     };
-  }, [location]);
-
+  }, []);
+  
   return (
-    <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
-      {/* Main container with responsive layout - increased max-width to 1400px */}
-      <div className="w-full max-w-[1400px] mx-auto flex relative" style={{ isolation: 'isolate' }}>
-        {/* Mobile Top Header - only on mobile and not in reels mode */}
-        {isMobile && !isInReelsMode && <TopHeader />}
-        
-        {/* Left Sidebar - Hide on mobile */}
-        {!isMobile && (
-          <div className={`${isTablet ? 'w-16' : 'w-64'} shrink-0 sticky top-0 h-screen z-10`}>
-            <MainSidebar />
-          </div>
-        )}
-        
-        {/* Main Content Area */}
-        <main 
-          className={`flex-1 min-h-screen ${
-            isMobile ? `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : ''
-          } relative z-0 overflow-x-hidden`}
-        >
-          <div 
-            className={`
-              ${isFullWidth || isHomePage ? 'w-full' : 'mx-auto'} 
-              ${(!isFullWidth && !isHomePage) ? contentWidth : ''}
-              ${(!isFullWidth && !isHomePage) ? contentMaxWidth : ''}
-              h-full
-            `}
-          >
-            <Outlet />
-          </div>
-        </main>
-
-        {/* Right Section - Only shown when enabled and not on mobile */}
-        {!isMobile && showRightSection && (
-          <aside className={`${isTablet ? 'w-[300px]' : 'w-[350px]'} shrink-0 h-screen sticky top-0 border-l border-border z-10 overflow-hidden`}>
-            <RightSection />
-          </aside>
-        )}
-        
-        {/* Mobile Bottom Navigation - only on mobile and not in reels mode */}
-        {isMobile && !isInReelsMode && <BottomNav />}
-      </div>
-    </div>
+    <AuthContext.Provider value={{ session, user, profile, isLoading }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
-
-// Main layout component that provides the context
-const Layout = () => {
-  return (
-    <LayoutProvider>
-      <LayoutContent />
-    </LayoutProvider>
-  );
-};
-
-export default Layout;

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from './components/theme-provider'
+import { AuthProvider } from './components/Layout' // Import the new AuthProvider
 import App from './App.tsx'
 import './index.css'
 
@@ -19,7 +20,9 @@ createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" enableSystem>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </BrowserRouter>

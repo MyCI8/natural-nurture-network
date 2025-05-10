@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +33,18 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Check if already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/');
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   // Generate username when first or last name changes
   useEffect(() => {
@@ -149,11 +160,19 @@ const Auth = () => {
         });
         setIsSignUp(false);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+        
         if (error) throw error;
+        
+        // If login is successful, navigate to home
+        toast({
+          title: "Welcome back!",
+          description: "You've been signed in successfully.",
+        });
+        
         navigate("/");
       }
     } catch (error: any) {

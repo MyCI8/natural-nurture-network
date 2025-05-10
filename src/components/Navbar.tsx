@@ -5,6 +5,7 @@ import { Menu, X, Leaf, LogOut, Shield, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,15 +26,29 @@ const Navbar = () => {
     enabled: !!session,
   });
 
+  // Enhanced session management
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(!!session);
-    });
+    // Initial session check
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(!!data.session);
+    };
+    
+    checkSession();
 
+    // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(!!session);
+      const isAuthenticated = !!session;
+      setSession(isAuthenticated);
+      
+      // Show toast notification on successful sign in
+      if (_event === 'SIGNED_IN') {
+        toast.success('Successfully signed in!');
+      } else if (_event === 'SIGNED_OUT') {
+        toast.success('Successfully signed out');
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -125,15 +140,24 @@ const Navbar = () => {
                 </Link>
               ))}
               {session ? (
-                <button
-                  onClick={() => {
-                    handleSignOut();
-                    setIsOpen(false);
-                  }}
-                  className="w-full text-right px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
-                >
-                  Sign Out
-                </button>
+                <>
+                  <Link 
+                    to="/settings/profile"
+                    className="block px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md text-right"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Profile Settings
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
+                    className="w-full text-right px-3 py-2 text-text-light hover:text-primary hover:bg-primary-light rounded-md"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <Link
                   to="/auth"
