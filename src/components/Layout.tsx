@@ -1,11 +1,16 @@
 
-// Since Layout.tsx is a read-only file, we need to create an alternative approach
-// Let's create a new AuthProvider component to wrap the application with consistent auth state
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
+import { Outlet } from 'react-router-dom';
+import Navbar from './Navbar';
+import TopHeader from './layout/TopHeader';
+import BottomNav from './layout/BottomNav';
+import MainSidebar from './layout/MainSidebar';
+import RightSection from './layout/RightSection';
+import { useIsMobile } from '@/hooks/use-mobile';
 
+// Auth context and provider implementation
 interface AuthContextType {
   session: Session | null;
   user: any | null;
@@ -91,3 +96,37 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     </AuthContext.Provider>
   );
 };
+
+// Layout component that will be the default export
+const Layout = () => {
+  const isMobile = useIsMobile();
+  
+  return (
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar for desktop view */}
+      {!isMobile && <MainSidebar />}
+      
+      {/* Mobile-specific components */}
+      {isMobile && <TopHeader />}
+      
+      {/* Main content area */}
+      <main className="flex-1 flex flex-col">
+        <Navbar />
+        
+        <div className="flex-1 pt-16 pb-16 md:pb-0 md:pl-16 lg:pl-64 xl:pl-64">
+          <div className="container mx-auto px-4 py-6">
+            <Outlet />
+          </div>
+        </div>
+        
+        {/* Mobile navigation */}
+        {isMobile && <BottomNav />}
+      </main>
+      
+      {/* Right section */}
+      <RightSection />
+    </div>
+  );
+};
+
+export default Layout;
