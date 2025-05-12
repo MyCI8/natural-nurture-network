@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -27,7 +28,8 @@ const RightSection = () => {
   const isVideoDetailPage = location.pathname.includes('/explore/') && id;
   const isNewsPage = location.pathname.includes('/news');
   const {
-    data: productLinks = []
+    data: productLinks = [],
+    isLoading: isLoadingProductLinks
   } = useQuery({
     queryKey: ['rightSectionProductLinks', id],
     queryFn: async () => {
@@ -99,6 +101,17 @@ const RightSection = () => {
     }
   };
 
+  // Determine if we have content to show
+  const hasNewsContent = isNewsPage && latestVideos && latestVideos.length > 0;
+  const hasVideoContent = isVideoDetailPage && (videoData || productLinks.length > 0);
+  const hasDefaultContent = false; // The default right section doesn't have meaningful content
+  const hasContent = hasNewsContent || hasVideoContent || hasDefaultContent;
+
+  // If we don't have content and we're not still loading, don't render anything
+  if (!hasContent && !isLoadingVideos && !isLoadingProductLinks) {
+    return null;
+  }
+
   if (isNewsPage && showRightSection) {
     return <div ref={ref} className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen touch-manipulation" style={{
       minHeight: '100vh'
@@ -158,6 +171,11 @@ const RightSection = () => {
           <ProductLinksList productLinks={productLinks} />
         </div>
       </div>;
+  }
+
+  // Only render the default right section if we have content to show (which we currently don't)
+  if (!hasContent) {
+    return null;
   }
 
   return <div ref={ref} className={cn("right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !showRightSection ? 'hidden' : '')} style={{

@@ -69,12 +69,8 @@ const LayoutContent = () => {
           </div>
         </main>
 
-        {/* Right Section - Only shown when enabled and not on mobile */}
-        {!isMobile && showRightSection && (
-          <aside className={`${isTablet ? 'w-[300px]' : 'w-[350px]'} shrink-0 h-screen sticky top-0 border-l border-border z-10 overflow-hidden`}>
-            <RightSection />
-          </aside>
-        )}
+        {/* Right Section - rendered conditionally by the RightSection component itself */}
+        {!isMobile && showRightSection && <RightSection />}
         
         {/* Mobile Bottom Navigation - only on mobile and not in reels mode */}
         {isMobile && !isInReelsMode && <BottomNav />}
