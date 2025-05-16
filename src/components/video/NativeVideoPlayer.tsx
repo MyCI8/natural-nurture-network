@@ -1,13 +1,12 @@
-
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { Video, ProductLink } from '@/types/video';
-import { X, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Volume2, VolumeX, X, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useInView } from 'react-intersection-observer';
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Progress } from '@/components/ui/progress';
-import { isImagePost } from './utils/videoPlayerUtils';
+import { useInView } from 'react-intersection-observer';
+import ProductLinkCard from './ProductLinkCard';
+import { useTouchGestures } from '@/hooks/use-touch-gestures';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -17,13 +16,13 @@ interface NativeVideoPlayerProps {
   showControls?: boolean;
   isFullscreen?: boolean;
   className?: string;
-  visibleProductLink?: string | null;
+  visibleProductLink: string | null;
   onClick?: () => void;
   onClose?: () => void;
   onMuteToggle?: (e: React.MouseEvent) => void;
   toggleProductLink?: (linkId: string) => void;
-  playbackStarted?: boolean;
-  setPlaybackStarted?: (started: boolean) => void;
+  playbackStarted: boolean;
+  setPlaybackStarted: React.Dispatch<React.SetStateAction<boolean>>;
   useAspectRatio?: boolean;
   feedAspectRatio?: number;
   objectFit?: 'contain' | 'cover';
@@ -41,13 +40,13 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   isMuted = true,
   showControls = false,
   isFullscreen = false,
-  className,
+  className = '',
   visibleProductLink,
   onClick,
   onClose,
   onMuteToggle,
   toggleProductLink,
-  playbackStarted = false,
+  playbackStarted,
   setPlaybackStarted,
   useAspectRatio = true,
   feedAspectRatio = 4/5,
@@ -60,375 +59,457 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showProductOverlay, setShowProductOverlay] = useState(false);
-  const [currentProgress, setCurrentProgress] = useState(0);
-  const [buffering, setBuffering] = useState(false);
-  const [videoNaturalAspectRatio, setVideoNaturalAspectRatio] = useState<number | null>(null);
-  const [inViewRef, inView] = useInView({
-    threshold: 0.5,
-    onChange: (inView) => {
-      onInView?.(inView);
-    },
-  });
-  const isMobile = useIsMobile();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [showPlaybackControls, setShowPlaybackControls] = useState(false);
+  const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [controlsVisible, setControlsVisible] = useState(false);
+  const [loading, setLoading] = useState(autoPlay);
   
-  // Check if this is an image post
-  const isImage = isImagePost(video.video_url || '');
-
-  // Log for debugging
-  useEffect(() => {
-    console.log(`NativeVideoPlayer: video_url=${video.video_url}, isImage=${isImage}`);
-  }, [video.video_url, isImage]);
-
-  // Handle video metadata load to get natural dimensions
-  const handleMetadataLoaded = () => {
-    if (videoRef.current) {
-      const { videoWidth, videoHeight } = videoRef.current;
-      if (videoWidth && videoHeight) {
-        setVideoNaturalAspectRatio(videoWidth / videoHeight);
-      }
+  // Use intersection observer to detect when the video is in view
+  const { ref: inViewRef, inView } = useInView({
+    threshold: 0.5,
+    triggerOnce: false
+  });
+  
+  // Combine the inViewRef with the videoRef
+  const setRefs = (element: HTMLVideoElement | null) => {
+    // Set the inViewRef
+    if (inViewRef) {
+      // @ts-ignore - This is a known issue with the react-intersection-observer types
+      inViewRef(element);
+    }
+    
+    // Set the videoRef
+    if (element) {
+      videoRef.current = element;
     }
   };
-
-  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
-    if (onTimeUpdate) {
-      onTimeUpdate(e);
-    } else {
-      const video = e.currentTarget;
-      if (video.duration) {
-        setCurrentProgress((video.currentTime / video.duration) * 100);
-      }
-    }
-  };
-
-  const handleWaiting = () => {
-    setBuffering(true);
-  };
-
-  const handlePlaying = () => {
-    setBuffering(false);
-  };
-
-  useEffect(() => {
-    if (videoRef.current && !isImage) {
-      videoRef.current.muted = isMuted;
-      if (autoPlay) {
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            setIsPlaying(true);
-            setPlaybackStarted?.(true);
-          }).catch(error => {
-            console.error("Autoplay was prevented:", error);
-            setIsPlaying(false);
-          });
+  
+  // Touch gesture handlers
+  const { handlers } = useTouchGestures({
+    onTap: () => {
+      if (videoRef.current) {
+        if (videoRef.current.paused) {
+          videoRef.current.play();
+        } else {
+          videoRef.current.pause();
         }
+        toggleControls();
       }
+    },
+    onDoubleTap: () => {
+      // Handle double tap like toggling fullscreen or other special actions
+      if (onClick) {
+        onClick();
+      }
+    },
+    onLongPress: () => {
+      // Show more options or specialized actions
+      setControlsVisible(true);
+      if (controlsTimeout) {
+        clearTimeout(controlsTimeout);
+      }
+      const timeout = setTimeout(() => {
+        setControlsVisible(false);
+      }, 3000);
+      setControlsTimeout(timeout);
     }
-  }, [isMuted, autoPlay, setPlaybackStarted, isImage]);
-
+  });
+  
+  // Handle when the video comes into view
   useEffect(() => {
-    if (inView && videoRef.current && !isPlaying && autoPlay && !isImage) {
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setIsPlaying(true);
-          setPlaybackStarted?.(true);
-        }).catch(error => {
-          console.error("Autoplay was prevented:", error);
-          setIsPlaying(false);
-        });
-      }
-    } else if (!inView && videoRef.current && isPlaying && !isImage) {
-      videoRef.current.pause();
-      setIsPlaying(false);
+    if (onInView) {
+      onInView(inView);
     }
-  }, [inView, autoPlay, isPlaying, setPlaybackStarted, isImage]);
-
-  const handlePlayPause = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current && !isImage) {
+    
+    // Auto-play when in view if autoPlay is true
+    if (videoRef.current && inView && autoPlay) {
+      videoRef.current.play().catch(err => {
+        console.error("Failed to autoplay video:", err);
+      });
+    } else if (videoRef.current && !inView) {
+      videoRef.current.pause();
+    }
+  }, [inView, autoPlay, onInView]);
+  
+  // Set up video autoplay when component mounts
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (videoElement && autoPlay && inView) {
+      videoElement.play().catch(err => {
+        console.error("Failed to autoplay video:", err);
+      });
+    }
+    
+    return () => {
+      // Pause and remove when component unmounts to free up resources
+      if (videoElement) {
+        videoElement.pause();
+        videoElement.src = '';
+        videoElement.load();
+      }
+    };
+  }, [autoPlay, inView]);
+  
+  // Update the video's muted state when the isMuted prop changes
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+  
+  // Handle play/pause and update the isPlaying state
+  const handlePlayPause = () => {
+    if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
-        setIsPlaying(false);
       } else {
-        videoRef.current.play();
-        setIsPlaying(true);
-        setPlaybackStarted?.(true);
+        videoRef.current.play().catch(err => {
+          console.error("Failed to play video:", err);
+        });
       }
     }
   };
-
-  const handleVideoClick = () => {
-    onClick?.();
-  };
-
-  // Target aspect ratio is 9:16 (portrait) for full-screen mobile view
-  const targetAspectRatio = isFullscreen ? 9/16 : feedAspectRatio;
   
-  // Calculate black padding for letterboxing/pillarboxing
-  const getPaddingStyles = () => {
-    // For images, don't apply padding, just let them display naturally
-    if (isImage) return {};
+  // Toggle visibility of playback controls
+  const toggleControls = () => {
+    setControlsVisible(prev => !prev);
     
-    // If we don't know the video's natural aspect ratio yet, return no padding
-    if (!videoNaturalAspectRatio) return {};
-    
-    // If video is wider than container (landscape video in portrait container)
-    if (videoNaturalAspectRatio > targetAspectRatio) {
-      // Add letterboxing (black bars on top and bottom)
-      const heightPercentage = (targetAspectRatio / videoNaturalAspectRatio) * 100;
-      const verticalPadding = (100 - heightPercentage) / 2;
-      return {
-        paddingTop: `${verticalPadding}%`,
-        paddingBottom: `${verticalPadding}%`,
-      };
-    } 
-    // If video is taller than container (portrait video wider than container)
-    else if (videoNaturalAspectRatio < targetAspectRatio) {
-      // Add pillarboxing (black bars on sides)
-      const widthPercentage = (videoNaturalAspectRatio / targetAspectRatio) * 100;
-      const horizontalPadding = (100 - widthPercentage) / 2;
-      return {
-        paddingLeft: `${horizontalPadding}%`,
-        paddingRight: `${horizontalPadding}%`,
-      };
+    // Clear any existing timeout
+    if (controlsTimeout) {
+      clearTimeout(controlsTimeout);
     }
     
-    // If aspect ratios match, no padding needed
-    return {};
+    // Set a timeout to hide controls after 3 seconds
+    if (!controlsVisible) {
+      const timeout = setTimeout(() => {
+        setControlsVisible(false);
+      }, 3000);
+      setControlsTimeout(timeout);
+    }
+  };
+  
+  // Handle video events
+  const handlePlay = () => {
+    setIsPlaying(true);
+    setPlaybackStarted(true);
+  };
+  
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+  
+  const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = e.currentTarget;
+    if (video.duration) {
+      setProgress((video.currentTime / video.duration) * 100);
+    }
+    
+    if (onTimeUpdate) {
+      onTimeUpdate(e);
+    }
+  };
+  
+  const handleLoadStart = () => {
+    setLoading(true);
+  };
+  
+  const handleCanPlay = () => {
+    setLoading(false);
+  };
+  
+  const handleClick = (e: React.MouseEvent) => {
+    if (hideControls) {
+      if (onClick) {
+        onClick();
+      }
+      return;
+    }
+    
+    e.stopPropagation();
+    toggleControls();
+    
+    if (onClick) {
+      onClick();
+    }
   };
 
-  const renderMobileControls = () => {
-    // If hideControls is true, don't render mobile controls
-    if (!isMobile || !isFullscreen || hideControls) return null;
-    
+  // Determine if the video is an image post by checking the video URL
+  const isImage = video.video_url?.endsWith('.jpg') || 
+                video.video_url?.endsWith('.jpeg') || 
+                video.video_url?.endsWith('.png') || 
+                video.video_url?.endsWith('.webp') || 
+                video.video_url?.endsWith('.gif');
+
+  // Render an image if the post is an image rather than a video
+  if (isImage) {
     return (
-      <div className="absolute right-4 bottom-20 flex flex-col gap-6 items-center z-20">
-        {!isImage && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
-            onClick={e => {
-              e.stopPropagation();
-              onMuteToggle?.(e);
-            }}
-            aria-label={isMuted ? "Unmute" : "Mute"}
-          >
-            {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
-          </Button>
+      <div 
+        className={cn(
+          "relative overflow-hidden bg-black", 
+          className
         )}
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick?.();
-          }}
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-
-        {productLinks.length > 0 && (
+        onClick={handleClick}
+        {...handlers}
+      >
+        {useAspectRatio ? (
+          <div className="w-full" style={{ aspectRatio: feedAspectRatio }}>
+            <img 
+              src={video.video_url || ''} 
+              alt={video.title || 'Media content'} 
+              className={cn(
+                "w-full h-full", 
+                objectFit === 'contain' ? 'object-contain' : 'object-cover'
+              )}
+              loading="lazy"
+            />
+          </div>
+        ) : (
+          <img 
+            src={video.video_url || ''} 
+            alt={video.title || 'Media content'} 
+            className={cn(
+              "w-full h-full", 
+              objectFit === 'contain' ? 'object-contain' : 'object-cover'
+            )}
+            loading="lazy"
+          />
+        )}
+      
+        {/* Close button for fullscreen mode */}
+        {isFullscreen && onClose && (
           <Button
             variant="ghost"
             size="icon"
-            className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
             onClick={(e) => {
               e.stopPropagation();
-              toggleProductLink?.(productLinks[0]?.id);
+              if (onClose) onClose();
             }}
+            className="absolute top-2 right-2 z-20 text-white bg-black/20 hover:bg-black/40 h-8 w-8 p-1 rounded-full touch-manipulation"
+            aria-label="Close"
           >
-            <ShoppingCart className="h-6 w-6" />
+            <X className="h-4 w-4" />
           </Button>
         )}
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Handle share action
-          }}
-        >
-          <Share2 className="h-6 w-6" />
-        </Button>
-      </div>
-    );
-  };
-
-  const displayProgress = progressValue !== undefined ? progressValue : currentProgress;
-
-  return (
-    <div
-      className={`relative ${className}`}
-      onClick={handleVideoClick}
-      ref={inViewRef}
-    >
-      {useAspectRatio ? (
-        <AspectRatio ratio={feedAspectRatio} className="w-full h-full bg-black overflow-hidden rounded-md">
-          <div 
-            ref={containerRef}
-            className="w-full h-full flex items-center justify-center bg-black"
-            style={getPaddingStyles()}
-          >
-            {isImage ? (
-              <img 
-                src={video.video_url || ''} 
-                alt={video.title || ''} 
-                className="w-full h-full"
-                style={{ objectFit }}
-                onLoad={() => {
-                  console.log("Image loaded successfully:", video.video_url);
-                  onInView?.(true);
-                }}
-                onError={(e) => {
-                  console.error("Error loading image:", video.video_url, e);
-                }}
-              />
-            ) : (
-              <video
-                ref={videoRef}
-                src={video.video_url || ''}
-                muted={isMuted}
-                loop
-                playsInline
-                className="w-full h-full"
-                style={{ objectFit }}
-                onTimeUpdate={handleTimeUpdate}
-                onWaiting={handleWaiting}
-                onPlaying={handlePlaying}
-                onLoadedMetadata={handleMetadataLoaded}
-              />
-            )}
-          </div>
-          {showProgress && !isImage && (
-            <div className="absolute bottom-0 left-0 right-0 z-10">
-              <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
-            </div>
-          )}
-        </AspectRatio>
-      ) : (
-        <div className="relative w-full h-full">
-          <div 
-            ref={containerRef}
-            className="w-full h-full flex items-center justify-center bg-black"
-            style={getPaddingStyles()}
-          >
-            {isImage ? (
-              <img 
-                src={video.video_url || ''} 
-                alt={video.title || ''} 
-                className="max-w-full max-h-full"
-                style={{ objectFit }}
-                onLoad={() => {
-                  console.log("Image loaded successfully:", video.video_url);
-                  onInView?.(true);
-                }}
-                onError={(e) => {
-                  console.error("Error loading image:", video.video_url, e);
-                }}
-              />
-            ) : (
-              <video
-                ref={videoRef}
-                src={video.video_url || ''}
-                muted={isMuted}
-                loop
-                playsInline
-                className="max-w-full max-h-full"
-                style={{ objectFit }}
-                onTimeUpdate={handleTimeUpdate}
-                onWaiting={handleWaiting}
-                onPlaying={handlePlaying}
-                onLoadedMetadata={handleMetadataLoaded}
-              />
-            )}
-          </div>
-          {showProgress && !isImage && (
-            <div className="absolute bottom-0 left-0 right-0 z-10">
-              <Progress value={displayProgress} className="h-1 rounded-none bg-white/20" />
-            </div>
-          )}
-        </div>
-      )}
-
-      {buffering && !isImage && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-20">
-          <div className="h-12 w-12 rounded-full border-4 border-white border-t-transparent animate-spin"></div>
-        </div>
-      )}
-
-      {renderMobileControls()}
-
-      {!isMobile && !hideControls && !isImage && (
-        <>
-          <div className="absolute bottom-3 right-3 z-20">
+        
+        {/* Product links button */}
+        {productLinks.length > 0 && (
+          <div className="absolute top-3 left-3 z-10">
             <Button
               variant="ghost"
-              size="icon"
-              className="text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation"
-              onClick={e => {
+              size="sm"
+              className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
+              onClick={(e) => {
                 e.stopPropagation();
-                onMuteToggle?.(e);
+                if (toggleProductLink) toggleProductLink(productLinks[0].id);
               }}
+              aria-label="View products"
+            >
+              <ShoppingCart className="h-4 w-4 mr-1" />
+              <span className="text-xs">Products</span>
+            </Button>
+          </div>
+        )}
+        
+        {/* Display product link cards */}
+        {productLinks.map((link) => (
+          <div 
+            key={link.id} 
+            className={cn(
+              "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+              visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+            )}
+          >
+            <ProductLinkCard 
+              link={link} 
+              onClose={() => {
+                if (toggleProductLink) toggleProductLink(link.id);
+              }} 
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  // Otherwise render a video player
+  return (
+    <div 
+      className={cn(
+        "relative overflow-hidden bg-black touch-manipulation", 
+        className
+      )}
+      onClick={handleClick}
+      {...handlers}
+    >
+      {useAspectRatio ? (
+        <div className="w-full" style={{ aspectRatio: feedAspectRatio }}>
+          <video
+            ref={setRefs}
+            src={video.video_url || ''}
+            className={cn(
+              "w-full h-full", 
+              objectFit === 'contain' ? 'object-contain' : 'object-cover'
+            )}
+            muted={isMuted}
+            loop
+            playsInline
+            autoPlay={autoPlay}
+            controls={showControls}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadStart={handleLoadStart}
+            onCanPlay={handleCanPlay}
+          />
+        </div>
+      ) : (
+        <video
+          ref={setRefs}
+          src={video.video_url || ''}
+          className={cn(
+            "w-full h-full", 
+            objectFit === 'contain' ? 'object-contain' : 'object-cover'
+          )}
+          muted={isMuted}
+          loop
+          playsInline
+          autoPlay={autoPlay}
+          controls={showControls}
+          onPlay={handlePlay}
+          onPause={handlePause}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadStart={handleLoadStart}
+          onCanPlay={handleCanPlay}
+        />
+      )}
+      
+      {/* Loading indicator */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+      
+      {/* Video controls */}
+      {!hideControls && controlsVisible && !showControls && (
+        <div 
+          className="absolute inset-0 bg-black/30 flex items-center justify-center z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePlayPause();
+          }}
+        >
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-white bg-black/40 hover:bg-black/60 h-12 w-12 rounded-full" 
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePlayPause();
+            }}
+            aria-label={isPlaying ? "Pause" : "Play"}
+          >
+            {isPlaying ? (
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                className="h-6 w-6"
+              >
+                <rect x="6" y="4" width="4" height="16" fill="currentColor" />
+                <rect x="14" y="4" width="4" height="16" fill="currentColor" />
+              </svg>
+            ) : (
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                className="h-6 w-6"
+              >
+                <path 
+                  fill="currentColor" 
+                  d="M8 5v14l11-7z"
+                />
+              </svg>
+            )}
+          </Button>
+          
+          {onMuteToggle && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute bottom-3 right-3 text-white bg-black/40 hover:bg-black/60 h-8 w-8 rounded-full" 
+              onClick={onMuteToggle}
               aria-label={isMuted ? "Unmute" : "Mute"}
             >
-              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </Button>
-          </div>
-
-          {showControls && (
-            <div className="absolute bottom-2 left-2 flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full" onClick={handlePlayPause}>
-                {isPlaying ? 'Pause' : 'Play'}
-              </Button>
-            </div>
           )}
-        </>
+        </div>
       )}
-
-      {productLinks.map(link => (
-        visibleProductLink === link.id && (
-          <div
-            key={link.id}
-            className="absolute bg-white border border-gray-200 rounded-md shadow-lg p-4 z-20"
-            style={{
-              top: `${link.position_y ?? 50}%`,
-              left: `${link.position_x ?? 50}%`,
-              transform: 'translate(10px, -50%)',
-              width: '200px',
-              maxWidth: '200px'
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h4 className="font-semibold text-sm">{link.title}</h4>
-            {link.price && <p className="text-gray-600 text-xs">${link.price.toFixed(2)}</p>}
-            <Button size="sm" className="w-full mt-2" onClick={() => window.open(link.url, '_blank')}>
-              Shop Now
-            </Button>
-          </div>
-        )
-      ))}
-
-      {isFullscreen && !hideControls && (
+      
+      {/* Close button for fullscreen mode */}
+      {isFullscreen && onClose && (
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-2 right-2 text-white bg-black/50 hover:bg-black/70 rounded-full"
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation();
-            onClose?.();
+            if (onClose) onClose();
           }}
+          className="absolute top-2 right-2 z-20 text-white bg-black/20 hover:bg-black/40 h-8 w-8 p-1 rounded-full touch-manipulation"
+          aria-label="Close"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </Button>
       )}
+      
+      {/* Product links button */}
+      {productLinks.length > 0 && (
+        <div className="absolute top-3 left-3 z-10">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="bg-black/30 hover:bg-black/50 text-white p-2 h-auto touch-manipulation"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (toggleProductLink) toggleProductLink(productLinks[0].id);
+            }}
+            aria-label="View products"
+          >
+            <ShoppingCart className="h-4 w-4 mr-1" />
+            <span className="text-xs">Products</span>
+          </Button>
+        </div>
+      )}
+      
+      {/* Progress bar */}
+      {(showProgress || progressValue !== undefined) && (
+        <div className="absolute bottom-0 left-0 right-0 z-10">
+          <Progress value={progressValue !== undefined ? progressValue : progress} className="h-1 rounded-none bg-white/20" />
+        </div>
+      )}
+      
+      {/* Display product link cards */}
+      {productLinks.map((link) => (
+        <div 
+          key={link.id} 
+          className={cn(
+            "absolute left-0 right-0 bottom-0 z-10 transition-transform duration-300 transform",
+            visibleProductLink === link.id ? "translate-y-0" : "translate-y-full"
+          )}
+        >
+          <ProductLinkCard 
+            link={link} 
+            onClose={() => {
+              if (toggleProductLink) toggleProductLink(link.id);
+            }} 
+          />
+        </div>
+      ))}
     </div>
   );
 };

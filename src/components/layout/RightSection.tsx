@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { useTouchGestures } from '@/hooks/use-touch-gestures';
 
 const RightSection = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -101,6 +102,16 @@ const RightSection = () => {
     }
   };
 
+  // Touch gesture handling for better mobile experience
+  const { handlers } = useTouchGestures({
+    onSwipeRight: () => {
+      if (showRightSection) {
+        setShowRightSection(false);
+      }
+    },
+    threshold: 50
+  });
+
   // Determine if we have content to show
   const hasNewsContent = isNewsPage && latestVideos && latestVideos.length > 0;
   const hasVideoContent = isVideoDetailPage && (videoData || productLinks.length > 0);
@@ -112,17 +123,31 @@ const RightSection = () => {
     return null;
   }
 
+  // Base CSS classes for the container with improved touch handling
+  const containerClasses = "right-section h-screen sticky top-0 bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen touch-manipulation";
+  
+  // Width classes based on content type
+  const widthClasses = "w-full md:w-[350px]";
+
   if (isNewsPage && showRightSection) {
-    return <div ref={ref} className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen touch-manipulation" style={{
-      minHeight: '100vh'
-    }}>
+    return <div 
+      ref={ref} 
+      {...handlers}
+      className={`${containerClasses} ${widthClasses}`} 
+      style={{ minHeight: '100vh' }}
+      aria-label="News sidebar"
+    >
         <div className="p-4 flex-1 flex flex-col">
           <h2 className="text-lg font-semibold mb-4 text-text-dark dark:text-dm-text">Latest Videos</h2>
           
           {isLoadingVideos ? <div className="space-y-4">
               {[1, 2, 3, 4].map(i => <div key={i} className="bg-gray-100 dark:bg-gray-800 rounded-lg h-36 animate-pulse"></div>)}
             </div> : latestVideos.length > 0 ? <div className="space-y-4">
-              {latestVideos.map(video => <div key={video.id} className="border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/news/videos/${video.id}`)}>
+              {latestVideos.map(video => <div 
+                key={video.id} 
+                className="border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-shadow touch-manipulation active:scale-[0.98]" 
+                onClick={() => navigate(`/news/videos/${video.id}`)}
+              >
                   <AspectRatio ratio={16 / 9} className="bg-gray-100 dark:bg-dm-mist">
                     {video.thumbnail_url ? <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
                         <span className="text-gray-500 dark:text-gray-400">No thumbnail</span>
@@ -140,9 +165,13 @@ const RightSection = () => {
   }
 
   if (isVideoDetailPage && showRightSection) {
-    return <div ref={ref} className="right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800 overflow-y-auto flex flex-col min-h-screen touch-manipulation" style={{
-      minHeight: '100vh'
-    }}>
+    return <div 
+      ref={ref} 
+      {...handlers}
+      className={`${containerClasses} ${widthClasses}`} 
+      style={{ minHeight: '100vh' }}
+      aria-label="Video details sidebar"
+    >
         <div className="p-4 flex-1 flex flex-col">
           <div className="flex justify-between items-center mb-4">
             {videoData && videoData.creator && (
@@ -161,6 +190,15 @@ const RightSection = () => {
                 </span>
               </div>
             )}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleClose} 
+              className="text-gray-500 hover:bg-gray-100 dark:hover:bg-dm-mist rounded-full touch-manipulation h-10 w-10"
+              aria-label="Close panel"
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
 
           <div className="mb-4 mt-3">
@@ -178,13 +216,23 @@ const RightSection = () => {
     return null;
   }
 
-  return <div ref={ref} className={cn("right-section h-screen sticky top-0 w-full md:w-[350px] bg-white dark:bg-dm-background border-l border-gray-200 dark:border-gray-800", !showRightSection ? 'hidden' : '')} style={{
-    minHeight: '100vh'
-  }}>
+  return <div 
+    ref={ref} 
+    {...handlers}
+    className={cn(`${containerClasses} ${widthClasses}`, !showRightSection ? 'hidden' : '')} 
+    style={{ minHeight: '100vh' }}
+    aria-label="Default sidebar"
+  >
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-text-dark dark:text-dm-text">Right Section</h2>
-          {!isNewsPage && <Button variant="ghost" size="icon" onClick={handleClose} className="text-gray-500 hover:bg-gray-100 dark:hover:bg-dm-mist rounded-full touch-manipulation">
+          {!isNewsPage && <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleClose} 
+            className="text-gray-500 hover:bg-gray-100 dark:hover:bg-dm-mist rounded-full touch-manipulation h-10 w-10"
+            aria-label="Close panel"
+          >
               <X className="h-5 w-5" />
             </Button>}
         </div>

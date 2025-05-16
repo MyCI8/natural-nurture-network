@@ -10,6 +10,8 @@ interface SwipeableProps {
   className?: string;
   enableZoom?: boolean;
   disableScroll?: boolean;
+  provideFeedback?: boolean;
+  boundaryFeedback?: boolean;
 }
 
 export function Swipeable({ 
@@ -20,7 +22,9 @@ export function Swipeable({
   children, 
   className,
   enableZoom = false,
-  disableScroll = false
+  disableScroll = false,
+  provideFeedback = true,
+  boundaryFeedback = true
 }: SwipeableProps) {
   const touchStart = useRef<{ x: number; y: number; time: number } | null>(null);
   const touchEnd = useRef<{ x: number; y: number; time: number } | null>(null);
@@ -28,6 +32,21 @@ export function Swipeable({
   const [scale, setScale] = useState(1);
   const [swipeInProgress, setSwipeInProgress] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | 'down' | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Determine if the device supports haptic feedback
+  const supportsHapticFeedback = 'vibrate' in navigator;
+
+  // Provide haptic feedback
+  const triggerHapticFeedback = useCallback((pattern: number | number[] = 10) => {
+    if (supportsHapticFeedback && provideFeedback) {
+      try {
+        navigator.vibrate(pattern);
+      } catch (e) {
+        console.error("Haptic feedback failed:", e);
+      }
+    }
+  }, [provideFeedback]);
 
   // Calculate distance between two touch points
   const getDistance = (touches: React.TouchList): number => {
@@ -79,6 +98,8 @@ export function Swipeable({
       // Calculate current direction to provide visual feedback
       const distX = touchEnd.current.x - touchStart.current.x;
       const distY = touchEnd.current.y - touchStart.current.y;
+      const elapsedTime = touchEnd.current.time - touchStart.current.time;
+      const velocity = Math.sqrt(distX * distX + distY * distY) / Math.max(1, elapsedTime);
 
       // Determine current swipe direction and progress for animation
       let currentDirection = null;
@@ -87,6 +108,16 @@ export function Swipeable({
       if (Math.abs(distX) > Math.abs(distY) && Math.abs(distX) > threshold / 2) {
         currentDirection = distX > 0 ? 'right' : 'left';
         progress = Math.abs(distX) / (window.innerWidth / 2); // Scale by half screen width
+        
+        // Provide boundary resistance feedback when nearing edge
+        if (boundaryFeedback && progress > 0.8) {
+          // Slow down the movement with an ease-out effect
+          const resistedProgress = 0.8 + (progress - 0.8) * 0.2;
+          
+          if (containerRef.current && resistedProgress > 0.9 && resistedProgress < 0.92) {
+            triggerHapticFeedback(5);
+          }
+        }
       } else if (Math.abs(distY) > threshold / 2) {
         currentDirection = distY > 0 ? 'down' : 'up';
         progress = Math.abs(distY) / (window.innerHeight / 2); // Scale by half screen height
@@ -95,6 +126,21 @@ export function Swipeable({
         if (onSwipeProgress && (currentDirection === 'up' || currentDirection === 'down')) {
           onSwipeProgress(currentDirection, Math.min(1, progress));
         }
+        
+        // Provide boundary resistance feedback when nearing edge
+        if (boundaryFeedback && progress > 0.8) {
+          // Slow down the movement with an ease-out effect
+          const resistedProgress = 0.8 + (progress - 0.8) * 0.2;
+          
+          if (containerRef.current && resistedProgress > 0.9 && resistedProgress < 0.92) {
+            triggerHapticFeedback(5);
+          }
+        }
+      }
+      
+      // If velocity is high enough, provide a subtle feedback
+      if (velocity > 0.7 && !currentDirection) {
+        triggerHapticFeedback(2);
       }
       
       setSwipeDirection(currentDirection as any);
@@ -110,10 +156,15 @@ export function Swipeable({
         if (onPinch) onPinch(newScale);
       }
       
+      // Haptic feedback at scale boundaries
+      if ((newScale <= 0.55 || newScale >= 2.95) && boundaryFeedback) {
+        triggerHapticFeedback(3);
+      }
+      
       // Prevent default to stop page zooming
       e.preventDefault();
     }
-  }, [enableZoom, scale, onPinch, threshold, onSwipeProgress]);
+  }, [enableZoom, scale, onPinch, threshold, onSwipeProgress, triggerHapticFeedback, boundaryFeedback]);
 
   // Handle touch end
   const handleTouchEnd = useCallback(() => {
@@ -131,19 +182,22 @@ export function Swipeable({
       const distX = touchEnd.current.x - touchStart.current.x;
       const distY = touchEnd.current.y - touchStart.current.y;
       const elapsedTime = touchEnd.current.time - touchStart.current.time;
+      const velocity = Math.sqrt(distX * distX + distY * distY) / Math.max(1, elapsedTime);
       
       // Faster swipes need less distance
-      const adjustedThreshold = elapsedTime < 300 ? threshold * 0.7 : threshold;
+      const adjustedThreshold = velocity > 0.5 ? threshold * 0.7 : threshold;
       
       // Check if horizontal swipe is larger than vertical swipe
       if (Math.abs(distX) > Math.abs(distY)) {
         if (Math.abs(distX) > adjustedThreshold) {
           // Right swipe
           if (distX > 0) {
+            triggerHapticFeedback(10);
             onSwipe('right');
           } 
           // Left swipe
           else {
+            triggerHapticFeedback(10);
             onSwipe('left');
           }
         }
@@ -151,10 +205,12 @@ export function Swipeable({
         if (Math.abs(distY) > adjustedThreshold) {
           // Down swipe
           if (distY > 0) {
+            triggerHapticFeedback(10);
             onSwipe('down');
           } 
           // Up swipe
           else {
+            triggerHapticFeedback(10);
             onSwipe('up');
           }
         }
@@ -171,7 +227,7 @@ export function Swipeable({
     if (disableScroll) {
       document.body.style.overflow = '';
     }
-  }, [onSwipe, threshold, disableScroll, onSwipeProgress]);
+  }, [onSwipe, threshold, disableScroll, onSwipeProgress, triggerHapticFeedback]);
 
   // Clean up scroll lock on unmount
   useEffect(() => {
@@ -184,11 +240,16 @@ export function Swipeable({
 
   return (
     <div 
+      ref={containerRef}
       className={`${className || ''} ${swipeInProgress ? 'touch-manipulation' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      style={enableZoom ? { touchAction: 'none' } : undefined}
+      style={{
+        ...(enableZoom ? { touchAction: 'none' } : {}),
+        ...(swipeInProgress ? { userSelect: 'none' } : {})
+      }}
+      aria-label="Swipeable content"
     >
       {swipeDirection && (
         <div className="fixed inset-0 pointer-events-none z-50">

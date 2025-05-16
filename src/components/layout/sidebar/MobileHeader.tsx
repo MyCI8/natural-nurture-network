@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Leaf, Search } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { useTouchGestures } from '@/hooks/use-touch-gestures';
 
 interface MobileHeaderProps {
   showMobileHeader: boolean;
@@ -72,6 +73,34 @@ export const MobileHeader = ({
     };
   }, [isHomePage, userInteracted]);
 
+  // Touch gestures for menu button
+  const { handlers: menuHandlers } = useTouchGestures({
+    onTap: onMenuClick,
+    onLongPress: () => {
+      // Could show settings or user menu options
+      console.log('Long press on avatar');
+      // Trigger haptic feedback if available
+      if ('vibrate' in navigator) {
+        navigator.vibrate(15);
+      }
+    }
+  });
+
+  // Touch gestures for search button
+  const { handlers: searchHandlers } = useTouchGestures({
+    onTap: () => {
+      // Navigate to search
+    },
+    onLongPress: () => {
+      // Show search history or quick search options
+      console.log('Long press on search');
+      // Trigger haptic feedback if available
+      if ('vibrate' in navigator) {
+        navigator.vibrate(15);
+      }
+    }
+  });
+
   // Combine the visibility logic
   const shouldShowHeader = showMobileHeader && visible;
 
@@ -80,14 +109,15 @@ export const MobileHeader = ({
       className={`fixed top-0 left-0 right-0 h-14 bg-background border-b z-50 transition-transform duration-300 ease-in-out ${
         shouldShowHeader ? 'translate-y-0' : '-translate-y-full'
       }`}
+      aria-label="Mobile header"
     >
       <div className="h-full flex items-center justify-between px-4 max-w-7xl mx-auto">
         <Button 
           variant="ghost" 
           size="icon" 
           className="rounded-full h-10 w-10 flex items-center justify-center touch-manipulation active:scale-95 transition-transform"
-          onClick={onMenuClick}
           aria-label="Open menu"
+          {...menuHandlers}
         >
           <Avatar className="h-8 w-8">
             {profile?.avatar_url ? (
@@ -102,15 +132,16 @@ export const MobileHeader = ({
           <Leaf className="h-6 w-6 text-primary" />
         </Link>
         
-        <Link to="/search" aria-label="Search">
+        <div {...searchHandlers}>
           <Button 
             variant="ghost" 
             size="icon" 
             className="rounded-full h-10 w-10 flex items-center justify-center touch-manipulation active:scale-95 transition-transform"
+            aria-label="Search"
           >
             <Search className="h-5 w-5" />
           </Button>
-        </Link>
+        </div>
       </div>
     </header>
   );

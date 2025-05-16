@@ -13,7 +13,15 @@ const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
-  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth, isInReelsMode } = useLayout();
+  const { 
+    layoutMode, 
+    showRightSection, 
+    contentWidth, 
+    contentMaxWidth, 
+    isFullWidth,
+    isInReelsMode 
+  } = useLayout();
+  
   const [isHomePage, setIsHomePage] = useState(false);
   
   // Determine if we're on the home page
@@ -21,22 +29,25 @@ const LayoutContent = () => {
     const path = location.pathname;
     setIsHomePage(path === '/' || path === '/home');
   }, [location]);
-  
-  // Prevent unwanted redirects
+
+  // Manage scroll behavior for mobile
   useEffect(() => {
-    const preventUnwantedRedirect = (e: BeforeUnloadEvent) => {
-      if (location.pathname !== "/") {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-
-    window.addEventListener("beforeunload", preventUnwantedRedirect);
+    const preventBodyScroll = isMobile && isInReelsMode;
+    
+    if (preventBodyScroll) {
+      // Lock the body scroll when in reels mode on mobile
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Allow scrolling in normal mode
+      document.body.style.overflow = '';
+    }
+    
     return () => {
-      window.removeEventListener("beforeunload", preventUnwantedRedirect);
+      // Reset on unmount
+      document.body.style.overflow = '';
     };
-  }, [location]);
-
+  }, [isMobile, isInReelsMode]);
+  
   return (
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout - increased max-width to 1400px */}
@@ -55,7 +66,7 @@ const LayoutContent = () => {
         <main 
           className={`flex-1 min-h-screen ${
             isMobile ? `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : ''
-          } relative z-0 overflow-x-hidden`}
+          } relative z-0 overflow-x-hidden touch-manipulation`}
         >
           <div 
             className={`
