@@ -4,6 +4,7 @@ import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo, isImagePost } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
 import NativeVideoPlayer from './NativeVideoPlayer';
+import { toast } from 'sonner';
 
 interface VideoPlayerProps {
   video: Video;
@@ -51,6 +52,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
   const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  
+  // Validate video data
+  useEffect(() => {
+    if (!video) {
+      setVideoError("Invalid video data");
+      return;
+    }
+    
+    if (!video.video_url) {
+      setVideoError("Video URL is missing");
+      return;
+    }
+    
+    // Reset error when video changes
+    setVideoError(null);
+  }, [video]);
   
   // Check if this is an image post
   const isImage = isImagePost(video.video_url);
@@ -100,6 +118,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onClick();
     }
   };
+
+  // Error handling for missing video URL
+  if (videoError) {
+    console.error("Video player error:", videoError, video);
+    // Return a simple placeholder instead of throwing an error
+    return (
+      <div className={`${className || ''} bg-gray-900 flex items-center justify-center rounded-md overflow-hidden`} 
+           style={useAspectRatio ? { aspectRatio: feedAspectRatio } : {}}>
+        <div className="text-center p-4 text-white">
+          <p>Unable to play this video</p>
+          <p className="text-sm text-gray-400 mt-2">{videoError}</p>
+        </div>
+      </div>
+    );
+  }
 
   // Render the appropriate player based on video type
   if (isYoutubeVideo(video.video_url)) {

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -23,6 +24,7 @@ const ExploreDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
+  const [videoLoadError, setVideoLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     setShowRightSection(true);
@@ -39,7 +41,7 @@ const ExploreDetail = () => {
     navigate('/explore');
   };
 
-  const { data: video, isLoading: isVideoLoading } = useQuery({
+  const { data: video, isLoading: isVideoLoading, error: videoError } = useQuery({
     queryKey: ['video', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -58,14 +60,25 @@ const ExploreDetail = () => {
         .single();
       if (error) throw error;
 
+      // Validate video URL
+      if (!data.video_url) {
+        setVideoLoadError("Video URL is missing");
+        toast.error("This video is unavailable");
+      }
+
       return {
         ...data,
         related_article_id: data.related_article_id || null
       };
+    },
+    onError: (err) => {
+      console.error("Error loading video:", err);
+      toast.error("Failed to load video data");
+      setVideoLoadError("Could not load video data");
     }
   });
 
-  // Query to fetch adjacent videos for swipe navigation
+  // Query to fetch adjacent videos with error handling
   const { data: adjacentVideos = [], isLoading: isAdjacentLoading } = useQuery({
     queryKey: ['adjacent-videos', id],
     queryFn: async () => {
@@ -87,14 +100,19 @@ const ExploreDetail = () => {
             full_name
           )
         `)
-        .not('video_type', 'eq', 'news') // Exclude news videos
+        .not('video_type', 'eq', 'news')
+        .filter('video_url', 'not.is', null) // Only get videos with URLs
         .order('created_at', { ascending: false })
         .limit(20);
         
       if (error) throw error;
       return data as Video[];
     },
-    enabled: !!id
+    enabled: !!id,
+    onError: (err) => {
+      console.error("Error loading adjacent videos:", err);
+      toast.error("Failed to load related videos");
+    }
   });
 
   // Find the current index in the adjacentVideos array
@@ -146,14 +164,27 @@ const ExploreDetail = () => {
     // Reset progress when video changes
     setProgress(0);
     setIsLoading(true);
+    setVideoLoadError(null);
   }, [id]);
 
+  // Loading state
   if (isVideoLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p>Loading video...</p>
+      </div>
+    </div>;
   }
 
-  if (!video) {
-    return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
+  // Error state
+  if (videoError || !video || videoLoadError) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center p-6 bg-gray-50 dark:bg-dm-mist rounded-lg shadow">
+        <p className="text-red-500 mb-4">Could not load the video</p>
+        <Button onClick={handleClose} variant="default">Back to Explore</Button>
+      </div>
+    </div>;
   }
 
   // Use a more Instagram Reels-like experience on mobile
@@ -170,7 +201,7 @@ const ExploreDetail = () => {
     );
   }
 
-  // Desktop experience remains unchanged
+  // Desktop experience
   return (
     <Swipeable 
       onSwipe={handleSwipe} 

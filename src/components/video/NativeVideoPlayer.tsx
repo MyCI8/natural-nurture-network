@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Video, ProductLink } from '@/types/video';
-import { Volume2, VolumeX, X, ShoppingCart } from 'lucide-react';
+import { Volume2, VolumeX, X, ShoppingCart, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useInView } from 'react-intersection-observer';
 import ProductLinkCard from './ProductLinkCard';
 import { useTouchGestures } from '@/hooks/use-touch-gestures';
+import { toast } from 'sonner';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -64,12 +65,22 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const [progress, setProgress] = useState(0);
   const [controlsVisible, setControlsVisible] = useState(false);
   const [loading, setLoading] = useState(autoPlay);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
   
   // Use intersection observer to detect when the video is in view
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.5,
     triggerOnce: false
   });
+  
+  // Reset error state when video changes
+  useEffect(() => {
+    setHasError(false);
+    setErrorMessage("");
+    setRetryCount(0);
+  }, [video.id, video.video_url]);
   
   // Combine the inViewRef with the videoRef
   const setRefs = (element: HTMLVideoElement | null) => {
@@ -88,9 +99,18 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   // Touch gesture handlers
   const { handlers } = useTouchGestures({
     onTap: () => {
+      if (hasError) {
+        handleRetry();
+        return;
+      }
+      
       if (videoRef.current) {
         if (videoRef.current.paused) {
-          videoRef.current.play();
+          videoRef.current.play().catch(err => {
+            console.error("Failed to play video:", err);
+            setHasError(true);
+            setErrorMessage(`Playback failed: ${err.message}`);
+          });
         } else {
           videoRef.current.pause();
         }
@@ -122,22 +142,30 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       onInView(inView);
     }
     
-    // Auto-play when in view if autoPlay is true
-    if (videoRef.current && inView && autoPlay) {
+    // Auto-play when in view if autoPlay is true and no errors
+    if (videoRef.current && inView && autoPlay && !hasError) {
       videoRef.current.play().catch(err => {
         console.error("Failed to autoplay video:", err);
+        setHasError(true);
+        setErrorMessage(`Autoplay failed: ${err.message}`);
+        
+        // Report the error to the console with more details
+        console.error("Video URL:", video.video_url);
+        console.error("Error details:", err);
       });
     } else if (videoRef.current && !inView) {
       videoRef.current.pause();
     }
-  }, [inView, autoPlay, onInView]);
+  }, [inView, autoPlay, onInView, hasError]);
   
   // Set up video autoplay when component mounts
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (videoElement && autoPlay && inView) {
+    if (videoElement && autoPlay && inView && !hasError) {
       videoElement.play().catch(err => {
-        console.error("Failed to autoplay video:", err);
+        console.error("Failed to autoplay video on mount:", err);
+        setHasError(true);
+        setErrorMessage(`Playback failed: ${err.message}`);
       });
     }
     
@@ -149,7 +177,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         videoElement.load();
       }
     };
-  }, [autoPlay, inView]);
+  }, [autoPlay, inView, hasError]);
   
   // Update the video's muted state when the isMuted prop changes
   useEffect(() => {
@@ -158,16 +186,67 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     }
   }, [isMuted]);
   
+  // Function to validate video URL
+  const isValidVideoUrl = (url: string | null): boolean => {
+    if (!url) return false;
+    
+    // Check if URL is properly formatted
+    try {
+      new URL(url);
+    } catch (e) {
+      return false;
+    }
+    
+    // Check if URL ends with common video formats
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.m4v'];
+    return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
+  };
+  
   // Handle play/pause and update the isPlaying state
   const handlePlayPause = () => {
+    if (hasError) {
+      handleRetry();
+      return;
+    }
+    
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
         videoRef.current.play().catch(err => {
           console.error("Failed to play video:", err);
+          setHasError(true);
+          setErrorMessage(`Playback failed: ${err.message}`);
         });
       }
+    }
+  };
+  
+  const handleRetry = () => {
+    if (retryCount >= 3) {
+      toast.error("Video playback failed after multiple attempts. Please try again later.");
+      return;
+    }
+    
+    setHasError(false);
+    setErrorMessage("");
+    setLoading(true);
+    setRetryCount(prev => prev + 1);
+    
+    // Reset the video element
+    if (videoRef.current) {
+      videoRef.current.load();
+      
+      // Small delay before trying to play again
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play().catch(err => {
+            console.error("Retry failed:", err);
+            setHasError(true);
+            setErrorMessage(`Retry failed: ${err.message}`);
+          });
+        }
+      }, 1000);
     }
   };
   
@@ -193,6 +272,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const handlePlay = () => {
     setIsPlaying(true);
     setPlaybackStarted(true);
+    setHasError(false);
   };
   
   const handlePause = () => {
@@ -216,6 +296,39 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   
   const handleCanPlay = () => {
     setLoading(false);
+    setHasError(false);
+  };
+  
+  const handleError = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    console.error("Video error:", e);
+    const videoElement = e.currentTarget;
+    console.error("Video error code:", videoElement.error?.code);
+    console.error("Video error message:", videoElement.error?.message);
+    
+    setLoading(false);
+    setHasError(true);
+    
+    // Set appropriate error message based on error code
+    if (videoElement.error) {
+      switch (videoElement.error.code) {
+        case 1: // MEDIA_ERR_ABORTED
+          setErrorMessage("Video playback was aborted");
+          break;
+        case 2: // MEDIA_ERR_NETWORK
+          setErrorMessage("Network error occurred while loading the video");
+          break;
+        case 3: // MEDIA_ERR_DECODE
+          setErrorMessage("Video decode error");
+          break;
+        case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
+          setErrorMessage("Video format not supported");
+          break;
+        default:
+          setErrorMessage(`Error playing video: ${videoElement.error.message}`);
+      }
+    } else {
+      setErrorMessage("Unknown error occurred while playing video");
+    }
   };
   
   const handleClick = (e: React.MouseEvent) => {
@@ -241,6 +354,45 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 video.video_url?.endsWith('.webp') || 
                 video.video_url?.endsWith('.gif');
 
+  // Check if video URL is invalid and not an image
+  const isInvalidVideoUrl = !isImage && !isValidVideoUrl(video.video_url);
+  
+  // If URL is invalid, show error state immediately
+  useEffect(() => {
+    if (isInvalidVideoUrl) {
+      setHasError(true);
+      setErrorMessage("Invalid video format or URL");
+      setLoading(false);
+    }
+  }, [isInvalidVideoUrl]);
+
+  // Error state renderer
+  const renderErrorState = () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-black/75 z-20 flex-col p-4 text-center">
+      <div className="text-white mb-4">{errorMessage}</div>
+      <Button 
+        variant="outline" 
+        onClick={(e) => {
+          e.stopPropagation();
+          handleRetry();
+        }}
+        className="bg-primary/20 hover:bg-primary/30 text-white flex items-center gap-2"
+      >
+        <RefreshCw className="h-4 w-4" />
+        Retry
+      </Button>
+      {video.thumbnail_url && (
+        <div className="mt-4 opacity-60">
+          <img 
+            src={video.thumbnail_url} 
+            alt={video.title || "Video thumbnail"} 
+            className="max-h-[120px] object-contain"
+          />
+        </div>
+      )}
+    </div>
+  );
+  
   // Render an image if the post is an image rather than a video
   if (isImage) {
     return (
@@ -354,13 +506,14 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             muted={isMuted}
             loop
             playsInline
-            autoPlay={autoPlay}
+            autoPlay={autoPlay && !hasError}
             controls={showControls}
             onPlay={handlePlay}
             onPause={handlePause}
             onTimeUpdate={handleTimeUpdate}
             onLoadStart={handleLoadStart}
             onCanPlay={handleCanPlay}
+            onError={handleError}
           />
         </div>
       ) : (
@@ -374,25 +527,29 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           muted={isMuted}
           loop
           playsInline
-          autoPlay={autoPlay}
+          autoPlay={autoPlay && !hasError}
           controls={showControls}
           onPlay={handlePlay}
           onPause={handlePause}
           onTimeUpdate={handleTimeUpdate}
           onLoadStart={handleLoadStart}
           onCanPlay={handleCanPlay}
+          onError={handleError}
         />
       )}
       
       {/* Loading indicator */}
-      {loading && (
+      {loading && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       )}
       
-      {/* Video controls */}
-      {!hideControls && controlsVisible && !showControls && (
+      {/* Error state */}
+      {hasError && renderErrorState()}
+      
+      {/* Video controls - only show if no errors */}
+      {!hasError && !hideControls && controlsVisible && !showControls && (
         <div 
           className="absolute inset-0 bg-black/30 flex items-center justify-center z-10"
           onClick={(e) => {
@@ -468,7 +625,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       )}
       
       {/* Product links button */}
-      {productLinks.length > 0 && (
+      {!hasError && productLinks.length > 0 && (
         <div className="absolute top-3 left-3 z-10">
           <Button
             variant="ghost"
@@ -486,15 +643,15 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         </div>
       )}
       
-      {/* Progress bar */}
-      {(showProgress || progressValue !== undefined) && (
+      {/* Progress bar - only show if no errors */}
+      {!hasError && (showProgress || progressValue !== undefined) && (
         <div className="absolute bottom-0 left-0 right-0 z-10">
           <Progress value={progressValue !== undefined ? progressValue : progress} className="h-1 rounded-none bg-white/20" />
         </div>
       )}
       
-      {/* Display product link cards */}
-      {productLinks.map((link) => (
+      {/* Display product link cards - only if no errors */}
+      {!hasError && productLinks.map((link) => (
         <div 
           key={link.id} 
           className={cn(
