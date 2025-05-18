@@ -2,6 +2,8 @@
 /**
  * Check if URL is YouTube video
  */
+import { Video } from '@/types/video';
+
 export const isYoutubeVideo = (url: string | null): boolean => {
   if (!url) return false;
   
@@ -130,4 +132,3 @@ export const getVideoFallbackImage = (video: Video | null): string | null => {
   // Default placeholder
   return '/placeholder.svg';
 };
-

@@ -13,12 +13,13 @@ import { Video } from '@/types/video';
 import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileReelsView from '@/components/video/MobileReelsView';
+import { toast } from 'sonner';
 
 const ExploreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { setShowRightSection, setIsInReelsMode } = useLayout();
-  const { toast } = useToast();
+  const { toast: hookToast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +64,7 @@ const ExploreDetail = () => {
       // Validate video URL
       if (!data.video_url) {
         setVideoLoadError("Video URL is missing");
-        toast.error("This video is unavailable");
+        toast("This video is unavailable");
       }
 
       return {
@@ -71,10 +72,15 @@ const ExploreDetail = () => {
         related_article_id: data.related_article_id || null
       };
     },
-    onError: (err) => {
-      console.error("Error loading video:", err);
-      toast.error("Failed to load video data");
-      setVideoLoadError("Could not load video data");
+    enabled: !!id,
+    meta: {
+      onSettled: (data, error) => {
+        if (error) {
+          console.error("Error loading video:", error);
+          toast("Failed to load video data");
+          setVideoLoadError("Could not load video data");
+        }
+      }
     }
   });
 
@@ -109,9 +115,13 @@ const ExploreDetail = () => {
       return data as Video[];
     },
     enabled: !!id,
-    onError: (err) => {
-      console.error("Error loading adjacent videos:", err);
-      toast.error("Failed to load related videos");
+    meta: {
+      onSettled: (data, error) => {
+        if (error) {
+          console.error("Error loading adjacent videos:", error);
+          toast("Failed to load related videos");
+        }
+      }
     }
   });
 
