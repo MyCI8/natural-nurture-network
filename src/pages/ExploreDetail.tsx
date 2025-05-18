@@ -14,6 +14,8 @@ import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileReelsView from '@/components/video/MobileReelsView';
 import { toast } from 'sonner';
+import { VideoLoadingState, VideoErrorState } from '@/components/explore/VideoLoadingState';
+import { isPlayableVideoFormat, logVideoInfo } from '@/components/video/utils/videoPlayerUtils';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -42,7 +44,7 @@ const ExploreDetail = () => {
     navigate('/explore');
   };
 
-  const { data: video, isLoading: isVideoLoading, error: videoError } = useQuery({
+  const { data: video, isLoading: isVideoLoading, error: videoError, refetch: refetchVideo } = useQuery({
     queryKey: ['video', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -65,6 +67,15 @@ const ExploreDetail = () => {
       if (!data.video_url) {
         setVideoLoadError("Video URL is missing");
         toast("This video is unavailable");
+      } else {
+        // Log video details for debugging
+        logVideoInfo(data, "Loaded video:");
+        
+        // Check if the video format is supported
+        if (!isPlayableVideoFormat(data.video_url)) {
+          console.warn(`Video may not be playable: ${data.video_url}`);
+          // Still continue - the player will try its best
+        }
       }
 
       return {
@@ -112,6 +123,13 @@ const ExploreDetail = () => {
         .limit(20);
         
       if (error) throw error;
+      
+      // Log the first few videos for debugging
+      if (data && data.length > 0) {
+        console.log(`Fetched ${data.length} adjacent videos.`);
+        data.slice(0, 3).forEach(vid => logVideoInfo(vid, "Adjacent video:"));
+      }
+      
       return data as Video[];
     },
     enabled: !!id,
@@ -170,6 +188,17 @@ const ExploreDetail = () => {
     setGlobalAudioEnabled(!isMuted);
   };
 
+  const handleRetry = () => {
+    // Reset error states
+    setVideoLoadError(null);
+    
+    // Retry loading the video
+    refetchVideo();
+    
+    // Reset loading state
+    setIsLoading(true);
+  };
+
   useEffect(() => {
     // Reset progress when video changes
     setProgress(0);
@@ -179,22 +208,15 @@ const ExploreDetail = () => {
 
   // Loading state
   if (isVideoLoading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="flex flex-col items-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p>Loading video...</p>
-      </div>
-    </div>;
+    return <VideoLoadingState />;
   }
 
   // Error state
   if (videoError || !video || videoLoadError) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center p-6 bg-gray-50 dark:bg-dm-mist rounded-lg shadow">
-        <p className="text-red-500 mb-4">Could not load the video</p>
-        <Button onClick={handleClose} variant="default">Back to Explore</Button>
-      </div>
-    </div>;
+    return <VideoErrorState 
+      message={videoLoadError || "Could not load the video"} 
+      onRetry={handleRetry}
+    />;
   }
 
   // Use a more Instagram Reels-like experience on mobile

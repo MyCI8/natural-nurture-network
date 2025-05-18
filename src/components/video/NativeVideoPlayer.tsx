@@ -8,6 +8,7 @@ import { useInView } from 'react-intersection-observer';
 import ProductLinkCard from './ProductLinkCard';
 import { useTouchGestures } from '@/hooks/use-touch-gestures';
 import { toast } from 'sonner';
+import { isPlayableVideoFormat, isImagePost, sanitizeVideoUrl, logVideoInfo } from './utils/videoPlayerUtils';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -80,6 +81,14 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     setHasError(false);
     setErrorMessage("");
     setRetryCount(0);
+    
+    // Additional validation for video URLs when video changes
+    if (video && video.video_url) {
+      // Check if the video URL is playable
+      if (!isPlayableVideoFormat(video.video_url)) {
+        console.warn(`Video format may not be supported: ${video.video_url}`);
+      }
+    }
   }, [video.id, video.video_url]);
   
   // Combine the inViewRef with the videoRef
@@ -144,6 +153,12 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     
     // Auto-play when in view if autoPlay is true and no errors
     if (videoRef.current && inView && autoPlay && !hasError) {
+      // Use sanitized URL for better compatibility
+      const sanitizedUrl = sanitizeVideoUrl(video.video_url);
+      if (sanitizedUrl && videoRef.current.src !== sanitizedUrl) {
+        videoRef.current.src = sanitizedUrl;
+      }
+      
       videoRef.current.play().catch(err => {
         console.error("Failed to autoplay video:", err);
         setHasError(true);
@@ -152,11 +167,14 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         // Report the error to the console with more details
         console.error("Video URL:", video.video_url);
         console.error("Error details:", err);
+        
+        // Log detailed info about this video for debugging
+        logVideoInfo(video, "Autoplay Error for:");
       });
     } else if (videoRef.current && !inView) {
       videoRef.current.pause();
     }
-  }, [inView, autoPlay, onInView, hasError]);
+  }, [inView, autoPlay, onInView, hasError, video]);
   
   // Set up video autoplay when component mounts
   useEffect(() => {
@@ -197,8 +215,13 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       return false;
     }
     
+    // For Supabase URLs, we'll be more lenient with formats
+    if (url.includes('storage.googleapis.com') || url.includes('supabase')) {
+      return true;
+    }
+    
     // Check if URL ends with common video formats
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.m4v'];
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi', '.m4v', '.mkv'];
     return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
   };
   
@@ -305,6 +328,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     console.error("Video error code:", videoElement.error?.code);
     console.error("Video error message:", videoElement.error?.message);
     
+    // Log detailed info about this video for debugging
+    logVideoInfo(video, "Error playing video:");
+    
     setLoading(false);
     setHasError(true);
     
@@ -348,14 +374,10 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   };
 
   // Determine if the video is an image post by checking the video URL
-  const isImage = video.video_url?.endsWith('.jpg') || 
-                video.video_url?.endsWith('.jpeg') || 
-                video.video_url?.endsWith('.png') || 
-                video.video_url?.endsWith('.webp') || 
-                video.video_url?.endsWith('.gif');
+  const isImage = isImagePost(video.video_url);
 
   // Check if video URL is invalid and not an image
-  const isInvalidVideoUrl = !isImage && !isValidVideoUrl(video.video_url);
+  const isInvalidVideoUrl = !isImage && !isPlayableVideoFormat(video.video_url);
   
   // If URL is invalid, show error state immediately
   useEffect(() => {
@@ -498,7 +520,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         <div className="w-full" style={{ aspectRatio: feedAspectRatio }}>
           <video
             ref={setRefs}
-            src={video.video_url || ''}
+            src={sanitizeVideoUrl(video.video_url) || ''}
             className={cn(
               "w-full h-full", 
               objectFit === 'contain' ? 'object-contain' : 'object-cover'
@@ -519,7 +541,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       ) : (
         <video
           ref={setRefs}
-          src={video.video_url || ''}
+          src={sanitizeVideoUrl(video.video_url) || ''}
           className={cn(
             "w-full h-full", 
             objectFit === 'contain' ? 'object-contain' : 'object-cover'

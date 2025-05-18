@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
-import { isYoutubeVideo, isImagePost } from './utils/videoPlayerUtils';
+import { isYoutubeVideo, isImagePost, isPlayableVideoFormat } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
 import NativeVideoPlayer from './NativeVideoPlayer';
 import { toast } from 'sonner';
@@ -66,6 +65,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       return;
     }
     
+    // Apply additional validation for playable formats
+    if (!isYoutubeVideo(video.video_url) && !isImagePost(video.video_url) && !isPlayableVideoFormat(video.video_url)) {
+      console.warn(`Video format may not be supported: ${video.video_url}`);
+      // But don't set error yet - let the native player try anyway
+    }
+    
     // Reset error when video changes
     setVideoError(null);
   }, [video]);
@@ -122,6 +127,14 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Error handling for missing video URL
   if (videoError) {
     console.error("Video player error:", videoError, video);
+    
+    // Log detailed info about this video for debugging
+    if (video) {
+      console.log("Video ID:", video.id);
+      console.log("Video URL:", video.video_url);
+      console.log("Thumbnail URL:", video.thumbnail_url);
+    }
+    
     // Return a simple placeholder instead of throwing an error
     return (
       <div className={`${className || ''} bg-gray-900 flex items-center justify-center rounded-md overflow-hidden`} 
@@ -129,6 +142,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         <div className="text-center p-4 text-white">
           <p>Unable to play this video</p>
           <p className="text-sm text-gray-400 mt-2">{videoError}</p>
+          
+          {/* Display thumbnail as fallback if available */}
+          {video && video.thumbnail_url && (
+            <div className="mt-3">
+              <img 
+                src={video.thumbnail_url} 
+                alt={video.title || "Video thumbnail"} 
+                className="max-h-32 mx-auto rounded-md object-contain"
+              />
+            </div>
+          )}
         </div>
       </div>
     );

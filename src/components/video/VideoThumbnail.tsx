@@ -2,26 +2,37 @@
 import React from "react";
 import { Video as VideoIcon, Image as ImageIcon } from "lucide-react";
 import { Video } from "@/types/video";
-import { getThumbnailUrl, isYoutubeVideo, isUploadedVideo, isImagePost, stringToColor } from "@/utils/videoUtils";
+import { 
+  getThumbnailUrl, 
+  isYoutubeVideo, 
+  isUploadedVideo, 
+  isImagePost, 
+  stringToColor,
+  logVideoInfo
+} from "@/utils/videoUtils";
 
 interface VideoThumbnailProps {
   video: Video;
   width?: string;
   height?: string;
   className?: string;
+  showDebugInfo?: boolean;
 }
 
 export const VideoThumbnail = ({ 
   video,
   width = "w-16",
   height = "h-10",
-  className = ""
+  className = "",
+  showDebugInfo = false
 }: VideoThumbnailProps) => {
   // Try to get the thumbnail URL from video_url if thumbnail_url is null
   const thumbnailUrl = getThumbnailUrl(video);
   
   // For debugging
-  console.log(`VideoThumbnail for ${video.id}: thumbnailUrl = ${thumbnailUrl}, video_url = ${video.video_url}, isImage = ${isImagePost(video.video_url || '')}`);
+  if (showDebugInfo) {
+    logVideoInfo(video, "VideoThumbnail:");
+  }
   
   const isImage = isImagePost(video.video_url || '');
   const videoType = isYoutubeVideo(video.video_url || '') ? 'youtube' : 
@@ -36,7 +47,9 @@ export const VideoThumbnail = ({
           alt={video.title || ''} 
           className="w-full h-full object-cover"
           onError={(e) => {
-            console.log(`Error loading thumbnail for video ${video.id}`);
+            if (showDebugInfo) {
+              console.log(`Error loading thumbnail for video ${video.id}`);
+            }
             // Generate a colored background based on video title
             const bgColor = stringToColor(video.title || '');
             const initials = (video.title || '??').substring(0, 2).toUpperCase();

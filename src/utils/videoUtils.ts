@@ -27,5 +27,8 @@ export {
   isUploadedVideo, 
   isImagePost,
   getYouTubeVideoId, 
-  getThumbnailUrl 
+  getThumbnailUrl,
+  sanitizeVideoUrl,
+  isPlayableVideoFormat,
+  logVideoInfo
 } from '../components/video/utils/videoPlayerUtils';
