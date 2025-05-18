@@ -78,10 +78,27 @@ const ExploreDetail = () => {
         }
       }
 
-      return {
-        ...data,
-        related_article_id: data.related_article_id || null
+      // Ensure all required fields from Video type are present
+      // If any required fields are missing, provide default values
+      const videoData: Video = {
+        id: data.id,
+        title: data.title || '',
+        description: data.description || '',
+        video_url: data.video_url,
+        thumbnail_url: data.thumbnail_url,
+        creator_id: data.creator_id,
+        status: data.status || 'published',
+        views_count: data.views_count || 0,
+        likes_count: data.likes_count || 0,
+        created_at: data.created_at || new Date().toISOString(),
+        updated_at: data.updated_at || new Date().toISOString(),
+        video_type: data.video_type || 'general',
+        related_article_id: data.related_article_id || null,
+        creator: data.creator || null,
+        show_in_latest: data.show_in_latest || false,
       };
+      
+      return videoData;
     },
     enabled: !!id,
     meta: {
@@ -95,7 +112,6 @@ const ExploreDetail = () => {
     }
   });
 
-  // Query to fetch adjacent videos with error handling
   const { data: adjacentVideos = [], isLoading: isAdjacentLoading } = useQuery({
     queryKey: ['adjacent-videos', id],
     queryFn: async () => {
@@ -104,12 +120,7 @@ const ExploreDetail = () => {
       const { data, error } = await supabase
         .from('videos')
         .select(`
-          id,
-          title,
-          description,
-          video_url,
-          thumbnail_url,
-          creator_id,
+          *,
           creator:creator_id (
             id,
             username,
@@ -130,7 +141,26 @@ const ExploreDetail = () => {
         data.slice(0, 3).forEach(vid => logVideoInfo(vid, "Adjacent video:"));
       }
       
-      return data as Video[];
+      // Transform the data to ensure all required Video properties are present
+      const videosWithDefaults: Video[] = data.map(item => ({
+        id: item.id,
+        title: item.title || '',
+        description: item.description || '',
+        video_url: item.video_url,
+        thumbnail_url: item.thumbnail_url,
+        creator_id: item.creator_id,
+        status: item.status || 'published',
+        views_count: item.views_count || 0,
+        likes_count: item.likes_count || 0,
+        created_at: item.created_at || new Date().toISOString(),
+        updated_at: item.updated_at || new Date().toISOString(),
+        video_type: item.video_type || 'general',
+        related_article_id: item.related_article_id || null,
+        creator: item.creator || null,
+        show_in_latest: item.show_in_latest || false,
+      }));
+      
+      return videosWithDefaults;
     },
     enabled: !!id,
     meta: {
