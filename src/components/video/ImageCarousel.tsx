@@ -7,7 +7,8 @@ import {
   CarouselContent,
   CarouselItem,
   CarouselNext,
-  CarouselPrevious
+  CarouselPrevious,
+  type CarouselApi
 } from '@/components/ui/carousel';
 import { isImageFile } from '@/utils/videoUtils';
 
@@ -25,6 +26,7 @@ export default function ImageCarousel({
   className = ""
 }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [api, setApi] = useState<CarouselApi>();
   
   // Filter only valid image URLs
   const validImages = images.filter(url => url && isImageFile(url));
@@ -44,7 +46,8 @@ export default function ImageCarousel({
     <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio: aspectRatio }}>
       <Carousel
         className="w-full h-full" 
-        onSelect={(api) => setCurrentIndex(api?.selectedScrollSnap() || 0)}
+        onSelect={(index) => setCurrentIndex(index)}
+        setApi={setApi}
       >
         <CarouselContent>
           {validImages.map((image, index) => (

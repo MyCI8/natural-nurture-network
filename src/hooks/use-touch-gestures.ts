@@ -1,289 +1,131 @@
 
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 
-interface TouchGestureOptions {
-  onSwipeLeft?: () => void;
-  onSwipeRight?: () => void;
-  onSwipeUp?: () => void;
-  onSwipeDown?: () => void;
-  onPinchIn?: () => void;
-  onPinchOut?: () => void;
+interface TouchGestureHandlers {
   onTap?: () => void;
   onDoubleTap?: () => void;
-  threshold?: number;
-  preventScroll?: boolean;
-  longPressDelay?: number;
   onLongPress?: () => void;
-  velocityThreshold?: number;  // New option for swipe velocity
-  doubleTapDelay?: number;     // Customizable double-tap delay
+  onSwipe?: (direction: 'left' | 'right' | 'up' | 'down') => void;
 }
 
-interface TouchPosition {
-  x: number;
-  y: number;
-  time: number;
+interface TouchGestureOptions {
+  doubleTapDelay?: number;
+  longPressDelay?: number;
+  swipeThreshold?: number;
 }
 
-// Define a touch point interface to handle both React.Touch and Touch
-interface TouchPoint {
-  clientX: number;
-  clientY: number;
-  identifier: number;
-}
-
-/**
- * Enhanced hook for handling touch gesture interactions on mobile devices
- * with improved performance and reliability
- */
-export function useTouchGestures({
-  onSwipeLeft,
-  onSwipeRight,
-  onSwipeUp,
-  onSwipeDown,
-  onPinchIn,
-  onPinchOut,
-  onTap,
-  onDoubleTap,
-  onLongPress,
-  threshold = 50,
-  preventScroll = false,
-  longPressDelay = 500,
-  velocityThreshold = 0.3,   // Minimum velocity in pixels/ms to consider a swipe
-  doubleTapDelay = 300       // Maximum time between taps to consider a double-tap
-}: TouchGestureOptions = {}) {
-  const touchStartRef = useRef<TouchPosition | null>(null);
-  const prevTouchEndTimeRef = useRef<number>(0);
-  const touchesRef = useRef<TouchPoint[]>([]);
-  const longPressTimerRef = useRef<number | null>(null);
-  const lastTapRef = useRef<{x: number, y: number, time: number} | null>(null);
-  const [isSwiping, setIsSwiping] = useState(false);
-
-  // Track if the user has moved beyond the threshold (used to prevent tap after swipe)
-  const hasMoved = useRef(false);
-  const isMultiTouch = useRef(false);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent | TouchEvent) => {
-    const touch = e instanceof TouchEvent ? e.touches[0] : e.touches[0];
-    touchStartRef.current = { 
-      x: touch.clientX, 
-      y: touch.clientY, 
-      time: Date.now() 
-    };
-    setIsSwiping(true);
-    hasMoved.current = false;
-    isMultiTouch.current = e.touches.length > 1;
-    
-    // Store all touches for pinch detection - convert to our TouchPoint interface
-    if (e.touches.length > 1) {
-      const touchesArray = Array.from(e.touches).map(t => ({
-        clientX: t.clientX,
-        clientY: t.clientY,
-        identifier: t.identifier
-      }));
-      touchesRef.current = touchesArray;
-    }
-    
-    // Set a timer for long press
-    if (onLongPress && !isMultiTouch.current) {
-      longPressTimerRef.current = window.setTimeout(() => {
-        // Only trigger long press if the user hasn't moved
-        if (!hasMoved.current) {
-          onLongPress();
-        }
-      }, longPressDelay);
-    }
-    
-    if (preventScroll) {
-      document.body.style.overflow = 'hidden';
-    }
-  }, [onLongPress, longPressDelay, preventScroll]);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent | TouchEvent) => {
-    if (!touchStartRef.current) return;
-    
+export function useTouchGestures(handlers: TouchGestureHandlers, options: TouchGestureOptions = {}) {
+  const {
+    onTap,
+    onDoubleTap,
+    onLongPress,
+    onSwipe
+  } = handlers;
+  
+  const {
+    doubleTapDelay = 300, // ms
+    longPressDelay = 500, // ms
+    swipeThreshold = 50 // px
+  } = options;
+  
+  const [touchStartTime, setTouchStartTime] = useState(0);
+  const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
+  const [lastTap, setLastTap] = useState(0);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = touch.clientY - touchStartRef.current.y;
+    const now = Date.now();
     
-    // Check if the user has moved beyond the threshold
-    if (Math.abs(deltaX) > threshold / 2 || Math.abs(deltaY) > threshold / 2) {
-      hasMoved.current = true;
+    setTouchStartTime(now);
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+    
+    // Set long press timer
+    if (onLongPress) {
+      const timer = setTimeout(() => {
+        onLongPress();
+      }, longPressDelay);
       
-      // If the user is moving their finger, cancel the long press timer
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
+      setLongPressTimer(timer);
     }
-    
-    // Handle pinch events
-    if (e.touches.length > 1 && (onPinchIn || onPinchOut)) {
-      const currentTouches = Array.from(e.touches).map(t => ({
-        clientX: t.clientX,
-        clientY: t.clientY,
-        identifier: t.identifier
-      }));
-      
-      if (touchesRef.current.length > 1) {
-        // Calculate distance between fingers for current and previous touches
-        const prevDistance = getDistance(touchesRef.current[0], touchesRef.current[1]);
-        const currentDistance = getDistance(currentTouches[0], currentTouches[1]);
-        
-        // Determine if pinching in or out
-        if (Math.abs(currentDistance - prevDistance) > threshold) {
-          if (currentDistance < prevDistance && onPinchIn) {
-            onPinchIn();
-          } else if (currentDistance > prevDistance && onPinchOut) {
-            onPinchOut();
-          }
-          
-          // Update stored touches
-          touchesRef.current = currentTouches;
-        }
-      }
+  }, [onLongPress, longPressDelay]);
+  
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    // If movement is detected, cancel long press
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
     }
-    
-    // If preventing scroll, prevent default to stop page movement
-    if (preventScroll && e.cancelable) {
-      e.preventDefault();
-    }
-  }, [threshold, onPinchIn, onPinchOut, preventScroll]);
-
-  const handleTouchEnd = useCallback((e: React.TouchEvent | TouchEvent) => {
-    if (!touchStartRef.current) return;
-    
+  }, [longPressTimer]);
+  
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     // Clear long press timer
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
     }
     
-    setIsSwiping(false);
+    const touch = e.changedTouches[0];
+    const now = Date.now();
+    const touchDuration = now - touchStartTime;
     
-    const touch = e instanceof TouchEvent ? 
-      (e.changedTouches[0] || e.touches[0]) : 
-      (e.changedTouches[0] || e.touches[0]);
+    // Calculate swipe distance
+    const dx = touch.clientX - touchStartPos.x;
+    const dy = touch.clientY - touchStartPos.y;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
     
-    if (!touch) return;
-    
-    const deltaX = touch.clientX - touchStartRef.current.x;
-    const deltaY = touch.clientY - touchStartRef.current.y;
-    const elapsedTime = Date.now() - touchStartRef.current.time;
-    const velocity = Math.sqrt(deltaX * deltaX + deltaY * deltaY) / elapsedTime;
-    const timeSinceLastTouch = Date.now() - prevTouchEndTimeRef.current;
-    
-    // Check for double tap - if within time and distance thresholds
-    if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && !hasMoved.current && !isMultiTouch.current) {
-      const now = Date.now();
-      
-      if (onDoubleTap && lastTapRef.current && 
-          (now - lastTapRef.current.time < doubleTapDelay) && 
-          (Math.abs(touch.clientX - lastTapRef.current.x) < 20) &&
-          (Math.abs(touch.clientY - lastTapRef.current.y) < 20)) {
-        // It's a double tap
-        onDoubleTap();
-        lastTapRef.current = null; // Reset after double tap
-      } else if (onTap && !hasMoved.current) {
-        // It's a single tap
-        onTap();
-        // Store the tap for potential double-tap detection
-        lastTapRef.current = {
-          x: touch.clientX,
-          y: touch.clientY,
-          time: now
-        };
-        // Reset single tap after delay to avoid triple tap being detected as double
-        setTimeout(() => {
-          if (lastTapRef.current && (Date.now() - lastTapRef.current.time > doubleTapDelay)) {
-            lastTapRef.current = null;
-          }
-        }, doubleTapDelay + 50);
+    // Handle swipe if threshold is met
+    if (onSwipe && Math.max(absDx, absDy) > swipeThreshold) {
+      if (absDx > absDy) {
+        onSwipe(dx > 0 ? 'right' : 'left');
+      } else {
+        onSwipe(dy > 0 ? 'down' : 'up');
       }
-      
-      prevTouchEndTimeRef.current = now;
-    }
-    
-    // If the movement was too small or too slow, don't count it as a swipe
-    if (velocity < velocityThreshold && Math.sqrt(deltaX * deltaX + deltaY * deltaY) < threshold * 1.5) {
-      touchStartRef.current = null;
-      touchesRef.current = [];
       return;
     }
     
-    // Adjust threshold based on swipe speed
-    const adjustedThreshold = velocity > velocityThreshold * 2 ? threshold * 0.5 : threshold;
-    
-    // Determine if this is primarily a horizontal or vertical swipe
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe
-      if (Math.abs(deltaX) > adjustedThreshold) {
-        if (deltaX > 0) {
-          onSwipeRight?.();
-        } else {
-          onSwipeLeft?.();
+    // Handle taps (short touches)
+    if (touchDuration < 300) {
+      const now = Date.now();
+      const timeSinceLastTap = now - lastTap;
+      
+      if (onDoubleTap && timeSinceLastTap < doubleTapDelay) {
+        onDoubleTap();
+        setLastTap(0); // Reset to prevent triple tap
+      } else {
+        setLastTap(now);
+        
+        // Delay the tap event to allow for double tap detection
+        if (onTap) {
+          setTimeout(() => {
+            const timeSinceLastTap = Date.now() - lastTap;
+            if (timeSinceLastTap >= doubleTapDelay) {
+              onTap();
+            }
+          }, doubleTapDelay);
         }
       }
-    } else {
-      // Vertical swipe
-      if (Math.abs(deltaY) > adjustedThreshold) {
-        if (deltaY > 0) {
-          onSwipeDown?.();
-        } else {
-          onSwipeUp?.();
-        }
-      }
     }
-    
-    touchStartRef.current = null;
-    touchesRef.current = [];
-    
-    if (preventScroll) {
-      document.body.style.overflow = '';
-    }
-  }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onTap, onDoubleTap, threshold, preventScroll, velocityThreshold, doubleTapDelay]);
-
-  // Function to calculate distance between two touch points
-  const getDistance = (touch1: TouchPoint, touch2: TouchPoint): number => {
-    const dx = touch1.clientX - touch2.clientX;
-    const dy = touch1.clientY - touch2.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  // Touch cancel handler
-  const handleTouchCancel = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    
-    setIsSwiping(false);
-    touchStartRef.current = null;
-    touchesRef.current = [];
-    
-    if (preventScroll) {
-      document.body.style.overflow = '';
-    }
-  }, [preventScroll]);
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-      }
-      if (preventScroll) {
-        document.body.style.overflow = '';
-      }
-    };
-  }, [preventScroll]);
-
+  }, [
+    touchStartTime, 
+    touchStartPos, 
+    lastTap, 
+    onTap, 
+    onDoubleTap, 
+    onSwipe, 
+    doubleTapDelay, 
+    swipeThreshold,
+    longPressTimer
+  ]);
+  
   return {
     handlers: {
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
       onTouchEnd: handleTouchEnd,
-      onTouchCancel: handleTouchCancel
-    },
-    isSwiping
+    }
   };
 }
+
+export default useTouchGestures;

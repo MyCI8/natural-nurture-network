@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -69,7 +70,7 @@ const ExploreDetail = () => {
         toast("This content is unavailable");
       } else {
         // Log video details for debugging
-        logVideoInfo(data, "Loaded video:");
+        logVideoInfo(data as Video, "Loaded video:");
         
         // Check if this is an image carousel
         if (data.media_files && data.media_files.length > 0) {
