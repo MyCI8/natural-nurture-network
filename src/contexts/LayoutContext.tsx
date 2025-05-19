@@ -10,24 +10,34 @@ interface LayoutContextProps {
   layoutMode: LayoutMode;
   showRightSection: boolean;
   isInReelsMode: boolean;
+  toggleRightSection: (show: boolean) => void;
   setLayoutMode: (mode: LayoutMode) => void;
   setShowRightSection: (show: boolean) => void;
   setIsInReelsMode: (isInReels: boolean) => void;
   contentWidth: string;
   contentMaxWidth: string;
   isFullWidth: boolean;
+  
+  // Add the missing properties
+  isFullscreenRightSection: boolean;
+  setFullscreenRightSection: (isFullscreen: boolean) => void;
 }
 
 const defaultContext: LayoutContextProps = {
   layoutMode: 'default',
   showRightSection: false,
   isInReelsMode: false,
+  toggleRightSection: () => {},
   setLayoutMode: () => {},
   setShowRightSection: () => {},
   setIsInReelsMode: () => {},
   contentWidth: 'px-4',
   contentMaxWidth: 'max-w-3xl',
-  isFullWidth: false
+  isFullWidth: false,
+  
+  // Add the missing properties to default context
+  isFullscreenRightSection: false,
+  setFullscreenRightSection: () => {}
 };
 
 const LayoutContext = createContext<LayoutContextProps>(defaultContext);
@@ -41,10 +51,18 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
   const [contentWidth, setContentWidth] = useState('px-4');
   const [contentMaxWidth, setContentMaxWidth] = useState('max-w-3xl');
   const [isFullWidth, setIsFullWidth] = useState(false);
+  // Add the missing state
+  const [isFullscreenRightSection, setFullscreenRightSection] = useState(false);
+  
   const location = useLocation();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
   const breakpoint = useBreakpoint();
+  
+  // Toggle function for right section
+  const toggleRightSection = (show: boolean) => {
+    setShowRightSection(show);
+  };
   
   // Update layout based on routes and screen size
   useEffect(() => {
@@ -121,12 +139,16 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
         layoutMode,
         showRightSection,
         isInReelsMode,
+        toggleRightSection,
         setLayoutMode,
         setShowRightSection,
         setIsInReelsMode,
         contentWidth,
         contentMaxWidth,
-        isFullWidth
+        isFullWidth,
+        // Add the missing properties
+        isFullscreenRightSection,
+        setFullscreenRightSection
       }}
     >
       {children}

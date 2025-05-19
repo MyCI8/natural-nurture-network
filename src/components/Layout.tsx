@@ -80,8 +80,13 @@ const LayoutContent = () => {
           </div>
         </main>
 
-        {/* Right Section - rendered conditionally by the RightSection component itself */}
-        {!isMobile && showRightSection && <RightSection />}
+        {/* Right Section - Pass children properly */}
+        {showRightSection && (
+          <RightSection>
+            {/* This empty div will be replaced by the RightSection's actual content */}
+            <div />
+          </RightSection>
+        )}
         
         {/* Mobile Bottom Navigation - only on mobile and not in reels mode */}
         {isMobile && !isInReelsMode && <BottomNav />}
