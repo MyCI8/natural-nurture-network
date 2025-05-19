@@ -75,7 +75,9 @@ export const MobileHeader = ({
 
   // Touch gestures for menu button
   const { handlers: menuHandlers } = useTouchGestures({
-    onTap: onMenuClick,
+    onTap: () => {
+      onMenuClick();
+    },
     onLongPress: () => {
       // Could show settings or user menu options
       console.log('Long press on avatar');

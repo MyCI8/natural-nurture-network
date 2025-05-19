@@ -114,6 +114,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   
   // Touch gesture handlers
   const { handlers } = useTouchGestures({
+    onSwipe: (direction) => {
+      // Existing swipe handling if any
+    },
     onTap: () => {
       if (hasError) {
         handleRetry();
