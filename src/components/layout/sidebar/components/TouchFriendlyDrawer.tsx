@@ -29,8 +29,9 @@ export const TouchFriendlyDrawer = ({
           (position === 'right' && direction === 'right')) {
         onClose();
       }
-    },
-    threshold: 75
+    }
+  }, {
+    threshold: 75 // Use options object for threshold
   });
   
   // Position-specific styles

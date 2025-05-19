@@ -1,3 +1,4 @@
+
 /**
  * Check if a video URL is a YouTube video
  */
@@ -31,6 +32,32 @@ export function isPlayableVideoFormat(url: string | null): boolean {
   const playableExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
   
   return playableExtensions.some(ext => lowerCaseUrl.endsWith(ext));
+}
+
+/**
+ * Check if a video is an uploaded video (non-YouTube, non-image)
+ */
+export function isUploadedVideo(url: string | null): boolean {
+  if (!url) return false;
+  return isPlayableVideoFormat(url) && !isYoutubeVideo(url);
+}
+
+/**
+ * Generate a consistent color from a string
+ */
+export function stringToColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  let color = '#';
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xFF;
+    color += ('00' + value.toString(16)).substr(-2);
+  }
+  
+  return color;
 }
 
 /**

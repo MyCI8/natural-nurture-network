@@ -5,11 +5,11 @@ import { Video } from "@/types/video";
 import { 
   getThumbnailUrl, 
   isYoutubeVideo, 
-  isUploadedVideo, 
   isImagePost, 
+  isCarousel,
   stringToColor,
-  logVideoInfo,
-  isCarousel
+  isUploadedVideo,
+  logVideoInfo
 } from "@/utils/videoUtils";
 
 interface VideoThumbnailProps {
