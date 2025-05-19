@@ -31,6 +31,21 @@ export default function ImageCarousel({
   // Filter only valid image URLs
   const validImages = images.filter(url => url && isImageFile(url));
   
+  // Update current index when carousel changes
+  React.useEffect(() => {
+    if (!api) return;
+    
+    const onChange = () => {
+      const currentSlide = api.selectedScrollSnap();
+      setCurrentIndex(currentSlide);
+    };
+    
+    api.on("select", onChange);
+    return () => {
+      api.off("select", onChange);
+    };
+  }, [api]);
+  
   if (!validImages.length) {
     return (
       <div 
@@ -46,7 +61,6 @@ export default function ImageCarousel({
     <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio: aspectRatio }}>
       <Carousel
         className="w-full h-full" 
-        onSelect={(index) => setCurrentIndex(index)}
         setApi={setApi}
       >
         <CarouselContent>

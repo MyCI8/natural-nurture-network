@@ -6,12 +6,18 @@ interface TouchGestureHandlers {
   onDoubleTap?: () => void;
   onLongPress?: () => void;
   onSwipe?: (direction: 'left' | 'right' | 'up' | 'down') => void;
+  // Add direction-specific swipe handlers
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
+  onSwipeUp?: () => void;
+  onSwipeDown?: () => void;
 }
 
 interface TouchGestureOptions {
   doubleTapDelay?: number;
   longPressDelay?: number;
   swipeThreshold?: number;
+  threshold?: number; // Alias for swipeThreshold for backward compatibility
 }
 
 export function useTouchGestures(handlers: TouchGestureHandlers, options: TouchGestureOptions = {}) {
@@ -19,14 +25,21 @@ export function useTouchGestures(handlers: TouchGestureHandlers, options: TouchG
     onTap,
     onDoubleTap,
     onLongPress,
-    onSwipe
+    onSwipe,
+    onSwipeLeft,
+    onSwipeRight,
+    onSwipeUp,
+    onSwipeDown
   } = handlers;
   
   const {
     doubleTapDelay = 300, // ms
     longPressDelay = 500, // ms
-    swipeThreshold = 50 // px
+    swipeThreshold = 50, // px
+    threshold = swipeThreshold // Legacy support
   } = options;
+  
+  const actualThreshold = threshold || swipeThreshold;
   
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [touchStartPos, setTouchStartPos] = useState({ x: 0, y: 0 });
@@ -76,11 +89,29 @@ export function useTouchGestures(handlers: TouchGestureHandlers, options: TouchG
     const absDy = Math.abs(dy);
     
     // Handle swipe if threshold is met
-    if (onSwipe && Math.max(absDx, absDy) > swipeThreshold) {
+    if (Math.max(absDx, absDy) > actualThreshold) {
       if (absDx > absDy) {
-        onSwipe(dx > 0 ? 'right' : 'left');
+        // Horizontal swipe
+        if (dx > 0) {
+          // Right swipe
+          onSwipeRight && onSwipeRight();
+          onSwipe && onSwipe('right');
+        } else {
+          // Left swipe
+          onSwipeLeft && onSwipeLeft();
+          onSwipe && onSwipe('left');
+        }
       } else {
-        onSwipe(dy > 0 ? 'down' : 'up');
+        // Vertical swipe
+        if (dy > 0) {
+          // Down swipe
+          onSwipeDown && onSwipeDown();
+          onSwipe && onSwipe('down');
+        } else {
+          // Up swipe
+          onSwipeUp && onSwipeUp();
+          onSwipe && onSwipe('up');
+        }
       }
       return;
     }
@@ -114,8 +145,12 @@ export function useTouchGestures(handlers: TouchGestureHandlers, options: TouchG
     onTap, 
     onDoubleTap, 
     onSwipe, 
+    onSwipeLeft,
+    onSwipeRight,
+    onSwipeUp,
+    onSwipeDown,
     doubleTapDelay, 
-    swipeThreshold,
+    actualThreshold,
     longPressTimer
   ]);
   

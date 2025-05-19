@@ -1,63 +1,110 @@
-
 /**
- * Convert string to consistent color for placeholders
+ * Check if a video URL is a YouTube video
  */
-export function stringToColor(str: string): string {
-  if (!str) return '#4CAF50'; // Default green if no string
-  
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  
-  let color = '#';
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xFF;
-    color += ('00' + value.toString(16)).substr(-2);
-  }
-  
-  return color;
+export function isYoutubeVideo(url: string | null): boolean {
+  if (!url) return false;
+  return url.includes("youtube.com") || url.includes("youtu.be");
 }
 
 /**
- * Detect if a media item is an image based on URL or MIME type
+ * Check if a URL is a direct link to an image file
  */
-export function isImageFile(url: string): boolean {
+export function isImagePost(url: string | null): boolean {
   if (!url) return false;
   
-  // Check by extension
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
-  const lowerUrl = url.toLowerCase();
+  // Check if URL ends with common image extensions
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif'];
+  const lowerCaseUrl = url.toLowerCase();
   
-  if (imageExtensions.some(ext => lowerUrl.endsWith(ext))) {
-    return true;
-  }
-  
-  // Check by content type in URL (common for storage services)
-  if (lowerUrl.includes('image/')) {
-    return true;
-  }
-  
-  return false;
+  return imageExtensions.some(ext => lowerCaseUrl.endsWith(ext)) ||
+    // Also check for image content types in data URLs
+    lowerCaseUrl.startsWith('data:image/');
 }
 
 /**
- * Check if a media array represents a carousel
+ * Check if a video format is playable based on its URL
  */
-export function isCarousel(mediaFiles?: string[] | null): boolean {
-  return Array.isArray(mediaFiles) && mediaFiles.length > 1;
+export function isPlayableVideoFormat(url: string | null): boolean {
+  if (!url) return false;
+  
+  const lowerCaseUrl = url.toLowerCase();
+  const playableExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  
+  return playableExtensions.some(ext => lowerCaseUrl.endsWith(ext));
 }
 
 /**
- * Export utility functions from videoPlayerUtils for consistency
+ * Log video information for debugging purposes
  */
-export { 
-  isYoutubeVideo, 
-  isUploadedVideo, 
-  isImagePost,
-  getYouTubeVideoId, 
-  getThumbnailUrl,
-  sanitizeVideoUrl,
-  isPlayableVideoFormat,
-  logVideoInfo
-} from '../components/video/utils/videoPlayerUtils';
+export function logVideoInfo(video: any, message: string = "Video Info:") {
+  if (!video) {
+    console.log("No video data to log.");
+    return;
+  }
+  
+  console.groupCollapsed(message);
+    console.log("ID:", video.id);
+    console.log("Title:", video.title);
+    console.log("Description:", video.description);
+    console.log("Video URL:", video.video_url);
+    console.log("Thumbnail URL:", video.thumbnail_url);
+    console.log("Creator ID:", video.creator_id);
+    console.log("Status:", video.status);
+    console.log("Views Count:", video.views_count);
+    console.log("Likes Count:", video.likes_count);
+    console.log("Created At:", video.created_at);
+    console.log("Updated At:", video.updated_at);
+    console.log("Video Type:", video.video_type);
+    console.log("Related Article ID:", video.related_article_id);
+    console.log("Show in Latest:", video.show_in_latest);
+    console.log("Media Files:", video.media_files);
+    console.log("Is Carousel:", video.is_carousel);
+    if (video.creator) {
+      console.groupCollapsed("Creator Info:");
+        console.log("Creator ID:", video.creator.id);
+        console.log("Creator Username:", video.creator.username);
+        console.log("Creator Full Name:", video.creator.full_name);
+        console.log("Creator Avatar URL:", video.creator.avatar_url);
+      console.groupEnd();
+    }
+  console.groupEnd();
+}
+
+/**
+ * Check if a URL is an image file
+ */
+export function isImageFile(url: string | null): boolean {
+  if (!url) return false;
+  
+  // Check if URL ends with common image extensions
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif'];
+  const lowerCaseUrl = url.toLowerCase();
+  
+  return imageExtensions.some(ext => lowerCaseUrl.endsWith(ext)) ||
+    // Also check for image content types in data URLs
+    lowerCaseUrl.startsWith('data:image/');
+}
+
+/**
+ * Check if the media_files array represents a carousel
+ */
+export function isCarousel(mediaFiles: string[] | null | undefined): boolean {
+  return !!mediaFiles && Array.isArray(mediaFiles) && mediaFiles.length > 0;
+}
+
+/**
+ * Get image URL for video thumbnail fallback
+ */
+export function getThumbnailUrl(video: any): string | null {
+  // First try the thumbnail_url field
+  if (video?.thumbnail_url) {
+    return video.thumbnail_url;
+  }
+  
+  // If it's a carousel, use the first image
+  if (isCarousel(video?.media_files)) {
+    return video.media_files[0];
+  }
+  
+  return null;
+}

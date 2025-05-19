@@ -24,8 +24,12 @@ export const TouchFriendlyDrawer = ({
   
   // Handle drawer swiping to close
   const { handlers } = useTouchGestures({
-    onSwipeDown: position === 'bottom' ? onClose : undefined,
-    onSwipeRight: position === 'right' ? onClose : undefined,
+    onSwipe: (direction) => {
+      if ((position === 'bottom' && direction === 'down') || 
+          (position === 'right' && direction === 'right')) {
+        onClose();
+      }
+    },
     threshold: 75
   });
   

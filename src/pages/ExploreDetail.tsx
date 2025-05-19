@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -65,7 +64,7 @@ const ExploreDetail = () => {
       if (error) throw error;
 
       // Validate video URL
-      if (!data.video_url && !data.media_files) {
+      if (!data.video_url && (!data.media_files || data.media_files.length === 0)) {
         setVideoLoadError("No media content available");
         toast("This content is unavailable");
       } else {

@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -104,8 +103,8 @@ const RightSection = () => {
 
   // Touch gesture handling for better mobile experience
   const { handlers } = useTouchGestures({
-    onSwipeRight: () => {
-      if (showRightSection) {
+    onSwipe: (direction) => {
+      if (direction === 'right' && showRightSection) {
         setShowRightSection(false);
       }
     },
