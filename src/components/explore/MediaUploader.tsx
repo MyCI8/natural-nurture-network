@@ -1,6 +1,6 @@
 
 import { useState, useRef } from "react";
-import { Upload, Trash2, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { Upload, Trash2, Link as LinkIcon, ExternalLink, Image, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -12,66 +12,92 @@ import {
 } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Label } from "@/components/ui/label";
-
-// Only allow file upload on Explore; remove Add Video Link for explore/general uploads.
-// We'll know it's Explore video if videoUrl is empty and isYoutubeLink is false and there's no URL input.
+import ImageCarousel from "@/components/video/ImageCarousel";
 
 interface MediaUploaderProps {
   mediaPreview: string | null;
+  mediaPreviews?: string[]; // For multiple images
   isYoutubeLink: boolean;
   videoUrl: string;
-  onMediaUpload: (file: File) => void;
+  onMediaUpload: (file: File | File[]) => void;
   onVideoLinkChange: (url: string) => void;
   onClearMedia: () => void;
+  isMultipleAllowed?: boolean;
 }
 
 export function MediaUploader({
   mediaPreview,
+  mediaPreviews = [],
   isYoutubeLink,
   videoUrl,
   onMediaUpload,
   onVideoLinkChange,
-  onClearMedia
+  onClearMedia,
+  isMultipleAllowed = true
 }: MediaUploaderProps) {
   const [isAddLinkDialogOpen, setIsAddLinkDialogOpen] = useState(false);
   const [tempVideoLink, setTempVideoLink] = useState(videoUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      onMediaUpload(file);
-      event.target.value = '';
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    // Handle multiple files (for images)
+    if (isMultipleAllowed && files.length > 1) {
+      const fileArray = Array.from(files);
+      // Only allow multiple selection for images
+      const isAllImages = fileArray.every(file => file.type.startsWith('image/'));
+      
+      if (isAllImages) {
+        onMediaUpload(fileArray);
+      } else {
+        // If mixed content or multiple videos, just take the first file
+        onMediaUpload(files[0]);
+      }
+    } else {
+      // Single file
+      onMediaUpload(files[0]);
     }
+    
+    event.target.value = '';
   };
 
-  // For Explore: Only upload video. For 'news' allow both.
-  const isNewsVideo = false; // Not needed for now as we only want Explore to be upload only
+  // Show carousel if we have multiple images
+  const hasMultipleImages = mediaPreviews.length > 1;
 
   return (
     <div className="space-y-4">
-      <Label>Video Media</Label>
-      {mediaPreview ? (
+      <Label>Media</Label>
+      {(mediaPreview || hasMultipleImages) ? (
         <div className="relative">
-          <AspectRatio ratio={16/9} className="bg-muted overflow-hidden rounded-md">
-            <img
-              src={mediaPreview}
-              alt="Video preview"
-              className="w-full h-full object-cover"
+          {hasMultipleImages ? (
+            <ImageCarousel 
+              images={mediaPreviews} 
+              aspectRatio={4/5}
+              className="rounded-md overflow-hidden"
             />
-            {isYoutubeLink && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Button 
-                  variant="secondary" 
-                  className="bg-black/70 hover:bg-black/90"
-                  onClick={() => window.open(videoUrl, '_blank')}
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View on YouTube
-                </Button>
-              </div>
-            )}
-          </AspectRatio>
+          ) : (
+            <AspectRatio ratio={16/9} className="bg-muted overflow-hidden rounded-md">
+              <img
+                src={mediaPreview}
+                alt="Media preview"
+                className="w-full h-full object-cover"
+              />
+              {isYoutubeLink && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Button 
+                    variant="secondary" 
+                    className="bg-black/70 hover:bg-black/90"
+                    onClick={() => window.open(videoUrl, '_blank')}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    View on YouTube
+                  </Button>
+                </div>
+              )}
+            </AspectRatio>
+          )}
           <Button
             variant="destructive"
             size="sm"
@@ -88,10 +114,16 @@ export function MediaUploader({
             onClick={() => fileInputRef.current?.click()}
             className="h-32 flex flex-col gap-2"
           >
-            <Upload className="h-5 w-5" />
-            <span>Upload Video</span>
+            <div className="flex gap-2">
+              <Video className="h-5 w-5" />
+              <Image className="h-5 w-5" />
+            </div>
+            <span>Upload Video or Photos</span>
             <span className="text-xs text-muted-foreground">
-              MP4, WebM or other video formats
+              {isMultipleAllowed ? 
+                "Select multiple photos for carousel" : 
+                "MP4, WebM, JPEG, PNG, etc."
+              }
             </span>
           </Button>
         </div>
@@ -100,7 +132,8 @@ export function MediaUploader({
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="video/*"
+        accept="video/*,image/*"
+        multiple={isMultipleAllowed}
         className="hidden"
       />
     </div>

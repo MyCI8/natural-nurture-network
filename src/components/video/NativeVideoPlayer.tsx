@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import React, { useEffect, useRef, useState } from 'react';
 import { Video, ProductLink } from '@/types/video';
-import { Volume2, VolumeX, X, ShoppingCart, RefreshCw } from 'lucide-react';
+import { Volume2, VolumeX, PlayCircle, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import { useInView } from 'react-intersection-observer';
+import { Progress } from '@/components/ui/progress';
+import { isImagePost } from './utils/videoPlayerUtils';
 import ProductLinkCard from './ProductLinkCard';
-import { useTouchGestures } from '@/hooks/use-touch-gestures';
-import { toast } from 'sonner';
-import { isPlayableVideoFormat, isImagePost, sanitizeVideoUrl, logVideoInfo } from './utils/videoPlayerUtils';
+import ImageCarousel from './ImageCarousel';
+import { isCarousel } from '@/utils/videoUtils';
 
 interface NativeVideoPlayerProps {
   video: Video;

@@ -12,7 +12,9 @@ export function useVideoSave() {
     videoId: string | undefined,
     formState: VideoFormState,
     mediaFile: File | null,
+    mediaFiles: File[],
     isYoutubeLink: boolean,
+    isCarousel: boolean,
     getYouTubeThumbnail: (url: string) => string | null,
     asDraft = false
   ) => {
@@ -22,8 +24,8 @@ export function useVideoSave() {
       return false;
     }
 
-    if (!formState.videoUrl && !mediaFile) {
-      toast.error("Please provide a video URL or upload a file");
+    if (!formState.videoUrl && !mediaFile && mediaFiles.length === 0) {
+      toast.error("Please provide a video URL or upload media files");
       return false;
     }
 
@@ -37,21 +39,57 @@ export function useVideoSave() {
 
       let videoUrl = formState.videoUrl;
       let thumbnailUrl = formState.thumbnailUrl;
+      let mediaFileUrls: string[] = [];
 
-      // Only for uploaded videos (not YouTube)
-      if (mediaFile && !isYoutubeLink) {
+      // Handle carousel upload (multiple images)
+      if (isCarousel && mediaFiles.length > 0) {
+        const uploadPromises = mediaFiles.map(async (file) => {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${crypto.randomUUID()}.${fileExt}`;
+
+          const { error: uploadError, data } = await supabase.storage
+            .from('video-media')
+            .upload(fileName, file);
+
+          if (uploadError) throw uploadError;
+
+          return supabase.storage
+            .from('video-media')
+            .getPublicUrl(fileName).data.publicUrl;
+        });
+
+        mediaFileUrls = await Promise.all(uploadPromises);
+        
+        // Use the first image as thumbnail if not already set
+        if (!thumbnailUrl && mediaFileUrls.length > 0) {
+          thumbnailUrl = mediaFileUrls[0];
+        }
+        
+        // For carousel posts, we don't use video_url
+        videoUrl = null;
+      }
+      // Handle single video upload
+      else if (mediaFile && !isYoutubeLink) {
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
         // Extract thumbnail BEFORE uploading video
         let thumbnailFile: File | null = null;
-        try {
-          thumbnailFile = await generateThumbnailFromVideoFile(mediaFile);
-        } catch (err) {
-          console.warn('Failed to extract thumbnail from uploaded video, will use placeholder:', err);
+        
+        // Only extract thumbnail for videos
+        if (mediaFile.type.startsWith('video/')) {
+          try {
+            thumbnailFile = await generateThumbnailFromVideoFile(mediaFile);
+          } catch (err) {
+            console.warn('Failed to extract thumbnail from uploaded video, will use placeholder:', err);
+          }
+        } 
+        // For single image uploads, use the image itself as thumbnail
+        else if (mediaFile.type.startsWith('image/')) {
+          thumbnailFile = mediaFile;
         }
 
-        // Upload video file
+        // Upload video/image file
         const { error: uploadError, data } = await supabase.storage
           .from('video-media')
           .upload(fileName, mediaFile);
@@ -77,7 +115,12 @@ export function useVideoSave() {
             console.warn('Uploading extracted thumbnail failed:', thumbErr);
           }
         }
-        // If thumbnail extraction/upload failed, thumbnailUrl stays null (handled by UI fallback logic)
+        
+        // For image uploads, use the image URL as both video_url and thumbnail_url
+        if (mediaFile.type.startsWith('image/')) {
+          thumbnailUrl = videoUrl;
+          mediaFileUrls = [videoUrl];
+        }
       }
 
       // For YouTube, set thumbnail if missing
@@ -96,7 +139,9 @@ export function useVideoSave() {
         creator_id: user.id,
         video_type: mappedVideoType,
         related_article_id: formState.relatedArticleId,
-        show_in_latest: formState.showInLatest
+        show_in_latest: formState.showInLatest,
+        media_files: mediaFileUrls.length > 0 ? mediaFileUrls : null,
+        is_carousel: isCarousel || mediaFileUrls.length > 1
       };
 
       let result;
@@ -141,4 +186,3 @@ export function useVideoSave() {
     saveVideo
   };
 }
-

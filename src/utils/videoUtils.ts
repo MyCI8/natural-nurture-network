@@ -20,6 +20,35 @@ export function stringToColor(str: string): string {
 }
 
 /**
+ * Detect if a media item is an image based on URL or MIME type
+ */
+export function isImageFile(url: string): boolean {
+  if (!url) return false;
+  
+  // Check by extension
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+  const lowerUrl = url.toLowerCase();
+  
+  if (imageExtensions.some(ext => lowerUrl.endsWith(ext))) {
+    return true;
+  }
+  
+  // Check by content type in URL (common for storage services)
+  if (lowerUrl.includes('image/')) {
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * Check if a media array represents a carousel
+ */
+export function isCarousel(mediaFiles?: string[] | null): boolean {
+  return Array.isArray(mediaFiles) && mediaFiles.length > 1;
+}
+
+/**
  * Export utility functions from videoPlayerUtils for consistency
  */
 export { 

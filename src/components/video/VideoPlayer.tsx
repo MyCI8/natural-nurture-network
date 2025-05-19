@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo, isImagePost, isPlayableVideoFormat } from './utils/videoPlayerUtils';
+import { isCarousel } from '@/utils/videoUtils';
 import YouTubePlayer from './YouTubePlayer';
 import NativeVideoPlayer from './NativeVideoPlayer';
 import { toast } from 'sonner';
@@ -60,6 +61,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       return;
     }
     
+    // For carousel posts, we only need media_files
+    if (isCarousel(video.media_files)) {
+      if (!video.media_files || video.media_files.length === 0) {
+        setVideoError("No images available in carousel");
+      } else {
+        // Valid carousel, clear any errors
+        setVideoError(null);
+      }
+      return;
+    }
+    
+    // Otherwise check video_url
     if (!video.video_url) {
       setVideoError("Video URL is missing");
       return;
@@ -75,8 +88,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     setVideoError(null);
   }, [video]);
   
-  // Check if this is an image post
+  // Check if this is an image post or carousel
   const isImage = isImagePost(video.video_url);
+  const isImageCarousel = isCarousel(video.media_files);
   
   // Effect to handle mute state changes based on global audio setting
   useEffect(() => {
@@ -125,7 +139,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   // Error handling for missing video URL
-  if (videoError) {
+  if (videoError && !isImageCarousel) {
     console.error("Video player error:", videoError, video);
     
     // Log detailed info about this video for debugging
@@ -133,6 +147,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       console.log("Video ID:", video.id);
       console.log("Video URL:", video.video_url);
       console.log("Thumbnail URL:", video.thumbnail_url);
+      console.log("Is carousel:", isImageCarousel);
+      if (isImageCarousel) {
+        console.log("Media files:", video.media_files);
+      }
     }
     
     // Return a simple placeholder instead of throwing an error
@@ -140,7 +158,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       <div className={`${className || ''} bg-gray-900 flex items-center justify-center rounded-md overflow-hidden`} 
            style={useAspectRatio ? { aspectRatio: feedAspectRatio } : {}}>
         <div className="text-center p-4 text-white">
-          <p>Unable to play this video</p>
+          <p>Unable to play this media</p>
           <p className="text-sm text-gray-400 mt-2">{videoError}</p>
           
           {/* Display thumbnail as fallback if available */}
@@ -183,7 +201,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <NativeVideoPlayer
       video={video}
       productLinks={activeProductLinks}
-      autoPlay={autoPlay && !isImage} // Don't autoplay images
+      autoPlay={autoPlay && !isImage && !isImageCarousel} // Don't autoplay images or carousels
       isMuted={isMuted}
       showControls={showControls}
       isFullscreen={isFullscreen}

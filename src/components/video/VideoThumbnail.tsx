@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Video as VideoIcon, Image as ImageIcon } from "lucide-react";
+import { Video as VideoIcon, Image as ImageIcon, Images as ImagesIcon } from "lucide-react";
 import { Video } from "@/types/video";
 import { 
   getThumbnailUrl, 
@@ -8,7 +8,8 @@ import {
   isUploadedVideo, 
   isImagePost, 
   stringToColor,
-  logVideoInfo
+  logVideoInfo,
+  isCarousel
 } from "@/utils/videoUtils";
 
 interface VideoThumbnailProps {
@@ -35,8 +36,11 @@ export const VideoThumbnail = ({
   }
   
   const isImage = isImagePost(video.video_url || '');
+  const hasCarousel = isCarousel(video.media_files);
+  
   const videoType = isYoutubeVideo(video.video_url || '') ? 'youtube' : 
                     isUploadedVideo(video.video_url || '') ? 'uploaded' : 
+                    hasCarousel ? 'carousel' :
                     isImage ? 'image' : 'unknown';
   
   if (thumbnailUrl) {
@@ -61,15 +65,32 @@ export const VideoThumbnail = ({
         />
         <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
           <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-            {isImage ? <ImageIcon className="h-4 w-4" /> : <VideoIcon className="h-4 w-4" />}
+            {hasCarousel ? <ImagesIcon className="h-4 w-4" /> :
+             isImage ? <ImageIcon className="h-4 w-4" /> : 
+             <VideoIcon className="h-4 w-4" />}
             {videoType === 'youtube' && (
               <span className="absolute -bottom-6 text-xs text-white bg-black/60 px-1 rounded">YouTube</span>
             )}
             {videoType === 'image' && (
               <span className="absolute -bottom-6 text-xs text-white bg-black/60 px-1 rounded">Image</span>
             )}
+            {videoType === 'carousel' && (
+              <span className="absolute -bottom-6 text-xs text-white bg-black/60 px-1 rounded">Carousel</span>
+            )}
           </div>
         </div>
+        
+        {/* Carousel indicator */}
+        {hasCarousel && (
+          <div className="absolute bottom-1 right-1 left-1 flex justify-center gap-0.5">
+            {video.media_files?.slice(0, 5).map((_, i) => (
+              <div key={i} className="w-1 h-1 bg-white rounded-full" />
+            ))}
+            {(video.media_files?.length || 0) > 5 && (
+              <div className="w-1 h-1 bg-white rounded-full opacity-70" />
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -83,7 +104,9 @@ export const VideoThumbnail = ({
       className={`${width} ${height} bg-muted flex items-center justify-center rounded ${className}`}
       style={{ backgroundColor: bgColor }}
     >
-      {isImage ? <ImageIcon className="h-4 w-4 text-white" /> : <VideoIcon className="h-4 w-4 text-white" />}
+      {hasCarousel ? <ImagesIcon className="h-4 w-4 text-white" /> :
+       isImage ? <ImageIcon className="h-4 w-4 text-white" /> : 
+       <VideoIcon className="h-4 w-4 text-white" />}
       <span className="text-xs text-white ml-1">{initials}</span>
     </div>
   );

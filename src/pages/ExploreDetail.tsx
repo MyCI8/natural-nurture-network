@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +15,7 @@ import MobileReelsView from '@/components/video/MobileReelsView';
 import { toast } from 'sonner';
 import { VideoLoadingState, VideoErrorState } from '@/components/explore/VideoLoadingState';
 import { isPlayableVideoFormat, logVideoInfo } from '@/components/video/utils/videoPlayerUtils';
+import { isCarousel } from '@/utils/videoUtils';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -64,15 +64,19 @@ const ExploreDetail = () => {
       if (error) throw error;
 
       // Validate video URL
-      if (!data.video_url) {
-        setVideoLoadError("Video URL is missing");
-        toast("This video is unavailable");
+      if (!data.video_url && !data.media_files) {
+        setVideoLoadError("No media content available");
+        toast("This content is unavailable");
       } else {
         // Log video details for debugging
         logVideoInfo(data, "Loaded video:");
         
+        // Check if this is an image carousel
+        if (data.media_files && data.media_files.length > 0) {
+          console.log(`Loaded carousel with ${data.media_files.length} images`);
+        }
         // Check if the video format is supported
-        if (!isPlayableVideoFormat(data.video_url)) {
+        else if (data.video_url && !isPlayableVideoFormat(data.video_url)) {
           console.warn(`Video may not be playable: ${data.video_url}`);
           // Still continue - the player will try its best
         }
@@ -96,6 +100,8 @@ const ExploreDetail = () => {
         related_article_id: data.related_article_id || null,
         creator: data.creator || null,
         show_in_latest: data.show_in_latest || false,
+        media_files: data.media_files || null,
+        is_carousel: data.is_carousel || false
       };
       
       return videoData;
@@ -129,7 +135,7 @@ const ExploreDetail = () => {
           )
         `)
         .not('video_type', 'eq', 'news')
-        .filter('video_url', 'not.is', null) // Only get videos with URLs
+        .filter('status', 'eq', 'published')
         .order('created_at', { ascending: false })
         .limit(20);
         
@@ -158,6 +164,8 @@ const ExploreDetail = () => {
         related_article_id: item.related_article_id || null,
         creator: item.creator || null,
         show_in_latest: item.show_in_latest || false,
+        media_files: item.media_files || null,
+        is_carousel: item.is_carousel || false
       }));
       
       return videosWithDefaults;
@@ -286,7 +294,7 @@ const ExploreDetail = () => {
           <VideoPlayer 
             video={video} 
             productLinks={[]} 
-            autoPlay={true} 
+            autoPlay={!isCarousel(video.media_files)} 
             showControls={false} 
             isFullscreen={false} 
             className="w-full rounded-md overflow-hidden" 
@@ -295,10 +303,12 @@ const ExploreDetail = () => {
             onClick={handleClose}
           />
           
-          {/* Video progress bar */}
-          <div className="absolute bottom-0 left-0 right-0 z-10">
-            <Progress value={progress} className="h-1 rounded-none bg-white/20" />
-          </div>
+          {/* Video progress bar - only show for actual videos, not carousels */}
+          {!isCarousel(video.media_files) && video.video_url && (
+            <div className="absolute bottom-0 left-0 right-0 z-10">
+              <Progress value={progress} className="h-1 rounded-none bg-white/20" />
+            </div>
+          )}
         </div>
       </div>
     </Swipeable>
