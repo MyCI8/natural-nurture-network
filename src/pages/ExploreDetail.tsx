@@ -15,7 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import MobileReelsView from '@/components/video/MobileReelsView';
 import { toast } from 'sonner';
 import { VideoLoadingState, VideoErrorState } from '@/components/explore/VideoLoadingState';
-import { isPlayableVideoFormat, logVideoInfo } from '@/components/video/utils/videoPlayerUtils';
+import { isPlayableVideoFormat, sanitizeVideoUrl, logVideoInfo } from '@/components/video/utils/videoPlayerUtils';
 import { isCarousel } from '@/utils/videoUtils';
 
 // Helper function to convert raw Supabase data to our Video type
@@ -52,6 +52,8 @@ const ExploreDetail = () => {
   const isMobile = useIsMobile();
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
   const [videoLoadError, setVideoLoadError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 3;
 
   useEffect(() => {
     setShowRightSection(true);
@@ -101,17 +103,33 @@ const ExploreDetail = () => {
         // Check if this is an image carousel
         if (videoData.media_files && videoData.media_files.length > 0) {
           console.log(`Loaded carousel with ${videoData.media_files.length} images`);
+          
+          // Sanitize URLs in media_files to ensure they have CORS headers
+          if (videoData.media_files) {
+            videoData.media_files = videoData.media_files.map(url => 
+              sanitizeVideoUrl(url) || url
+            );
+          }
         }
-        // Check if the video format is supported
-        else if (videoData.video_url && !isPlayableVideoFormat(videoData.video_url)) {
-          console.warn(`Video may not be playable: ${videoData.video_url}`);
-          // Still continue - the player will try its best
+        // Check and sanitize video URL
+        else if (videoData.video_url) {
+          videoData.video_url = sanitizeVideoUrl(videoData.video_url);
+          
+          // Add automatic retry logic for video URLs
+          if (!isPlayableVideoFormat(videoData.video_url)) {
+            console.warn(`Video may not be playable, will attempt automatic retry: ${videoData.video_url}`);
+            
+            // We'll let the player try anyway but set up retry logic
+            setRetryCount(0);
+          }
         }
       }
       
       return videoData;
     },
     enabled: !!id,
+    refetchOnMount: true,
+    retry: 2,
     meta: {
       onSettled: (data, error) => {
         if (error) {
@@ -217,18 +235,39 @@ const ExploreDetail = () => {
     // Reset error states
     setVideoLoadError(null);
     
+    // Increment retry count
+    setRetryCount(prev => prev + 1);
+    
     // Retry loading the video
     refetchVideo();
     
     // Reset loading state
     setIsLoading(true);
+    
+    // Show toast for feedback
+    toast("Retrying video loading...");
   };
+
+  // Automatic retry logic
+  useEffect(() => {
+    if (videoLoadError && retryCount < maxRetries) {
+      console.log(`Auto-retrying video load (attempt ${retryCount + 1}/${maxRetries})...`);
+      
+      // Add slight delay before retry to allow for network conditions to settle
+      const timer = setTimeout(() => {
+        handleRetry();
+      }, 800 * (retryCount + 1)); // Exponential backoff
+      
+      return () => clearTimeout(timer);
+    }
+  }, [videoLoadError, retryCount]);
 
   useEffect(() => {
     // Reset progress when video changes
     setProgress(0);
     setIsLoading(true);
     setVideoLoadError(null);
+    setRetryCount(0);
   }, [id]);
 
   // Loading state
@@ -237,7 +276,7 @@ const ExploreDetail = () => {
   }
 
   // Error state
-  if (videoError || !video || videoLoadError) {
+  if (videoError || !video || (videoLoadError && retryCount >= maxRetries)) {
     return <VideoErrorState 
       message={videoLoadError || "Could not load the video"} 
       onRetry={handleRetry}

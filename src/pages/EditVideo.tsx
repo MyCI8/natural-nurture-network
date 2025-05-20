@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,7 +122,7 @@ const EditVideo = () => {
           <Tabs defaultValue="details" value={activeTab} onValueChange={setActiveTab}>
             <div className="px-4 sm:px-6 pt-3">
               <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="details" className="touch-manipulation">Video Details</TabsTrigger>
+                <TabsTrigger value="details" className="touch-manipulation">Details</TabsTrigger>
                 {id && <TabsTrigger value="products" className="touch-manipulation">Product Links</TabsTrigger>}
               </TabsList>
             </div>

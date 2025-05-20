@@ -15,6 +15,7 @@ export const isYoutubeVideo = (url: string | null): boolean => {
 
 /**
  * Check if URL is an uploaded video file based on extension or Supabase storage pattern
+ * Enhanced to better detect Supabase URLs
  */
 export const isUploadedVideo = (url: string | null): boolean => {
   if (!url) return false;
@@ -25,17 +26,26 @@ export const isUploadedVideo = (url: string | null): boolean => {
     return true;
   }
   
-  // Special handling for Supabase storage URLs
+  // Improved Supabase storage URL detection
   if (url.includes('storage.googleapis.com') || url.includes('supabase')) {
     // Check if URL contains video content hints
     if (url.includes('/video/') || url.includes('content-type=video') || 
-        url.includes('/mp4/') || url.includes('/media/')) {
+        url.includes('/mp4/') || url.includes('/media/') ||
+        url.includes('/videos/') || url.includes('/upload/')) {
       return true;
     }
     
+    // Enhanced pattern matching for video extensions in storage paths
+    for (const ext of videoExtensions) {
+      if (url.toLowerCase().includes(ext)) {
+        return true;
+      }
+    }
+    
     // Look for video-like query parameters or path segments
-    const hasVideoIndicators = ['.mp4', 'video', 'media', 'mov', 'webm']
-      .some(indicator => url.toLowerCase().includes(indicator));
+    const hasVideoIndicators = [
+      'video', 'media', 'mov', 'webm', 'mp4', 'avi', 'stream'
+    ].some(indicator => url.toLowerCase().includes(indicator));
     
     if (hasVideoIndicators) {
       return true;
@@ -47,26 +57,38 @@ export const isUploadedVideo = (url: string | null): boolean => {
 
 /**
  * Check if URL is an image file
+ * Enhanced to better detect images in Supabase
  */
 export const isImagePost = (url: string | null): boolean => {
   if (!url) return false;
   
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp', '.avif'];
   
   // Check for file extensions
   if (imageExtensions.some(ext => url.toLowerCase().endsWith(ext))) {
     return true;
   }
   
-  // Check for image indicators in Supabase URLs
+  // Enhanced Supabase image detection
   if (url.includes('storage.googleapis.com') || url.includes('supabase')) {
-    if (url.includes('/images/') || url.includes('content-type=image')) {
+    // Check for image indicators in paths
+    if (url.includes('/images/') || url.includes('/img/') || 
+        url.includes('content-type=image') || url.includes('/thumbnails/')) {
       return true;
     }
     
+    // Check for image extensions in storage paths
+    for (const ext of imageExtensions) {
+      if (url.toLowerCase().includes(ext)) {
+        return true;
+      }
+    }
+    
     // Look for image-like query parameters
-    const hasImageIndicators = ['image', 'photo', 'picture', 'jpg', 'png', 'jpeg']
-      .some(indicator => url.toLowerCase().includes(indicator));
+    const hasImageIndicators = [
+      'image', 'photo', 'picture', 'jpg', 'png', 'jpeg', 'thumbnail', 
+      'poster', 'gallery', 'avatar'
+    ].some(indicator => url.toLowerCase().includes(indicator));
     
     if (hasImageIndicators) {
       return true;
@@ -93,19 +115,28 @@ export const isValidUrl = (url: string | null): boolean => {
 
 /**
  * Attempt to sanitize and normalize video URLs
- * This can help with URLs that don't have explicit extensions
+ * Enhanced to handle CORS issues with Supabase storage
  */
 export const sanitizeVideoUrl = (url: string | null): string | null => {
   if (!url) return null;
   if (!isValidUrl(url)) return null;
   
-  // If it's a Supabase storage URL and doesn't have CORS query params, add them
-  if ((url.includes('storage.googleapis.com') || url.includes('supabase.co')) && 
-      !url.includes('download=true')) {
+  // If it's a Supabase storage URL, always add CORS query params
+  if ((url.includes('storage.googleapis.com') || url.includes('supabase.co'))) {
+    // Don't add download param if it's already there
+    if (!url.includes('download=true')) {
+      // Add download parameter for proper CORS headers
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}download=true`;
+    }
     
-    // Add download parameter for proper CORS headers
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}download=true`;
+    // Add cache busting parameter to force fresh request
+    // This helps with CORS issues where the browser may have cached a failed request
+    if (!url.includes('_ts=')) {
+      const separator = url.includes('?') ? '&' : '?';
+      const timestamp = Date.now();
+      return `${url}${separator}_ts=${timestamp}`;
+    }
   }
   
   return url;
@@ -113,7 +144,7 @@ export const sanitizeVideoUrl = (url: string | null): string | null => {
 
 /**
  * Validate if a video URL points to a playable video format
- * This is enhanced to better detect playable content
+ * Significantly enhanced to be more permissive with Supabase URLs
  */
 export const isPlayableVideoFormat = (url: string | null): boolean => {
   if (!url) return false;
@@ -122,7 +153,19 @@ export const isPlayableVideoFormat = (url: string | null): boolean => {
   // If it's YouTube, it should be playable
   if (isYoutubeVideo(url)) return true;
   
-  // If it's a direct video file or appears to be from storage
+  // Always be optimistic about Supabase storage URLs
+  // Let the player try them rather than blocking them early
+  if (url.includes('storage.googleapis.com') || url.includes('supabase.co')) {
+    // Only reject if we're very confident it's an image
+    if (isImagePost(url) && !isUploadedVideo(url)) {
+      return false;
+    }
+    
+    // For all other storage URLs, be permissive
+    return true;
+  }
+  
+  // For direct URLs, check if it appears to be a video file
   if (isUploadedVideo(url)) {
     return true;
   }
@@ -226,6 +269,85 @@ export const logVideoInfo = (video: Video | null, prefix: string = "") => {
   console.log(`${prefix} Is Uploaded Video: ${isUploadedVideo(video.video_url)}`);
   console.log(`${prefix} Is Image: ${isImagePost(video.video_url)}`);
   console.log(`${prefix} Is Playable: ${isPlayableVideoFormat(video.video_url)}`);
+  
+  if (video.media_files && Array.isArray(video.media_files)) {
+    console.log(`${prefix} Has ${video.media_files.length} media files (carousel)`);
+  }
+};
+
+/**
+ * Preload an image to check if it can be loaded
+ * Returns a promise that resolves when image is loaded or rejects if it fails
+ */
+export const preloadImage = (url: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+    img.src = url;
+  });
+};
+
+/**
+ * Preload a video to check if it can be loaded
+ * Returns a promise that resolves when video can play or rejects if it fails
+ */
+export const preloadVideo = (url: string): Promise<HTMLVideoElement> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.muted = true;
+    video.preload = 'metadata';
+    
+    // Set timeout to avoid hanging on resources that never load
+    const timeout = setTimeout(() => {
+      reject(new Error(`Video preload timed out: ${url}`));
+    }, 10000);
+    
+    video.onloadedmetadata = () => {
+      clearTimeout(timeout);
+      resolve(video);
+    };
+    
+    video.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error(`Failed to load video: ${url}`));
+    };
+    
+    // Add CORS query parameters for Supabase URLs
+    video.src = sanitizeVideoUrl(url) || url;
+  });
+};
+
+/**
+ * Attempt to validate media availability
+ * Returns a promise that resolves with true if media is available, false otherwise
+ */
+export const validateMediaAvailability = async (url: string | null): Promise<boolean> => {
+  if (!url) return false;
+  
+  try {
+    // For YouTube videos, we assume they're available
+    if (isYoutubeVideo(url)) return true;
+    
+    // For images, preload and check if they load
+    if (isImagePost(url)) {
+      await preloadImage(url);
+      return true;
+    }
+    
+    // For videos, preload and check if metadata loads
+    if (isUploadedVideo(url)) {
+      await preloadVideo(url);
+      return true;
+    }
+    
+    // For other URLs, make a HEAD request to check availability
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.warn(`Media availability check failed for ${url}:`, error);
+    return false;
+  }
 };
 
 /**

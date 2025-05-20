@@ -9,7 +9,8 @@ import {
   isImagePost,
   isPlayableVideoFormat,
   sanitizeVideoUrl,
-  logVideoInfo
+  logVideoInfo,
+  validateMediaAvailability
 } from './utils/videoPlayerUtils';
 import ProductLinkCard from './ProductLinkCard';
 import ImageCarousel from './ImageCarousel';
@@ -76,6 +77,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [autoRetryScheduled, setAutoRetryScheduled] = useState(false);
+  const maxRetries = 3;
   
   // Use intersection observer to detect when the video is in view
   const { ref: inViewRef, inView } = useInView({
@@ -88,13 +92,21 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     setHasError(false);
     setErrorMessage("");
     setRetryCount(0);
+    setIsRetrying(false);
+    setAutoRetryScheduled(false);
     
     // Additional validation for video URLs when video changes
     if (video && video.video_url) {
-      // Check if the video URL is playable
-      if (!isPlayableVideoFormat(video.video_url)) {
-        console.warn(`Video format may not be supported: ${video.video_url}`);
-      }
+      // Early validation to prevent loading errors
+      validateMediaAvailability(video.video_url)
+        .then(isAvailable => {
+          if (!isAvailable && !hasError) {
+            console.warn(`Media validation failed for ${video.video_url}, will attempt to play anyway`);
+          }
+        })
+        .catch(err => {
+          console.warn(`Media validation error: ${err.message}`);
+        });
     }
   }, [video.id, video.video_url]);
   
@@ -127,8 +139,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         if (videoRef.current.paused) {
           videoRef.current.play().catch(err => {
             console.error("Failed to play video:", err);
-            setHasError(true);
-            setErrorMessage(`Playback failed: ${err.message}`);
+            handlePlayError(err);
           });
         } else {
           videoRef.current.pause();
@@ -162,7 +173,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     }
     
     // Auto-play when in view if autoPlay is true and no errors
-    if (videoRef.current && inView && autoPlay && !hasError) {
+    if (videoRef.current && inView && autoPlay && !hasError && !isRetrying) {
       // Use sanitized URL for better compatibility
       const sanitizedUrl = sanitizeVideoUrl(video.video_url);
       if (sanitizedUrl && videoRef.current.src !== sanitizedUrl) {
@@ -171,30 +182,57 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       
       videoRef.current.play().catch(err => {
         console.error("Failed to autoplay video:", err);
-        setHasError(true);
-        setErrorMessage(`Autoplay failed: ${err.message}`);
-        
-        // Report the error to the console with more details
-        console.error("Video URL:", video.video_url);
-        console.error("Error details:", err);
-        
-        // Log detailed info about this video for debugging
-        logVideoInfo(video, "Autoplay Error for:");
+        handlePlayError(err);
       });
     } else if (videoRef.current && !inView) {
       videoRef.current.pause();
     }
-  }, [inView, autoPlay, onInView, hasError, video]);
+  }, [inView, autoPlay, onInView, hasError, video, isRetrying]);
+  
+  // Helper function to handle play errors
+  const handlePlayError = (err: any) => {
+    console.error("Play error details:", err);
+    
+    setHasError(true);
+    setErrorMessage(`Playback failed: ${err.message || 'Unknown error'}`);
+    
+    // Schedule automatic retry if we haven't reached the limit
+    if (retryCount < maxRetries && !autoRetryScheduled) {
+      setAutoRetryScheduled(true);
+      
+      // Use exponential backoff for retries
+      const delay = Math.min(1000 * (2 ** retryCount), 8000);
+      
+      console.log(`Scheduling automatic retry #${retryCount + 1} in ${delay}ms`);
+      
+      setTimeout(() => {
+        if (!hasError) return; // Skip if error was resolved
+        
+        console.log(`Executing automatic retry #${retryCount + 1}`);
+        handleRetry();
+        setAutoRetryScheduled(false);
+      }, delay);
+    }
+    
+    // Log detailed video info to help with debugging
+    logVideoInfo(video, "Error playing video:");
+  };
   
   // Set up video autoplay when component mounts
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (videoElement && autoPlay && inView && !hasError) {
-      videoElement.play().catch(err => {
-        console.error("Failed to autoplay video on mount:", err);
-        setHasError(true);
-        setErrorMessage(`Playback failed: ${err.message}`);
-      });
+    if (videoElement && autoPlay && inView && !hasError && !isRetrying) {
+      // Small delay to ensure DOM is ready
+      const playTimer = setTimeout(() => {
+        if (videoElement) {
+          videoElement.play().catch(err => {
+            console.error("Failed to autoplay video on mount:", err);
+            handlePlayError(err);
+          });
+        }
+      }, 100);
+      
+      return () => clearTimeout(playTimer);
     }
     
     return () => {
@@ -205,7 +243,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         videoElement.load();
       }
     };
-  }, [autoPlay, inView, hasError]);
+  }, [autoPlay, inView, hasError, isRetrying]);
   
   // Update the video's muted state when the isMuted prop changes
   useEffect(() => {
@@ -248,19 +286,19 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
       } else {
         videoRef.current.play().catch(err => {
           console.error("Failed to play video:", err);
-          setHasError(true);
-          setErrorMessage(`Playback failed: ${err.message}`);
+          handlePlayError(err);
         });
       }
     }
   };
   
   const handleRetry = () => {
-    if (retryCount >= 3) {
+    if (retryCount >= maxRetries) {
       toast.error("Video playback failed after multiple attempts. Please try again later.");
       return;
     }
     
+    setIsRetrying(true);
     setHasError(false);
     setErrorMessage("");
     setLoading(true);
@@ -268,18 +306,62 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     
     // Reset the video element
     if (videoRef.current) {
+      // If we're retrying, add a cache-busting parameter
+      const currentSrc = videoRef.current.src;
+      let newSrc = currentSrc;
+      
+      if (video.video_url) {
+        // Add timestamp to bust cache
+        const timestamp = Date.now();
+        newSrc = sanitizeVideoUrl(video.video_url) || video.video_url;
+        
+        // Add cache busting parameter
+        if (newSrc.includes('?')) {
+          newSrc = `${newSrc}&_cb=${timestamp}`;
+        } else {
+          newSrc = `${newSrc}?_cb=${timestamp}`;
+        }
+        
+        // Force download flag for Supabase URLs
+        if ((newSrc.includes('storage.googleapis.com') || newSrc.includes('supabase.co')) && 
+            !newSrc.includes('download=true')) {
+          newSrc = `${newSrc}&download=true`;
+        }
+      }
+      
+      // If we have a new URL, use it
+      if (newSrc !== currentSrc) {
+        videoRef.current.src = newSrc;
+      }
+      
+      // Force reload and clear any previous errors
       videoRef.current.load();
+      
+      console.log(`Retry attempt ${retryCount + 1}/${maxRetries}`, { 
+        originalUrl: video.video_url,
+        newSrc
+      });
       
       // Small delay before trying to play again
       setTimeout(() => {
         if (videoRef.current) {
           videoRef.current.play().catch(err => {
-            console.error("Retry failed:", err);
-            setHasError(true);
-            setErrorMessage(`Retry failed: ${err.message}`);
+            console.error(`Retry ${retryCount + 1}/${maxRetries} failed:`, err);
+            handlePlayError(err);
+          }).finally(() => {
+            setIsRetrying(false);
           });
+        } else {
+          setIsRetrying(false);
         }
-      }, 1000);
+      }, 800);
+      
+      // Toast notification for feedback
+      if (retryCount > 0) {
+        toast.info(`Retrying playback (${retryCount + 1}/${maxRetries})...`);
+      }
+    } else {
+      setIsRetrying(false);
     }
   };
   
@@ -338,32 +420,38 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     console.error("Video error code:", videoElement.error?.code);
     console.error("Video error message:", videoElement.error?.message);
     
-    // Log detailed info about this video for debugging
-    logVideoInfo(video, "Error playing video:");
-    
     setLoading(false);
-    setHasError(true);
     
-    // Set appropriate error message based on error code
-    if (videoElement.error) {
-      switch (videoElement.error.code) {
-        case 1: // MEDIA_ERR_ABORTED
-          setErrorMessage("Video playback was aborted");
-          break;
-        case 2: // MEDIA_ERR_NETWORK
-          setErrorMessage("Network error occurred while loading the video");
-          break;
-        case 3: // MEDIA_ERR_DECODE
-          setErrorMessage("Video decode error");
-          break;
-        case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
-          setErrorMessage("Video format not supported");
-          break;
-        default:
-          setErrorMessage(`Error playing video: ${videoElement.error.message}`);
+    // Don't set error if we're already retrying
+    if (!isRetrying) {
+      setHasError(true);
+      
+      // Set appropriate error message based on error code
+      if (videoElement.error) {
+        switch (videoElement.error.code) {
+          case 1: // MEDIA_ERR_ABORTED
+            setErrorMessage("Video playback was aborted");
+            break;
+          case 2: // MEDIA_ERR_NETWORK
+            setErrorMessage("Network error occurred while loading the video");
+            break;
+          case 3: // MEDIA_ERR_DECODE
+            setErrorMessage("Video decode error");
+            break;
+          case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
+            setErrorMessage("Video format not supported");
+            break;
+          default:
+            setErrorMessage(`Error playing video: ${videoElement.error.message}`);
+        }
+      } else {
+        setErrorMessage("Unknown error occurred while playing video");
       }
-    } else {
-      setErrorMessage("Unknown error occurred while playing video");
+      
+      // Schedule automatic retry
+      if (retryCount < maxRetries && !autoRetryScheduled) {
+        handlePlayError(videoElement.error || new Error("Unknown video error"));
+      }
     }
   };
   
@@ -391,27 +479,41 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   
   // If URL is invalid, show error state immediately
   useEffect(() => {
-    if (isInvalidVideoUrl) {
+    if (isInvalidVideoUrl && !isRetrying && !hasError) {
       setHasError(true);
       setErrorMessage("Invalid video format or URL");
       setLoading(false);
+      console.error("Invalid video format detected:", video.video_url);
     }
-  }, [isInvalidVideoUrl]);
+  }, [isInvalidVideoUrl, isRetrying, hasError]);
 
-  // Error state renderer
+  // Error state renderer with enhanced retry button
   const renderErrorState = () => (
     <div className="absolute inset-0 flex items-center justify-center bg-black/75 z-20 flex-col p-4 text-center">
-      <div className="text-white mb-4">{errorMessage}</div>
+      <div className="text-white mb-4">
+        {errorMessage}
+        {retryCount > 0 && <div className="text-sm text-gray-400 mt-1">Attempt {retryCount}/{maxRetries}</div>}
+      </div>
       <Button 
         variant="outline" 
         onClick={(e) => {
           e.stopPropagation();
           handleRetry();
         }}
-        className="bg-primary/20 hover:bg-primary/30 text-white flex items-center gap-2"
+        className="bg-primary/20 hover:bg-primary/30 text-white flex items-center gap-2 touch-manipulation"
+        disabled={isRetrying || retryCount >= maxRetries}
       >
-        <RefreshCw className="h-4 w-4" />
-        Retry
+        {isRetrying ? (
+          <>
+            <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+            <span>Retrying...</span>
+          </>
+        ) : (
+          <>
+            <RefreshCw className="h-4 w-4" />
+            <span>Retry</span>
+          </>
+        )}
       </Button>
       {video.thumbnail_url && (
         <div className="mt-4 opacity-60">
@@ -422,6 +524,28 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           />
         </div>
       )}
+    </div>
+  );
+  
+  // Show a preview when loading or retrying
+  const renderLoadingState = () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10 flex-col">
+      <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-2" />
+      
+      {/* Show thumbnail while loading if available */}
+      {video.thumbnail_url && !isRetrying && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <img 
+            src={video.thumbnail_url} 
+            alt={video.title || "Loading thumbnail"} 
+            className="max-h-full max-w-full object-contain opacity-50"
+          />
+        </div>
+      )}
+      
+      <div className="text-white text-sm mt-2">
+        {isRetrying ? `Retrying (${retryCount}/${maxRetries})...` : 'Loading...'}
+      </div>
     </div>
   );
   
@@ -538,7 +662,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             muted={isMuted}
             loop
             playsInline
-            autoPlay={autoPlay && !hasError}
+            autoPlay={autoPlay && !hasError && !isRetrying}
             controls={showControls}
             onPlay={handlePlay}
             onPause={handlePause}
@@ -546,6 +670,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
             onLoadStart={handleLoadStart}
             onCanPlay={handleCanPlay}
             onError={handleError}
+            preload="metadata"
           />
         </div>
       ) : (
@@ -559,7 +684,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           muted={isMuted}
           loop
           playsInline
-          autoPlay={autoPlay && !hasError}
+          autoPlay={autoPlay && !hasError && !isRetrying}
           controls={showControls}
           onPlay={handlePlay}
           onPause={handlePause}
@@ -567,15 +692,12 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           onLoadStart={handleLoadStart}
           onCanPlay={handleCanPlay}
           onError={handleError}
+          preload="metadata"
         />
       )}
       
       {/* Loading indicator */}
-      {loading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
+      {(loading || isRetrying) && !hasError && renderLoadingState()}
       
       {/* Error state */}
       {hasError && renderErrorState()}
