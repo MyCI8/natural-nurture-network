@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MediaUploader } from "@/components/explore/MediaUploader";
 import RegenerateThumbnail from "@/components/explore/RegenerateThumbnail";
 import { VideoFormState } from "@/hooks/video/useVideoFormState";
-import { Upload } from "lucide-react";
 
 interface VideoDetailsFormProps {
   formState: VideoFormState;
@@ -161,10 +160,9 @@ export function VideoDetailsForm({
             (formState.videoType !== "explore" && !formState.title) || 
             (!formState.videoUrl && !mediaPreview)
           }
-          className="touch-manipulation flex items-center gap-2"
+          className="touch-manipulation"
         >
-          <Upload className="h-4 w-4" />
-          {isSaving ? "Saving..." : videoId ? "Update Post" : "Post"}
+          {isSaving ? "Saving..." : videoId ? "Update Video" : "Publish Video"}
         </Button>
       </div>
     </form>

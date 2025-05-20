@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -13,47 +12,17 @@ import { Video } from '@/types/video';
 import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileReelsView from '@/components/video/MobileReelsView';
-import { toast } from 'sonner';
-import { VideoLoadingState, VideoErrorState } from '@/components/explore/VideoLoadingState';
-import { isPlayableVideoFormat, sanitizeVideoUrl, logVideoInfo } from '@/components/video/utils/videoPlayerUtils';
-import { isCarousel } from '@/utils/videoUtils';
-
-// Helper function to convert raw Supabase data to our Video type
-const mapSupabaseDataToVideo = (data: any): Video => {
-  return {
-    id: data.id,
-    title: data.title || '',
-    description: data.description || '',
-    video_url: data.video_url,
-    thumbnail_url: data.thumbnail_url,
-    creator_id: data.creator_id,
-    status: data.status || 'published',
-    views_count: data.views_count || 0,
-    likes_count: data.likes_count || 0,
-    created_at: data.created_at || new Date().toISOString(),
-    updated_at: data.updated_at || new Date().toISOString(),
-    video_type: data.video_type || 'general',
-    related_article_id: data.related_article_id || null,
-    creator: data.creator || null,
-    show_in_latest: data.show_in_latest || false,
-    media_files: data.media_files || null,
-    is_carousel: data.is_carousel || false
-  };
-};
 
 const ExploreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { setShowRightSection, setIsInReelsMode } = useLayout();
-  const { toast: hookToast } = useToast();
+  const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
-  const [videoLoadError, setVideoLoadError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const maxRetries = 3;
 
   useEffect(() => {
     setShowRightSection(true);
@@ -70,7 +39,7 @@ const ExploreDetail = () => {
     navigate('/explore');
   };
 
-  const { data: video, isLoading: isVideoLoading, error: videoError, refetch: refetchVideo } = useQuery({
+  const { data: video, isLoading: isVideoLoading } = useQuery({
     queryKey: ['video', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -89,59 +58,15 @@ const ExploreDetail = () => {
         .single();
       if (error) throw error;
 
-      // Map the Supabase data to our Video type
-      const videoData = mapSupabaseDataToVideo(data);
-
-      // Validate video URL
-      if (!videoData.video_url && (!videoData.media_files || videoData.media_files.length === 0)) {
-        setVideoLoadError("No media content available");
-        toast("This content is unavailable");
-      } else {
-        // Log video details for debugging
-        logVideoInfo(videoData, "Loaded video:");
-        
-        // Check if this is an image carousel
-        if (videoData.media_files && videoData.media_files.length > 0) {
-          console.log(`Loaded carousel with ${videoData.media_files.length} images`);
-          
-          // Sanitize URLs in media_files to ensure they have CORS headers
-          if (videoData.media_files) {
-            videoData.media_files = videoData.media_files.map(url => 
-              sanitizeVideoUrl(url) || url
-            );
-          }
-        }
-        // Check and sanitize video URL
-        else if (videoData.video_url) {
-          videoData.video_url = sanitizeVideoUrl(videoData.video_url);
-          
-          // Add automatic retry logic for video URLs
-          if (!isPlayableVideoFormat(videoData.video_url)) {
-            console.warn(`Video may not be playable, will attempt automatic retry: ${videoData.video_url}`);
-            
-            // We'll let the player try anyway but set up retry logic
-            setRetryCount(0);
-          }
-        }
-      }
-      
-      return videoData;
-    },
-    enabled: !!id,
-    refetchOnMount: true,
-    retry: 2,
-    meta: {
-      onSettled: (data, error) => {
-        if (error) {
-          console.error("Error loading video:", error);
-          toast("Failed to load video data");
-          setVideoLoadError("Could not load video data");
-        }
-      }
+      return {
+        ...data,
+        related_article_id: data.related_article_id || null
+      };
     }
   });
 
-  const { data: adjacentVideosRaw = [], isLoading: isAdjacentLoading } = useQuery({
+  // Query to fetch adjacent videos for swipe navigation
+  const { data: adjacentVideos = [], isLoading: isAdjacentLoading } = useQuery({
     queryKey: ['adjacent-videos', id],
     queryFn: async () => {
       if (!id) return [];
@@ -149,7 +74,12 @@ const ExploreDetail = () => {
       const { data, error } = await supabase
         .from('videos')
         .select(`
-          *,
+          id,
+          title,
+          description,
+          video_url,
+          thumbnail_url,
+          creator_id,
           creator:creator_id (
             id,
             username,
@@ -157,35 +87,16 @@ const ExploreDetail = () => {
             full_name
           )
         `)
-        .not('video_type', 'eq', 'news')
-        .filter('status', 'eq', 'published')
+        .not('video_type', 'eq', 'news') // Exclude news videos
         .order('created_at', { ascending: false })
         .limit(20);
         
       if (error) throw error;
-      
-      // Log the first few videos for debugging
-      if (data && data.length > 0) {
-        console.log(`Fetched ${data.length} adjacent videos.`);
-        data.slice(0, 3).forEach(vid => logVideoInfo(mapSupabaseDataToVideo(vid), "Adjacent video:"));
-      }
-      
-      return data;
+      return data as Video[];
     },
-    enabled: !!id,
-    meta: {
-      onSettled: (data, error) => {
-        if (error) {
-          console.error("Error loading adjacent videos:", error);
-          toast("Failed to load related videos");
-        }
-      }
-    }
+    enabled: !!id
   });
 
-  // Map the raw adjacent videos to our Video type
-  const adjacentVideos = adjacentVideosRaw.map(mapSupabaseDataToVideo);
-  
   // Find the current index in the adjacentVideos array
   const currentIndex = adjacentVideos.findIndex(v => v.id === id);
   
@@ -231,56 +142,18 @@ const ExploreDetail = () => {
     setGlobalAudioEnabled(!isMuted);
   };
 
-  const handleRetry = () => {
-    // Reset error states
-    setVideoLoadError(null);
-    
-    // Increment retry count
-    setRetryCount(prev => prev + 1);
-    
-    // Retry loading the video
-    refetchVideo();
-    
-    // Reset loading state
-    setIsLoading(true);
-    
-    // Show toast for feedback
-    toast("Retrying video loading...");
-  };
-
-  // Automatic retry logic
-  useEffect(() => {
-    if (videoLoadError && retryCount < maxRetries) {
-      console.log(`Auto-retrying video load (attempt ${retryCount + 1}/${maxRetries})...`);
-      
-      // Add slight delay before retry to allow for network conditions to settle
-      const timer = setTimeout(() => {
-        handleRetry();
-      }, 800 * (retryCount + 1)); // Exponential backoff
-      
-      return () => clearTimeout(timer);
-    }
-  }, [videoLoadError, retryCount]);
-
   useEffect(() => {
     // Reset progress when video changes
     setProgress(0);
     setIsLoading(true);
-    setVideoLoadError(null);
-    setRetryCount(0);
   }, [id]);
 
-  // Loading state
   if (isVideoLoading) {
-    return <VideoLoadingState />;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  // Error state
-  if (videoError || !video || (videoLoadError && retryCount >= maxRetries)) {
-    return <VideoErrorState 
-      message={videoLoadError || "Could not load the video"} 
-      onRetry={handleRetry}
-    />;
+  if (!video) {
+    return <div className="flex items-center justify-center min-h-screen">Video not found</div>;
   }
 
   // Use a more Instagram Reels-like experience on mobile
@@ -297,7 +170,7 @@ const ExploreDetail = () => {
     );
   }
 
-  // Desktop experience
+  // Desktop experience remains unchanged
   return (
     <Swipeable 
       onSwipe={handleSwipe} 
@@ -320,7 +193,7 @@ const ExploreDetail = () => {
           <VideoPlayer 
             video={video} 
             productLinks={[]} 
-            autoPlay={!isCarousel(video.media_files)} 
+            autoPlay={true} 
             showControls={false} 
             isFullscreen={false} 
             className="w-full rounded-md overflow-hidden" 
@@ -329,12 +202,10 @@ const ExploreDetail = () => {
             onClick={handleClose}
           />
           
-          {/* Video progress bar - only show for actual videos, not carousels */}
-          {!isCarousel(video.media_files) && video.video_url && (
-            <div className="absolute bottom-0 left-0 right-0 z-10">
-              <Progress value={progress} className="h-1 rounded-none bg-white/20" />
-            </div>
-          )}
+          {/* Video progress bar */}
+          <div className="absolute bottom-0 left-0 right-0 z-10">
+            <Progress value={progress} className="h-1 rounded-none bg-white/20" />
+          </div>
         </div>
       </div>
     </Swipeable>

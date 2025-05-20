@@ -1,3 +1,4 @@
+
 export interface Video {
   id: string;
   title: string;
@@ -26,10 +27,6 @@ export interface Video {
   
   // For UI display: We map 'general' in the database to 'explore' in the UI
   displayVideoType?: string;
-  
-  // Support for multiple image uploads (carousel)
-  media_files?: string[] | null;
-  is_carousel?: boolean;
 }
 
 export interface ProductLink {

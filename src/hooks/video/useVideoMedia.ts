@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 // Utility to extract first frame from video file and return a File (jpeg)
@@ -47,56 +48,27 @@ export async function generateThumbnailFromVideoFile(file: File): Promise<File> 
 
 export function useVideoMedia() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
-  const [isCarousel, setIsCarousel] = useState(false);
   
-  const handleMediaUpload = (file: File | File[]) => {
-    if (Array.isArray(file)) {
-      // Handle multiple files (carousel)
-      setMediaFiles(file);
-      setMediaFile(null);
-      setIsCarousel(true);
-      
-      // Generate previews for all files
-      const previews = file.map(f => URL.createObjectURL(f));
-      setMediaPreviews(previews);
-      setMediaPreview(null);
-      setIsYoutubeLink(false);
-    } else {
-      // Handle single file
-      setMediaFile(file);
-      setMediaFiles([]);
-      setMediaPreview(URL.createObjectURL(file));
-      setMediaPreviews([]);
-      setIsYoutubeLink(false);
-      setIsCarousel(false);
-    }
+  const handleMediaUpload = (file: File) => {
+    setMediaFile(file);
+    setMediaPreview(URL.createObjectURL(file));
+    setIsYoutubeLink(false);
   };
 
   const handleVideoLinkChange = (url: string) => {
     setIsYoutubeLink(true);
     setMediaFile(null);
-    setMediaFiles([]);
-    setIsCarousel(false);
     
     const thumbnailUrl = getYouTubeThumbnail(url);
     setMediaPreview(thumbnailUrl);
-    setMediaPreviews([]);
   };
 
   const clearMediaFile = () => {
-    // Cleanup all object URLs to prevent memory leaks
     if (mediaPreview && !isYoutubeLink) URL.revokeObjectURL(mediaPreview);
-    mediaPreviews.forEach(preview => URL.revokeObjectURL(preview));
-    
     setMediaFile(null);
-    setMediaFiles([]);
     setMediaPreview(null);
-    setMediaPreviews([]);
-    setIsCarousel(false);
   };
 
   const getYouTubeThumbnail = (url: string): string | null => {
@@ -121,17 +93,14 @@ export function useVideoMedia() {
 
   return {
     mediaFile,
-    mediaFiles,
     mediaPreview,
-    mediaPreviews,
     isYoutubeLink,
-    isCarousel,
     handleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    setMediaPreview,
-    setMediaPreviews
+    setMediaPreview
   };
 }
+

@@ -1,10 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
-import { isYoutubeVideo, isImagePost, isPlayableVideoFormat } from './utils/videoPlayerUtils';
-import { isCarousel } from '@/utils/videoUtils';
+import { isYoutubeVideo, isImagePost } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
 import NativeVideoPlayer from './NativeVideoPlayer';
-import { toast } from 'sonner';
 
 interface VideoPlayerProps {
   video: Video;
@@ -52,45 +51,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
   const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
-  const [videoError, setVideoError] = useState<string | null>(null);
   
-  // Validate video data
-  useEffect(() => {
-    if (!video) {
-      setVideoError("Invalid video data");
-      return;
-    }
-    
-    // For carousel posts, we only need media_files
-    if (isCarousel(video.media_files)) {
-      if (!video.media_files || video.media_files.length === 0) {
-        setVideoError("No images available in carousel");
-      } else {
-        // Valid carousel, clear any errors
-        setVideoError(null);
-      }
-      return;
-    }
-    
-    // Otherwise check video_url
-    if (!video.video_url) {
-      setVideoError("Video URL is missing");
-      return;
-    }
-    
-    // Apply additional validation for playable formats
-    if (!isYoutubeVideo(video.video_url) && !isImagePost(video.video_url) && !isPlayableVideoFormat(video.video_url)) {
-      console.warn(`Video format may not be supported: ${video.video_url}`);
-      // But don't set error yet - let the native player try anyway
-    }
-    
-    // Reset error when video changes
-    setVideoError(null);
-  }, [video]);
-  
-  // Check if this is an image post or carousel
+  // Check if this is an image post
   const isImage = isImagePost(video.video_url);
-  const isImageCarousel = isCarousel(video.media_files);
   
   // Effect to handle mute state changes based on global audio setting
   useEffect(() => {
@@ -138,44 +101,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
 
-  // Error handling for missing video URL
-  if (videoError && !isImageCarousel) {
-    console.error("Video player error:", videoError, video);
-    
-    // Log detailed info about this video for debugging
-    if (video) {
-      console.log("Video ID:", video.id);
-      console.log("Video URL:", video.video_url);
-      console.log("Thumbnail URL:", video.thumbnail_url);
-      console.log("Is carousel:", isImageCarousel);
-      if (isImageCarousel) {
-        console.log("Media files:", video.media_files);
-      }
-    }
-    
-    // Return a simple placeholder instead of throwing an error
-    return (
-      <div className={`${className || ''} bg-gray-900 flex items-center justify-center rounded-md overflow-hidden`} 
-           style={useAspectRatio ? { aspectRatio: feedAspectRatio } : {}}>
-        <div className="text-center p-4 text-white">
-          <p>Unable to play this media</p>
-          <p className="text-sm text-gray-400 mt-2">{videoError}</p>
-          
-          {/* Display thumbnail as fallback if available */}
-          {video && video.thumbnail_url && (
-            <div className="mt-3">
-              <img 
-                src={video.thumbnail_url} 
-                alt={video.title || "Video thumbnail"} 
-                className="max-h-32 mx-auto rounded-md object-contain"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   // Render the appropriate player based on video type
   if (isYoutubeVideo(video.video_url)) {
     return (
@@ -201,7 +126,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     <NativeVideoPlayer
       video={video}
       productLinks={activeProductLinks}
-      autoPlay={autoPlay && !isImage && !isImageCarousel} // Don't autoplay images or carousels
+      autoPlay={autoPlay && !isImage} // Don't autoplay images
       isMuted={isMuted}
       showControls={showControls}
       isFullscreen={isFullscreen}

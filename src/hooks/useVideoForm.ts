@@ -26,18 +26,14 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
   
   const {
     mediaFile,
-    mediaFiles,
     mediaPreview,
-    mediaPreviews,
     isYoutubeLink,
-    isCarousel,
     handleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    setMediaPreview,
-    setMediaPreviews
+    setMediaPreview
   } = useVideoMedia();
   
   const {
@@ -50,17 +46,9 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     if (video) {
       initializeFormFromVideo(video);
       
-      if (video.media_files && video.media_files.length > 0) {
-        // Handle carousel
-        setMediaPreviews(video.media_files);
-      } else if (video.video_url) {
-        if (video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be')) {
-          setIsYoutubeLink(true);
-          setMediaPreview(getYouTubeThumbnail(video.video_url));
-        } else {
-          // Regular video or single image
-          setMediaPreview(video.video_url);
-        }
+      if (video.video_url && (video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be'))) {
+        setIsYoutubeLink(true);
+        setMediaPreview(getYouTubeThumbnail(video.video_url));
       }
     }
   }, [video]);
@@ -70,9 +58,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       videoId, 
       formState, 
       mediaFile, 
-      mediaFiles,
       isYoutubeLink, 
-      isCarousel,
       getYouTubeThumbnail, 
       asDraft
     );
@@ -83,9 +69,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     isLoading,
     isSaving,
     mediaPreview,
-    mediaPreviews,
     isYoutubeLink,
-    isCarousel,
     articles,
     video,
     fetchVideo,
