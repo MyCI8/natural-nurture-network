@@ -101,12 +101,12 @@ const EditVideo = () => {
     : `Create New ${formState.video_type === 'news' ? 'News' : 'Explore'} Video`;
 
   const handleThumbnailUpdated = (newThumbnailUrl: string) => {
-    handleInputChange("thumbnail_url", newThumbnailUrl);
+    handleInputChange({ target: { name: "thumbnail_url", value: newThumbnailUrl } });
   };
 
   // Create a wrapper for handleInputChange to adapt the function signature
   const handleFormInputChange = (name: string, value: any) => {
-    handleInputChange({ target: { name, value } } as any);
+    handleInputChange({ target: { name, value } });
   };
 
   return (

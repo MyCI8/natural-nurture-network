@@ -36,8 +36,8 @@ export function useVideoFormState(videoId?: string, defaultVideoType: "news" | "
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | { target: { name: string, value: any } }) => {
     const { name, value } = e.target;
     
-    // Handle checkbox inputs
-    if (e.target.type === 'checkbox') {
+    // Check if this is a DOM event with a type property (for checkbox handling)
+    if ('type' in e.target && e.target.type === 'checkbox') {
       const checkbox = e.target as HTMLInputElement;
       setFormState(prev => ({
         ...prev,
