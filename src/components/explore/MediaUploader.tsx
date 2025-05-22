@@ -12,6 +12,7 @@ interface MediaUploaderProps {
   onMediaUpload: (file: File) => void;
   onVideoLinkChange: (url: string) => void;
   onClearMedia: () => void;
+  compact?: boolean;
 }
 
 export function MediaUploader({
@@ -20,7 +21,8 @@ export function MediaUploader({
   videoUrl,
   onMediaUpload,
   onVideoLinkChange,
-  onClearMedia
+  onClearMedia,
+  compact = false
 }: MediaUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,29 +38,31 @@ export function MediaUploader({
     <div className="space-y-4">
       {mediaPreview ? (
         <div className="relative">
-          <AspectRatio ratio={16/9} className="bg-muted overflow-hidden rounded-lg">
-            <img
-              src={mediaPreview}
-              alt="Media preview"
-              className="w-full h-full object-cover"
-            />
-            {isYoutubeLink && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Button 
-                  variant="secondary" 
-                  className="bg-black/70 hover:bg-black/90"
-                  onClick={() => window.open(videoUrl, '_blank')}
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View on YouTube
-                </Button>
-              </div>
-            )}
-          </AspectRatio>
+          {!compact && (
+            <AspectRatio ratio={16/9} className="bg-muted overflow-hidden rounded-lg">
+              <img
+                src={mediaPreview}
+                alt="Media preview"
+                className="w-full h-full object-cover"
+              />
+              {isYoutubeLink && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Button 
+                    variant="secondary" 
+                    className="bg-black/70 hover:bg-black/90 touch-manipulation"
+                    onClick={() => window.open(videoUrl, '_blank')}
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    View on YouTube
+                  </Button>
+                </div>
+              )}
+            </AspectRatio>
+          )}
           <Button
             variant="destructive"
             size="sm"
-            className="absolute top-2 right-2"
+            className="absolute top-2 right-2 touch-manipulation"
             onClick={onClearMedia}
           >
             <Trash2 className="h-4 w-4" />
@@ -69,9 +73,9 @@ export function MediaUploader({
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            className="h-32 flex flex-col gap-2 rounded-lg border-dashed"
+            className={`${compact ? 'h-24' : 'h-32'} flex flex-col gap-2 rounded-lg border-dashed touch-manipulation`}
           >
-            <Upload className="h-8 w-8 text-muted-foreground" />
+            <Upload className="h-6 w-6 text-muted-foreground" />
             <span>Upload Media</span>
             <span className="text-xs text-muted-foreground">
               Video or Photo

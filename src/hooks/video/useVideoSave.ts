@@ -3,7 +3,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VideoFormState } from "./useVideoFormState";
-import { generateThumbnailFromVideoFile } from "./useVideoMedia";
 
 export function useVideoSave() {
   const [isSaving, setIsSaving] = useState(false);
@@ -12,11 +11,12 @@ export function useVideoSave() {
     videoId: string | undefined,
     formState: VideoFormState,
     mediaFile: File | null,
+    thumbnailFile: File | null,
     isYoutubeLink: boolean,
     getYouTubeThumbnail: (url: string) => string | null,
     asDraft = false
   ) => {
-    // Only require title for video types other than "explore"
+    // For Explore posts, title is optional
     if (formState.video_type !== "explore" && !formState.title) {
       toast.error("Please provide a title for the video");
       return false;
@@ -42,14 +42,6 @@ export function useVideoSave() {
       if (mediaFile && !isYoutubeLink) {
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-        // Extract thumbnail BEFORE uploading video
-        let thumbnailFile: File | null = null;
-        try {
-          thumbnailFile = await generateThumbnailFromVideoFile(mediaFile);
-        } catch (err) {
-          console.warn('Failed to extract thumbnail from uploaded video, will use placeholder:', err);
-        }
 
         // Upload video file
         const { error: uploadError, data } = await supabase.storage
@@ -77,7 +69,6 @@ export function useVideoSave() {
             console.warn('Uploading extracted thumbnail failed:', thumbErr);
           }
         }
-        // If thumbnail extraction/upload failed, thumbnailUrl stays null (handled by UI fallback logic)
       }
 
       // For YouTube, set thumbnail if missing
@@ -87,8 +78,16 @@ export function useVideoSave() {
 
       const mappedVideoType = formState.video_type === "explore" ? "general" : formState.video_type;
 
+      // For explore posts, use description as title if title is empty
+      let title = formState.title;
+      if (!title && formState.description && formState.video_type === "explore") {
+        // Use first few words of description as title if missing
+        const words = formState.description.split(' ');
+        title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
+      }
+
       const videoData = {
-        title: formState.title,
+        title: title || "Untitled Post",
         description: formState.description,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
@@ -96,7 +95,9 @@ export function useVideoSave() {
         creator_id: user.id,
         video_type: mappedVideoType,
         related_article_id: formState.related_article_id,
-        show_in_latest: formState.show_in_latest
+        show_in_latest: formState.show_in_latest,
+        location: formState.location,
+        tags: formState.tags
       };
 
       let result;
@@ -112,7 +113,7 @@ export function useVideoSave() {
         if (error) throw error;
         result = data;
 
-        toast("Draft saved successfully");
+        toast("Post updated successfully");
       } else {
         const { data, error } = await supabase
           .from('videos')
@@ -123,7 +124,7 @@ export function useVideoSave() {
         if (error) throw error;
         result = data;
 
-        toast("Draft saved successfully");
+        toast("Post created successfully");
       }
 
       return result;

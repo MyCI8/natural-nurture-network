@@ -27,6 +27,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
   const {
     mediaFile,
     mediaPreview,
+    thumbnailFile,
     isYoutubeLink,
     handleMediaUpload,
     handleVideoLinkChange,
@@ -57,7 +58,8 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     return save(
       videoId, 
       formState, 
-      mediaFile, 
+      mediaFile,
+      thumbnailFile,
       isYoutubeLink, 
       getYouTubeThumbnail, 
       asDraft

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 // Utility to extract first frame from video file and return a File (jpeg)
@@ -46,15 +45,74 @@ export async function generateThumbnailFromVideoFile(file: File): Promise<File> 
   });
 }
 
+// Generate thumbnail from image file
+export async function generateThumbnailFromImageFile(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      // Keep aspect ratio but resize if needed
+      const MAX_SIZE = 800;
+      let width = img.width;
+      let height = img.height;
+      
+      if (width > height && width > MAX_SIZE) {
+        height = Math.round((height * MAX_SIZE) / width);
+        width = MAX_SIZE;
+      } else if (height > MAX_SIZE) {
+        width = Math.round((width * MAX_SIZE) / height);
+        height = MAX_SIZE;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob((blob) => {
+        URL.revokeObjectURL(img.src);
+        if (!blob) return reject('Thumbnail generation failed');
+        resolve(new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.9);
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      reject('Image load failed');
+    };
+    
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 export function useVideoMedia() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   
-  const handleMediaUpload = (file: File) => {
+  const handleMediaUpload = async (file: File) => {
     setMediaFile(file);
     setMediaPreview(URL.createObjectURL(file));
     setIsYoutubeLink(false);
+    
+    // Automatically generate thumbnail
+    try {
+      let thumbnail: File | null = null;
+      
+      if (file.type.startsWith('video/')) {
+        thumbnail = await generateThumbnailFromVideoFile(file);
+      } else if (file.type.startsWith('image/')) {
+        thumbnail = await generateThumbnailFromImageFile(file);
+      }
+      
+      if (thumbnail) {
+        setThumbnailFile(thumbnail);
+      }
+    } catch (err) {
+      console.warn('Failed to generate thumbnail:', err);
+    }
   };
 
   const handleVideoLinkChange = (url: string) => {
@@ -69,6 +127,7 @@ export function useVideoMedia() {
     if (mediaPreview && !isYoutubeLink) URL.revokeObjectURL(mediaPreview);
     setMediaFile(null);
     setMediaPreview(null);
+    setThumbnailFile(null);
   };
 
   const getYouTubeThumbnail = (url: string): string | null => {
@@ -94,6 +153,7 @@ export function useVideoMedia() {
   return {
     mediaFile,
     mediaPreview,
+    thumbnailFile,
     isYoutubeLink,
     handleMediaUpload,
     handleVideoLinkChange,
@@ -103,4 +163,3 @@ export function useVideoMedia() {
     setMediaPreview
   };
 }
-
