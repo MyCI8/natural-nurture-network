@@ -1,56 +1,78 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Video } from "@/types/video";
 
-export type VideoFormState = {
+interface VideoFormState {
+  id?: string;
   title: string;
-  description: string;
-  videoUrl: string;
-  thumbnailUrl: string | null;
-  showInLatest: boolean;
-  status: "draft" | "published" | "archived";
-  relatedArticleId: string | null;
-  videoType: "news" | "explore" | "general";
-};
+  description: string | null;
+  video_url: string;
+  thumbnail_url: string | null;
+  video_type: string;
+  status: string;
+  related_article_id: string | null;
+  show_in_latest: boolean;
+  location?: string | null;
+  tags?: string[] | null;
+}
 
 export function useVideoFormState(videoId?: string, defaultVideoType: "news" | "explore" | "general" = "explore") {
-  const [formState, setFormState] = useState<VideoFormState>({
+  const initialState: VideoFormState = {
     title: "",
     description: "",
-    videoUrl: "",
-    thumbnailUrl: null,
-    showInLatest: true,
+    video_url: "",
+    thumbnail_url: null,
+    video_type: defaultVideoType === "explore" ? "general" : defaultVideoType, // "general" is mapped to "explore" in UI
     status: "draft",
-    relatedArticleId: null,
-    videoType: defaultVideoType
-  });
-  
-  const handleInputChange = (name: keyof VideoFormState, value: any) => {
-    setFormState(prev => ({ ...prev, [name]: value }));
+    related_article_id: null,
+    show_in_latest: false,
+    location: null,
+    tags: null,
   };
-  
-  const initializeFormFromVideo = (data: Video) => {
-    let mappedVideoType = data.video_type;
-    if (mappedVideoType === "general") {
-      mappedVideoType = "explore";
+
+  const [formState, setFormState] = useState<VideoFormState>(initialState);
+
+  // Handle input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    // Handle checkbox inputs
+    if (e.target.type === 'checkbox') {
+      const checkbox = e.target as HTMLInputElement;
+      setFormState(prev => ({
+        ...prev,
+        [name]: checkbox.checked
+      }));
+      return;
     }
     
+    setFormState(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Initialize form from video data
+  const initializeFormFromVideo = (video: Video) => {
     setFormState({
-      title: data.title || "",
-      description: data.description || "",
-      videoUrl: data.video_url || "",
-      thumbnailUrl: data.thumbnail_url,
-      showInLatest: data.show_in_latest ?? true,
-      status: data.status as "draft" | "published" | "archived",
-      relatedArticleId: data.related_article_id || null,
-      videoType: mappedVideoType as "news" | "explore" | "general"
+      id: video.id,
+      title: video.title || "",
+      description: video.description || "",
+      video_url: video.video_url || "",
+      thumbnail_url: video.thumbnail_url,
+      video_type: video.video_type || initialState.video_type,
+      status: video.status || "draft",
+      related_article_id: video.related_article_id,
+      show_in_latest: video.show_in_latest || false,
+      location: video.location || null,
+      tags: video.tags || null,
     });
   };
-  
+
   return {
     formState,
-    handleInputChange,
     setFormState,
+    handleInputChange,
     initializeFormFromVideo
   };
 }

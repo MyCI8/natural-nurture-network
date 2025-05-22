@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 // Import our new components
 import { MobileHeader } from "./sidebar/MobileHeader";
@@ -131,10 +132,15 @@ const MainSidebar = () => {
   // Handle post button click
   const handlePost = () => {
     if (!currentUser) {
-      navigate('/auth');
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to create a post",
+      });
+      navigate("/auth");
       return;
     }
-    navigate('/admin/videos/new');
+    // Navigate to the new post page
+    navigate('/post');
   };
 
   // Mobile view

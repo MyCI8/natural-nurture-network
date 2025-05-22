@@ -27,6 +27,14 @@ export interface Video {
   
   // For UI display: We map 'general' in the database to 'explore' in the UI
   displayVideoType?: string;
+  
+  // Additional fields for social media style features
+  comments_count?: number;
+  location?: string | null;
+  tags?: string[] | null;
+  mentions?: string[] | null;
+  is_liked_by_user?: boolean;
+  is_bookmarked?: boolean;
 }
 
 export interface ProductLink {

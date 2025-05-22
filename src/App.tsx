@@ -19,6 +19,7 @@ import News from "./pages/News";
 import NewsArticle from "./pages/NewsArticle";
 import Explore from "./pages/Explore";
 import ExploreDetail from "./pages/ExploreDetail";
+import Post from "./pages/Post";
 import Symptoms from "./pages/Symptoms";
 import Symptomsz from "./pages/Symptomsz";
 import SymptomDetail from "./pages/SymptomDetail";
@@ -53,6 +54,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="home" element={<Home />} />
           <Route path="auth" element={<Auth />} />
+          <Route path="post" element={<Post />} />
           
           <Route path="news">
             <Route index element={<News />} />

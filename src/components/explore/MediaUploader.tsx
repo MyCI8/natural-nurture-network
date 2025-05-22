@@ -1,20 +1,9 @@
 
 import { useState, useRef } from "react";
-import { Upload, Trash2, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { Upload, Trash2, Link as LinkIcon, ExternalLink, Image, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter
-} from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Label } from "@/components/ui/label";
-
-// Only allow file upload on Explore; remove Add Video Link for explore/general uploads.
-// We'll know it's Explore video if videoUrl is empty and isYoutubeLink is false and there's no URL input.
 
 interface MediaUploaderProps {
   mediaPreview: string | null;
@@ -33,8 +22,6 @@ export function MediaUploader({
   onVideoLinkChange,
   onClearMedia
 }: MediaUploaderProps) {
-  const [isAddLinkDialogOpen, setIsAddLinkDialogOpen] = useState(false);
-  const [tempVideoLink, setTempVideoLink] = useState(videoUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,18 +32,14 @@ export function MediaUploader({
     }
   };
 
-  // For Explore: Only upload video. For 'news' allow both.
-  const isNewsVideo = false; // Not needed for now as we only want Explore to be upload only
-
   return (
     <div className="space-y-4">
-      <Label>Video Media</Label>
       {mediaPreview ? (
         <div className="relative">
-          <AspectRatio ratio={16/9} className="bg-muted overflow-hidden rounded-md">
+          <AspectRatio ratio={16/9} className="bg-muted overflow-hidden rounded-lg">
             <img
               src={mediaPreview}
-              alt="Video preview"
+              alt="Media preview"
               className="w-full h-full object-cover"
             />
             {isYoutubeLink && (
@@ -86,12 +69,12 @@ export function MediaUploader({
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            className="h-32 flex flex-col gap-2"
+            className="h-32 flex flex-col gap-2 rounded-lg border-dashed"
           >
-            <Upload className="h-5 w-5" />
-            <span>Upload Video</span>
+            <Upload className="h-8 w-8 text-muted-foreground" />
+            <span>Upload Media</span>
             <span className="text-xs text-muted-foreground">
-              MP4, WebM or other video formats
+              Video or Photo
             </span>
           </Button>
         </div>
@@ -100,7 +83,7 @@ export function MediaUploader({
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept="video/*"
+        accept="video/*,image/*"
         className="hidden"
       />
     </div>

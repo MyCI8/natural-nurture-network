@@ -5,12 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Home, Play, Newspaper, Activity, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
   const [isHomePage, setIsHomePage] = useState(false);
@@ -95,11 +94,12 @@ const BottomNav = () => {
         title: "Sign in required",
         description: "Please sign in to create a post",
       });
+      navigate("/auth");
       return;
     }
     
-    // Navigate to upload page
-    navigate('/admin/videos/new');
+    // Navigate to new post page
+    navigate('/post');
   };
   
   return (
@@ -108,7 +108,7 @@ const BottomNav = () => {
       aria-label="Main navigation"
       className={`fixed bottom-0 left-0 right-0 h-16 z-50 border-t transition-transform duration-300 ${
         visible ? 'translate-y-0' : 'translate-y-full'
-      } dark:bg-[#1A1F2C] bg-white`} // Added solid background colors for light and dark modes
+      } dark:bg-[#1A1F2C] bg-white`}
     >
       <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
         {navigationItems.map((item) => (

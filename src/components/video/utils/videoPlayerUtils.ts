@@ -14,7 +14,15 @@ export const isYoutubeVideo = (url: string): boolean => {
 export const isUploadedVideo = (url: string): boolean => {
   if (!url) return false;
   
+  // Check for common video file extensions
   const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+  
+  // Also check for Supabase storage URLs that might be videos
+  if (url.includes('supabase') && url.includes('storage/v1/object/public/')) {
+    const lowerUrl = url.toLowerCase();
+    return videoExtensions.some(ext => lowerUrl.includes(ext));
+  }
+  
   return videoExtensions.some(ext => url.toLowerCase().endsWith(ext));
 };
 
@@ -24,7 +32,15 @@ export const isUploadedVideo = (url: string): boolean => {
 export const isImagePost = (url: string): boolean => {
   if (!url) return false;
   
+  // Check for common image file extensions
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+  
+  // Also check for Supabase storage URLs that might be images
+  if (url.includes('supabase') && url.includes('storage/v1/object/public/')) {
+    const lowerUrl = url.toLowerCase();
+    return imageExtensions.some(ext => lowerUrl.includes(ext));
+  }
+  
   return imageExtensions.some(ext => url.toLowerCase().endsWith(ext));
 };
 
@@ -68,6 +84,49 @@ export const getThumbnailUrl = (video: { thumbnail_url?: string | null; video_ur
   
   if (isImagePost(video.video_url)) {
     return video.video_url;
+  }
+  
+  return null;
+};
+
+/**
+ * Check if a media URL is playable directly in the browser
+ */
+export const isPlayableMedia = (url: string): boolean => {
+  if (!url) return false;
+  return isUploadedVideo(url) || isImagePost(url) || isYoutubeVideo(url);
+};
+
+/**
+ * Check if a URL is a valid media URL
+ */
+export const isValidMediaUrl = (url: string): boolean => {
+  if (!url) return false;
+  
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+/**
+ * Get file extension from URL
+ */
+export const getFileExtensionFromUrl = (url: string): string | null => {
+  if (!url) return null;
+  
+  try {
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname;
+    const parts = pathname.split('.');
+    
+    if (parts.length > 1) {
+      return parts[parts.length - 1].toLowerCase();
+    }
+  } catch (e) {
+    console.error('Error extracting file extension:', e);
   }
   
   return null;

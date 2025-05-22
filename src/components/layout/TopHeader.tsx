@@ -9,6 +9,7 @@ import { HeaderSearch } from "./header/HeaderSearch";
 import { HeaderMenuContent } from "./header/HeaderMenuContent";
 import { useHeaderVisibility } from "./header/useHeaderVisibility";
 import { useMenuState } from "./header/useMenuState";
+import { toast } from "sonner";
 
 const TopHeader = () => {
   const navigate = useNavigate();
@@ -51,10 +52,15 @@ const TopHeader = () => {
   
   const handlePost = () => {
     if (!currentUser) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to create a post"
+      });
       navigate('/auth');
       return;
     }
-    navigate('/admin/videos/new');
+    // Navigate to the new post page instead of admin
+    navigate('/post');
   };
   
   if (!mounted) return null;

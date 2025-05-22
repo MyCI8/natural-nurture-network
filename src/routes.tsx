@@ -34,6 +34,7 @@ import EditVideo from "./pages/EditVideo";
 import UserProfile from "./pages/UserProfile";
 import Symptoms from "./pages/Symptoms";
 import SymptomDetail from "./pages/SymptomDetail";
+import Post from "./pages/Post";
 
 // Settings pages
 import SettingsProfile from "./pages/settings/Profile";
@@ -46,6 +47,7 @@ const Routes = () => {
     <RouterRoutes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
+        <Route path="post" element={<Post />} />
         <Route path="explore">
           <Route index element={<Explore />} />
           <Route path=":id" element={<ExploreDetail />} />
