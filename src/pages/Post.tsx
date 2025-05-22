@@ -1,12 +1,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Image, Video, Upload as UploadIcon } from "lucide-react";
+import { ArrowLeft, Upload as UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useVideoForm } from "@/hooks/useVideoForm";
 import { MediaUploader } from "@/components/explore/MediaUploader";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { VideoLoadingState } from "@/components/explore/VideoLoadingState";
@@ -143,20 +142,6 @@ const Post = () => {
           
           {/* Form fields */}
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="title" className="text-sm font-medium">
-                Title
-              </Label>
-              <Input
-                id="title"
-                name="title"
-                value={formState.title}
-                onChange={handleInputChange}
-                placeholder="Add a title..."
-                className="mt-1"
-              />
-            </div>
-            
             <div>
               <Label htmlFor="description" className="text-sm font-medium">
                 Description
