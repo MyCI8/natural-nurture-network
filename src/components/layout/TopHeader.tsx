@@ -52,8 +52,7 @@ const TopHeader = () => {
   
   const handlePost = () => {
     if (!currentUser) {
-      toast({
-        title: "Sign in required",
+      toast("Sign in required", {
         description: "Please sign in to create a post"
       });
       navigate('/auth');

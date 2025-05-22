@@ -90,9 +90,8 @@ const BottomNav = () => {
   
   const handlePost = () => {
     if (!currentUser) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to create a post",
+      toast("Sign in required", {
+        description: "Please sign in to create a post"
       });
       navigate("/auth");
       return;

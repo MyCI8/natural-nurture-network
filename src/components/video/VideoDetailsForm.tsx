@@ -17,7 +17,7 @@ interface VideoDetailsFormProps {
   articles: { id: string; title: string }[];
   videoId?: string;
   isSaving: boolean;
-  handleInputChange: (name: keyof VideoFormState, value: any) => void;
+  handleInputChange: (name: string, value: any) => void;
   handleMediaUpload: (file: File) => void;
   handleVideoLinkChange: (url: string) => void;
   clearMediaFile: () => void;
@@ -45,7 +45,7 @@ export function VideoDetailsForm({
     <form onSubmit={handleSubmit}>
       <div className="pt-4 space-y-4 sm:pt-6 sm:space-y-6 px-4 sm:px-6">
         {/* Only show title if videoType is not 'explore' */}
-        {formState.videoType !== 'explore' && (
+        {formState.video_type !== 'explore' && (
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input
@@ -58,12 +58,12 @@ export function VideoDetailsForm({
           </div>
         )}
 
-        {formState.videoType === 'news' && (
+        {formState.video_type === 'news' && (
           <div className="space-y-2">
             <Label htmlFor="relatedArticle">Related Article (Optional)</Label>
             <Select
-              value={formState.relatedArticleId || "none"}
-              onValueChange={(value) => handleInputChange("relatedArticleId", value === "none" ? null : value)}
+              value={formState.related_article_id || "none"}
+              onValueChange={(value) => handleInputChange("related_article_id", value === "none" ? null : value)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a related article (optional)" />
@@ -84,7 +84,7 @@ export function VideoDetailsForm({
           <Label htmlFor="description">Description</Label>
           <Textarea
             id="description"
-            value={formState.description}
+            value={formState.description || ""}
             onChange={(e) => handleInputChange("description", e.target.value)}
             placeholder="Add a description..."
             className="min-h-[120px]"
@@ -95,20 +95,20 @@ export function VideoDetailsForm({
           <MediaUploader
             mediaPreview={mediaPreview}
             isYoutubeLink={isYoutubeLink}
-            videoUrl={formState.videoUrl}
+            videoUrl={formState.video_url}
             onMediaUpload={handleMediaUpload}
             onVideoLinkChange={handleVideoLinkChange}
             onClearMedia={clearMediaFile}
           />
           
-          {videoId && formState.videoUrl && (
+          {videoId && formState.video_url && (
             <div className="flex justify-end">
               <RegenerateThumbnail 
                 video={{
                   id: videoId,
                   title: formState.title,
-                  video_url: formState.videoUrl,
-                  thumbnail_url: formState.thumbnailUrl,
+                  video_url: formState.video_url,
+                  thumbnail_url: formState.thumbnail_url,
                   // Include other required Video properties
                   description: formState.description,
                   creator_id: null,
@@ -117,8 +117,8 @@ export function VideoDetailsForm({
                   likes_count: 0,
                   created_at: "",
                   updated_at: "",
-                  video_type: formState.videoType,
-                  related_article_id: formState.relatedArticleId
+                  video_type: formState.video_type,
+                  related_article_id: formState.related_article_id
                 }}
                 onThumbnailUpdated={onThumbnailUpdated}
               />
@@ -126,12 +126,12 @@ export function VideoDetailsForm({
           )}
         </>
 
-        {formState.videoType === 'news' && (
+        {formState.video_type === 'news' && (
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="showInLatest" 
-              checked={formState.showInLatest}
-              onCheckedChange={(checked) => handleInputChange("showInLatest", checked)}
+              checked={formState.show_in_latest}
+              onCheckedChange={(checked) => handleInputChange("show_in_latest", checked)}
             />
             <label
               htmlFor="showInLatest"
@@ -157,8 +157,8 @@ export function VideoDetailsForm({
           type="submit"
           disabled={
             isSaving ||
-            (formState.videoType !== "explore" && !formState.title) || 
-            (!formState.videoUrl && !mediaPreview)
+            (formState.video_type !== "explore" && !formState.title) || 
+            (!formState.video_url && !mediaPreview)
           }
           className="touch-manipulation"
         >

@@ -31,7 +31,7 @@ const Post = () => {
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!isLoadingUser && !currentUser) {
-      toast.error("Please sign in to create a post");
+      toast("Please sign in to create a post");
       navigate("/auth");
     }
   }, [currentUser, isLoadingUser, navigate]);
@@ -61,7 +61,7 @@ const Post = () => {
   const handleNextStep = () => {
     if (currentStep === "media") {
       if (!mediaPreview) {
-        toast.error("Please upload a video or image first");
+        toast("Please upload a video or image first");
         return;
       }
       setCurrentStep("details");
@@ -72,7 +72,7 @@ const Post = () => {
     e.preventDefault();
     
     if (!mediaPreview) {
-      toast.error("Please upload a video or image first");
+      toast("Please upload a video or image first");
       return;
     }
 
@@ -83,14 +83,14 @@ const Post = () => {
       const result = await saveVideo(false);
       
       if (result) {
-        toast.success("Post created successfully!");
+        toast("Post created successfully!");
         navigate("/explore");
       } else {
-        toast.error("Failed to create post");
+        toast("Failed to create post");
       }
     } catch (error) {
       console.error("Error creating post:", error);
-      toast.error("An error occurred while creating your post");
+      toast("An error occurred while creating your post");
     } finally {
       setIsProcessing(false);
     }
@@ -139,7 +139,7 @@ const Post = () => {
               <MediaUploader
                 mediaPreview={mediaPreview}
                 isYoutubeLink={isYoutubeLink}
-                videoUrl={formState.video_url || ""}
+                videoUrl={formState.video_url}
                 onMediaUpload={handleMediaUpload}
                 onVideoLinkChange={handleVideoLinkChange}
                 onClearMedia={clearMediaFile}

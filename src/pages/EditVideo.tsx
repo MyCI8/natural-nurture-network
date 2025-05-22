@@ -1,9 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVideoForm } from "@/hooks/useVideoForm";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import ProductLinksEditor from "@/components/explore/ProductLinksEditor";
 import VideoInfoPanel from "@/components/explore/VideoInfoPanel";
 import { BackButton } from "@/components/explore/BackButton";
@@ -55,7 +56,7 @@ const EditVideo = () => {
     e.preventDefault();
     const result = await saveVideo(false);
     if (result) {
-      const correctReturnPath = formState.videoType === 'news' 
+      const correctReturnPath = formState.video_type === 'news' 
         ? "/admin/news/videos" 
         : "/admin/videos";
         
@@ -75,19 +76,18 @@ const EditVideo = () => {
     const result = await saveVideo(true);
     if (result) {
       if (!id) {
-        const correctReturnPath = formState.videoType === 'news' 
+        const correctReturnPath = formState.video_type === 'news' 
           ? "/admin/news/videos" 
           : "/admin/videos";
           
         navigate(`/admin/videos/${result.id}`, {
           state: { 
             returnTo: correctReturnPath,
-            videoType: formState.videoType 
+            videoType: formState.video_type 
           }
         });
       } else {
         toast({
-          title: "Draft saved",
           description: "Your video has been saved as a draft."
         });
       }
@@ -99,11 +99,16 @@ const EditVideo = () => {
   }
   
   const pageTitle = id 
-    ? `Edit ${formState.videoType === 'news' ? 'News' : 'Explore'} Video` 
-    : `Create New ${formState.videoType === 'news' ? 'News' : 'Explore'} Video`;
+    ? `Edit ${formState.video_type === 'news' ? 'News' : 'Explore'} Video` 
+    : `Create New ${formState.video_type === 'news' ? 'News' : 'Explore'} Video`;
 
   const handleThumbnailUpdated = (newThumbnailUrl: string) => {
-    handleInputChange("thumbnailUrl", newThumbnailUrl);
+    handleInputChange("thumbnail_url", newThumbnailUrl);
+  };
+
+  // Create a wrapper for handleInputChange to adapt the function signature
+  const handleFormInputChange = (name: string, value: any) => {
+    handleInputChange({ target: { name, value } } as any);
   };
 
   return (
@@ -135,7 +140,7 @@ const EditVideo = () => {
                   articles={articles}
                   videoId={id}
                   isSaving={isSaving}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleFormInputChange}
                   handleMediaUpload={handleMediaUpload}
                   handleVideoLinkChange={handleVideoLinkChange}
                   clearMediaFile={clearMediaFile}

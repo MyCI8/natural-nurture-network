@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Video } from "@/types/video";
 
-interface VideoFormState {
+export interface VideoFormState {
   id?: string;
   title: string;
   description: string | null;

@@ -17,12 +17,12 @@ export function useVideoSave() {
     asDraft = false
   ) => {
     // Only require title for video types other than "explore"
-    if (formState.videoType !== "explore" && !formState.title) {
+    if (formState.video_type !== "explore" && !formState.title) {
       toast.error("Please provide a title for the video");
       return false;
     }
 
-    if (!formState.videoUrl && !mediaFile) {
+    if (!formState.video_url && !mediaFile) {
       toast.error("Please provide a video URL or upload a file");
       return false;
     }
@@ -35,8 +35,8 @@ export function useVideoSave() {
         return false;
       }
 
-      let videoUrl = formState.videoUrl;
-      let thumbnailUrl = formState.thumbnailUrl;
+      let videoUrl = formState.video_url;
+      let thumbnailUrl = formState.thumbnail_url;
 
       // Only for uploaded videos (not YouTube)
       if (mediaFile && !isYoutubeLink) {
@@ -82,10 +82,10 @@ export function useVideoSave() {
 
       // For YouTube, set thumbnail if missing
       if (isYoutubeLink && !thumbnailUrl) {
-        thumbnailUrl = getYouTubeThumbnail(formState.videoUrl);
+        thumbnailUrl = getYouTubeThumbnail(formState.video_url);
       }
 
-      const mappedVideoType = formState.videoType === "explore" ? "general" : formState.videoType;
+      const mappedVideoType = formState.video_type === "explore" ? "general" : formState.video_type;
 
       const videoData = {
         title: formState.title,
@@ -95,8 +95,8 @@ export function useVideoSave() {
         status: (asDraft ? "draft" : "published") as "draft" | "published" | "archived",
         creator_id: user.id,
         video_type: mappedVideoType,
-        related_article_id: formState.relatedArticleId,
-        show_in_latest: formState.showInLatest
+        related_article_id: formState.related_article_id,
+        show_in_latest: formState.show_in_latest
       };
 
       let result;
@@ -141,4 +141,3 @@ export function useVideoSave() {
     saveVideo
   };
 }
-
