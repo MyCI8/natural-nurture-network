@@ -33,7 +33,7 @@ export function useVideoFormState(videoId?: string, defaultVideoType: "news" | "
   const [formState, setFormState] = useState<VideoFormState>(initialState);
 
   // Handle input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | { target: { name: string, value: any } }) => {
     const { name, value } = e.target;
     
     // Handle checkbox inputs

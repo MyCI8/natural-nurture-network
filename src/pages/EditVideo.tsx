@@ -87,9 +87,7 @@ const EditVideo = () => {
           }
         });
       } else {
-        toast({
-          description: "Your video has been saved as a draft."
-        });
+        toast("Your video has been saved as a draft.");
       }
     }
   };

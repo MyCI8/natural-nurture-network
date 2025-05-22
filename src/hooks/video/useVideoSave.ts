@@ -112,7 +112,7 @@ export function useVideoSave() {
         if (error) throw error;
         result = data;
 
-        toast.success(asDraft ? "Draft saved successfully" : "Video updated successfully");
+        toast("Draft saved successfully");
       } else {
         const { data, error } = await supabase
           .from('videos')
@@ -123,7 +123,7 @@ export function useVideoSave() {
         if (error) throw error;
         result = data;
 
-        toast.success(asDraft ? "Draft saved successfully" : "Video published successfully");
+        toast("Draft saved successfully");
       }
 
       return result;
