@@ -1,28 +1,36 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Edit2, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface RemedyGridProps {
   remedies: any[];
   isLoading: boolean;
   onDelete: (remedy: any) => void;
+  onToggleStatus?: (remedy: any) => void;
 }
 
-const RemedyGrid = ({ remedies, isLoading, onDelete }: RemedyGridProps) => {
+const RemedyGrid = ({ remedies, isLoading, onDelete, onToggleStatus }: RemedyGridProps) => {
   const navigate = useNavigate();
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="animate-pulse space-y-4">
-                <div className="aspect-video bg-gray-200 rounded" />
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <Card key={i} className="overflow-hidden">
+            <CardContent className="p-0">
+              <Skeleton className="w-full h-48" />
+              <div className="p-4 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-16" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -31,47 +39,82 @@ const RemedyGrid = ({ remedies, isLoading, onDelete }: RemedyGridProps) => {
     );
   }
 
+  if (remedies.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">No remedies found</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {remedies.map((remedy) => (
-        <Card key={remedy.id} className="group">
-          <CardContent className="p-4">
-            <div className="aspect-video mb-4 relative group-hover:opacity-75 transition-opacity">
+        <Card key={remedy.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
+          <CardContent className="p-0">
+            <div className="relative h-48 bg-muted">
               <img
-                src={remedy.image_url}
+                src={remedy.image_url || "/placeholder.svg"}
                 alt={remedy.name}
-                className="w-full h-full object-cover rounded"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/admin/remedies/edit/${remedy.id}`)}
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Badge
+                  variant={remedy.status === "published" ? "default" : "secondary"}
+                  className="capitalize"
                 >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onDelete(remedy)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                  {remedy.status}
+                </Badge>
               </div>
             </div>
-            <h3 className="font-semibold mb-2">{remedy.name}</h3>
-            <p className="text-sm text-muted-foreground mb-2">
-              {remedy.summary}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {remedy.symptoms?.map((symptom: string, index: number) => (
-                <span
-                  key={index}
-                  className="text-xs bg-secondary px-2 py-1 rounded-full"
-                >
-                  {symptom}
-                </span>
-              ))}
+            
+            <div className="p-4 space-y-3">
+              <div>
+                <h3 className="font-semibold text-lg line-clamp-1">{remedy.name}</h3>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {remedy.summary}
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-muted-foreground">
+                  {remedy.click_count || 0} clicks
+                </div>
+                
+                <div className="flex gap-2">
+                  {onToggleStatus && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onToggleStatus(remedy)}
+                      title={remedy.status === "published" ? "Unpublish" : "Publish"}
+                    >
+                      {remedy.status === "published" ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/admin/remedies/edit/${remedy.id}`)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(remedy)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

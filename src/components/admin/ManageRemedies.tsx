@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,7 @@ const ManageRemedies = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
   const [remedyToDelete, setRemedyToDelete] = useState<any>(null);
+  const [isPublishingAll, setIsPublishingAll] = useState(false);
 
   const { data: remedies = [], isLoading } = useQuery({
     queryKey: ["admin-remedies", searchQuery, symptomFilter, sortBy],
@@ -70,6 +72,68 @@ const ManageRemedies = () => {
       return data;
     },
   });
+
+  const handlePublishAll = async () => {
+    setIsPublishingAll(true);
+    try {
+      // Update all draft remedies to published
+      const { error } = await supabase
+        .from("remedies")
+        .update({ status: "published" })
+        .neq("status", "published");
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["latest-remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["popularRemedies"] });
+      
+      toast({
+        title: "Success",
+        description: "All remedies have been published successfully",
+      });
+    } catch (error) {
+      console.error("Error publishing remedies:", error);
+      toast({
+        title: "Error",
+        description: "Failed to publish all remedies",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishingAll(false);
+    }
+  };
+
+  const handleToggleStatus = async (remedy: any) => {
+    try {
+      const newStatus = remedy.status === "published" ? "draft" : "published";
+      
+      const { error } = await supabase
+        .from("remedies")
+        .update({ status: newStatus })
+        .eq("id", remedy.id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["latest-remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["popularRemedies"] });
+      
+      toast({
+        title: "Success",
+        description: `Remedy ${newStatus === "published" ? "published" : "unpublished"} successfully`,
+      });
+    } catch (error) {
+      console.error("Error updating remedy status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update remedy status",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDelete = async () => {
     if (!remedyToDelete) return;
@@ -111,9 +175,23 @@ const ManageRemedies = () => {
     setSelectedRemedy(null);
   };
 
+  const draftCount = remedies.filter(r => r.status === "draft").length;
+
   return (
     <div className="space-y-6">
-      <RemedyListHeader />
+      <div className="flex justify-between items-center">
+        <RemedyListHeader />
+        
+        {draftCount > 0 && (
+          <Button 
+            onClick={handlePublishAll}
+            disabled={isPublishingAll}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {isPublishingAll ? "Publishing..." : `Publish All (${draftCount})`}
+          </Button>
+        )}
+      </div>
       
       <RemedyFilters
         searchQuery={searchQuery}
@@ -129,6 +207,7 @@ const ManageRemedies = () => {
         remedies={remedies}
         isLoading={isLoading}
         onDelete={setRemedyToDelete}
+        onToggleStatus={handleToggleStatus}
       />
 
       {showForm && (
