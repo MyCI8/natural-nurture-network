@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
-import { Edit, Grid, Bookmark } from 'lucide-react';
+import { Edit, Grid, Bookmark, Heart } from 'lucide-react';
 import { UserVideoGrid } from '@/components/profile/UserVideoGrid';
 import { SavedVideos } from '@/components/profile/SavedVideos';
+import { SavedRemedies } from '@/components/profile/SavedRemedies';
 import type { User } from '@/types/user';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isValidStorageUrl } from '@/utils/imageUtils';
@@ -151,16 +152,22 @@ const UserProfile = () => {
 
         {/* Content Tabs */}
         <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 dark:bg-muted/10">
+          <TabsList className={`grid w-full ${isOwnProfile ? 'grid-cols-3' : 'grid-cols-1'} dark:bg-muted/10`}>
             <TabsTrigger value="posts" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
               <Grid className="w-4 h-4 mr-2" />
               Posts
             </TabsTrigger>
             {isOwnProfile && (
-              <TabsTrigger value="saved" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
-                <Bookmark className="w-4 h-4 mr-2" />
-                Saved
-              </TabsTrigger>
+              <>
+                <TabsTrigger value="saved" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
+                  <Bookmark className="w-4 h-4 mr-2" />
+                  Saved
+                </TabsTrigger>
+                <TabsTrigger value="saved-remedies" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Remedies
+                </TabsTrigger>
+              </>
             )}
           </TabsList>
           
@@ -169,9 +176,15 @@ const UserProfile = () => {
           </TabsContent>
           
           {isOwnProfile && (
-            <TabsContent value="saved" className="mt-4 sm:mt-6">
-              <SavedVideos userId={profile.id} />
-            </TabsContent>
+            <>
+              <TabsContent value="saved" className="mt-4 sm:mt-6">
+                <SavedVideos userId={profile.id} />
+              </TabsContent>
+              
+              <TabsContent value="saved-remedies" className="mt-4 sm:mt-6">
+                <SavedRemedies userId={profile.id} />
+              </TabsContent>
+            </>
           )}
         </Tabs>
       </div>

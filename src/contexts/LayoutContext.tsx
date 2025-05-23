@@ -57,7 +57,14 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-2 sm:px-4');
       setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
       setIsFullWidth(false);
-    } 
+    }
+    else if (path === '/remedies' || path.startsWith('/remedies/')) {
+      setLayoutMode('three-column');
+      setShowRightSection(!isMobile);
+      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-2 sm:px-4');
+      setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
+      setIsFullWidth(false);
+    }
     else if (path.startsWith('/explore/')) {
       setLayoutMode('three-column');
       setShowRightSection(!isMobile);

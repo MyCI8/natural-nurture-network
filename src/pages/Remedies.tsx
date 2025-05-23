@@ -1,18 +1,21 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, Filter, Heart, Star, Sparkles } from "lucide-react";
+import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import PopularRemedies from "@/components/remedies/PopularRemedies";
 
 const Remedies = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
   
   const { data: remedies, isLoading } = useQuery({
@@ -34,8 +37,31 @@ const Remedies = () => {
     remedy.summary?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const featuredRemedies = filteredRemedies?.slice(0, 2) || [];
-  const regularRemedies = filteredRemedies?.slice(2) || [];
+  const handleSave = async (remedyId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Save remedy:", remedyId);
+    // TODO: Implement save functionality
+  };
+
+  const handleShare = async (remedy: any, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: remedy.name,
+          text: remedy.summary,
+          url: `${window.location.origin}/remedies/${remedy.id}`,
+        });
+      } catch (error) {
+        console.log("Error sharing:", error);
+      }
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/remedies/${remedy.id}`);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -53,20 +79,96 @@ const Remedies = () => {
         
         {/* Content Skeleton */}
         <div className="p-4 space-y-6">
-          <div className="space-y-4">
-            {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-xl" />
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} className="h-40 w-full rounded-xl" />
-            ))}
-          </div>
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-64 w-full rounded-xl" />
+          ))}
         </div>
       </div>
     );
   }
+
+  const RemedyFeed = () => (
+    <div className="space-y-4">
+      {filteredRemedies?.map((remedy) => (
+        <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
+          <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
+            <CardContent className="p-0">
+              <div className="relative h-64">
+                <img
+                  src={remedy.image_url || "/placeholder.svg"}
+                  alt={remedy.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
+                    {remedy.name}
+                  </h3>
+                  <p className="text-white/90 text-sm line-clamp-2 mb-3">
+                    {remedy.summary}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Social Actions */}
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 hover:bg-red-50 hover:text-red-500"
+                      onClick={(e) => handleSave(remedy.id, e)}
+                    >
+                      <Heart className="h-4 w-4" />
+                      <span className="text-sm">2.3k</span>
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      <span className="text-sm">156</span>
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2"
+                      onClick={(e) => handleShare(remedy, e)}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleSave(remedy.id, e)}
+                    >
+                      <Bookmark className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium">4.8</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,14 +178,16 @@ const Remedies = () => {
           {/* Top bar */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => navigate(-1)}
-                className="rounded-full touch-manipulation"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
+              {isMobile && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => navigate(-1)}
+                  className="rounded-full touch-manipulation"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              )}
               <div>
                 <h1 className="text-xl font-bold">Natural Remedies</h1>
                 <p className="text-sm text-muted-foreground">
@@ -112,107 +216,24 @@ const Remedies = () => {
 
       {/* Content */}
       <div className="pb-20">
-        {featuredRemedies.length > 0 && (
-          <div className="p-4 space-y-4">
-            {/* Featured Section */}
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-5 w-5 text-amber-500" />
-              <h2 className="text-lg font-semibold">Featured Remedies</h2>
-            </div>
-
-            {/* Featured Cards - Large format */}
-            <div className="space-y-4">
-              {featuredRemedies.map((remedy, index) => (
-                <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
-                  <Card className="group overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-card to-card/80">
-                    <CardContent className="p-0">
-                      <div className="relative h-48">
-                        <img
-                          src={remedy.image_url || "/placeholder.svg"}
-                          alt={remedy.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute top-3 right-3">
-                          <Badge variant="secondary" className="bg-white/90 text-foreground">
-                            Popular
-                          </Badge>
-                        </div>
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <h3 className="text-white text-xl font-bold mb-2 line-clamp-1">
-                            {remedy.name}
-                          </h3>
-                          <p className="text-white/90 text-sm line-clamp-2 mb-3">
-                            {remedy.summary}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-white text-sm font-medium">4.8</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-white/80">
-                              <Heart className="h-4 w-4" />
-                              <span className="text-sm">2.3k</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Regular Remedies Grid */}
-        {regularRemedies.length > 0 && (
+        {isMobile ? (
+          <Tabs defaultValue="remedies" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
+              <TabsTrigger value="remedies">Remedies</TabsTrigger>
+              <TabsTrigger value="popular">Popular</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="remedies" className="p-4 mt-4">
+              <RemedyFeed />
+            </TabsContent>
+            
+            <TabsContent value="popular" className="p-4 mt-4">
+              <PopularRemedies />
+            </TabsContent>
+          </Tabs>
+        ) : (
           <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">All Remedies</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {regularRemedies.map((remedy) => (
-                <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
-                  <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 h-full">
-                    <CardContent className="p-0 h-full">
-                      <div className="relative aspect-square overflow-hidden">
-                        <img
-                          src={remedy.image_url || "/placeholder.svg"}
-                          alt={remedy.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                      <div className="p-3 space-y-2">
-                        <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                          {remedy.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {remedy.summary}
-                        </p>
-                        <div className="flex items-center justify-between pt-1">
-                          <div className="flex items-center gap-1">
-                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                            <span className="text-xs font-medium">4.8</span>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-red-50 hover:text-red-500 transition-colors"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              // Handle favorite action
-                            }}
-                          >
-                            <Heart className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+            <RemedyFeed />
           </div>
         )}
 

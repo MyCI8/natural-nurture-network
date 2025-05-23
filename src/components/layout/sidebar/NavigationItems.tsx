@@ -1,11 +1,12 @@
 
-import { Home, Play, Newspaper, Activity } from "lucide-react";
+import { Home, Play, Newspaper, Activity, Leaf } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export const navigationItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/explore', label: 'Explore', icon: Play },
   { path: '/news', label: 'News', icon: Newspaper },
+  { path: '/remedies', label: 'Remedies', icon: Leaf },
   { path: '/symptoms', label: 'Symptoms', icon: Activity },
 ];
 
