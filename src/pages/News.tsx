@@ -8,12 +8,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect } from "react";
+import LatestVideos from "@/components/news/LatestVideos";
 
 const News = () => {
   const navigate = useNavigate();
   const { setShowRightSection } = useLayout();
+  const isMobile = useIsMobile();
   
   // Ensure the right section is always shown on news page
   useEffect(() => {
@@ -62,45 +66,66 @@ const News = () => {
       </div>;
   }
 
-  return <div className="pt-6 sm:pt-12 px-4 w-full h-full">
+  const NewsContent = () => (
+    <div className="space-y-6">
+      {newsItems.map((article, index) => (
+        <div key={article.id} className="flex flex-col items-center touch-manipulation">
+          <Link to={`/news/${article.id}`} className="w-full thumb-friendly">
+            <Card className="overflow-hidden border-0 hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
+              <CardContent className="p-4">
+                {article.image_url && (
+                  <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
+                    <AspectRatio ratio={16/9} className="w-full">
+                      <img 
+                        src={article.image_url} 
+                        alt={article.thumbnail_description || article.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    </AspectRatio>
+                  </div>
+                )}
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-[#222222] dark:text-dm-text">
+                  {article.title}
+                </h3>
+                <p className="text-sm sm:text-base text-[#333333] dark:text-dm-text-supporting text-left">
+                  {article.summary}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          {index < newsItems.length - 1 && (
+            <Separator className="my-4 w-1/2 mx-auto bg-gray-200 dark:bg-gray-700" />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="pt-6 sm:pt-12 px-4 w-full h-full">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-3xl font-bold mb-2 text-left text-[#1A1F2C] dark:text-dm-text sm:text-2xl">News</h1>
         <p className="text-lg text-[#333333] dark:text-dm-text-supporting text-left sm:text-xl">Latest Health News Articles</p>
       </div>
 
-      <div className="space-y-6">
-        {newsItems.map((article, index) => (
-          <div key={article.id} className="flex flex-col items-center touch-manipulation">
-            <Link to={`/news/${article.id}`} className="w-full thumb-friendly">
-              <Card className="overflow-hidden border-0 hover:bg-accent/50 dark:hover:bg-dm-mist-extra/50 transition-colors duration-200">
-                <CardContent className="p-4">
-                  {article.image_url && (
-                    <div className="relative rounded-lg sm:rounded-xl overflow-hidden mb-3 sm:mb-4">
-                      <AspectRatio ratio={16/9} className="w-full">
-                        <img 
-                          src={article.image_url} 
-                          alt={article.thumbnail_description || article.title} 
-                          className="w-full h-full object-cover"
-                        />
-                      </AspectRatio>
-                    </div>
-                  )}
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2 text-left text-[#222222] dark:text-dm-text">
-                    {article.title}
-                  </h3>
-                  <p className="text-sm sm:text-base text-[#333333] dark:text-dm-text-supporting text-left">
-                    {article.summary}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-            {index < newsItems.length - 1 && (
-              <Separator className="my-4 w-1/2 mx-auto bg-gray-200 dark:bg-gray-700" />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>;
+      {isMobile ? (
+        <Tabs defaultValue="news" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="news" className="text-sm">News</TabsTrigger>
+            <TabsTrigger value="videos" className="text-sm">Latest Videos</TabsTrigger>
+          </TabsList>
+          <TabsContent value="news" className="mt-0">
+            <NewsContent />
+          </TabsContent>
+          <TabsContent value="videos" className="mt-0">
+            <LatestVideos />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <NewsContent />
+      )}
+    </div>
+  );
 };
 
 export default News;

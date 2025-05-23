@@ -1,6 +1,7 @@
 
 import { useLocation } from "react-router-dom";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
+import LatestVideos from "@/components/news/LatestVideos";
 
 const RightSection = () => {
   const location = useLocation();
@@ -10,6 +11,10 @@ const RightSection = () => {
     
     if (path === '/remedies' || path.startsWith('/remedies/')) {
       return <PopularRemedies />;
+    }
+    
+    if (path === '/news' || path.startsWith('/news/')) {
+      return <LatestVideos />;
     }
     
     // Default content for other pages
