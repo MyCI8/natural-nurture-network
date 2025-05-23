@@ -34,6 +34,7 @@ import EditSymptom from "./pages/EditSymptom";
 import Experts from "./pages/Experts";
 import ExpertProfile from "./pages/ExpertProfile";
 import Remedies from "./pages/Remedies";
+import RemedyDetail from "./pages/RemedyDetail";
 import Ingredients from "./pages/Ingredients";
 import ManageUsers from "./pages/ManageUsers";
 import EditUser from "./pages/EditUser";
@@ -79,7 +80,11 @@ function App() {
             <Route path=":id" element={<ExpertProfile />} />
           </Route>
           
-          <Route path="remedies" element={<Remedies />} />
+          <Route path="remedies">
+            <Route index element={<Remedies />} />
+            <Route path=":id" element={<RemedyDetail />} />
+          </Route>
+          
           <Route path="ingredients" element={<Ingredients />} />
           <Route path="users/:id" element={<UserProfile />} />
           
