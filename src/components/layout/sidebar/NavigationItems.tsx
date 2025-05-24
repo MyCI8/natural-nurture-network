@@ -1,8 +1,8 @@
 
-import { Home, Play, Newspaper, Activity, Leaf } from "lucide-react";
+import { Home, Play, Newspaper, Activity, Leaf, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
-export const navigationItems = [
+const baseNavigationItems = [
   { path: '/', label: 'Home', icon: Home },
   { path: '/explore', label: 'Explore', icon: Play },
   { path: '/news', label: 'News', icon: Newspaper },
@@ -10,18 +10,31 @@ export const navigationItems = [
   { path: '/symptoms', label: 'Symptoms', icon: Activity },
 ];
 
+export const getNavigationItems = (isAdmin: boolean = false) => {
+  const items = [...baseNavigationItems];
+  
+  if (isAdmin) {
+    items.push({ path: '/admin', label: 'Admin', icon: Shield });
+  }
+  
+  return items;
+};
+
 interface NavigationItemsProps {
   onItemClick?: () => void;
   className?: string;
   iconOnly?: boolean;
+  isAdmin?: boolean;
 }
 
 export const NavigationItems = ({ 
   onItemClick, 
   className = "", 
-  iconOnly = false 
+  iconOnly = false,
+  isAdmin = false
 }: NavigationItemsProps) => {
   const location = useLocation();
+  const navigationItems = getNavigationItems(isAdmin);
 
   return (
     <nav className={`space-y-3 ${className}`}>
@@ -59,9 +72,11 @@ export const NavigationItems = ({
 export const NavigationButtons = ({ 
   onItemClick, 
   className = "", 
-  iconOnly = false 
+  iconOnly = false,
+  isAdmin = false
 }: NavigationItemsProps) => {
   const location = useLocation();
+  const navigationItems = getNavigationItems(isAdmin);
 
   return (
     <nav className={`space-y-2 ${className}`}>

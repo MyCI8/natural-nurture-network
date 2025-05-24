@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Upload, LogOut, Search } from "lucide-react";
+import { Upload, LogOut, Search } from "lucide-react";
 import { NavigationButtons } from "../NavigationItems";
 import { UserProfileButton } from "../UserProfileButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +62,7 @@ export const SidebarMainView = ({
         <NavigationButtons 
           onItemClick={onClose}
           className="py-2"
+          isAdmin={isAdmin}
         />
 
         <Separator className="my-4" />
@@ -76,17 +77,6 @@ export const SidebarMainView = ({
           <Upload className="h-5 w-5 shrink-0 mr-2" />
           <span>Post</span>
         </Button>
-
-        {isAdmin && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start space-x-4 rounded-lg py-3 my-2 touch-manipulation active:scale-95 transition-transform h-12"
-            onClick={() => handleNavigation('/admin')}
-          >
-            <Shield className="h-5 w-5 mr-2" />
-            <span>Admin Panel</span>
-          </Button>
-        )}
       </div>
       
       {/* Bottom section with search and theme toggle */}
