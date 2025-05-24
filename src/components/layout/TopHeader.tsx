@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -50,6 +49,16 @@ const TopHeader = () => {
     enabled: !!currentUser?.id,
   });
   
+  const handleMenuClick = () => {
+    if (!currentUser) {
+      // If user is not logged in, navigate to auth page
+      navigate('/auth');
+    } else {
+      // If user is logged in, open the menu
+      setIsMenuOpen(true);
+    }
+  };
+  
   const handlePost = () => {
     if (!currentUser) {
       toast("Sign in required", {
@@ -74,7 +83,7 @@ const TopHeader = () => {
       >
         <HeaderMenuButton 
           profile={profile} 
-          onClick={() => setIsMenuOpen(true)}
+          onClick={handleMenuClick}
         />
         <HeaderLogo />
         <HeaderSearch />
