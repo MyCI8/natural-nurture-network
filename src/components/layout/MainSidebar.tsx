@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { invalidateAuthQueries } from "@/utils/authUtils";
 
 // Import our new components
 import { MobileHeader } from "./sidebar/MobileHeader";
@@ -29,6 +30,16 @@ const MainSidebar = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showMobileHeader, setShowMobileHeader] = useState(true);
   const [showMobileNav, setShowMobileNav] = useState(true);
+
+  // Add authentication state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      invalidateAuthQueries(queryClient);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
 
   // Data fetching
   const { data: currentUser } = useQuery({

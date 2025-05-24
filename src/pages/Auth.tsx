@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { invalidateAuthQueries } from "@/utils/authUtils";
 
 // Array of cartoon avatar URLs - these would be replaced with actual URLs to cartoon avatars
 const CARTOON_AVATARS = [
@@ -34,6 +35,7 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Generate username when first or last name changes
   useEffect(() => {
@@ -154,6 +156,9 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
+        
+        // Invalidate auth queries after successful sign in
+        invalidateAuthQueries(queryClient);
         navigate("/");
       }
     } catch (error: any) {
@@ -176,6 +181,9 @@ const Auth = () => {
         },
       });
       if (error) throw error;
+      
+      // Invalidate auth queries after successful Google sign in
+      invalidateAuthQueries(queryClient);
     } catch (error: any) {
       toast({
         title: "Error",

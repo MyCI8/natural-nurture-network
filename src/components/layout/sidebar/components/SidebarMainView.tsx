@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Upload, LogOut, Search } from "lucide-react";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Input } from "@/components/ui/input";
 import { useSidebarSearch } from "../hooks/useSidebarSearch";
+import { invalidateAuthQueries } from "@/utils/authUtils";
 
 interface SidebarMainViewProps {
   currentUser: any;
@@ -28,11 +30,13 @@ export const SidebarMainView = ({
   onClose
 }: SidebarMainViewProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { searchQuery, setSearchQuery, handleSearch } = useSidebarSearch(onClose);
 
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
+      invalidateAuthQueries(queryClient);
       onClose();
       navigate("/");
       toast.success("Signed out successfully");
