@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
-import { navigationItems } from "./NavigationItems";
+import { getNavigationItems } from "./NavigationItems";
 
 interface MobileNavProps {
   showMobileNav: boolean;
@@ -15,6 +14,9 @@ export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
   const [isHomePage, setIsHomePage] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [visible, setVisible] = useState(false);
+
+  // Get navigation items (without admin for mobile nav)
+  const navigationItems = getNavigationItems(false);
 
   // Determine if we're on the homepage
   useEffect(() => {
@@ -76,7 +78,7 @@ export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
       aria-label="Main navigation"
       className={`fixed bottom-0 left-0 right-0 h-16 z-50 border-t transition-transform duration-300 ${
         shouldShowNav ? 'translate-y-0' : 'translate-y-full'
-      } dark:bg-[#1A1F2C] bg-white`} // Added solid background colors for light and dark modes
+      } dark:bg-[#1A1F2C] bg-white`}
     >
       <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
         {navigationItems.map((item) => (
