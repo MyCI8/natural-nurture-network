@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import MediaContainer from "@/components/ui/media-container";
 
 interface RemedyGridProps {
   remedies: any[];
@@ -50,14 +51,21 @@ const RemedyGrid = ({ remedies, isLoading, onDelete, onToggleStatus }: RemedyGri
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {remedies.map((remedy) => (
-        <Card key={remedy.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
+        <Card key={remedy.id} className="x-media-card group touch-manipulation">
           <CardContent className="p-0">
-            <div className="relative h-48 bg-muted">
-              <img
-                src={remedy.image_url || "/placeholder.svg"}
-                alt={remedy.name}
-                className="w-full h-full object-cover"
-              />
+            <div className="relative">
+              <MediaContainer 
+                aspectRatio="4:3"
+                imageUrl={remedy.image_url || "/placeholder.svg"}
+                imageAlt={remedy.name}
+                className="bg-muted"
+              >
+                <img
+                  src={remedy.image_url || "/placeholder.svg"}
+                  alt={remedy.name}
+                  className="w-full h-full object-cover"
+                />
+              </MediaContainer>
               <div className="absolute top-2 right-2 flex gap-2">
                 <Badge
                   variant={remedy.status === "published" ? "default" : "secondary"}
@@ -88,6 +96,7 @@ const RemedyGrid = ({ remedies, isLoading, onDelete, onToggleStatus }: RemedyGri
                       size="sm"
                       onClick={() => onToggleStatus(remedy)}
                       title={remedy.status === "published" ? "Unpublish" : "Publish"}
+                      className="touch-manipulation"
                     >
                       {remedy.status === "published" ? (
                         <EyeOff className="h-4 w-4" />
@@ -101,6 +110,7 @@ const RemedyGrid = ({ remedies, isLoading, onDelete, onToggleStatus }: RemedyGri
                     variant="outline"
                     size="sm"
                     onClick={() => navigate(`/admin/remedies/edit/${remedy.id}`)}
+                    className="touch-manipulation"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -109,7 +119,7 @@ const RemedyGrid = ({ remedies, isLoading, onDelete, onToggleStatus }: RemedyGri
                     variant="outline"
                     size="sm"
                     onClick={() => onDelete(remedy)}
-                    className="text-destructive hover:text-destructive"
+                    className="text-destructive hover:text-destructive touch-manipulation"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

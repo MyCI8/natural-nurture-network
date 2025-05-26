@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import MediaContainer from '@/components/ui/media-container';
 
 interface RemediesSectionProps {
   inNewsSection?: boolean;
@@ -56,17 +57,22 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
           {remedies?.map((remedy, index) => (
             <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
               <Card 
-                className="group overflow-hidden border-0 bg-card/50 hover:bg-card/80 transition-all duration-300 backdrop-blur-sm h-full"
+                className="x-media-card group h-full touch-manipulation active-scale"
               >
                 <CardContent className="p-0 h-full">
-                  <div className="aspect-square relative overflow-hidden bg-muted">
+                  <MediaContainer 
+                    aspectRatio="1:1"
+                    imageUrl={remedy.image_url || "/placeholder.svg"}
+                    imageAlt={remedy.name}
+                    className="bg-muted"
+                  >
                     <img 
                       src={remedy.image_url || "/placeholder.svg"} 
                       alt={remedy.name} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                       loading="lazy" 
                     />
-                  </div>
+                  </MediaContainer>
                   <div className="p-4">
                     <h3 className="text-sm font-medium group-hover:text-primary transition-colors line-clamp-2">
                       {remedy.name}

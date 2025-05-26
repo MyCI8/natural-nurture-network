@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
+import MediaContainer from "@/components/ui/media-container";
 
 const RemedyDetail = () => {
   const { id } = useParams();
@@ -72,19 +72,19 @@ const RemedyDetail = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="rounded-full touch-manipulation"
+            className="rounded-full touch-manipulation active-scale touch-button"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation">
+            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation touch-button">
               <Heart className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation">
+            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation touch-button">
               <Bookmark className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation">
+            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation touch-button">
               <Share2 className="h-5 w-5" />
             </Button>
           </div>
@@ -95,13 +95,17 @@ const RemedyDetail = () => {
       <div className="pb-20">
         {/* Hero Image */}
         <div className="px-4 pt-4">
-          <AspectRatio ratio={4/3} className="overflow-hidden rounded-xl">
+          <MediaContainer 
+            aspectRatio="auto"
+            imageUrl={remedy.image_url || "/placeholder.svg"}
+            imageAlt={remedy.name}
+          >
             <img
               src={remedy.image_url || "/placeholder.svg"}
               alt={remedy.name}
               className="w-full h-full object-cover"
             />
-          </AspectRatio>
+          </MediaContainer>
         </div>
 
         {/* Remedy Info */}

@@ -88,4 +88,51 @@
   .calendar-touch-friendly .rdp-nav button {
     @apply min-w-[44px] min-h-[44px] touch-manipulation;
   }
+
+  /* Media Container System - X.com style responsive media */
+  .media-container {
+    @apply w-full relative;
+  }
+
+  .media-wrapper {
+    @apply relative w-full overflow-hidden;
+    height: 0;
+  }
+
+  /* Aspect Ratio Classes */
+  .aspect-ratio-16-9 {
+    padding-bottom: 56.25%; /* (9 / 16) * 100% */
+  }
+
+  .aspect-ratio-1-1 {
+    padding-bottom: 100%; /* (1 / 1) * 100% */
+  }
+
+  .aspect-ratio-9-16 {
+    padding-bottom: 177.77%; /* (16 / 9) * 100% */
+  }
+
+  .aspect-ratio-4-3 {
+    padding-bottom: 75%; /* (3 / 4) * 100% */
+  }
+
+  .aspect-ratio-3-4 {
+    padding-bottom: 133.33%; /* (4 / 3) * 100% */
+  }
+
+  /* Media Content Styling */
+  .media-wrapper img,
+  .media-wrapper video {
+    @apply absolute top-0 left-0 w-full h-full object-cover object-center block;
+  }
+
+  /* X.com style media cards */
+  .x-media-card {
+    @apply bg-card border-0 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .x-media-card:hover .media-wrapper img {
+    @apply scale-105;
+    transition: transform 0.5s ease-out;
+  }
 }

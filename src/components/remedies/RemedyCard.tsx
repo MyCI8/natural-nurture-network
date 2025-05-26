@@ -1,5 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import MediaContainer from "@/components/ui/media-container";
 
 interface RemedyCardProps {
   id: string;
@@ -18,13 +19,22 @@ const RemedyCard = ({
 }: RemedyCardProps) => {
   return (
     <Card 
-      className="overflow-hidden hover:shadow-lg transition-shadow duration-300 animate-fadeIn cursor-pointer border-0" 
+      className="x-media-card cursor-pointer touch-manipulation active-scale" 
       onClick={() => onClick(id)}
     >
       <CardContent className="p-0">
-        <div className="h-48">
-          <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
-        </div>
+        <MediaContainer 
+          aspectRatio="auto"
+          imageUrl={imageUrl}
+          imageAlt={name}
+          onClick={() => onClick(id)}
+        >
+          <img 
+            src={imageUrl} 
+            alt={name} 
+            className="w-full h-full object-cover transition-transform duration-500" 
+          />
+        </MediaContainer>
         <div className="p-6 px-[20px] py-[8px]">
           <h3 className="text-lg font-semibold text-primary dark:text-primary mb-2">
             {name}
