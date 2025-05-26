@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
@@ -13,11 +12,14 @@ import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
 import MediaContainer from "@/components/ui/media-container";
+import RemedyModal from "@/components/remedies/RemedyModal";
 
 const Remedies = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const { data: remedies, isLoading } = useQuery({
     queryKey: ["remedies"],
@@ -37,6 +39,16 @@ const Remedies = () => {
     remedy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     remedy.summary?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleRemedyClick = (remedy: any) => {
+    setSelectedRemedy(remedy);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedRemedy(null);
+  };
 
   const handleSave = async (remedyId: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -91,8 +103,8 @@ const Remedies = () => {
   const RemedyFeed = () => (
     <div className="space-y-4">
       {filteredRemedies?.map((remedy) => (
-        <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
-          <Card className="x-media-card group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
+        <div key={remedy.id} onClick={() => handleRemedyClick(remedy)}>
+          <Card className="x-media-card group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer touch-manipulation active-scale">
             <CardContent className="p-0">
               <MediaContainer 
                 aspectRatio="auto"
@@ -171,7 +183,7 @@ const Remedies = () => {
               </div>
             </CardContent>
           </Card>
-        </Link>
+        </div>
       ))}
     </div>
   );
@@ -272,6 +284,15 @@ const Remedies = () => {
           </div>
         )}
       </div>
+
+      {/* Remedy Modal */}
+      <RemedyModal
+        remedy={selectedRemedy}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        onShare={handleShare}
+      />
     </div>
   );
 };
