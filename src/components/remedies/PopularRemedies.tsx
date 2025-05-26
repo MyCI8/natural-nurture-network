@@ -5,7 +5,6 @@ import { Star, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import MediaContainer from "@/components/ui/media-container";
 
 const PopularRemedies = () => {
   const { data: popularRemedies, isLoading } = useQuery({
@@ -47,21 +46,16 @@ const PopularRemedies = () => {
       <div className="space-y-3">
         {popularRemedies?.map((remedy) => (
           <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
-            <Card className="x-media-card group touch-manipulation active-scale">
+            <Card className="group hover:shadow-lg transition-shadow">
               <CardContent className="p-3">
                 <div className="flex gap-3">
-                  <MediaContainer 
-                    aspectRatio="1:1"
-                    imageUrl={remedy.image_url || "/placeholder.svg"}
-                    imageAlt={remedy.name}
-                    className="flex-shrink-0 w-16"
-                  >
+                  <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted">
                     <img
                       src={remedy.image_url || "/placeholder.svg"}
                       alt={remedy.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                  </MediaContainer>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                       {remedy.name}

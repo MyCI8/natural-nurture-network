@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
+import MediaContainer from "@/components/ui/media-container";
 
 const Remedies = () => {
   const navigate = useNavigate();
@@ -91,9 +92,14 @@ const Remedies = () => {
     <div className="space-y-4">
       {filteredRemedies?.map((remedy) => (
         <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
-          <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
+          <Card className="x-media-card group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300">
             <CardContent className="p-0">
-              <div className="relative h-64">
+              <MediaContainer 
+                aspectRatio="auto"
+                imageUrl={remedy.image_url || "/placeholder.svg"}
+                imageAlt={remedy.name}
+                className="bg-muted"
+              >
                 <img
                   src={remedy.image_url || "/placeholder.svg"}
                   alt={remedy.name}
@@ -108,7 +114,7 @@ const Remedies = () => {
                     {remedy.summary}
                   </p>
                 </div>
-              </div>
+              </MediaContainer>
               
               {/* Social Actions */}
               <div className="p-4">
