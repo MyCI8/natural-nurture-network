@@ -62,7 +62,7 @@ const RemedyModal: React.FC<RemedyModalProps> = ({
       className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center overflow-y-auto touch-manipulation"
       onClick={handleOverlayClick}
     >
-      <div className="modal-content bg-background border border-border rounded-2xl max-w-[650px] w-[90%] mx-5 my-5 relative shadow-2xl">
+      <div className="bg-background border border-border rounded-2xl max-w-[650px] w-[90%] mx-5 my-5 relative shadow-2xl md:max-w-[650px] md:w-[90%] md:h-auto max-md:max-w-none max-md:w-full max-md:h-full max-md:mx-0 max-md:my-0 max-md:rounded-none">
         {/* Close Button */}
         <Button
           variant="ghost"
@@ -182,18 +182,6 @@ const RemedyModal: React.FC<RemedyModalProps> = ({
           </CardContent>
         </Card>
       </div>
-
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .modal-content {
-            max-width: none !important;
-            width: 100% !important;
-            height: 100% !important;
-            margin: 0 !important;
-            border-radius: 0 !important;
-          }
-        }
-      `}</style>
     </div>
   );
 };
