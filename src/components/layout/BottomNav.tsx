@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Home, Play, Newspaper, Activity, Upload } from "lucide-react";
+import { Home, Play, Newspaper, Leaf, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,7 +27,7 @@ const BottomNav = () => {
     { path: '/', label: 'Home', icon: Home },
     { path: '/explore', label: 'Explore', icon: Play },
     { path: '/news', label: 'News', icon: Newspaper },
-    { path: '/symptoms', label: 'Symptoms', icon: Activity },
+    { path: '/remedies', label: 'Remedies', icon: Leaf },
   ];
   
   // Determine if we're on the homepage

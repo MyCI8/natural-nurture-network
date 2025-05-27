@@ -1,5 +1,4 @@
-
-import { Home, Play, Newspaper, Activity, Leaf, Shield } from "lucide-react";
+import { Home, Play, Newspaper, Leaf, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const baseNavigationItems = [
@@ -7,7 +6,6 @@ const baseNavigationItems = [
   { path: '/explore', label: 'Explore', icon: Play },
   { path: '/news', label: 'News', icon: Newspaper },
   { path: '/remedies', label: 'Remedies', icon: Leaf },
-  { path: '/symptoms', label: 'Symptoms', icon: Activity },
 ];
 
 export const getNavigationItems = (isAdmin: boolean = false) => {
