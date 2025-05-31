@@ -23,6 +23,7 @@ const Remedies = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   
   const { data: remedies, isLoading } = useQuery({
     queryKey: ["remedies"],
@@ -60,6 +61,29 @@ const Remedies = () => {
       setSearchTerm("");
     }
   };
+
+  // Click-away logic for mobile search
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMobile &&
+        isSearchExpanded &&
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchExpanded(false);
+        setSearchTerm("");
+      }
+    };
+
+    if (isSearchExpanded) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSearchExpanded, isMobile]);
 
   useEffect(() => {
     if (!isSearchExpanded && isMobile) {
@@ -248,20 +272,23 @@ const Remedies = () => {
               {isMobile ? (
                 <div className="flex items-center">
                   {/* Mobile Search Icon/Input */}
-                  <div className="relative flex items-center">
+                  <div 
+                    ref={searchContainerRef}
+                    className="relative flex items-center"
+                  >
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={handleSearchIconClick}
                       className={`rounded-full touch-manipulation transition-all duration-300 ${
-                        isSearchExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                        isSearchExpanded ? 'opacity-0 pointer-events-none absolute' : 'opacity-100'
                       }`}
                     >
                       <Search className="h-5 w-5" />
                     </Button>
                     
-                    <div className={`absolute right-0 transition-all duration-300 ease-in-out overflow-hidden ${
-                      isSearchExpanded ? 'w-64' : 'w-0'
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                      isSearchExpanded ? 'w-48' : 'w-0'
                     }`}>
                       <Input
                         ref={searchInputRef}
@@ -269,7 +296,7 @@ const Remedies = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyDown={handleSearchKeyDown}
-                        className="h-10 rounded-full border-0 bg-muted/50 focus-visible:ring-2 touch-manipulation"
+                        className="h-9 rounded-xl border shadow-inner bg-white focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 touch-manipulation text-sm px-3"
                       />
                     </div>
                   </div>
