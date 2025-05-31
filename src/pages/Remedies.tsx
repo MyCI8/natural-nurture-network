@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
@@ -8,7 +9,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
 import MediaContainer from "@/components/ui/media-container";
@@ -20,6 +21,8 @@ const Remedies = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
   const { data: remedies, isLoading } = useQuery({
     queryKey: ["remedies"],
@@ -39,6 +42,30 @@ const Remedies = () => {
     remedy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     remedy.summary?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSearchIconClick = () => {
+    if (isMobile) {
+      setIsSearchExpanded(!isSearchExpanded);
+      if (!isSearchExpanded) {
+        setTimeout(() => {
+          searchInputRef.current?.focus();
+        }, 150);
+      }
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && isMobile) {
+      setIsSearchExpanded(false);
+      setSearchTerm("");
+    }
+  };
+
+  useEffect(() => {
+    if (!isSearchExpanded && isMobile) {
+      setSearchTerm("");
+    }
+  }, [isSearchExpanded, isMobile]);
 
   const handleRemedyClick = (remedy: any) => {
     setSelectedRemedy(remedy);
@@ -81,12 +108,15 @@ const Remedies = () => {
       <div className="min-h-screen bg-background">
         {/* Header Skeleton */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b z-10">
-          <div className="p-4 space-y-4">
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <Skeleton className="h-6 w-32" />
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-5 w-5" />
+              </div>
+              <Skeleton className="h-10 w-64 rounded-full" />
             </div>
-            <Skeleton className="h-10 w-full rounded-full" />
           </div>
         </div>
         
@@ -192,9 +222,10 @@ const Remedies = () => {
     <div className="min-h-screen bg-background">
       {/* Sticky Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b z-10">
-        <div className="p-4 space-y-4">
-          {/* Top bar */}
+        <div className="p-4">
+          {/* Single Header Row */}
           <div className="flex items-center justify-between">
+            {/* Left Section: Back Button (mobile) + Title + Filter */}
             <div className="flex items-center gap-3">
               {isMobile && (
                 <Button 
@@ -206,28 +237,56 @@ const Remedies = () => {
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               )}
-              <div>
-                <h1 className="text-xl font-bold">Natural Remedies</h1>
-                <p className="text-sm text-muted-foreground">
-                  {filteredRemedies?.length || 0} remedies available
-                </p>
-              </div>
+              <h1 className="text-xl font-bold">Natural Remedies</h1>
+              <Button variant="ghost" size="icon" className="rounded-full touch-manipulation">
+                <Filter className="h-5 w-5" />
+              </Button>
             </div>
             
-            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation">
-              <Filter className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search remedies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 h-12 rounded-full border-0 bg-muted/50 focus-visible:ring-2 touch-manipulation"
-            />
+            {/* Right Section: Search */}
+            <div className="flex items-center">
+              {isMobile ? (
+                <div className="flex items-center">
+                  {/* Mobile Search Icon/Input */}
+                  <div className="relative flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleSearchIconClick}
+                      className={`rounded-full touch-manipulation transition-all duration-300 ${
+                        isSearchExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                      }`}
+                    >
+                      <Search className="h-5 w-5" />
+                    </Button>
+                    
+                    <div className={`absolute right-0 transition-all duration-300 ease-in-out overflow-hidden ${
+                      isSearchExpanded ? 'w-64' : 'w-0'
+                    }`}>
+                      <Input
+                        ref={searchInputRef}
+                        placeholder="Search remedies..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleSearchKeyDown}
+                        className="h-10 rounded-full border-0 bg-muted/50 focus-visible:ring-2 touch-manipulation"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Desktop Search
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search remedies..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 h-10 rounded-full border-0 bg-muted/50 focus-visible:ring-2"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
