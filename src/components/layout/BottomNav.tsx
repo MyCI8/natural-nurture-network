@@ -6,6 +6,7 @@ import { Home, Play, Newspaper, Leaf, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RemedyPostModal } from "@/components/remedies/RemedyPostModal";
 
 const BottomNav = () => {
   const location = useLocation();
@@ -14,6 +15,7 @@ const BottomNav = () => {
   const [visible, setVisible] = useState(true);
   const [isHomePage, setIsHomePage] = useState(false);
   const [initialHideComplete, setInitialHideComplete] = useState(false);
+  const [isRemedyModalOpen, setIsRemedyModalOpen] = useState(false);
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -97,43 +99,56 @@ const BottomNav = () => {
       return;
     }
     
-    // Navigate to new post page
-    navigate('/post');
+    // Check if we're on the remedies page
+    if (location.pathname === '/remedies' || location.pathname.startsWith('/remedies/')) {
+      setIsRemedyModalOpen(true);
+    } else {
+      // Navigate to regular post page for other routes
+      navigate('/post');
+    }
   };
   
   return (
-    <nav 
-      role="navigation" 
-      aria-label="Main navigation"
-      className={`fixed bottom-0 left-0 right-0 h-16 z-50 border-t transition-transform duration-300 ${
-        visible ? 'translate-y-0' : 'translate-y-full'
-      } dark:bg-[#1A1F2C] bg-white`}
-    >
-      <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
-        {navigationItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            aria-label={item.label}
-            className={`p-3 rounded-full flex items-center justify-center w-12 h-12 transition-colors ${
-              location.pathname === item.path 
-                ? 'bg-accent/50 text-primary font-bold' 
-                : 'hover:bg-accent/30'
-            }`}
+    <>
+      <nav 
+        role="navigation" 
+        aria-label="Main navigation"
+        className={`fixed bottom-0 left-0 right-0 h-16 z-50 border-t transition-transform duration-300 ${
+          visible ? 'translate-y-0' : 'translate-y-full'
+        } dark:bg-[#1A1F2C] bg-white`}
+      >
+        <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
+          {navigationItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              aria-label={item.label}
+              className={`p-3 rounded-full flex items-center justify-center w-12 h-12 transition-colors ${
+                location.pathname === item.path 
+                  ? 'bg-accent/50 text-primary font-bold' 
+                  : 'hover:bg-accent/30'
+              }`}
+            >
+              <item.icon className="h-6 w-6" />
+            </Link>
+          ))}
+          <Button
+            size="icon"
+            onClick={handlePost}
+            aria-label="Create post"
+            className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
           >
-            <item.icon className="h-6 w-6" />
-          </Link>
-        ))}
-        <Button
-          size="icon"
-          onClick={handlePost}
-          aria-label="Create post"
-          className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
-        >
-          <Upload className="h-5 w-5" />
-        </Button>
-      </div>
-    </nav>
+            <Upload className="h-5 w-5" />
+          </Button>
+        </div>
+      </nav>
+
+      {/* Remedy Post Modal */}
+      <RemedyPostModal
+        isOpen={isRemedyModalOpen}
+        onClose={() => setIsRemedyModalOpen(false)}
+      />
+    </>
   );
 };
 

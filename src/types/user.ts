@@ -17,6 +17,7 @@ export type User = {
   followers_count?: number;
   following_count?: number;
   posts_count?: number;
+  remedies_count?: number;
 };
 
 export type UserWithProfile = User & {
@@ -32,8 +33,14 @@ export type UserProfileData = {
   followers_count?: number;
   following_count?: number;
   posts_count?: number;
+  remedies_count?: number;
   posts?: Array<{
     id: string;
     thumbnail_url?: string;
+  }>;
+  remedies?: Array<{
+    id: string;
+    name: string;
+    image_url?: string;
   }>;
 }
