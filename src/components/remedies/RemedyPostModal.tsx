@@ -19,8 +19,6 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
     name: '',
     summary: '',
     description: '',
-    instructions: '',
-    ingredients: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -58,12 +56,13 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
 
       const { error } = await supabase
         .from('remedies')
-        .insert([{
-          ...formData,
+        .insert({
+          name: formData.name,
+          summary: formData.summary,
+          description: formData.description,
           image_url: imageUrl,
-          created_by: currentUser.id,
           status: 'draft'
-        }]);
+        });
 
       if (error) throw error;
     },
@@ -85,8 +84,6 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
       name: '',
       summary: '',
       description: '',
-      instructions: '',
-      ingredients: '',
     });
     setImageFile(null);
     setImagePreview('');
@@ -197,29 +194,7 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Explain the benefits and how this remedy works..."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="ingredients">Ingredients</Label>
-              <Textarea
-                id="ingredients"
-                value={formData.ingredients}
-                onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
-                placeholder="List all ingredients needed..."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="instructions">Instructions</Label>
-              <Textarea
-                id="instructions"
-                value={formData.instructions}
-                onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                placeholder="Step-by-step instructions on how to prepare and use..."
-                rows={4}
+                rows={6}
               />
             </div>
           </div>

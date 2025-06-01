@@ -11,18 +11,27 @@ interface UserRemediesProps {
   userId: string;
 }
 
+interface UserRemedy {
+  id: string;
+  name: string;
+  summary: string;
+  image_url: string | null;
+  status: string;
+  created_at: string;
+}
+
 export const UserRemedies = ({ userId }: UserRemediesProps) => {
-  const { data: userRemedies, isLoading } = useQuery({
+  const { data: userRemedies, isLoading } = useQuery<UserRemedy[]>({
     queryKey: ['userRemedies', userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('remedies')
-        .select('*')
-        .eq('created_by', userId)
+        .select('id, name, summary, image_url, status, created_at')
+        .eq('expert_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
