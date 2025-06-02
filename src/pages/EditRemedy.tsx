@@ -69,15 +69,17 @@ const EditRemedy = () => {
       setStatus(remedy.status as "draft" | "published" || "draft");
       
       // Load existing images with safe property access
-      if (remedy.images && Array.isArray(remedy.images)) {
-        setImages(remedy.images);
+      const remedyImages = (remedy as any).images;
+      if (remedyImages && Array.isArray(remedyImages)) {
+        setImages(remedyImages);
       } else if (remedy.image_url) {
         setImages([{ url: remedy.image_url }]);
       }
       
       // Load existing links with safe property access
-      if (remedy.links && Array.isArray(remedy.links)) {
-        setLinks(remedy.links);
+      const remedyLinks = (remedy as any).links;
+      if (remedyLinks && Array.isArray(remedyLinks)) {
+        setLinks(remedyLinks);
       }
     }
   }, [remedy]);
