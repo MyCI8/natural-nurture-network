@@ -6,32 +6,41 @@ import { Star, Heart, Leaf } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Database } from '@/integrations/supabase/types';
 
 interface UserRemediesProps {
   userId: string;
 }
 
-interface UserRemedy {
-  id: string;
-  name: string;
-  summary: string;
-  image_url: string | null;
-  status: string;
-  created_at: string;
-}
+type RemedyRow = Database['public']['Tables']['remedies']['Row'];
 
 export const UserRemedies = ({ userId }: UserRemediesProps) => {
-  const { data: userRemedies, isLoading } = useQuery<UserRemedy[]>({
+  const { data: userRemedies, isLoading } = useQuery<RemedyRow[]>({
     queryKey: ['userRemedies', userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First, get remedy IDs from expert_remedies junction table
+      const { data: expertRemedies, error: expertError } = await supabase
+        .from('expert_remedies')
+        .select('remedy_id')
+        .eq('expert_id', userId);
+
+      if (expertError) throw expertError;
+
+      if (!expertRemedies || expertRemedies.length === 0) {
+        return [];
+      }
+
+      const remedyIds = expertRemedies.map(er => er.remedy_id);
+
+      // Then get the actual remedy details
+      const { data: remedies, error: remediesError } = await supabase
         .from('remedies')
         .select('id, name, summary, image_url, status, created_at')
-        .eq('expert_id', userId)
+        .in('id', remedyIds)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (remediesError) throw remediesError;
+      return remedies || [];
     },
   });
 
