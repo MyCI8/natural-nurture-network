@@ -58,6 +58,14 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
       setIsFullWidth(false);
     }
+    else if (path === '/remedies/create') {
+      // Special case for remedy creation - no right sidebar, wider content area
+      setLayoutMode('wide');
+      setShowRightSection(false);
+      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4 sm:px-6');
+      setContentMaxWidth('max-w-4xl');
+      setIsFullWidth(false);
+    }
     else if (path === '/remedies' || path.startsWith('/remedies/')) {
       setLayoutMode('three-column');
       setShowRightSection(!isMobile);
