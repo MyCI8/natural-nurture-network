@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { RemedyBasicInfoSection } from "./form/RemedyBasicInfoSection";
+import { UnifiedRemedyDetailsSection } from "@/components/remedies/shared/UnifiedRemedyDetailsSection";
+import { UnifiedRemedyContentSection } from "@/components/remedies/shared/UnifiedRemedyContentSection";
 import { RemedySymptomSection } from "./form/RemedySymptomSection";
 import { RemedyStatusSection } from "./form/RemedyStatusSection";
 import { RemedyIngredientsSection } from "./form/RemedyIngredientsSection";
@@ -50,6 +51,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     name: "",
     summary: "",
     description: "",
+    preparation_method: "",
+    dosage_instructions: "",
     symptoms: [] as SymptomType[],
     ingredients: [] as string[],
     video_url: "",
@@ -71,6 +74,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         name: remedy.name || "",
         summary: remedy.summary || "",
         description: remedy.description || "",
+        preparation_method: remedy.preparation_method || "",
+        dosage_instructions: remedy.dosage_instructions || "",
         symptoms: remedy.symptoms || [],
         ingredients: remedy.ingredients || [],
         video_url: remedy.video_url || "",
@@ -90,6 +95,13 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
       }
     }
   }, [remedy]);
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,31 +194,32 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
             <div className="space-y-6">
-              <RemedyBasicInfoSection
-                name={formData.name}
-                summary={formData.summary}
-                description={formData.description}
-                video_url={formData.video_url}
-                onNameChange={(name) => setFormData({ ...formData, name })}
-                onSummaryChange={(summary) => setFormData({ ...formData, summary })}
-                onDescriptionChange={(description) => setFormData({ ...formData, description })}
-                onVideoUrlChange={(video_url) => setFormData({ ...formData, video_url })}
+              <UnifiedRemedyDetailsSection
+                formData={formData}
+                onChange={handleInputChange}
+                showVideoUrl={true}
+              />
+
+              <UnifiedRemedyContentSection
+                formData={formData}
+                onChange={handleInputChange}
+                showPreparationFields={true}
               />
 
               <RemedySymptomSection
                 symptoms={formData.symptoms}
-                onSymptomsChange={(symptoms) => setFormData({ ...formData, symptoms })}
+                onSymptomsChange={(symptoms) => handleInputChange('symptoms', symptoms)}
               />
 
               <RemedyIngredientsSection
                 ingredients={formData.ingredients}
                 availableIngredients={ingredients || []}
-                onIngredientsChange={(ingredients) => setFormData({ ...formData, ingredients })}
+                onIngredientsChange={(ingredients) => handleInputChange('ingredients', ingredients)}
               />
 
               <RemedyStatusSection
                 status={formData.status}
-                onStatusChange={(status) => setFormData({ ...formData, status })}
+                onStatusChange={(status) => handleInputChange('status', status)}
               />
             </div>
 

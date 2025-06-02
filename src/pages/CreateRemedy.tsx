@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { RemedyDetailsSection } from "@/components/remedies/create/RemedyDetailsSection";
-import { RemedyContentSection } from "@/components/remedies/create/RemedyContentSection";
-import { RemedyIngredientsSection } from "@/components/remedies/create/RemedyIngredientsSection";
-import { RemedyExpertsSection } from "@/components/remedies/create/RemedyExpertsSection";
+import { UnifiedRemedyDetailsSection } from "@/components/remedies/shared/UnifiedRemedyDetailsSection";
+import { UnifiedRemedyContentSection } from "@/components/remedies/shared/UnifiedRemedyContentSection";
+import { RemedyIngredientsSection } from "@/components/admin/remedies/form/RemedyIngredientsSection";
+import { RemedyExpertsSection } from "@/components/admin/remedies/RemedyExpertsSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
 
@@ -36,6 +36,7 @@ const CreateRemedy = () => {
     description: '',
     preparation_method: '',
     dosage_instructions: '',
+    video_url: '',
     ingredients: [] as string[],
     experts: [] as string[],
   });
@@ -93,10 +94,12 @@ const CreateRemedy = () => {
           description: formData.description,
           preparation_method: formData.preparation_method,
           dosage_instructions: formData.dosage_instructions,
+          video_url: formData.video_url,
           image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
           images: uploadedImages,
           links: links,
           ingredients: formData.ingredients,
+          expert_recommendations: formData.experts,
           status: 'draft'
         });
 
@@ -179,19 +182,21 @@ const CreateRemedy = () => {
           <div className="grid grid-cols-1 md:grid-cols-[2fr,1.5fr,1fr] gap-8">
             {/* Left column - Main content */}
             <div className="space-y-8">
-              <RemedyDetailsSection
+              <UnifiedRemedyDetailsSection
                 formData={formData}
                 onChange={handleInputChange}
+                showVideoUrl={true}
               />
 
-              <RemedyContentSection
+              <UnifiedRemedyContentSection
                 formData={formData}
                 onChange={handleInputChange}
+                showPreparationFields={true}
               />
 
               <RemedyIngredientsSection
-                selectedIngredients={formData.ingredients}
-                onChange={(ingredients) => handleInputChange('ingredients', ingredients)}
+                ingredients={formData.ingredients}
+                onIngredientsChange={(ingredients) => handleInputChange('ingredients', ingredients)}
               />
             </div>
 
@@ -204,7 +209,7 @@ const CreateRemedy = () => {
 
               <RemedyExpertsSection
                 selectedExperts={formData.experts}
-                onChange={(experts) => handleInputChange('experts', experts)}
+                setSelectedExperts={(experts) => handleInputChange('experts', experts)}
               />
 
               <SmartLinkInput

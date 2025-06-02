@@ -6,12 +6,17 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { RemedyDetailsSection } from "@/components/admin/remedies/RemedyDetailsSection";
-import { RemedyContentSection } from "@/components/admin/remedies/RemedyContentSection";
+import { UnifiedRemedyDetailsSection } from "@/components/remedies/shared/UnifiedRemedyDetailsSection";
+import { UnifiedRemedyContentSection } from "@/components/remedies/shared/UnifiedRemedyContentSection";
 import { RemedyIngredientsSection } from "@/components/admin/remedies/form/RemedyIngredientsSection";
 import { RemedyExpertsSection } from "@/components/admin/remedies/RemedyExpertsSection";
+import { RemedySymptomSection } from "@/components/admin/remedies/form/RemedySymptomSection";
+import { RemedyStatusSection } from "@/components/admin/remedies/form/RemedyStatusSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
+import { Database } from "@/integrations/supabase/types";
+
+type SymptomType = Database['public']['Enums']['symptom_type'];
 
 interface ImageData {
   file?: File;
@@ -32,15 +37,20 @@ const EditRemedy = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const [name, setName] = useState("");
-  const [summary, setSummary] = useState("");
-  const [content, setContent] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    summary: "",
+    description: "",
+    preparation_method: "",
+    dosage_instructions: "",
+    video_url: "",
+    ingredients: [] as string[],
+    symptoms: [] as SymptomType[],
+    status: "draft" as "draft" | "published",
+  });
   const [images, setImages] = useState<ImageData[]>([]);
   const [links, setLinks] = useState<LinkData[]>([]);
-  const [ingredients, setIngredients] = useState<string[]>([]);
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
-  const [videoDescription, setVideoDescription] = useState("");
-  const [status, setStatus] = useState<"draft" | "published">("draft");
 
   const { data: remedy, isLoading } = useQuery({
     queryKey: ["remedy", id],
@@ -60,15 +70,20 @@ const EditRemedy = () => {
 
   useEffect(() => {
     if (remedy) {
-      setName(remedy.name || "");
-      setSummary(remedy.summary || "");
-      setContent(remedy.description || "");
-      setIngredients(remedy.ingredients || []);
+      setFormData({
+        name: remedy.name || "",
+        summary: remedy.summary || "",
+        description: remedy.description || "",
+        preparation_method: remedy.preparation_method || "",
+        dosage_instructions: remedy.dosage_instructions || "",
+        video_url: remedy.video_url || "",
+        ingredients: remedy.ingredients || [],
+        symptoms: remedy.symptoms || [],
+        status: remedy.status as "draft" | "published" || "draft",
+      });
       setSelectedExperts(remedy.expert_recommendations || []);
-      setVideoDescription(remedy.video_description || "");
-      setStatus(remedy.status as "draft" | "published" || "draft");
       
-      // Load existing images with safe property access
+      // Load existing images
       const remedyImages = (remedy as any).images;
       if (remedyImages && Array.isArray(remedyImages)) {
         setImages(remedyImages);
@@ -76,13 +91,20 @@ const EditRemedy = () => {
         setImages([{ url: remedy.image_url }]);
       }
       
-      // Load existing links with safe property access
+      // Load existing links
       const remedyLinks = (remedy as any).links;
       if (remedyLinks && Array.isArray(remedyLinks)) {
         setLinks(remedyLinks);
       }
     }
   }, [remedy]);
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   const handleSave = async (shouldPublish = false) => {
     try {
@@ -108,16 +130,19 @@ const EditRemedy = () => {
       );
 
       const remedyData = {
-        name,
-        summary,
-        description: content,
+        name: formData.name,
+        summary: formData.summary,
+        description: formData.description,
+        preparation_method: formData.preparation_method,
+        dosage_instructions: formData.dosage_instructions,
+        video_url: formData.video_url,
         image_url: uploadedImages[0]?.url || "", // Keep first image as main for compatibility
         images: uploadedImages,
         links: links,
-        ingredients,
+        ingredients: formData.ingredients,
+        symptoms: formData.symptoms,
         expert_recommendations: selectedExperts,
-        video_description: videoDescription,
-        status: shouldPublish ? "published" as const : status,
+        status: shouldPublish ? "published" as const : formData.status,
       };
 
       if (id && id !== "new") {
@@ -168,35 +193,32 @@ const EditRemedy = () => {
           Back to Remedies
         </Button>
 
-        <div className="grid gap-6 md:grid-cols-[2fr,1fr]">
+        <div className="grid gap-6 md:grid-cols-[2fr,1.5fr,1fr]">
+          {/* Left Column - Main Content */}
           <div className="space-y-6">
-            <RemedyDetailsSection
-              name={name}
-              setName={setName}
-              summary={summary}
-              setSummary={setSummary}
+            <UnifiedRemedyDetailsSection
+              formData={formData}
+              onChange={handleInputChange}
+              showVideoUrl={true}
             />
 
-            <RemedyContentSection 
-              content={content}
-              onChange={setContent}
+            <UnifiedRemedyContentSection 
+              formData={formData}
+              onChange={handleInputChange}
+              showPreparationFields={true}
             />
 
             <RemedyIngredientsSection
-              ingredients={ingredients}
-              setIngredients={setIngredients}
+              ingredients={formData.ingredients}
+              setIngredients={(ingredients) => handleInputChange('ingredients', ingredients)}
             />
           </div>
 
+          {/* Middle Column - Images, Experts, Links */}
           <div className="space-y-6">
             <MultipleImageUpload
               images={images}
               onImagesChange={setImages}
-            />
-
-            <SmartLinkInput
-              links={links}
-              onLinksChange={setLinks}
             />
 
             <RemedyExpertsSection
@@ -204,11 +226,36 @@ const EditRemedy = () => {
               setSelectedExperts={setSelectedExperts}
             />
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => handleSave(false)}>
+            <SmartLinkInput
+              links={links}
+              onLinksChange={setLinks}
+            />
+          </div>
+
+          {/* Right Column - Admin Fields and Actions */}
+          <div className="space-y-6">
+            <RemedySymptomSection
+              symptoms={formData.symptoms}
+              onSymptomsChange={(symptoms) => handleInputChange('symptoms', symptoms)}
+            />
+
+            <RemedyStatusSection
+              status={formData.status}
+              onStatusChange={(status) => handleInputChange('status', status)}
+            />
+
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                onClick={() => handleSave(false)}
+                className="w-full touch-manipulation"
+              >
                 Save as Draft
               </Button>
-              <Button onClick={() => handleSave(true)}>
+              <Button 
+                onClick={() => handleSave(true)}
+                className="w-full touch-manipulation"
+              >
                 Publish
               </Button>
             </div>
