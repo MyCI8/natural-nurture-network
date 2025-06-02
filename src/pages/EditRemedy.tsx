@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -72,8 +73,8 @@ const EditRemedy = () => {
         name: remedy.name || "",
         summary: remedy.summary || "",
         description: remedy.description || "",
-        preparation_method: remedy.preparation_method || "",
-        dosage_instructions: remedy.dosage_instructions || "",
+        preparation_method: (remedy as any).preparation_method || "",
+        dosage_instructions: (remedy as any).dosage_instructions || "",
         ingredients: remedy.ingredients || [],
         symptoms: remedy.symptoms || [],
         status: remedy.status as "draft" | "published" || "draft",
