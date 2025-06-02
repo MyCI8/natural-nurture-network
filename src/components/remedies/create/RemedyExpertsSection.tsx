@@ -23,11 +23,11 @@ export const RemedyExpertsSection = ({ selectedExperts, onChange }: RemedyExpert
     queryFn: async () => {
       let query = supabase
         .from('experts')
-        .select('id, name, image_url')
-        .order('name');
+        .select('id, full_name, image_url')
+        .order('full_name');
 
       if (searchTerm) {
-        query = query.ilike('name', `%${searchTerm}%`);
+        query = query.ilike('full_name', `%${searchTerm}%`);
       }
 
       const { data, error } = await query.limit(10);
@@ -43,7 +43,7 @@ export const RemedyExpertsSection = ({ selectedExperts, onChange }: RemedyExpert
       if (selectedExperts.length === 0) return [];
       const { data, error } = await supabase
         .from('experts')
-        .select('id, name, image_url')
+        .select('id, full_name, image_url')
         .in('id', selectedExperts);
       if (error) throw error;
       return data || [];
@@ -76,10 +76,10 @@ export const RemedyExpertsSection = ({ selectedExperts, onChange }: RemedyExpert
               <div key={expert.id} className="flex items-center justify-between p-2 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={expert.image_url || ''} alt={expert.name} />
-                    <AvatarFallback>{expert.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarImage src={expert.image_url || ''} alt={expert.full_name} />
+                    <AvatarFallback>{expert.full_name.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium">{expert.name}</span>
+                  <span className="text-sm font-medium">{expert.full_name}</span>
                 </div>
                 <Button
                   type="button"
@@ -132,10 +132,10 @@ export const RemedyExpertsSection = ({ selectedExperts, onChange }: RemedyExpert
                     >
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={expert.image_url || ''} alt={expert.name} />
-                          <AvatarFallback>{expert.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                          <AvatarImage src={expert.image_url || ''} alt={expert.full_name} />
+                          <AvatarFallback>{expert.full_name.slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <span>{expert.name}</span>
+                        <span>{expert.full_name}</span>
                       </div>
                     </Button>
                   ))}
