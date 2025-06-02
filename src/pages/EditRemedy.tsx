@@ -8,9 +8,23 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { RemedyDetailsSection } from "@/components/admin/remedies/RemedyDetailsSection";
 import { RemedyContentSection } from "@/components/admin/remedies/RemedyContentSection";
-import { RemedyImageSection } from "@/components/admin/remedies/RemedyImageSection";
 import { RemedyIngredientsSection } from "@/components/admin/remedies/form/RemedyIngredientsSection";
 import { RemedyExpertsSection } from "@/components/admin/remedies/RemedyExpertsSection";
+import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
+import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
+
+interface ImageData {
+  file?: File;
+  url: string;
+  description?: string;
+}
+
+interface LinkData {
+  url: string;
+  title?: string;
+  description?: string;
+  type: 'link' | 'video';
+}
 
 const EditRemedy = () => {
   const { id } = useParams();
@@ -21,10 +35,8 @@ const EditRemedy = () => {
   const [name, setName] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
-  const [thumbnailUrl, setThumbnailUrl] = useState("");
-  const [thumbnailDescription, setThumbnailDescription] = useState("");
-  const [mainImageUrl, setMainImageUrl] = useState("");
-  const [mainImageDescription, setMainImageDescription] = useState("");
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [links, setLinks] = useState<LinkData[]>([]);
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
   const [videoDescription, setVideoDescription] = useState("");
@@ -51,27 +63,55 @@ const EditRemedy = () => {
       setName(remedy.name || "");
       setSummary(remedy.summary || "");
       setContent(remedy.description || "");
-      setThumbnailUrl(remedy.image_url || "");
-      setThumbnailDescription(remedy.thumbnail_description || "");
-      setMainImageUrl(remedy.main_image_url || "");
-      setMainImageDescription(remedy.main_image_description || "");
       setIngredients(remedy.ingredients || []);
       setSelectedExperts(remedy.expert_recommendations || []);
       setVideoDescription(remedy.video_description || "");
       setStatus(remedy.status as "draft" | "published" || "draft");
+      
+      // Load existing images
+      if (remedy.images && Array.isArray(remedy.images)) {
+        setImages(remedy.images);
+      } else if (remedy.image_url) {
+        setImages([{ url: remedy.image_url }]);
+      }
+      
+      // Load existing links
+      if (remedy.links && Array.isArray(remedy.links)) {
+        setLinks(remedy.links);
+      }
     }
   }, [remedy]);
 
   const handleSave = async (shouldPublish = false) => {
     try {
+      // Upload new images
+      const uploadedImages = await Promise.all(
+        images.map(async (image) => {
+          if (!image.file) return image; // Already uploaded
+          
+          const fileExt = image.file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from("remedy-images")
+            .upload(fileName, image.file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from("remedy-images")
+            .getPublicUrl(fileName);
+
+          return { url: publicUrl, description: image.description };
+        })
+      );
+
       const remedyData = {
         name,
         summary,
         description: content,
-        image_url: thumbnailUrl,
-        thumbnail_description: thumbnailDescription,
-        main_image_url: mainImageUrl,
-        main_image_description: mainImageDescription,
+        image_url: uploadedImages[0]?.url || "", // Keep first image as main for compatibility
+        images: uploadedImages,
+        links: links,
         ingredients,
         expert_recommendations: selectedExperts,
         video_description: videoDescription,
@@ -147,15 +187,14 @@ const EditRemedy = () => {
           </div>
 
           <div className="space-y-6">
-            <RemedyImageSection
-              thumbnailUrl={thumbnailUrl}
-              setThumbnailUrl={setThumbnailUrl}
-              thumbnailDescription={thumbnailDescription}
-              setThumbnailDescription={setThumbnailDescription}
-              mainImageUrl={mainImageUrl}
-              setMainImageUrl={setMainImageUrl}
-              mainImageDescription={mainImageDescription}
-              setMainImageDescription={setMainImageDescription}
+            <MultipleImageUpload
+              images={images}
+              onImagesChange={setImages}
+            />
+
+            <SmartLinkInput
+              links={links}
+              onLinksChange={setLinks}
             />
 
             <RemedyExpertsSection
