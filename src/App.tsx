@@ -1,4 +1,3 @@
-
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import Layout from "@/components/Layout";
@@ -35,6 +34,7 @@ import Experts from "./pages/Experts";
 import ExpertProfile from "./pages/ExpertProfile";
 import Remedies from "./pages/Remedies";
 import RemedyDetail from "./pages/RemedyDetail";
+import CreateRemedy from "./pages/CreateRemedy";
 import Ingredients from "./pages/Ingredients";
 import ManageUsers from "./pages/ManageUsers";
 import EditUser from "./pages/EditUser";
@@ -82,6 +82,7 @@ function App() {
           
           <Route path="remedies">
             <Route index element={<Remedies />} />
+            <Route path="create" element={<CreateRemedy />} />
             <Route path=":id" element={<RemedyDetail />} />
           </Route>
           

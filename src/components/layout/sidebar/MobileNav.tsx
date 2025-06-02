@@ -1,22 +1,35 @@
+
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { getNavigationItems } from "./NavigationItems";
+import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MobileNavProps {
   showMobileNav: boolean;
   onPostClick: () => void;
 }
 
-export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
+export const MobileNav = ({ showMobileNav }: MobileNavProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isHomePage, setIsHomePage] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [visible, setVisible] = useState(false);
 
   // Get navigation items (without admin for mobile nav)
   const navigationItems = getNavigationItems(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.user || null;
+    },
+  });
 
   // Determine if we're on the homepage
   useEffect(() => {
@@ -69,6 +82,28 @@ export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
     };
   }, [isHomePage, userInteracted]);
 
+  // Context-aware post handler
+  const handlePost = () => {
+    if (!currentUser) {
+      toast("Sign in required", {
+        description: "Please sign in to create a post"
+      });
+      navigate("/auth");
+      return;
+    }
+    
+    // Context-aware navigation based on current page
+    const currentPath = location.pathname;
+    
+    if (currentPath === '/remedies' || currentPath.startsWith('/remedies/')) {
+      // Navigate to remedy creation page
+      navigate('/remedies/create');
+    } else {
+      // Navigate to regular post page for other routes (explore, etc.)
+      navigate('/post');
+    }
+  };
+
   // Combine the visibility logic
   const shouldShowNav = showMobileNav && visible;
 
@@ -97,7 +132,7 @@ export const MobileNav = ({ showMobileNav, onPostClick }: MobileNavProps) => {
         ))}
         <Button
           size="icon"
-          onClick={onPostClick}
+          onClick={handlePost}
           aria-label="Create post"
           className="h-12 w-12 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
         >

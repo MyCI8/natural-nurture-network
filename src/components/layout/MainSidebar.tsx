@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -140,7 +139,7 @@ const MainSidebar = () => {
     }
   }, [isMobile]);
 
-  // Handle post button click
+  // Handle post button click with context-aware navigation
   const handlePost = () => {
     if (!currentUser) {
       toast("Sign in required", {
@@ -149,8 +148,17 @@ const MainSidebar = () => {
       navigate("/auth");
       return;
     }
-    // Navigate to the new post page
-    navigate('/post');
+    
+    // Context-aware navigation based on current page
+    const currentPath = location.pathname;
+    
+    if (currentPath === '/remedies' || currentPath.startsWith('/remedies/')) {
+      // Navigate to remedy creation page
+      navigate('/remedies/create');
+    } else {
+      // Navigate to regular post page for other routes (explore, etc.)
+      navigate('/post');
+    }
   };
 
   // Mobile view

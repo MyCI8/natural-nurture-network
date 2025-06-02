@@ -99,11 +99,14 @@ const BottomNav = () => {
       return;
     }
     
-    // Check if we're on the remedies page
-    if (location.pathname === '/remedies' || location.pathname.startsWith('/remedies/')) {
-      setIsRemedyModalOpen(true);
+    // Context-aware navigation based on current page
+    const currentPath = location.pathname;
+    
+    if (currentPath === '/remedies' || currentPath.startsWith('/remedies/')) {
+      // Navigate to remedy creation page
+      navigate('/remedies/create');
     } else {
-      // Navigate to regular post page for other routes
+      // Navigate to regular post page for other routes (explore, etc.)
       navigate('/post');
     }
   };
@@ -143,7 +146,7 @@ const BottomNav = () => {
         </div>
       </nav>
 
-      {/* Remedy Post Modal */}
+      {/* Remedy Post Modal - kept for backwards compatibility but not used anymore */}
       <RemedyPostModal
         isOpen={isRemedyModalOpen}
         onClose={() => setIsRemedyModalOpen(false)}
