@@ -68,14 +68,14 @@ const EditRemedy = () => {
       setVideoDescription(remedy.video_description || "");
       setStatus(remedy.status as "draft" | "published" || "draft");
       
-      // Load existing images
+      // Load existing images with safe property access
       if (remedy.images && Array.isArray(remedy.images)) {
         setImages(remedy.images);
       } else if (remedy.image_url) {
         setImages([{ url: remedy.image_url }]);
       }
       
-      // Load existing links
+      // Load existing links with safe property access
       if (remedy.links && Array.isArray(remedy.links)) {
         setLinks(remedy.links);
       }
