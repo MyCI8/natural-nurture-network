@@ -6,16 +6,22 @@ import { Star, Heart, Leaf } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Database } from '@/integrations/supabase/types';
 
 interface UserRemediesProps {
   userId: string;
 }
 
-type RemedyRow = Database['public']['Tables']['remedies']['Row'];
+type UserRemedy = {
+  id: string;
+  name: string;
+  summary: string;
+  image_url: string;
+  status: string;
+  created_at: string;
+};
 
 export const UserRemedies = ({ userId }: UserRemediesProps) => {
-  const { data: userRemedies, isLoading } = useQuery<RemedyRow[]>({
+  const { data: userRemedies, isLoading } = useQuery<UserRemedy[]>({
     queryKey: ['userRemedies', userId],
     queryFn: async () => {
       // First, get remedy IDs from expert_remedies junction table
