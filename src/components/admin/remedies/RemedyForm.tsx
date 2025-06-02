@@ -51,11 +51,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     name: "",
     summary: "",
     description: "",
-    preparation_method: "",
-    dosage_instructions: "",
     symptoms: [] as SymptomType[],
     ingredients: [] as string[],
-    video_url: "",
     status: "draft" as "draft" | "published",
   });
 
@@ -74,11 +71,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         name: remedy.name || "",
         summary: remedy.summary || "",
         description: remedy.description || "",
-        preparation_method: remedy.preparation_method || "",
-        dosage_instructions: remedy.dosage_instructions || "",
         symptoms: remedy.symptoms || [],
         ingredients: remedy.ingredients || [],
-        video_url: remedy.video_url || "",
         status: remedy.status || "draft",
       });
       
@@ -197,13 +191,11 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
               <UnifiedRemedyDetailsSection
                 formData={formData}
                 onChange={handleInputChange}
-                showVideoUrl={true}
               />
 
               <UnifiedRemedyContentSection
                 formData={formData}
                 onChange={handleInputChange}
-                showPreparationFields={true}
               />
 
               <RemedySymptomSection

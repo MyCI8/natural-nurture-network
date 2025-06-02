@@ -34,9 +34,6 @@ const CreateRemedy = () => {
     name: '',
     summary: '',
     description: '',
-    preparation_method: '',
-    dosage_instructions: '',
-    video_url: '',
     ingredients: [] as string[],
     experts: [] as string[],
   });
@@ -92,9 +89,6 @@ const CreateRemedy = () => {
           name: formData.name,
           summary: formData.summary,
           description: formData.description,
-          preparation_method: formData.preparation_method,
-          dosage_instructions: formData.dosage_instructions,
-          video_url: formData.video_url,
           image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
           images: uploadedImages,
           links: links,
@@ -185,13 +179,11 @@ const CreateRemedy = () => {
               <UnifiedRemedyDetailsSection
                 formData={formData}
                 onChange={handleInputChange}
-                showVideoUrl={true}
               />
 
               <UnifiedRemedyContentSection
                 formData={formData}
                 onChange={handleInputChange}
-                showPreparationFields={true}
               />
 
               <RemedyIngredientsSection

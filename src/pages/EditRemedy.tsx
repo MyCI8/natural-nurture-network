@@ -41,9 +41,6 @@ const EditRemedy = () => {
     name: "",
     summary: "",
     description: "",
-    preparation_method: "",
-    dosage_instructions: "",
-    video_url: "",
     ingredients: [] as string[],
     symptoms: [] as SymptomType[],
     status: "draft" as "draft" | "published",
@@ -74,9 +71,6 @@ const EditRemedy = () => {
         name: remedy.name || "",
         summary: remedy.summary || "",
         description: remedy.description || "",
-        preparation_method: remedy.preparation_method || "",
-        dosage_instructions: remedy.dosage_instructions || "",
-        video_url: remedy.video_url || "",
         ingredients: remedy.ingredients || [],
         symptoms: remedy.symptoms || [],
         status: remedy.status as "draft" | "published" || "draft",
@@ -133,9 +127,6 @@ const EditRemedy = () => {
         name: formData.name,
         summary: formData.summary,
         description: formData.description,
-        preparation_method: formData.preparation_method,
-        dosage_instructions: formData.dosage_instructions,
-        video_url: formData.video_url,
         image_url: uploadedImages[0]?.url || "", // Keep first image as main for compatibility
         images: uploadedImages,
         links: links,
@@ -199,13 +190,11 @@ const EditRemedy = () => {
             <UnifiedRemedyDetailsSection
               formData={formData}
               onChange={handleInputChange}
-              showVideoUrl={true}
             />
 
             <UnifiedRemedyContentSection 
               formData={formData}
               onChange={handleInputChange}
-              showPreparationFields={true}
             />
 
             <RemedyIngredientsSection

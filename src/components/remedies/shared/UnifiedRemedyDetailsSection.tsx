@@ -8,16 +8,13 @@ interface UnifiedRemedyDetailsSectionProps {
   formData: {
     name: string;
     summary: string;
-    video_url?: string;
   };
   onChange: (field: string, value: string) => void;
-  showVideoUrl?: boolean;
 }
 
 export const UnifiedRemedyDetailsSection = ({ 
   formData, 
-  onChange, 
-  showVideoUrl = false 
+  onChange 
 }: UnifiedRemedyDetailsSectionProps) => {
   return (
     <div className="space-y-4">
@@ -50,21 +47,6 @@ export const UnifiedRemedyDetailsSection = ({
           required
         />
       </div>
-
-      {showVideoUrl && (
-        <div>
-          <Label htmlFor="video_url" className="text-sm font-medium">
-            Video URL
-          </Label>
-          <Input
-            id="video_url"
-            value={formData.video_url || ''}
-            onChange={(e) => onChange('video_url', e.target.value)}
-            placeholder="YouTube or MP4 link"
-            className="mt-1 touch-manipulation bg-background"
-          />
-        </div>
-      )}
     </div>
   );
 };
