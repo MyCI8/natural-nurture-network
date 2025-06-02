@@ -16,10 +16,24 @@ import { Database } from "@/integrations/supabase/types";
 import { RemedyBasicInfoSection } from "./form/RemedyBasicInfoSection";
 import { RemedySymptomSection } from "./form/RemedySymptomSection";
 import { RemedyStatusSection } from "./form/RemedyStatusSection";
-import { RemedyImageInput } from "./form/RemedyImageInput";
 import { RemedyIngredientsSection } from "./form/RemedyIngredientsSection";
+import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
+import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
+
+interface ImageData {
+  file?: File;
+  url: string;
+  description?: string;
+}
+
+interface LinkData {
+  url: string;
+  title?: string;
+  description?: string;
+  type: 'link' | 'video';
+}
 
 interface RemedyFormProps {
   onClose: () => void;
@@ -30,8 +44,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [links, setLinks] = useState<LinkData[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     summary: "",
@@ -62,100 +76,52 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         video_url: remedy.video_url || "",
         status: remedy.status || "draft",
       });
-      if (remedy.image_url) {
-        setImagePreview(remedy.image_url);
+      
+      // Load existing images
+      if (remedy.images && Array.isArray(remedy.images)) {
+        setImages(remedy.images);
+      } else if (remedy.image_url) {
+        setImages([{ url: remedy.image_url }]);
+      }
+      
+      // Load existing links
+      if (remedy.links && Array.isArray(remedy.links)) {
+        setLinks(remedy.links);
       }
     }
   }, [remedy]);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleDeleteImage = async () => {
-    try {
-      if (remedy?.image_url) {
-        const oldImagePath = remedy.image_url.split("/").pop();
-        if (oldImagePath) {
-          const { error: storageError } = await supabase.storage
-            .from("remedy-images")
-            .remove([oldImagePath]);
-          
-          if (storageError) {
-            throw storageError;
-          }
-        }
-      }
-      
-      if (remedy) {
-        const { error: updateError } = await supabase
-          .from("remedies")
-          .update({ image_url: null })
-          .eq("id", remedy.id);
-
-        if (updateError) {
-          throw updateError;
-        }
-
-        queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
-      }
-
-      setImageFile(null);
-      setImagePreview("");
-      
-      toast({
-        title: "Success",
-        description: "Image deleted successfully",
-      });
-    } catch (error) {
-      console.error("Error deleting image:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete image",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      let imageUrl = remedy?.image_url || "";
+      // Upload new images
+      const uploadedImages = await Promise.all(
+        images.map(async (image) => {
+          if (!image.file) return image; // Already uploaded
+          
+          const fileExt = image.file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from("remedy-images")
+            .upload(fileName, image.file);
 
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from("remedy-images")
-          .upload(fileName, imageFile);
+          if (uploadError) throw uploadError;
 
-        if (uploadError) throw uploadError;
+          const { data: { publicUrl } } = supabase.storage
+            .from("remedy-images")
+            .getPublicUrl(fileName);
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("remedy-images")
-          .getPublicUrl(fileName);
-
-        imageUrl = publicUrl;
-
-        if (remedy?.image_url) {
-          const oldImagePath = remedy.image_url.split("/").pop();
-          if (oldImagePath) {
-            await supabase.storage
-              .from("remedy-images")
-              .remove([oldImagePath]);
-          }
-        }
-      }
+          return { url: publicUrl, description: image.description };
+        })
+      );
 
       const remedyData = {
         ...formData,
-        image_url: imageUrl,
+        image_url: uploadedImages[0]?.url || "", // Keep first image as main for compatibility
+        images: uploadedImages,
+        links: links,
       };
 
       if (remedy?.id) {
@@ -199,7 +165,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {remedy ? "Edit Remedy" : "Create New Remedy"}
@@ -212,40 +178,51 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <RemedyImageInput
-            imageFile={imageFile}
-            imagePreview={imagePreview}
-            onImageChange={handleImageChange}
-            onDeleteImage={handleDeleteImage}
-          />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-6">
+              <RemedyBasicInfoSection
+                name={formData.name}
+                summary={formData.summary}
+                description={formData.description}
+                video_url={formData.video_url}
+                onNameChange={(name) => setFormData({ ...formData, name })}
+                onSummaryChange={(summary) => setFormData({ ...formData, summary })}
+                onDescriptionChange={(description) => setFormData({ ...formData, description })}
+                onVideoUrlChange={(video_url) => setFormData({ ...formData, video_url })}
+              />
 
-          <RemedyBasicInfoSection
-            name={formData.name}
-            summary={formData.summary}
-            description={formData.description}
-            video_url={formData.video_url}
-            onNameChange={(name) => setFormData({ ...formData, name })}
-            onSummaryChange={(summary) => setFormData({ ...formData, summary })}
-            onDescriptionChange={(description) => setFormData({ ...formData, description })}
-            onVideoUrlChange={(video_url) => setFormData({ ...formData, video_url })}
-          />
+              <RemedySymptomSection
+                symptoms={formData.symptoms}
+                onSymptomsChange={(symptoms) => setFormData({ ...formData, symptoms })}
+              />
 
-          <RemedySymptomSection
-            symptoms={formData.symptoms}
-            onSymptomsChange={(symptoms) => setFormData({ ...formData, symptoms })}
-          />
+              <RemedyIngredientsSection
+                ingredients={formData.ingredients}
+                availableIngredients={ingredients || []}
+                onIngredientsChange={(ingredients) => setFormData({ ...formData, ingredients })}
+              />
 
-          <RemedyIngredientsSection
-            ingredients={formData.ingredients}
-            availableIngredients={ingredients || []}
-            onIngredientsChange={(ingredients) => setFormData({ ...formData, ingredients })}
-          />
+              <RemedyStatusSection
+                status={formData.status}
+                onStatusChange={(status) => setFormData({ ...formData, status })}
+              />
+            </div>
 
-          <RemedyStatusSection
-            status={formData.status}
-            onStatusChange={(status) => setFormData({ ...formData, status })}
-          />
+            {/* Right Column */}
+            <div className="space-y-6">
+              <MultipleImageUpload
+                images={images}
+                onImagesChange={setImages}
+              />
+
+              <SmartLinkInput
+                links={links}
+                onLinksChange={setLinks}
+              />
+            </div>
+          </div>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>

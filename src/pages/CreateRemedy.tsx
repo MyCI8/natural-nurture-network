@@ -8,9 +8,23 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { RemedyDetailsSection } from "@/components/remedies/create/RemedyDetailsSection";
 import { RemedyContentSection } from "@/components/remedies/create/RemedyContentSection";
-import { RemedyImageSection } from "@/components/remedies/create/RemedyImageSection";
 import { RemedyIngredientsSection } from "@/components/remedies/create/RemedyIngredientsSection";
 import { RemedyExpertsSection } from "@/components/remedies/create/RemedyExpertsSection";
+import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
+import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
+
+interface ImageData {
+  file?: File;
+  url: string;
+  description?: string;
+}
+
+interface LinkData {
+  url: string;
+  title?: string;
+  description?: string;
+  type: 'link' | 'video';
+}
 
 const CreateRemedy = () => {
   const navigate = useNavigate();
@@ -26,8 +40,8 @@ const CreateRemedy = () => {
     experts: [] as string[],
   });
   
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [links, setLinks] = useState<LinkData[]>([]);
 
   // Get current user
   const { data: currentUser, isLoading: isLoadingUser } = useQuery({
@@ -50,23 +64,26 @@ const CreateRemedy = () => {
     mutationFn: async () => {
       if (!currentUser) throw new Error('User not authenticated');
 
-      let imageUrl = '';
-      
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from('remedy-images')
-          .upload(fileName, imageFile);
+      // Upload images
+      const uploadedImages = await Promise.all(
+        images.map(async (image) => {
+          if (!image.file) return { url: image.url, description: image.description };
+          
+          const fileExt = image.file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from('remedy-images')
+            .upload(fileName, image.file);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('remedy-images')
-          .getPublicUrl(fileName);
-        
-        imageUrl = publicUrl;
-      }
+          const { data: { publicUrl } } = supabase.storage
+            .from('remedy-images')
+            .getPublicUrl(fileName);
+          
+          return { url: publicUrl, description: image.description };
+        })
+      );
 
       const { error } = await supabase
         .from('remedies')
@@ -76,7 +93,9 @@ const CreateRemedy = () => {
           description: formData.description,
           preparation_method: formData.preparation_method,
           dosage_instructions: formData.dosage_instructions,
-          image_url: imageUrl,
+          image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
+          images: uploadedImages,
+          links: links,
           ingredients: formData.ingredients,
           status: 'draft'
         });
@@ -102,11 +121,6 @@ const CreateRemedy = () => {
     }));
   };
 
-  const handleImageChange = (file: File | null, preview: string) => {
-    setImageFile(file);
-    setImagePreview(preview);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.summary.trim()) {
@@ -123,6 +137,8 @@ const CreateRemedy = () => {
       </div>
     );
   }
+
+  const videoLinks = links.filter(link => link.type === 'video');
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20">
@@ -159,42 +175,64 @@ const CreateRemedy = () => {
       {/* Content */}
       <div className="container mx-auto p-6">
         <form onSubmit={handleSubmit}>
-          {/* Two-column layout matching admin */}
-          <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-8">
+          {/* Three-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-[2fr,1.5fr,1fr] gap-8">
             {/* Left column - Main content */}
             <div className="space-y-8">
-              {/* Remedy Details */}
               <RemedyDetailsSection
                 formData={formData}
                 onChange={handleInputChange}
               />
 
-              {/* Content */}
               <RemedyContentSection
                 formData={formData}
                 onChange={handleInputChange}
               />
 
-              {/* Ingredients */}
               <RemedyIngredientsSection
                 selectedIngredients={formData.ingredients}
                 onChange={(ingredients) => handleInputChange('ingredients', ingredients)}
               />
             </div>
 
-            {/* Right column - Images, Experts, Actions */}
+            {/* Middle column - Images, Experts, Links */}
             <div className="space-y-8">
-              {/* Images */}
-              <RemedyImageSection
-                imagePreview={imagePreview}
-                onImageChange={handleImageChange}
+              <MultipleImageUpload
+                images={images}
+                onImagesChange={setImages}
               />
 
-              {/* Related Experts */}
               <RemedyExpertsSection
                 selectedExperts={formData.experts}
                 onChange={(experts) => handleInputChange('experts', experts)}
               />
+
+              <SmartLinkInput
+                links={links}
+                onLinksChange={setLinks}
+              />
+            </div>
+
+            {/* Right column - Videos and Actions */}
+            <div className="space-y-8">
+              {/* Videos Section */}
+              {videoLinks.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Videos</h3>
+                  <div className="space-y-2">
+                    {videoLinks.map((video, index) => (
+                      <div key={index} className="p-3 border rounded-lg">
+                        <p className="text-sm font-medium truncate">
+                          {video.title || new URL(video.url).hostname}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {video.url}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons - Desktop */}
               <div className="hidden md:block space-y-4">
