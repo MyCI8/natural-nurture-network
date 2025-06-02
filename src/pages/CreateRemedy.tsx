@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -34,6 +33,8 @@ const CreateRemedy = () => {
     name: '',
     summary: '',
     description: '',
+    preparation_method: '',
+    dosage_instructions: '',
     ingredients: [] as string[],
     experts: [] as string[],
   });
@@ -89,6 +90,8 @@ const CreateRemedy = () => {
           name: formData.name,
           summary: formData.summary,
           description: formData.description,
+          preparation_method: formData.preparation_method,
+          dosage_instructions: formData.dosage_instructions,
           image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
           images: uploadedImages,
           links: links,

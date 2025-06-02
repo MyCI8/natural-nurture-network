@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -51,6 +50,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     name: "",
     summary: "",
     description: "",
+    preparation_method: "",
+    dosage_instructions: "",
     symptoms: [] as SymptomType[],
     ingredients: [] as string[],
     status: "draft" as "draft" | "published",
@@ -71,6 +72,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         name: remedy.name || "",
         summary: remedy.summary || "",
         description: remedy.description || "",
+        preparation_method: remedy.preparation_method || "",
+        dosage_instructions: remedy.dosage_instructions || "",
         symptoms: remedy.symptoms || [],
         ingredients: remedy.ingredients || [],
         status: remedy.status || "draft",
