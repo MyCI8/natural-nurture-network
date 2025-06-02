@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, ExternalLink, Video } from 'lucide-react';
+import { Plus, X, ExternalLink, Video, RefreshCw } from 'lucide-react';
+import { useVideoMetadata } from '@/hooks/useVideoMetadata';
 
 interface LinkData {
   url: string;
@@ -37,6 +38,42 @@ const isVideoUrl = (url: string): boolean => {
 export const SmartLinkInput = ({ links, onLinksChange }: SmartLinkInputProps) => {
   const [newUrl, setNewUrl] = useState('');
   const [newTitle, setNewTitle] = useState('');
+  const [titleFetched, setTitleFetched] = useState(false);
+  const { fetchVideoMetadata, isLoading } = useVideoMetadata();
+
+  const fetchTitleForUrl = async (url: string) => {
+    if (!isVideoUrl(url)) return;
+    
+    const metadata = await fetchVideoMetadata(url);
+    if (metadata?.title) {
+      setNewTitle(metadata.title);
+      setTitleFetched(true);
+    }
+  };
+
+  useEffect(() => {
+    if (newUrl.trim() && isVideoUrl(newUrl) && !titleFetched) {
+      const timeoutId = setTimeout(() => {
+        fetchTitleForUrl(newUrl);
+      }, 500); // Debounce for 500ms
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [newUrl, titleFetched]);
+
+  const handleUrlChange = (url: string) => {
+    setNewUrl(url);
+    setNewTitle('');
+    setTitleFetched(false);
+  };
+
+  const refreshTitle = async () => {
+    if (newUrl.trim() && isVideoUrl(newUrl)) {
+      setNewTitle('');
+      setTitleFetched(false);
+      await fetchTitleForUrl(newUrl);
+    }
+  };
 
   const addLink = () => {
     if (!newUrl.trim()) return;
@@ -51,6 +88,7 @@ export const SmartLinkInput = ({ links, onLinksChange }: SmartLinkInputProps) =>
     onLinksChange([...links, newLink]);
     setNewUrl('');
     setNewTitle('');
+    setTitleFetched(false);
   };
 
   const removeLink = (index: number) => {
@@ -72,31 +110,46 @@ export const SmartLinkInput = ({ links, onLinksChange }: SmartLinkInputProps) =>
           <Input
             id="new-url"
             value={newUrl}
-            onChange={(e) => setNewUrl(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://example.com or video URL"
             className="touch-manipulation bg-background"
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="new-title">Title (optional)</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="new-title">Title {isVideoUrl(newUrl) ? '(auto-fetched)' : '(optional)'}</Label>
+            {isVideoUrl(newUrl) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={refreshTitle}
+                disabled={isLoading || !newUrl.trim()}
+                className="h-6 px-2 text-xs"
+              >
+                <RefreshCw className={`h-3 w-3 ${isLoading ? 'animate-spin' : ''}`} />
+              </Button>
+            )}
+          </div>
           <Input
             id="new-title"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Link title"
+            placeholder={isLoading ? "Fetching title..." : isVideoUrl(newUrl) ? "Video title will be fetched automatically" : "Link title"}
             className="touch-manipulation bg-background"
+            disabled={isLoading}
           />
         </div>
         
         <Button
           type="button"
           onClick={addLink}
-          disabled={!newUrl.trim()}
+          disabled={!newUrl.trim() || isLoading}
           className="w-full touch-manipulation"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add {isVideoUrl(newUrl) ? 'Video' : 'Link'}
+          {isLoading ? 'Fetching...' : `Add ${isVideoUrl(newUrl) ? 'Video' : 'Link'}`}
         </Button>
       </div>
 
