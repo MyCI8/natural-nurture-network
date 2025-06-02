@@ -157,40 +157,50 @@ const CreateRemedy = () => {
       </header>
 
       {/* Content */}
-      <div className="px-4 py-6 space-y-8 max-w-4xl mx-auto">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Remedy Details */}
-          <RemedyDetailsSection
-            formData={formData}
-            onChange={handleInputChange}
-          />
+      <div className="px-4 py-6 max-w-6xl mx-auto">
+        <form onSubmit={handleSubmit}>
+          {/* Two-column layout on desktop, single column on mobile */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column - Form sections */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Remedy Details */}
+              <RemedyDetailsSection
+                formData={formData}
+                onChange={handleInputChange}
+              />
 
-          {/* Content */}
-          <RemedyContentSection
-            formData={formData}
-            onChange={handleInputChange}
-          />
+              {/* Content */}
+              <RemedyContentSection
+                formData={formData}
+                onChange={handleInputChange}
+              />
 
-          {/* Images */}
-          <RemedyImageSection
-            imagePreview={imagePreview}
-            onImageChange={handleImageChange}
-          />
+              {/* Ingredients */}
+              <RemedyIngredientsSection
+                selectedIngredients={formData.ingredients}
+                onChange={(ingredients) => handleInputChange('ingredients', ingredients)}
+              />
 
-          {/* Ingredients */}
-          <RemedyIngredientsSection
-            selectedIngredients={formData.ingredients}
-            onChange={(ingredients) => handleInputChange('ingredients', ingredients)}
-          />
+              {/* Related Experts */}
+              <RemedyExpertsSection
+                selectedExperts={formData.experts}
+                onChange={(experts) => handleInputChange('experts', experts)}
+              />
+            </div>
 
-          {/* Related Experts */}
-          <RemedyExpertsSection
-            selectedExperts={formData.experts}
-            onChange={(experts) => handleInputChange('experts', experts)}
-          />
+            {/* Right column - Images */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-24">
+                <RemedyImageSection
+                  imagePreview={imagePreview}
+                  onImageChange={handleImageChange}
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Submit Button - Mobile */}
-          <div className="md:hidden">
+          <div className="lg:hidden mt-8">
             <Button 
               type="submit" 
               className="w-full py-6 rounded-full touch-manipulation"
