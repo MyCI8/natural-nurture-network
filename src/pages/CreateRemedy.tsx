@@ -145,7 +145,7 @@ const CreateRemedy = () => {
           onClick={handleSubmit}
           disabled={createRemedyMutation.isPending}
           size="sm"
-          className="touch-manipulation"
+          className="touch-manipulation md:hidden"
         >
           {createRemedyMutation.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -157,12 +157,12 @@ const CreateRemedy = () => {
       </header>
 
       {/* Content */}
-      <div className="px-4 py-6 max-w-6xl mx-auto">
+      <div className="container mx-auto p-6">
         <form onSubmit={handleSubmit}>
-          {/* Two-column layout on desktop, single column on mobile */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left column - Form sections */}
-            <div className="lg:col-span-2 space-y-6">
+          {/* Two-column layout matching admin */}
+          <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-8">
+            {/* Left column - Main content */}
+            <div className="space-y-8">
               {/* Remedy Details */}
               <RemedyDetailsSection
                 formData={formData}
@@ -180,27 +180,56 @@ const CreateRemedy = () => {
                 selectedIngredients={formData.ingredients}
                 onChange={(ingredients) => handleInputChange('ingredients', ingredients)}
               />
+            </div>
+
+            {/* Right column - Images, Experts, Actions */}
+            <div className="space-y-8">
+              {/* Images */}
+              <RemedyImageSection
+                imagePreview={imagePreview}
+                onImageChange={handleImageChange}
+              />
 
               {/* Related Experts */}
               <RemedyExpertsSection
                 selectedExperts={formData.experts}
                 onChange={(experts) => handleInputChange('experts', experts)}
               />
-            </div>
 
-            {/* Right column - Images */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-24">
-                <RemedyImageSection
-                  imagePreview={imagePreview}
-                  onImageChange={handleImageChange}
-                />
+              {/* Action Buttons - Desktop */}
+              <div className="hidden md:block space-y-4">
+                <Button 
+                  type="submit" 
+                  className="w-full touch-manipulation"
+                  disabled={createRemedyMutation.isPending}
+                >
+                  {createRemedyMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-5 w-5 mr-2" />
+                      Create Remedy
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  className="w-full touch-manipulation"
+                  onClick={() => navigate('/remedies')}
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>
 
           {/* Submit Button - Mobile */}
-          <div className="lg:hidden mt-8">
+          <div className="md:hidden mt-8">
             <Button 
               type="submit" 
               className="w-full py-6 rounded-full touch-manipulation"
