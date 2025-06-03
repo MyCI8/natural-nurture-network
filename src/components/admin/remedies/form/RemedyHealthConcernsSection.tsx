@@ -44,12 +44,15 @@ export const RemedyHealthConcernsSection = ({
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
+  console.log("RemedyHealthConcernsSection render", { selectedConcerns, open });
+
   const filteredConcerns = healthConcerns.filter(concern =>
     concern.toLowerCase().includes(searchValue.toLowerCase()) &&
     !selectedConcerns.includes(concern)
   );
 
   const addConcern = (concern: string) => {
+    console.log("Adding concern:", concern);
     if (!selectedConcerns.includes(concern)) {
       onConcernsChange([...selectedConcerns, concern]);
     }
@@ -58,7 +61,13 @@ export const RemedyHealthConcernsSection = ({
   };
 
   const removeConcern = (concernToRemove: string) => {
+    console.log("Removing concern:", concernToRemove);
     onConcernsChange(selectedConcerns.filter(concern => concern !== concernToRemove));
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    console.log("Popover open state changing:", newOpen);
+    setOpen(newOpen);
   };
 
   return (
@@ -68,11 +77,18 @@ export const RemedyHealthConcernsSection = ({
         Select health concerns, conditions, goals, or body systems this remedy addresses
       </p>
       
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
+            type="button"
             variant="outline"
-            className="w-full justify-start text-left font-normal"
+            className="w-full justify-start text-left font-normal bg-background hover:bg-accent"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log("Button clicked, current open state:", open);
+              setOpen(!open);
+            }}
           >
             {selectedConcerns.length > 0 
               ? `${selectedConcerns.length} concern(s) selected` 
@@ -80,20 +96,31 @@ export const RemedyHealthConcernsSection = ({
             }
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="start">
-          <Command>
+        <PopoverContent 
+          className="w-80 p-0 bg-background border shadow-md z-50" 
+          align="start"
+          side="bottom"
+          sideOffset={4}
+        >
+          <Command className="bg-background">
             <CommandInput 
               placeholder="Search health concerns..." 
               value={searchValue}
               onValueChange={setSearchValue}
+              className="bg-background"
             />
-            <CommandEmpty>No health concerns found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
+            <CommandEmpty className="py-6 text-center text-sm">
+              No health concerns found.
+            </CommandEmpty>
+            <CommandGroup className="max-h-64 overflow-auto bg-background">
               {filteredConcerns.map((concern) => (
                 <CommandItem
                   key={concern}
-                  onSelect={() => addConcern(concern)}
-                  className="cursor-pointer"
+                  onSelect={(value) => {
+                    console.log("CommandItem selected:", value, concern);
+                    addConcern(concern);
+                  }}
+                  className="cursor-pointer bg-background hover:bg-accent"
                 >
                   {concern}
                 </CommandItem>
@@ -114,7 +141,11 @@ export const RemedyHealthConcernsSection = ({
               {concern}
               <X
                 className="h-3 w-3 cursor-pointer hover:text-destructive"
-                onClick={() => removeConcern(concern)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  removeConcern(concern);
+                }}
               />
             </Badge>
           ))}
