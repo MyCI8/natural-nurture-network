@@ -101,10 +101,10 @@ const CreateRemedy = () => {
           images: uploadedImages,
           links: links,
           ingredients: formData.ingredients,
-          symptoms: formData.health_concerns, // Map health_concerns to symptoms for compatibility
+          symptoms: formData.health_concerns as any, // Map health_concerns to symptoms for compatibility
           expert_recommendations: formData.experts,
           status: 'draft'
-        });
+        } as any);
 
       if (error) throw error;
     },

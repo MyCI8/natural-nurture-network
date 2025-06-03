@@ -137,7 +137,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
       if (remedy?.id) {
         const { error } = await supabase
           .from("remedies")
-          .update(remedyData)
+          .update(remedyData as any)
           .eq("id", remedy.id);
 
         if (error) throw error;
@@ -149,7 +149,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
       } else {
         const { error } = await supabase
           .from("remedies")
-          .insert([remedyData]);
+          .insert([remedyData as any]);
 
         if (error) throw error;
 

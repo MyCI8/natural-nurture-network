@@ -145,14 +145,14 @@ const EditRemedy = () => {
       if (id && id !== "new") {
         const { error } = await supabase
           .from("remedies")
-          .update(remedyData)
+          .update(remedyData as any)
           .eq("id", id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from("remedies")
-          .insert([remedyData]);
+          .insert([remedyData as any]);
 
         if (error) throw error;
       }
