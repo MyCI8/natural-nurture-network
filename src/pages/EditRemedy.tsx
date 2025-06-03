@@ -10,13 +10,10 @@ import { UnifiedRemedyDetailsSection } from "@/components/remedies/shared/Unifie
 import { UnifiedRemedyContentSection } from "@/components/remedies/shared/UnifiedRemedyContentSection";
 import { RemedyIngredientsSection } from "@/components/admin/remedies/form/RemedyIngredientsSection";
 import { RemedyExpertsSection } from "@/components/admin/remedies/RemedyExpertsSection";
-import { RemedySymptomSection } from "@/components/admin/remedies/form/RemedySymptomSection";
+import { RemedyHealthConcernsSection } from "@/components/admin/remedies/form/RemedyHealthConcernsSection";
 import { RemedyStatusSection } from "@/components/admin/remedies/form/RemedyStatusSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
-import { Database } from "@/integrations/supabase/types";
-
-type SymptomType = Database['public']['Enums']['symptom_type'];
 
 interface ImageData {
   file?: File;
@@ -43,8 +40,9 @@ const EditRemedy = () => {
     description: "",
     preparation_method: "",
     dosage_instructions: "",
+    precautions_side_effects: "",
     ingredients: [] as string[],
-    symptoms: [] as SymptomType[],
+    health_concerns: [] as string[],
     status: "draft" as "draft" | "published",
   });
   const [images, setImages] = useState<ImageData[]>([]);
@@ -75,8 +73,9 @@ const EditRemedy = () => {
         description: remedy.description || "",
         preparation_method: (remedy as any).preparation_method || "",
         dosage_instructions: (remedy as any).dosage_instructions || "",
+        precautions_side_effects: (remedy as any).precautions_side_effects || "",
         ingredients: remedy.ingredients || [],
-        symptoms: remedy.symptoms || [],
+        health_concerns: remedy.symptoms || [], // Map old symptoms to new health_concerns
         status: remedy.status as "draft" | "published" || "draft",
       });
       setSelectedExperts(remedy.expert_recommendations || []);
@@ -133,11 +132,12 @@ const EditRemedy = () => {
         description: formData.description,
         preparation_method: formData.preparation_method,
         dosage_instructions: formData.dosage_instructions,
+        precautions_side_effects: formData.precautions_side_effects,
         image_url: uploadedImages[0]?.url || "", // Keep first image as main for compatibility
         images: uploadedImages,
         links: links,
         ingredients: formData.ingredients,
-        symptoms: formData.symptoms,
+        symptoms: formData.health_concerns, // Map health_concerns back to symptoms for compatibility
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };
@@ -229,9 +229,9 @@ const EditRemedy = () => {
 
           {/* Right Column - Admin Fields and Actions */}
           <div className="space-y-6">
-            <RemedySymptomSection
-              symptoms={formData.symptoms}
-              onSymptomsChange={(symptoms) => handleInputChange('symptoms', symptoms)}
+            <RemedyHealthConcernsSection
+              selectedConcerns={formData.health_concerns}
+              onConcernsChange={(concerns) => handleInputChange('health_concerns', concerns)}
             />
 
             <RemedyStatusSection

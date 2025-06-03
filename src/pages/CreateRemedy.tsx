@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -9,6 +10,7 @@ import { UnifiedRemedyDetailsSection } from "@/components/remedies/shared/Unifie
 import { UnifiedRemedyContentSection } from "@/components/remedies/shared/UnifiedRemedyContentSection";
 import { RemedyIngredientsSection } from "@/components/admin/remedies/form/RemedyIngredientsSection";
 import { RemedyExpertsSection } from "@/components/admin/remedies/RemedyExpertsSection";
+import { RemedyHealthConcernsSection } from "@/components/admin/remedies/form/RemedyHealthConcernsSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
 
@@ -35,7 +37,9 @@ const CreateRemedy = () => {
     description: '',
     preparation_method: '',
     dosage_instructions: '',
+    precautions_side_effects: '',
     ingredients: [] as string[],
+    health_concerns: [] as string[],
     experts: [] as string[],
   });
   
@@ -92,10 +96,12 @@ const CreateRemedy = () => {
           description: formData.description,
           preparation_method: formData.preparation_method,
           dosage_instructions: formData.dosage_instructions,
+          precautions_side_effects: formData.precautions_side_effects,
           image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
           images: uploadedImages,
           links: links,
           ingredients: formData.ingredients,
+          symptoms: formData.health_concerns, // Map health_concerns to symptoms for compatibility
           expert_recommendations: formData.experts,
           status: 'draft'
         });
@@ -213,8 +219,13 @@ const CreateRemedy = () => {
               />
             </div>
 
-            {/* Right column - Videos and Actions */}
+            {/* Right column - Health Concerns and Actions */}
             <div className="space-y-8">
+              <RemedyHealthConcernsSection
+                selectedConcerns={formData.health_concerns}
+                onConcernsChange={(concerns) => handleInputChange('health_concerns', concerns)}
+              />
+
               {/* Videos Section */}
               {videoLinks.length > 0 && (
                 <div className="space-y-4">

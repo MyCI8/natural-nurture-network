@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -11,16 +12,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 import { UnifiedRemedyDetailsSection } from "@/components/remedies/shared/UnifiedRemedyDetailsSection";
 import { UnifiedRemedyContentSection } from "@/components/remedies/shared/UnifiedRemedyContentSection";
-import { RemedySymptomSection } from "./form/RemedySymptomSection";
-import { RemedyStatusSection } from "./form/RemedyStatusSection";
-import { RemedyIngredientsSection } from "./form/RemedyIngredientsSection";
+import { RemedyHealthConcernsSection } from "@/components/admin/remedies/form/RemedyHealthConcernsSection";
+import { RemedyStatusSection } from "@/components/admin/remedies/form/RemedyStatusSection";
+import { RemedyIngredientsSection } from "@/components/admin/remedies/form/RemedyIngredientsSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
-
-type SymptomType = Database['public']['Enums']['symptom_type'];
 
 interface ImageData {
   file?: File;
@@ -52,7 +50,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     description: "",
     preparation_method: "",
     dosage_instructions: "",
-    symptoms: [] as SymptomType[],
+    precautions_side_effects: "",
+    health_concerns: [] as string[],
     ingredients: [] as string[],
     status: "draft" as "draft" | "published",
   });
@@ -74,7 +73,8 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         description: remedy.description || "",
         preparation_method: remedy.preparation_method || "",
         dosage_instructions: remedy.dosage_instructions || "",
-        symptoms: remedy.symptoms || [],
+        precautions_side_effects: remedy.precautions_side_effects || "",
+        health_concerns: remedy.symptoms || [], // Map old symptoms to health_concerns
         ingredients: remedy.ingredients || [],
         status: remedy.status || "draft",
       });
@@ -128,6 +128,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
       const remedyData = {
         ...formData,
+        symptoms: formData.health_concerns, // Map health_concerns back to symptoms for compatibility
         image_url: uploadedImages[0]?.url || "", // Keep first image as main for compatibility
         images: uploadedImages,
         links: links,
@@ -201,9 +202,9 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
                 onChange={handleInputChange}
               />
 
-              <RemedySymptomSection
-                symptoms={formData.symptoms}
-                onSymptomsChange={(symptoms) => handleInputChange('symptoms', symptoms)}
+              <RemedyHealthConcernsSection
+                selectedConcerns={formData.health_concerns}
+                onConcernsChange={(concerns) => handleInputChange('health_concerns', concerns)}
               />
 
               <RemedyIngredientsSection

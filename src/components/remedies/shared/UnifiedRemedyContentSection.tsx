@@ -8,6 +8,7 @@ interface UnifiedRemedyContentSectionProps {
     description: string;
     preparation_method?: string;
     dosage_instructions?: string;
+    precautions_side_effects?: string;
   };
   onChange: (field: string, value: string) => void;
 }
@@ -57,6 +58,20 @@ export const UnifiedRemedyContentSection = ({
           value={formData.dosage_instructions || ''}
           onChange={(e) => onChange('dosage_instructions', e.target.value)}
           placeholder="How much and how often to use this remedy..."
+          className="mt-1 min-h-[80px] touch-manipulation bg-background"
+          rows={4}
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="precautions_side_effects" className="text-sm font-medium">
+          Precautions & Side Effects
+        </Label>
+        <Textarea
+          id="precautions_side_effects"
+          value={formData.precautions_side_effects || ''}
+          onChange={(e) => onChange('precautions_side_effects', e.target.value)}
+          placeholder="List potential side effects, warnings, or contraindications (e.g., 'May cause stomach upset; avoid if allergic to ginger')..."
           className="mt-1 min-h-[80px] touch-manipulation bg-background"
           rows={4}
         />
