@@ -28,25 +28,30 @@ export const HealthConcernSuggestions = () => {
   const { data: suggestions = [], isLoading } = useQuery({
     queryKey: ["admin-health-concern-suggestions", filter],
     queryFn: async () => {
-      let query = supabase
-        .from("health_concern_suggestions")
-        .select(`
-          *,
-          profiles!health_concern_suggestions_suggested_by_fkey(email)
-        `)
-        .order("created_at", { ascending: false });
+      try {
+        let query = supabase
+          .from("health_concern_suggestions" as any)
+          .select(`
+            *,
+            profiles!health_concern_suggestions_suggested_by_fkey(email)
+          `)
+          .order("created_at", { ascending: false });
 
-      if (filter !== 'all') {
-        query = query.eq("status", filter);
+        if (filter !== 'all') {
+          query = query.eq("status", filter);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        return (data || []).map((item: any) => ({
+          ...item,
+          user_email: item.profiles?.email || 'Unknown user'
+        })) as HealthConcernSuggestion[];
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+        return [];
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return data.map(item => ({
-        ...item,
-        user_email: item.profiles?.email || 'Unknown user'
-      })) as HealthConcernSuggestion[];
     },
   });
 
@@ -56,7 +61,7 @@ export const HealthConcernSuggestions = () => {
       if (!user) throw new Error("Must be logged in");
 
       const { error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .update({
           status,
           reviewed_at: new Date().toISOString(),
@@ -145,7 +150,7 @@ export const HealthConcernSuggestions = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{suggestion.concern_name}</CardTitle>
-                  <Badge variant={getStatusVariant(suggestion.status)} className="flex items-center gap-1">
+                  <Badge variant={getStatusVariant(suggestion.status) as any} className="flex items-center gap-1">
                     {getStatusIcon(suggestion.status)}
                     {suggestion.status}
                   </Badge>

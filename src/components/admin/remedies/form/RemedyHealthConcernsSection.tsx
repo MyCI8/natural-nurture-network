@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { X, Plus, Clock } from "lucide-react";
@@ -58,17 +59,22 @@ export const RemedyHealthConcernsSection = ({
   const { data: pendingSuggestions = [] } = useQuery({
     queryKey: ["health-concern-suggestions"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-      
-      const { data, error } = await supabase
-        .from("health_concern_suggestions")
-        .select("*")
-        .eq("suggested_by", user.id)
-        .eq("status", "pending");
-      
-      if (error) throw error;
-      return data as PendingConcern[];
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+        
+        const { data, error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .select("*")
+          .eq("suggested_by", user.id)
+          .eq("status", "pending");
+        
+        if (error) throw error;
+        return (data || []) as PendingConcern[];
+      } catch (error) {
+        console.error("Error fetching pending suggestions:", error);
+        return [];
+      }
     },
   });
 
@@ -79,12 +85,12 @@ export const RemedyHealthConcernsSection = ({
       if (!user) throw new Error("Must be logged in");
 
       const { error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .insert({
           concern_name: concernName,
           suggested_by: user.id,
           status: "pending"
-        });
+        } as any);
 
       if (error) throw error;
       return concernName;
