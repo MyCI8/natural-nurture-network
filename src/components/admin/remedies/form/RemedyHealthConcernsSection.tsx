@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { X, Plus, Clock } from "lucide-react";
@@ -51,6 +52,7 @@ export const RemedyHealthConcernsSection = ({
 }: RemedyHealthConcernsSectionProps) => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [localPendingConcerns, setLocalPendingConcerns] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -120,6 +122,8 @@ export const RemedyHealthConcernsSection = ({
       queryClient.invalidateQueries({ queryKey: ["health-concern-suggestions"] });
       // Immediately add to selected concerns and close popover
       onConcernsChange([...selectedConcerns, concernName]);
+      // Add to local pending tracking
+      setLocalPendingConcerns(prev => [...prev, concernName]);
       setSearchValue("");
       setOpen(false);
     },
@@ -159,6 +163,8 @@ export const RemedyHealthConcernsSection = ({
   const removeConcern = (concernToRemove: string) => {
     console.log("Removing concern:", concernToRemove);
     onConcernsChange(selectedConcerns.filter(concern => concern !== concernToRemove));
+    // Also remove from local pending if it exists there
+    setLocalPendingConcerns(prev => prev.filter(concern => concern !== concernToRemove));
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -167,7 +173,9 @@ export const RemedyHealthConcernsSection = ({
   };
 
   const isPendingConcern = (concern: string) => {
-    return pendingSuggestions.some(s => s.concern_name === concern);
+    // Check both database pending suggestions AND local pending concerns
+    return pendingSuggestions.some(s => s.concern_name === concern) || 
+           localPendingConcerns.includes(concern);
   };
 
   const handleSuggestConcern = () => {
@@ -175,6 +183,16 @@ export const RemedyHealthConcernsSection = ({
       suggestConcernMutation.mutate(searchValue.trim());
     }
   };
+
+  // Clean up local pending when database is updated
+  React.useEffect(() => {
+    if (pendingSuggestions.length > 0) {
+      const dbPendingNames = pendingSuggestions.map(s => s.concern_name);
+      setLocalPendingConcerns(prev => 
+        prev.filter(localConcern => !dbPendingNames.includes(localConcern))
+      );
+    }
+  }, [pendingSuggestions]);
 
   return (
     <div className="space-y-3">
