@@ -69,8 +69,21 @@ export const RemedyHealthConcernsSection = ({
           .eq("suggested_by", user.id)
           .eq("status", "pending");
         
-        if (error) throw error;
-        return (data || []) as PendingConcern[];
+        if (error) {
+          console.error("Database error:", error);
+          return [];
+        }
+        
+        // Safely convert the data to our expected format
+        if (!data || !Array.isArray(data)) return [];
+        
+        return data
+          .filter((item: any) => item && typeof item === 'object' && item.id && item.concern_name)
+          .map((item: any) => ({
+            id: item.id,
+            concern_name: item.concern_name,
+            status: item.status || 'pending'
+          })) as PendingConcern[];
       } catch (error) {
         console.error("Error fetching pending suggestions:", error);
         return [];
