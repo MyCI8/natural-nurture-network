@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Leaf, Search, Shield, Upload } from "lucide-react";
-import { NavigationItems } from "./NavigationItems";
+import NavigationItems from "./NavigationItems";
 import { UserProfileButton } from "./UserProfileButton";
 import { useTheme } from "next-themes";
 import { SettingsButton } from "@/components/settings/SettingsButton";
@@ -49,7 +49,12 @@ export const FullSidebar = ({
           <span className="text-xl font-semibold">BetterTogether</span>
         </Link>
         
-        <NavigationItems className="mb-4" />
+        <div className="mb-4">
+          <NavigationItems 
+            isAdmin={!!isAdmin}
+            isMobile={false}
+          />
+        </div>
 
         <Button
           className="w-full rounded-full mt-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] touch-manipulation"

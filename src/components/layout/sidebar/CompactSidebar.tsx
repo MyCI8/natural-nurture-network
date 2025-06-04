@@ -3,7 +3,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Leaf, Shield, Upload } from "lucide-react";
-import { NavigationItems } from "./NavigationItems";
+import NavigationItems from "./NavigationItems";
 import { UserProfileButton } from "./UserProfileButton";
 import { useTheme } from "next-themes";
 import { SettingsButton } from "@/components/settings/SettingsButton";
@@ -38,7 +38,12 @@ export const CompactSidebar = ({
           <Leaf className="h-8 w-8 text-primary shrink-0" />
         </Link>
         
-        <NavigationItems iconOnly className="mb-4" />
+        <div className="mb-4">
+          <NavigationItems 
+            isAdmin={!!isAdmin}
+            isMobile={false}
+          />
+        </div>
 
         <Button
           className="w-full rounded-full mt-4 mb-6 flex items-center justify-center p-3 h-12 bg-primary text-primary-foreground hover:bg-primary/90"

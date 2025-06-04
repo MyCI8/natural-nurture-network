@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
-import { getNavigationItems } from "./NavigationItems";
+import { Upload, Home, Video, Pill, Stethoscope, TestTube, Activity, Newspaper } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +11,17 @@ interface MobileNavProps {
   showMobileNav: boolean;
   onPostClick: () => void;
 }
+
+// Define navigation items directly here since we need different structure for mobile
+const getNavigationItems = (isAdmin: boolean) => [
+  { name: 'Home', icon: Home, path: '/', label: 'Home' },
+  { name: 'Explore', icon: Video, path: '/explore', label: 'Explore' },
+  { name: 'Remedies', icon: Pill, path: '/remedies', label: 'Remedies' },
+  { name: 'Experts', icon: Stethoscope, path: '/experts', label: 'Experts' },
+  { name: 'Ingredients', icon: TestTube, path: '/ingredients', label: 'Ingredients' },
+  { name: 'Symptoms', icon: Activity, path: '/symptoms', label: 'Symptoms' },
+  { name: 'News', icon: Newspaper, path: '/news', label: 'News' },
+];
 
 export const MobileNav = ({ showMobileNav }: MobileNavProps) => {
   const location = useLocation();

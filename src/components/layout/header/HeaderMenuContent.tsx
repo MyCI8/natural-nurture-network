@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Shield, X } from "lucide-react";
-import { NavigationButtons } from "../sidebar/NavigationItems";
+import NavigationItems from "../sidebar/NavigationItems";
 import { SettingsPanel } from "../sidebar/SettingsPanel";
 import { UserProfileButton } from "../sidebar/UserProfileButton";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -61,7 +61,9 @@ export const HeaderMenuContent = ({
         </div>
       ) : (
         <div className="flex-1 px-4 py-2">
-          <NavigationButtons 
+          <NavigationItems 
+            isAdmin={!!isAdmin}
+            isMobile={true}
             onItemClick={() => {
               onClose();
             }}

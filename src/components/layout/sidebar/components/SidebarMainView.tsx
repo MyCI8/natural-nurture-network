@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Upload, LogOut, Search } from "lucide-react";
-import { NavigationButtons } from "../NavigationItems";
+import NavigationItems from "../NavigationItems";
 import { UserProfileButton } from "../UserProfileButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -63,10 +63,10 @@ export const SidebarMainView = ({
       </div>
       
       <div className="flex-1 px-4 py-2 overflow-y-auto">
-        <NavigationButtons 
+        <NavigationItems 
+          isAdmin={!!isAdmin}
+          isMobile={true}
           onItemClick={onClose}
-          className="py-2"
-          isAdmin={isAdmin}
         />
 
         <Separator className="my-4" />
