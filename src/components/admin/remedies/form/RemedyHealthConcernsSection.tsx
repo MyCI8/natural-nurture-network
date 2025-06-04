@@ -1,11 +1,13 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { X, Plus, Clock } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // Comprehensive health concerns covering symptoms, conditions, health goals, and body systems
 const healthConcerns = [
@@ -37,27 +39,99 @@ interface RemedyHealthConcernsSectionProps {
   onConcernsChange: (concerns: string[]) => void;
 }
 
+interface PendingConcern {
+  id: string;
+  concern_name: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 export const RemedyHealthConcernsSection = ({
   selectedConcerns,
   onConcernsChange,
 }: RemedyHealthConcernsSectionProps) => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch user's pending health concern suggestions
+  const { data: pendingSuggestions = [] } = useQuery({
+    queryKey: ["health-concern-suggestions"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from("health_concern_suggestions")
+        .select("*")
+        .eq("suggested_by", user.id)
+        .eq("status", "pending");
+      
+      if (error) throw error;
+      return data as PendingConcern[];
+    },
+  });
+
+  // Mutation to suggest a new health concern
+  const suggestConcernMutation = useMutation({
+    mutationFn: async (concernName: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Must be logged in");
+
+      const { error } = await supabase
+        .from("health_concern_suggestions")
+        .insert({
+          concern_name: concernName,
+          suggested_by: user.id,
+          status: "pending"
+        });
+
+      if (error) throw error;
+      return concernName;
+    },
+    onSuccess: (concernName) => {
+      toast({
+        title: "Suggestion submitted",
+        description: `"${concernName}" has been submitted for review`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["health-concern-suggestions"] });
+      addConcern(concernName, true);
+      setSearchValue("");
+      setOpen(false);
+    },
+    onError: (error) => {
+      console.error("Error suggesting concern:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit suggestion",
+        variant: "destructive",
+      });
+    },
+  });
 
   console.log("RemedyHealthConcernsSection render", { selectedConcerns, open });
 
-  const filteredConcerns = (healthConcerns || []).filter(concern =>
+  // Combine regular concerns with pending suggestions
+  const allConcerns = [...healthConcerns, ...pendingSuggestions.map(s => s.concern_name)];
+  
+  const filteredConcerns = (allConcerns || []).filter(concern =>
     concern.toLowerCase().includes(searchValue.toLowerCase()) &&
     !selectedConcerns.includes(concern)
   );
 
-  const addConcern = (concern: string) => {
-    console.log("Adding concern:", concern);
+  // Check if search value would create a new concern
+  const isNewConcern = searchValue.length > 2 && 
+    !allConcerns.some(concern => concern.toLowerCase() === searchValue.toLowerCase());
+
+  const addConcern = (concern: string, isPending = false) => {
+    console.log("Adding concern:", concern, "isPending:", isPending);
     if (!selectedConcerns.includes(concern)) {
       onConcernsChange([...selectedConcerns, concern]);
     }
-    setSearchValue("");
-    setOpen(false);
+    if (!isPending) {
+      setSearchValue("");
+      setOpen(false);
+    }
   };
 
   const removeConcern = (concernToRemove: string) => {
@@ -68,6 +142,10 @@ export const RemedyHealthConcernsSection = ({
   const handleOpenChange = (newOpen: boolean) => {
     console.log("Popover open state changing:", newOpen);
     setOpen(newOpen);
+  };
+
+  const isPendingConcern = (concern: string) => {
+    return pendingSuggestions.some(s => s.concern_name === concern);
   };
 
   return (
@@ -111,7 +189,24 @@ export const RemedyHealthConcernsSection = ({
             />
             <CommandList>
               <CommandEmpty className="py-6 text-center text-sm">
-                No health concerns found.
+                {isNewConcern ? (
+                  <div className="space-y-2">
+                    <p>No matching health concerns found.</p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => suggestConcernMutation.mutate(searchValue)}
+                      disabled={suggestConcernMutation.isPending}
+                      className="text-xs"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add "{searchValue}" (pending approval)
+                    </Button>
+                  </div>
+                ) : (
+                  "No health concerns found."
+                )}
               </CommandEmpty>
               <CommandGroup className="max-h-64 overflow-auto bg-background">
                 {filteredConcerns.map((concern) => (
@@ -123,9 +218,21 @@ export const RemedyHealthConcernsSection = ({
                     }}
                     className="cursor-pointer bg-background hover:bg-accent"
                   >
-                    {concern}
+                    <span className="flex-1">{concern}</span>
+                    {isPendingConcern(concern) && (
+                      <Clock className="h-3 w-3 ml-2 text-muted-foreground" />
+                    )}
                   </CommandItem>
                 ))}
+                {isNewConcern && filteredConcerns.length > 0 && (
+                  <CommandItem
+                    onSelect={() => suggestConcernMutation.mutate(searchValue)}
+                    className="cursor-pointer bg-background hover:bg-accent border-t"
+                  >
+                    <Plus className="h-3 w-3 mr-2" />
+                    Add "{searchValue}" (pending approval)
+                  </CommandItem>
+                )}
               </CommandGroup>
             </CommandList>
           </Command>
@@ -134,23 +241,29 @@ export const RemedyHealthConcernsSection = ({
 
       {selectedConcerns.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {selectedConcerns.map((concern, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="flex items-center gap-1"
-            >
-              {concern}
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-destructive"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  removeConcern(concern);
-                }}
-              />
-            </Badge>
-          ))}
+          {selectedConcerns.map((concern, index) => {
+            const isPending = isPendingConcern(concern);
+            return (
+              <Badge
+                key={index}
+                variant={isPending ? "outline" : "secondary"}
+                className={`flex items-center gap-1 ${isPending ? 'border-dashed border-orange-300 text-orange-600' : ''}`}
+              >
+                {concern}
+                {isPending && (
+                  <Clock className="h-3 w-3" />
+                )}
+                <X
+                  className="h-3 w-3 cursor-pointer hover:text-destructive"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeConcern(concern);
+                  }}
+                />
+              </Badge>
+            );
+          })}
         </div>
       )}
     </div>
