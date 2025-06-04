@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { X, Plus, Clock } from "lucide-react";
@@ -228,7 +227,7 @@ export const RemedyHealthConcernsSection = ({
                       size="sm"
                       onClick={handleSuggestConcern}
                       disabled={suggestConcernMutation.isPending}
-                      className="text-xs bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100"
+                      className="text-xs bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
                     >
                       <Plus className="h-3 w-3 mr-1" />
                       {suggestConcernMutation.isPending ? "Adding..." : `Add "${searchValue}" (pending approval)`}
@@ -250,7 +249,7 @@ export const RemedyHealthConcernsSection = ({
                   >
                     <span className="flex-1">{concern}</span>
                     {isPendingConcern(concern) && (
-                      <Clock className="h-3 w-3 ml-2 text-orange-500" />
+                      <Clock className="h-3 w-3 ml-2 text-blue-500" />
                     )}
                   </CommandItem>
                 ))}
@@ -277,7 +276,7 @@ export const RemedyHealthConcernsSection = ({
               <Badge
                 key={index}
                 variant={isPending ? "outline" : "secondary"}
-                className={`flex items-center gap-1 ${isPending ? 'border-dashed border-orange-300 text-orange-600 bg-orange-50' : ''}`}
+                className={`flex items-center gap-1 ${isPending ? 'border-dashed border-blue-300 text-blue-600 bg-blue-50' : ''}`}
               >
                 {concern}
                 {isPending && (

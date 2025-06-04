@@ -178,11 +178,11 @@ const CreateRemedy = () => {
         </Button>
       </header>
 
-      {/* Content with reduced padding */}
-      <div className="px-4 py-6 max-w-7xl mx-auto">
+      {/* Content with minimal padding */}
+      <div className="px-2 py-4 max-w-full mx-auto lg:px-4">
         <form onSubmit={handleSubmit}>
-          {/* Three-column layout with proper spacing */}
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr,1.5fr,1fr] gap-6">
+          {/* Three-column layout with tighter spacing */}
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr,1.5fr,1fr] gap-4 lg:gap-6">
             {/* Left column - Main content */}
             <div className="space-y-6">
               <UnifiedRemedyDetailsSection
