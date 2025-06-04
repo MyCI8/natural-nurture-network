@@ -17,6 +17,12 @@ CREATE INDEX IF NOT EXISTS idx_health_concern_suggestions_suggested_by ON health
 -- Enable RLS
 ALTER TABLE health_concern_suggestions ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view their own suggestions" ON health_concern_suggestions;
+DROP POLICY IF EXISTS "Users can insert their own suggestions" ON health_concern_suggestions;
+DROP POLICY IF EXISTS "Admins can view all suggestions" ON health_concern_suggestions;
+DROP POLICY IF EXISTS "Admins can update suggestions" ON health_concern_suggestions;
+
 -- RLS policies
 CREATE POLICY "Users can view their own suggestions" ON health_concern_suggestions
   FOR SELECT USING (auth.uid() = suggested_by);
@@ -24,6 +30,7 @@ CREATE POLICY "Users can view their own suggestions" ON health_concern_suggestio
 CREATE POLICY "Users can insert their own suggestions" ON health_concern_suggestions
   FOR INSERT WITH CHECK (auth.uid() = suggested_by);
 
+-- Admin policies (assuming user_roles table exists)
 CREATE POLICY "Admins can view all suggestions" ON health_concern_suggestions
   FOR SELECT USING (
     EXISTS (

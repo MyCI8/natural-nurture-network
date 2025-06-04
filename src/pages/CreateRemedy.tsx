@@ -147,7 +147,7 @@ const CreateRemedy = () => {
   const videoLinks = links.filter(link => link.type === 'video');
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-background z-10">
         <Button 
@@ -178,13 +178,13 @@ const CreateRemedy = () => {
         </Button>
       </header>
 
-      {/* Content */}
-      <div className="container mx-auto p-6">
+      {/* Content with reduced padding */}
+      <div className="px-4 py-6 max-w-7xl mx-auto">
         <form onSubmit={handleSubmit}>
-          {/* Three-column layout */}
-          <div className="grid grid-cols-1 md:grid-cols-[2fr,1.5fr,1fr] gap-8">
+          {/* Three-column layout with proper spacing */}
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr,1.5fr,1fr] gap-6">
             {/* Left column - Main content */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               <UnifiedRemedyDetailsSection
                 formData={formData}
                 onChange={handleInputChange}
@@ -202,7 +202,7 @@ const CreateRemedy = () => {
             </div>
 
             {/* Middle column - Images, Experts, Links */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               <MultipleImageUpload
                 images={images}
                 onImagesChange={setImages}
@@ -220,7 +220,7 @@ const CreateRemedy = () => {
             </div>
 
             {/* Right column - Health Concerns and Actions */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               <RemedyHealthConcernsSection
                 selectedConcerns={formData.health_concerns}
                 onConcernsChange={(concerns) => handleInputChange('health_concerns', concerns)}
@@ -246,7 +246,7 @@ const CreateRemedy = () => {
               )}
 
               {/* Action Buttons - Desktop */}
-              <div className="hidden md:block space-y-4">
+              <div className="hidden lg:block space-y-4">
                 <Button 
                   type="submit" 
                   className="w-full touch-manipulation"
@@ -278,7 +278,7 @@ const CreateRemedy = () => {
           </div>
 
           {/* Submit Button - Mobile */}
-          <div className="md:hidden mt-8">
+          <div className="lg:hidden mt-8">
             <Button 
               type="submit" 
               className="w-full py-6 rounded-full touch-manipulation"

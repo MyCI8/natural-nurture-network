@@ -95,34 +95,39 @@ export const RemedyHealthConcernsSection = ({
   const suggestConcernMutation = useMutation({
     mutationFn: async (concernName: string) => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Must be logged in");
+      if (!user) throw new Error("Must be logged in to suggest health concerns");
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("health_concern_suggestions" as any)
         .insert({
           concern_name: concernName,
           suggested_by: user.id,
           status: "pending"
-        } as any);
+        } as any)
+        .select()
+        .single();
 
-      if (error) throw error;
-      return concernName;
+      if (error) {
+        console.error("Insert error:", error);
+        throw new Error(`Failed to suggest concern: ${error.message || 'Unknown error'}`);
+      }
+      return { concernName, data };
     },
-    onSuccess: (concernName) => {
+    onSuccess: ({ concernName }) => {
       toast({
         title: "Suggestion submitted",
-        description: `"${concernName}" has been submitted for review`,
+        description: `"${concernName}" has been submitted for review and added to your selection`,
       });
       queryClient.invalidateQueries({ queryKey: ["health-concern-suggestions"] });
       addConcern(concernName, true);
       setSearchValue("");
       setOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error suggesting concern:", error);
       toast({
         title: "Error",
-        description: "Failed to submit suggestion",
+        description: error.message || "Failed to submit suggestion. Please try again.",
         variant: "destructive",
       });
     },
@@ -167,6 +172,12 @@ export const RemedyHealthConcernsSection = ({
     return pendingSuggestions.some(s => s.concern_name === concern);
   };
 
+  const handleSuggestConcern = () => {
+    if (searchValue.trim()) {
+      suggestConcernMutation.mutate(searchValue.trim());
+    }
+  };
+
   return (
     <div className="space-y-3">
       <Label className="text-sm font-medium">Applicable For</Label>
@@ -209,18 +220,18 @@ export const RemedyHealthConcernsSection = ({
             <CommandList>
               <CommandEmpty className="py-6 text-center text-sm">
                 {isNewConcern ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <p>No matching health concerns found.</p>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={() => suggestConcernMutation.mutate(searchValue)}
+                      onClick={handleSuggestConcern}
                       disabled={suggestConcernMutation.isPending}
-                      className="text-xs"
+                      className="text-xs bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100"
                     >
                       <Plus className="h-3 w-3 mr-1" />
-                      Add "{searchValue}" (pending approval)
+                      {suggestConcernMutation.isPending ? "Adding..." : `Add "${searchValue}" (pending approval)`}
                     </Button>
                   </div>
                 ) : (
@@ -239,13 +250,13 @@ export const RemedyHealthConcernsSection = ({
                   >
                     <span className="flex-1">{concern}</span>
                     {isPendingConcern(concern) && (
-                      <Clock className="h-3 w-3 ml-2 text-muted-foreground" />
+                      <Clock className="h-3 w-3 ml-2 text-orange-500" />
                     )}
                   </CommandItem>
                 ))}
                 {isNewConcern && filteredConcerns.length > 0 && (
                   <CommandItem
-                    onSelect={() => suggestConcernMutation.mutate(searchValue)}
+                    onSelect={handleSuggestConcern}
                     className="cursor-pointer bg-background hover:bg-accent border-t"
                   >
                     <Plus className="h-3 w-3 mr-2" />
@@ -266,7 +277,7 @@ export const RemedyHealthConcernsSection = ({
               <Badge
                 key={index}
                 variant={isPending ? "outline" : "secondary"}
-                className={`flex items-center gap-1 ${isPending ? 'border-dashed border-orange-300 text-orange-600' : ''}`}
+                className={`flex items-center gap-1 ${isPending ? 'border-dashed border-orange-300 text-orange-600 bg-orange-50' : ''}`}
               >
                 {concern}
                 {isPending && (
