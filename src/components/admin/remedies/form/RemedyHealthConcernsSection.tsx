@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -46,7 +46,7 @@ export const RemedyHealthConcernsSection = ({
 
   console.log("RemedyHealthConcernsSection render", { selectedConcerns, open });
 
-  const filteredConcerns = healthConcerns.filter(concern =>
+  const filteredConcerns = (healthConcerns || []).filter(concern =>
     concern.toLowerCase().includes(searchValue.toLowerCase()) &&
     !selectedConcerns.includes(concern)
   );
@@ -109,23 +109,25 @@ export const RemedyHealthConcernsSection = ({
               onValueChange={setSearchValue}
               className="bg-background"
             />
-            <CommandEmpty className="py-6 text-center text-sm">
-              No health concerns found.
-            </CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto bg-background">
-              {filteredConcerns.map((concern) => (
-                <CommandItem
-                  key={concern}
-                  onSelect={(value) => {
-                    console.log("CommandItem selected:", value, concern);
-                    addConcern(concern);
-                  }}
-                  className="cursor-pointer bg-background hover:bg-accent"
-                >
-                  {concern}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <CommandList>
+              <CommandEmpty className="py-6 text-center text-sm">
+                No health concerns found.
+              </CommandEmpty>
+              <CommandGroup className="max-h-64 overflow-auto bg-background">
+                {filteredConcerns.map((concern) => (
+                  <CommandItem
+                    key={concern}
+                    onSelect={(value) => {
+                      console.log("CommandItem selected:", value, concern);
+                      addConcern(concern);
+                    }}
+                    className="cursor-pointer bg-background hover:bg-accent"
+                  >
+                    {concern}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
