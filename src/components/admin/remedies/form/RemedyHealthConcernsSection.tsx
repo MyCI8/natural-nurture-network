@@ -118,7 +118,8 @@ export const RemedyHealthConcernsSection = ({
         description: `"${concernName}" has been submitted for review and added to your selection`,
       });
       queryClient.invalidateQueries({ queryKey: ["health-concern-suggestions"] });
-      addConcern(concernName, true);
+      // Immediately add to selected concerns and close popover
+      onConcernsChange([...selectedConcerns, concernName]);
       setSearchValue("");
       setOpen(false);
     },
@@ -146,15 +147,13 @@ export const RemedyHealthConcernsSection = ({
   const isNewConcern = searchValue.length > 2 && 
     !allConcerns.some(concern => concern.toLowerCase() === searchValue.toLowerCase());
 
-  const addConcern = (concern: string, isPending = false) => {
-    console.log("Adding concern:", concern, "isPending:", isPending);
+  const addConcern = (concern: string) => {
+    console.log("Adding concern:", concern);
     if (!selectedConcerns.includes(concern)) {
       onConcernsChange([...selectedConcerns, concern]);
     }
-    if (!isPending) {
-      setSearchValue("");
-      setOpen(false);
-    }
+    setSearchValue("");
+    setOpen(false);
   };
 
   const removeConcern = (concernToRemove: string) => {

@@ -9,6 +9,7 @@ import ManageExperts from "./pages/ManageExperts";
 import ManageRemedies from "./pages/ManageRemedies";
 import ManageIngredients from "./pages/ManageIngredients";
 import ManageSymptoms from "./pages/ManageSymptoms";
+import ManageHealthConcerns from "./pages/ManageHealthConcerns";
 import EditExpert from "./pages/EditExpert";
 import EditRemedy from "./pages/EditRemedy";
 import IngredientDetail from "./pages/IngredientDetail";
@@ -82,6 +83,7 @@ const Routes = () => {
             <Route index element={<ManageRemedies />} />
             <Route path="edit/:id" element={<EditRemedy />} />
           </Route>
+          <Route path="health-concerns" element={<ManageHealthConcerns />} />
           <Route path="ingredients">
             <Route index element={<ManageIngredients />} />
             <Route path=":id" element={<IngredientDetail />} />

@@ -1,103 +1,104 @@
-import { Home, Play, Newspaper, Leaf, Shield } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
 
-const baseNavigationItems = [
-  { path: '/', label: 'Home', icon: Home },
-  { path: '/explore', label: 'Explore', icon: Play },
-  { path: '/news', label: 'News', icon: Newspaper },
-  { path: '/remedies', label: 'Remedies', icon: Leaf },
-];
-
-export const getNavigationItems = (isAdmin: boolean = false) => {
-  const items = [...baseNavigationItems];
-  
-  if (isAdmin) {
-    items.push({ path: '/admin', label: 'Admin', icon: Shield });
-  }
-  
-  return items;
-};
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Home, Users, Video, Newspaper, Settings, ShieldCheck, Pill, Stethoscope, TestTube, Activity, Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface NavigationItemsProps {
+  isAdmin: boolean;
+  isMobile?: boolean;
   onItemClick?: () => void;
-  className?: string;
-  iconOnly?: boolean;
-  isAdmin?: boolean;
 }
 
-export const NavigationItems = ({ 
-  onItemClick, 
-  className = "", 
-  iconOnly = false,
-  isAdmin = false
-}: NavigationItemsProps) => {
+const NavigationItems: React.FC<NavigationItemsProps> = ({ 
+  isAdmin, 
+  isMobile = false, 
+  onItemClick 
+}) => {
   const location = useLocation();
-  const navigationItems = getNavigationItems(isAdmin);
+  const navigate = useNavigate();
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    onItemClick?.();
+  };
+
+  const isActive = (path: string) => location.pathname === path;
+
+  // Main navigation items
+  const mainItems = [
+    { name: 'Home', icon: Home, path: '/' },
+    { name: 'Explore', icon: Video, path: '/explore' },
+    { name: 'Remedies', icon: Pill, path: '/remedies' },
+    { name: 'Experts', icon: Stethoscope, path: '/experts' },
+    { name: 'Ingredients', icon: TestTube, path: '/ingredients' },
+    { name: 'Symptoms', icon: Activity, path: '/symptoms' },
+    { name: 'News', icon: Newspaper, path: '/news' },
+  ];
+
+  // Admin navigation items
+  const adminItems = isAdmin ? [
+    { name: 'Admin Dashboard', icon: ShieldCheck, path: '/admin' },
+    { name: 'Manage Users', icon: Users, path: '/admin/users' },
+    { name: 'Manage Experts', icon: Stethoscope, path: '/admin/manage-experts' },
+    { name: 'Manage Remedies', icon: Pill, path: '/admin/remedies' },
+    { name: 'Health Concerns', icon: Heart, path: '/admin/health-concerns' },
+    { name: 'Manage Ingredients', icon: TestTube, path: '/admin/ingredients' },
+    { name: 'Manage Symptoms', icon: Activity, path: '/admin/symptoms' },
+    { name: 'Manage News', icon: Newspaper, path: '/admin/news' },
+    { name: 'Manage Videos', icon: Video, path: '/admin/videos' },
+  ] : [];
+
+  const buttonClass = (path: string) => 
+    `w-full justify-start gap-3 h-12 ${
+      isActive(path) 
+        ? 'bg-primary text-primary-foreground' 
+        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+    } ${isMobile ? 'touch-manipulation' : ''}`;
 
   return (
-    <nav className={`space-y-3 ${className}`}>
-      {navigationItems.map((item) => (
-        iconOnly ? (
-          <Link
+    <div className="space-y-1">
+      {/* Main Navigation */}
+      <div className="space-y-1">
+        {mainItems.map((item) => (
+          <Button
             key={item.path}
-            to={item.path}
-            onClick={onItemClick}
-            className={`flex items-center justify-center p-3 rounded-full transition-colors hover:bg-accent/30 touch-manipulation active:scale-95 transition-transform ${
-              location.pathname === item.path ? 'bg-accent/50 text-primary font-bold' : ''
-            }`}
-            title={item.label}
+            variant="ghost"
+            className={buttonClass(item.path)}
+            onClick={() => handleNavigate(item.path)}
           >
-            <item.icon className="h-6 w-6 shrink-0" />
-          </Link>
-        ) : (
-          <Link
-            key={item.path}
-            to={item.path}
-            onClick={onItemClick}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-accent/30 touch-manipulation active:scale-95 transition-transform ${
-              location.pathname === item.path ? 'bg-accent/50 text-primary font-bold' : ''
-            }`}
-          >
-            <item.icon className="h-6 w-6 shrink-0" />
-            <span className="text-base">{item.label}</span>
-          </Link>
-        )
-      ))}
-    </nav>
+            <item.icon className="h-5 w-5 shrink-0" />
+            <span className="truncate">{item.name}</span>
+          </Button>
+        ))}
+      </div>
+
+      {/* Admin Section */}
+      {isAdmin && (
+        <>
+          <div className="my-4 border-t border-border" />
+          <div className="space-y-1">
+            <div className="px-3 py-2">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Admin
+              </h3>
+            </div>
+            {adminItems.map((item) => (
+              <Button
+                key={item.path}
+                variant="ghost"
+                className={buttonClass(item.path)}
+                onClick={() => handleNavigate(item.path)}
+              >
+                <item.icon className="h-5 w-5 shrink-0" />
+                <span className="truncate">{item.name}</span>
+              </Button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 
-export const NavigationButtons = ({ 
-  onItemClick, 
-  className = "", 
-  iconOnly = false,
-  isAdmin = false
-}: NavigationItemsProps) => {
-  const location = useLocation();
-  const navigationItems = getNavigationItems(isAdmin);
-
-  return (
-    <nav className={`space-y-2 ${className}`}>
-      {navigationItems.map((item) => (
-        <Link
-          key={item.path}
-          to={item.path}
-          onClick={onItemClick}
-          className={`inline-flex items-center justify-center gap-3 whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
-            iconOnly 
-              ? "w-full flex items-center justify-center p-3 rounded-full" 
-              : "w-full justify-start px-4 py-3 rounded-lg"
-          } ${
-            location.pathname === item.path 
-              ? 'bg-accent/50 text-primary font-bold' 
-              : 'hover:bg-accent/30 bg-transparent active:bg-accent/70'
-          } touch-manipulation active:scale-95 transition-transform min-h-[48px]`}
-          title={iconOnly ? item.label : undefined}
-        >
-          <item.icon className="h-6 w-6 shrink-0" />
-          {!iconOnly && <span>{item.label}</span>}
-        </Link>
-      ))}
-    </nav>
-  );
-};
+export default NavigationItems;

@@ -59,12 +59,12 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setIsFullWidth(false);
     }
     else if (path === '/remedies/create') {
-      // Special case for remedy creation - no right sidebar, wider content area
-      setLayoutMode('wide');
+      // Special case for remedy creation - full width, no constraints
+      setLayoutMode('full');
       setShowRightSection(false);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4 sm:px-6');
-      setContentMaxWidth('max-w-4xl');
-      setIsFullWidth(false);
+      setContentWidth('p-0');
+      setContentMaxWidth('max-w-full');
+      setIsFullWidth(true);
     }
     else if (path === '/remedies' || path.startsWith('/remedies/')) {
       setLayoutMode('three-column');
