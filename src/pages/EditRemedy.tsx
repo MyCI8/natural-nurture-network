@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -27,6 +26,13 @@ interface LinkData {
   description?: string;
   type: 'link' | 'video';
 }
+
+// Valid symptom enum values from the database
+const VALID_SYMPTOMS = [
+  'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 'Anxiety', 
+  'Depression', 'Insomnia', 'Headache', 'Joint Pain', 'Digestive Issues', 
+  'Fatigue', 'Skin Irritation', 'Hair Loss', 'Eye Strain'
+] as const;
 
 const EditRemedy = () => {
   const { id } = useParams();
@@ -173,16 +179,21 @@ const EditRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
+      // Filter health concerns to only include valid enum values
+      const validSymptoms = formData.health_concerns.filter(concern => 
+        VALID_SYMPTOMS.includes(concern as any)
+      ) as typeof VALID_SYMPTOMS[number][];
+
+      console.log('Valid symptoms filtered:', validSymptoms);
+
       // Only include fields that exist in the database schema
       const remedyData = {
-        name: formData.name,
-        summary: formData.summary,
-        brief_description: formData.summary, // Map to correct field
+        brief_description: formData.summary,
         description: fullDescription,
         image_url: uploadedImageUrl,
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: formData.health_concerns, // Map health_concerns to symptoms
+        symptoms: validSymptoms,
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };
@@ -202,7 +213,7 @@ const EditRemedy = () => {
       } else {
         const { error } = await supabase
           .from("remedies")
-          .insert([remedyData]);
+          .insert(remedyData);
 
         if (error) {
           console.error('Insert error:', error);
