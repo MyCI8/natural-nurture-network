@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
@@ -25,23 +24,30 @@ const Remedies = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   
-  const { data: remedies, isLoading } = useQuery({
+  const { data: remedies, isLoading, error } = useQuery({
     queryKey: ["remedies"],
     queryFn: async () => {
+      console.log('Fetching remedies...');
       const { data, error } = await supabase
         .from("remedies")
         .select("*")
         .eq("status", "published")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching remedies:', error);
+        throw error;
+      }
+      
+      console.log('Fetched remedies:', data);
       return data;
     },
   });
 
   const filteredRemedies = remedies?.filter(remedy =>
     remedy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    remedy.summary?.toLowerCase().includes(searchTerm.toLowerCase())
+    remedy.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    remedy.brief_description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSearchIconClick = () => {
@@ -116,7 +122,7 @@ const Remedies = () => {
       try {
         await navigator.share({
           title: remedy.name,
-          text: remedy.summary,
+          text: remedy.summary || remedy.brief_description,
           url: `${window.location.origin}/remedies/${remedy.id}`,
         });
       } catch (error) {
@@ -126,6 +132,18 @@ const Remedies = () => {
       navigator.clipboard.writeText(`${window.location.origin}/remedies/${remedy.id}`);
     }
   };
+
+  if (error) {
+    console.error('Remedies query error:', error);
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-lg font-semibold mb-2">Error loading remedies</h2>
+          <p className="text-muted-foreground">{error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -156,89 +174,117 @@ const Remedies = () => {
 
   const RemedyFeed = () => (
     <div className="space-y-4">
-      {filteredRemedies?.map((remedy) => (
-        <div key={remedy.id} onClick={() => handleRemedyClick(remedy)}>
-          <Card className="x-media-card group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer touch-manipulation active-scale">
-            <CardContent className="p-0">
-              <MediaContainer 
-                aspectRatio="auto"
-                imageUrl={remedy.image_url || "/placeholder.svg"}
-                imageAlt={remedy.name}
-                className="bg-muted"
-              >
-                <img
-                  src={remedy.image_url || "/placeholder.svg"}
-                  alt={remedy.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
-                    {remedy.name}
-                  </h3>
-                  <p className="text-white/90 text-sm line-clamp-2 mb-3">
-                    {remedy.summary}
-                  </p>
-                </div>
-              </MediaContainer>
-              
-              {/* Social Actions */}
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2 hover:bg-red-50 hover:text-red-500"
-                      onClick={(e) => handleSave(remedy.id, e)}
-                    >
-                      <Heart className="h-4 w-4" />
-                      <span className="text-sm">2.3k</span>
-                    </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      <span className="text-sm">156</span>
-                    </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2"
-                      onClick={(e) => handleShare(remedy, e)}
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
+      {filteredRemedies && filteredRemedies.length > 0 ? (
+        filteredRemedies.map((remedy) => (
+          <div key={remedy.id} onClick={() => handleRemedyClick(remedy)}>
+            <Card className="x-media-card group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer touch-manipulation active-scale">
+              <CardContent className="p-0">
+                <MediaContainer 
+                  aspectRatio="auto"
+                  imageUrl={remedy.image_url || remedy.main_image_url || "/placeholder.svg"}
+                  imageAlt={remedy.name}
+                  className="bg-muted"
+                >
+                  <img
+                    src={remedy.image_url || remedy.main_image_url || "/placeholder.svg"}
+                    alt={remedy.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
+                      {remedy.name}
+                    </h3>
+                    <p className="text-white/90 text-sm line-clamp-2 mb-3">
+                      {remedy.summary || remedy.brief_description}
+                    </p>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleSave(remedy.id, e)}
-                    >
-                      <Bookmark className="h-4 w-4" />
-                    </Button>
+                </MediaContainer>
+                
+                {/* Social Actions */}
+                <div className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 hover:bg-red-50 hover:text-red-500"
+                        onClick={(e) => handleSave(remedy.id, e)}
+                      >
+                        <Heart className="h-4 w-4" />
+                        <span className="text-sm">2.3k</span>
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        <span className="text-sm">156</span>
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2"
+                        onClick={(e) => handleShare(remedy, e)}
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                     
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium">4.8</span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleSave(remedy.id, e)}
+                      >
+                        <Bookmark className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium">4.8</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+        ))
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 px-4">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+              <Search className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">No remedies found</h3>
+              <p className="text-muted-foreground">
+                {searchTerm 
+                  ? `No remedies match "${searchTerm}"`
+                  : "No published remedies are available at the moment"
+                }
+              </p>
+            </div>
+            {searchTerm && (
+              <Button
+                variant="outline"
+                onClick={() => setSearchTerm("")}
+                className="touch-manipulation"
+              >
+                Clear search
+              </Button>
+            )}
+          </div>
         </div>
-      ))}
+      )}
     </div>
   );
 
@@ -338,35 +384,6 @@ const Remedies = () => {
         ) : (
           <div className="p-4">
             <RemedyFeed />
-          </div>
-        )}
-
-        {/* Empty State */}
-        {filteredRemedies?.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 px-4">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                <Search className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">No remedies found</h3>
-                <p className="text-muted-foreground">
-                  {searchTerm 
-                    ? `No remedies match "${searchTerm}"`
-                    : "No remedies are available at the moment"
-                  }
-                </p>
-              </div>
-              {searchTerm && (
-                <Button
-                  variant="outline"
-                  onClick={() => setSearchTerm("")}
-                  className="touch-manipulation"
-                >
-                  Clear search
-                </Button>
-              )}
-            </div>
           </div>
         )}
       </div>
