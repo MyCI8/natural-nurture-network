@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -99,22 +100,33 @@ const CreateRemedy = () => {
         })
       );
 
-      // Prepare data for database insert - include both summary and brief_description
+      // Combine all additional content into the description field
+      let fullDescription = formData.description;
+      
+      if (formData.preparation_method) {
+        fullDescription += `\n\n**Preparation Method:**\n${formData.preparation_method}`;
+      }
+      
+      if (formData.dosage_instructions) {
+        fullDescription += `\n\n**Dosage Instructions:**\n${formData.dosage_instructions}`;
+      }
+      
+      if (formData.precautions_side_effects) {
+        fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
+      }
+
+      // Prepare data for database insert - only use fields that exist in the database
       const remedyData = {
         name: formData.name,
-        summary: formData.summary, // Required field
+        summary: formData.summary,
         brief_description: formData.summary, // Map summary to brief_description as well
-        description: formData.description,
-        precautions_side_effects: formData.precautions_side_effects,
-        preparation_method: formData.preparation_method,
-        dosage_instructions: formData.dosage_instructions,
-        image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
-        images: JSON.stringify(uploadedImages), // Convert to JSON
-        related_links: JSON.stringify(links), // Map links to related_links as JSON
+        description: fullDescription, // Combined description with all content
+        image_url: uploadedImages[0]?.url || '', // Keep first image as main
+        video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        health_concerns: formData.health_concerns, // Map to health_concerns instead of symptoms
+        symptoms: formData.health_concerns, // Map health_concerns to symptoms (the correct DB field)
         expert_recommendations: formData.experts,
-        status: 'published' // Changed from 'draft' to 'published' so remedies appear immediately
+        status: 'published' // Set to published so remedies appear immediately
       };
 
       console.log('Inserting remedy data:', remedyData);
