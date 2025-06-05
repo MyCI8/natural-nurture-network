@@ -68,7 +68,7 @@ const EditRemedy = () => {
     if (remedy) {
       setFormData({
         name: remedy.name || "",
-        summary: remedy.summary || "",
+        summary: remedy.summary || remedy.brief_description || "",
         description: remedy.description || "",
         preparation_method: (remedy as any).preparation_method || "",
         dosage_instructions: (remedy as any).dosage_instructions || "",
@@ -141,32 +141,48 @@ const EditRemedy = () => {
 
       let uploadedImageUrl = '';
 
-      // Try to upload new images
+      // Try to upload new images (non-blocking)
       if (images.length > 0 && images[0].file) {
         console.log('Uploading new image...');
         const imageUrl = await uploadImage(images[0].file);
         if (imageUrl) {
           uploadedImageUrl = imageUrl;
         } else {
-          console.log('Image upload failed, using existing or no image');
-          toast('Image upload failed, but remedy will be saved');
+          console.log('Image upload failed, continuing without new image');
+          // Continue with existing image if available
+          if (images[0].url && !images[0].file) {
+            uploadedImageUrl = images[0].url;
+          }
         }
       } else if (images.length > 0 && images[0].url) {
         uploadedImageUrl = images[0].url;
       }
 
+      // Combine all content into the description field like CreateRemedy does
+      let fullDescription = formData.description;
+      
+      if (formData.preparation_method) {
+        fullDescription += `\n\n**Preparation Method:**\n${formData.preparation_method}`;
+      }
+      
+      if (formData.dosage_instructions) {
+        fullDescription += `\n\n**Dosage Instructions:**\n${formData.dosage_instructions}`;
+      }
+      
+      if (formData.precautions_side_effects) {
+        fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
+      }
+
+      // Only include fields that exist in the database schema
       const remedyData = {
         name: formData.name,
         summary: formData.summary,
-        description: formData.description,
-        preparation_method: formData.preparation_method,
-        dosage_instructions: formData.dosage_instructions,
-        precautions_side_effects: formData.precautions_side_effects,
+        brief_description: formData.summary, // Map to correct field
+        description: fullDescription,
         image_url: uploadedImageUrl,
-        images: images,
-        links: links,
+        video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: formData.health_concerns,
+        symptoms: formData.health_concerns, // Map health_concerns to symptoms
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };
@@ -176,7 +192,7 @@ const EditRemedy = () => {
       if (id && id !== "new") {
         const { error } = await supabase
           .from("remedies")
-          .update(remedyData as any)
+          .update(remedyData)
           .eq("id", id);
 
         if (error) {
@@ -186,7 +202,7 @@ const EditRemedy = () => {
       } else {
         const { error } = await supabase
           .from("remedies")
-          .insert([remedyData as any]);
+          .insert([remedyData]);
 
         if (error) {
           console.error('Insert error:', error);
@@ -201,6 +217,7 @@ const EditRemedy = () => {
       toast.success('Remedy saved successfully!');
       queryClient.invalidateQueries({ queryKey: ["remedies"] });
       queryClient.invalidateQueries({ queryKey: ["remedy", id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
       navigate("/admin/remedies");
     },
     onError: (error) => {
@@ -209,16 +226,24 @@ const EditRemedy = () => {
     },
   });
 
-  const handleSave = (shouldPublish = false) => {
-    console.log('Save button clicked, shouldPublish:', shouldPublish);
-    
+  const validateForm = (): string | null => {
     if (!formData.name.trim()) {
-      toast.error('Please enter a remedy name');
-      return;
+      return 'Please enter a remedy name';
     }
     
     if (!formData.summary.trim()) {
-      toast.error('Please enter a brief description');
+      return 'Please enter a brief description';
+    }
+    
+    return null;
+  };
+
+  const handleSave = (shouldPublish = false) => {
+    console.log('Save button clicked, shouldPublish:', shouldPublish);
+    
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
     
