@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -209,7 +208,6 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
               <RemedyIngredientsSection
                 ingredients={formData.ingredients}
-                availableIngredients={ingredients || []}
                 onIngredientsChange={(ingredients) => handleInputChange('ingredients', ingredients)}
               />
 

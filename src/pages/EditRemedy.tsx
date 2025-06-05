@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -205,7 +204,7 @@ const EditRemedy = () => {
 
             <RemedyIngredientsSection
               ingredients={formData.ingredients}
-              setIngredients={(ingredients) => handleInputChange('ingredients', ingredients)}
+              onIngredientsChange={(ingredients) => handleInputChange('ingredients', ingredients)}
             />
           </div>
 
