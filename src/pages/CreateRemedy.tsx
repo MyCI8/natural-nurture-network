@@ -35,6 +35,8 @@ const CreateRemedy = () => {
     summary: '',
     description: '',
     precautions_side_effects: '',
+    preparation_method: '',
+    dosage_instructions: '',
     ingredients: [] as string[],
     health_concerns: [] as string[],
     experts: [] as string[],
@@ -104,6 +106,8 @@ const CreateRemedy = () => {
         brief_description: formData.summary, // Map summary to brief_description as well
         description: formData.description,
         precautions_side_effects: formData.precautions_side_effects,
+        preparation_method: formData.preparation_method,
+        dosage_instructions: formData.dosage_instructions,
         image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
         images: JSON.stringify(uploadedImages), // Convert to JSON
         related_links: JSON.stringify(links), // Map links to related_links as JSON
