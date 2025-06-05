@@ -108,7 +108,7 @@ const Post = () => {
       {/* Main content area */}
       <main className="px-4 py-4">
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Media upload section */}
+          {/* Enhanced Media upload section */}
           <div className="space-y-4">
             <MediaUploader
               mediaPreview={mediaPreview}
@@ -122,7 +122,8 @@ const Post = () => {
             
             {!mediaPreview && (
               <div className="text-center text-sm text-muted-foreground">
-                <p>Upload a video or photo to share</p>
+                <p>Upload a video or photo to share with advanced editing tools</p>
+                <p className="text-xs mt-1">Drag & drop supported • Crop images • Edit videos</p>
               </div>
             )}
           </div>
@@ -131,11 +132,20 @@ const Post = () => {
           {mediaPreview && (
             <div className="rounded-lg overflow-hidden bg-muted">
               <AspectRatio ratio={4/5} className="max-h-64 mx-auto">
-                <img
-                  src={mediaPreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
+                {formState.video_url?.includes('video') || formState.video_url?.includes('.mp4') ? (
+                  <video
+                    src={mediaPreview}
+                    className="w-full h-full object-cover"
+                    controls
+                    muted
+                  />
+                ) : (
+                  <img
+                    src={mediaPreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </AspectRatio>
             </div>
           )}
@@ -152,7 +162,7 @@ const Post = () => {
                 value={formState.description || ""}
                 onChange={handleInputChange}
                 placeholder="What's on your mind?"
-                className="mt-1 min-h-[100px]"
+                className="mt-1 min-h-[100px] touch-manipulation"
               />
             </div>
           </div>
