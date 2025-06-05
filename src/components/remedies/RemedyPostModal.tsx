@@ -54,15 +54,18 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
         imageUrl = publicUrl;
       }
 
+      // Map fields to correct database schema
+      const remedyData = {
+        name: formData.name,
+        brief_description: formData.summary, // Map summary to brief_description
+        description: formData.description,
+        image_url: imageUrl,
+        status: 'draft'
+      };
+
       const { error } = await supabase
         .from('remedies')
-        .insert({
-          name: formData.name,
-          summary: formData.summary,
-          description: formData.description,
-          image_url: imageUrl,
-          status: 'draft'
-        });
+        .insert(remedyData);
 
       if (error) throw error;
     },

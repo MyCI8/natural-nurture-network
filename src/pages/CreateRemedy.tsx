@@ -35,9 +35,6 @@ const CreateRemedy = () => {
     name: '',
     summary: '',
     description: '',
-    preparation_method: '',
-    dosage_instructions: '',
-    precautions_side_effects: '',
     ingredients: [] as string[],
     health_concerns: [] as string[],
     experts: [] as string[],
@@ -67,18 +64,30 @@ const CreateRemedy = () => {
     mutationFn: async () => {
       if (!currentUser) throw new Error('User not authenticated');
 
-      // Upload images
+      console.log('Starting remedy creation with data:', {
+        formData,
+        images: images.length,
+        links: links.length
+      });
+
+      // Upload images to storage
       const uploadedImages = await Promise.all(
         images.map(async (image) => {
           if (!image.file) return { url: image.url, description: image.description };
           
           const fileExt = image.file.name.split('.').pop();
           const fileName = `${Math.random()}.${fileExt}`;
+          
+          console.log('Uploading image:', fileName);
+          
           const { error: uploadError } = await supabase.storage
             .from('remedy-images')
             .upload(fileName, image.file);
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error('Image upload error:', uploadError);
+            throw new Error(`Failed to upload image: ${uploadError.message}`);
+          }
 
           const { data: { publicUrl } } = supabase.storage
             .from('remedy-images')
@@ -88,25 +97,35 @@ const CreateRemedy = () => {
         })
       );
 
-      const { error } = await supabase
-        .from('remedies')
-        .insert({
-          name: formData.name,
-          summary: formData.summary,
-          description: formData.description,
-          preparation_method: formData.preparation_method,
-          dosage_instructions: formData.dosage_instructions,
-          precautions_side_effects: formData.precautions_side_effects,
-          image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
-          images: uploadedImages,
-          links: links,
-          ingredients: formData.ingredients,
-          symptoms: formData.health_concerns as any, // Map health_concerns to symptoms for compatibility
-          expert_recommendations: formData.experts,
-          status: 'draft'
-        } as any);
+      // Prepare data for database insert - mapping to correct field names
+      const remedyData = {
+        name: formData.name,
+        brief_description: formData.summary, // Map summary to brief_description
+        description: formData.description,
+        image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
+        images: JSON.stringify(uploadedImages), // Convert to JSON
+        related_links: JSON.stringify(links), // Map links to related_links as JSON
+        ingredients: formData.ingredients,
+        health_concerns: formData.health_concerns, // Map to health_concerns instead of symptoms
+        expert_recommendations: formData.experts,
+        status: 'draft'
+      };
 
-      if (error) throw error;
+      console.log('Inserting remedy data:', remedyData);
+
+      const { error, data } = await supabase
+        .from('remedies')
+        .insert(remedyData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database insert error:', error);
+        throw new Error(`Failed to create remedy: ${error.message}`);
+      }
+
+      console.log('Remedy created successfully:', data);
+      return data;
     },
     onSuccess: () => {
       toast.success('Remedy created successfully!');
@@ -116,7 +135,7 @@ const CreateRemedy = () => {
     },
     onError: (error) => {
       console.error('Error creating remedy:', error);
-      toast.error('Failed to create remedy');
+      toast.error(error.message || 'Failed to create remedy');
     },
   });
 
@@ -129,10 +148,17 @@ const CreateRemedy = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.summary.trim()) {
-      toast.error('Please fill in the required fields');
+    
+    if (!formData.name.trim()) {
+      toast.error('Please enter a remedy name');
       return;
     }
+    
+    if (!formData.summary.trim()) {
+      toast.error('Please enter a brief description');
+      return;
+    }
+    
     createRemedyMutation.mutate();
   };
 
