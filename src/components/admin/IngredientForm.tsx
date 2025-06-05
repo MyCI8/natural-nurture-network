@@ -13,7 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { EnhancedImageUpload } from "@/components/ui/enhanced-image-upload";
 
 interface IngredientFormProps {
   onClose: () => void;
@@ -47,17 +48,12 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
     }
   }, [ingredient]);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const handleImageChange = (url: string) => {
+    setImagePreview(url);
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview("");
+  const handleFileSelect = (file: File) => {
+    setImageFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -207,48 +203,17 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
             />
           </div>
 
-          {/* Image Upload Section */}
+          {/* Enhanced Image Upload Section */}
           <div>
             <Label>Image</Label>
-            <div className="mt-2 space-y-4">
-              {imagePreview && (
-                <div className="relative inline-block">
-                  <img
-                    src={imagePreview}
-                    alt="Ingredient preview"
-                    className="w-32 h-32 object-cover rounded-lg"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={removeImage}
-                    className="absolute -top-2 -right-2 touch-manipulation"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              
-              <div>
-                <Label
-                  htmlFor="image"
-                  className="cursor-pointer flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg hover:border-primary touch-manipulation"
-                >
-                  <input
-                    type="file"
-                    id="image"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                  <div className="text-center">
-                    <Upload className="h-6 w-6 text-gray-400 mx-auto mb-2" />
-                    <span className="text-sm text-gray-500">Click to upload image</span>
-                  </div>
-                </Label>
-              </div>
-            </div>
+            <EnhancedImageUpload
+              value={imagePreview}
+              onChange={handleImageChange}
+              onFileSelect={handleFileSelect}
+              aspectRatio={1}
+              maxSize={5}
+              className="mt-2"
+            />
           </div>
 
           {/* Full Description Field */}

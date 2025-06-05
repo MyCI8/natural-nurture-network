@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, X, Plus } from 'lucide-react';
+import { Plus, X, Crop, Edit } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { EnhancedImageUpload } from '@/components/ui/enhanced-image-upload';
+import { ImageCropModal } from '@/components/ui/image-crop-modal';
 
 interface ImageData {
   file?: File;
@@ -18,35 +20,23 @@ interface MultipleImageUploadProps {
 }
 
 export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUploadProps) => {
-  const [dragActive, setDragActive] = useState(false);
+  const [cropModal, setCropModal] = useState<{ isOpen: boolean; imageIndex: number; imageSrc: string }>({
+    isOpen: false,
+    imageIndex: -1,
+    imageSrc: ''
+  });
 
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) return;
-    
-    const newImages: ImageData[] = [];
-    Array.from(files).forEach((file) => {
-      const url = URL.createObjectURL(file);
-      newImages.push({ file, url });
-    });
-    
-    onImagesChange([...images, ...newImages]);
+  const addNewImage = () => {
+    // Add a placeholder for new image
+    const newImages = [...images, { url: '', description: '' }];
+    onImagesChange(newImages);
   };
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    handleFileUpload(e.dataTransfer.files);
+  const updateImage = (index: number, url: string, file?: File) => {
+    const updatedImages = images.map((img, i) => 
+      i === index ? { ...img, url, file } : img
+    );
+    onImagesChange(updatedImages);
   };
 
   const removeImage = (index: number) => {
@@ -61,79 +51,107 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
     onImagesChange(updatedImages);
   };
 
+  const openCropModal = (index: number, imageSrc: string) => {
+    setCropModal({
+      isOpen: true,
+      imageIndex: index,
+      imageSrc
+    });
+  };
+
+  const handleCropComplete = (croppedImageUrl: string) => {
+    if (cropModal.imageIndex >= 0) {
+      updateImage(cropModal.imageIndex, croppedImageUrl);
+    }
+    setCropModal({ isOpen: false, imageIndex: -1, imageSrc: '' });
+  };
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Images</h3>
-      
-      {/* Upload Area */}
-      <div
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          dragActive ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-sm text-muted-foreground mb-4">
-          Drag and drop images here, or click to select
-        </p>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => handleFileUpload(e.target.files)}
-          className="hidden"
-          id="image-upload"
-        />
-        <Button type="button" variant="outline" asChild className="touch-manipulation">
-          <label htmlFor="image-upload" className="cursor-pointer">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Images
-          </label>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Images</h3>
+        <Button 
+          type="button"
+          variant="outline" 
+          size="sm" 
+          onClick={addNewImage}
+          className="touch-manipulation"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Add Image
         </Button>
       </div>
 
       {/* Image Grid */}
-      {images.length > 0 && (
-        <div className="grid grid-cols-1 gap-4">
-          {images.map((image, index) => (
-            <div key={index} className="space-y-2">
-              <div className="relative">
-                <AspectRatio ratio={16/9} className="overflow-hidden rounded-lg">
-                  <img 
-                    src={image.url} 
-                    alt={`Upload ${index + 1}`}
-                    className="w-full h-full object-cover"
+      <div className="grid grid-cols-1 gap-6">
+        {images.map((image, index) => (
+          <div key={index} className="space-y-4 p-4 border rounded-lg">
+            {image.url ? (
+              <div className="space-y-3">
+                <div className="relative group">
+                  <AspectRatio ratio={16/9} className="overflow-hidden rounded-lg">
+                    <img 
+                      src={image.url} 
+                      alt={`Upload ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => openCropModal(index, image.url)}
+                        className="touch-manipulation"
+                      >
+                        <Crop className="h-4 w-4 mr-1" />
+                        Crop
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeImage(index)}
+                        className="touch-manipulation"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </AspectRatio>
+                </div>
+                
+                <div>
+                  <Label htmlFor={`description-${index}`} className="text-sm font-medium">
+                    Description (optional)
+                  </Label>
+                  <Input
+                    id={`description-${index}`}
+                    value={image.description || ''}
+                    onChange={(e) => updateImageDescription(index, e.target.value)}
+                    placeholder="Describe this image..."
+                    className="mt-1 touch-manipulation bg-background"
                   />
-                </AspectRatio>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => removeImage(index)}
-                  className="absolute top-2 right-2 touch-manipulation"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                </div>
               </div>
-              <div>
-                <Label htmlFor={`description-${index}`} className="text-sm">
-                  Description (optional)
-                </Label>
-                <Input
-                  id={`description-${index}`}
-                  value={image.description || ''}
-                  onChange={(e) => updateImageDescription(index, e.target.value)}
-                  placeholder="Describe this image..."
-                  className="mt-1 touch-manipulation bg-background"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ) : (
+              <EnhancedImageUpload
+                value={image.url}
+                onChange={(url) => updateImage(index, url)}
+                onFileSelect={(file) => updateImage(index, URL.createObjectURL(file), file)}
+                aspectRatio={16/9}
+                showCrop={false}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Crop Modal */}
+      <ImageCropModal
+        isOpen={cropModal.isOpen}
+        onClose={() => setCropModal({ isOpen: false, imageIndex: -1, imageSrc: '' })}
+        imageSrc={cropModal.imageSrc}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 };
