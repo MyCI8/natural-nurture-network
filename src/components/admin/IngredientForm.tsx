@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import ImageUploadSection from "./ingredients/form/ImageUploadSection";
-import DescriptionSection from "./ingredients/form/DescriptionSection";
+import { Loader2 } from "lucide-react";
 
 interface IngredientFormProps {
   onClose: () => void;
@@ -23,11 +23,11 @@ interface IngredientFormProps {
 
 const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) => {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     brief_description: "",
     full_description: "",
-    image_url: "",
   });
 
   useEffect(() => {
@@ -36,22 +36,32 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
         name: ingredient.name || "",
         brief_description: ingredient.brief_description || "",
         full_description: ingredient.full_description || "",
-        image_url: ingredient.image_url || "",
       });
     }
   }, [ingredient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Ingredient name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
       if (ingredient) {
         const { error } = await supabase
           .from("ingredients")
           .update({
-            name: formData.name,
-            brief_description: formData.brief_description,
-            full_description: formData.full_description,
-            image_url: formData.image_url,
+            name: formData.name.trim(),
+            brief_description: formData.brief_description.trim() || null,
+            full_description: formData.full_description.trim() || null,
           })
           .eq("id", ingredient.id);
 
@@ -65,10 +75,9 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
         const { error } = await supabase
           .from("ingredients")
           .insert([{
-            name: formData.name,
-            brief_description: formData.brief_description,
-            full_description: formData.full_description,
-            image_url: formData.image_url,
+            name: formData.name.trim(),
+            brief_description: formData.brief_description.trim() || null,
+            full_description: formData.full_description.trim() || null,
           }]);
 
         if (error) throw error;
@@ -82,11 +91,14 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
       onSave?.();
       onClose();
     } catch (error: any) {
+      console.error("Error saving ingredient:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to save ingredient",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -107,40 +119,60 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Name *</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
+              placeholder="Enter ingredient name"
               required
+              className="bg-background"
             />
           </div>
 
-          <DescriptionSection
-            briefDescription={formData.brief_description}
-            fullDescription={formData.full_description}
-            onBriefDescriptionChange={(value) =>
-              setFormData({ ...formData, brief_description: value })
-            }
-            onFullDescriptionChange={(value) =>
-              setFormData({ ...formData, full_description: value })
-            }
-          />
+          <div>
+            <Label htmlFor="brief_description">Brief Description</Label>
+            <Input
+              id="brief_description"
+              value={formData.brief_description}
+              onChange={(e) =>
+                setFormData({ ...formData, brief_description: e.target.value })
+              }
+              placeholder="Short description of the ingredient"
+              className="bg-background"
+            />
+          </div>
 
-          <ImageUploadSection
-            imageUrl={formData.image_url}
-            onImageChange={(url) =>
-              setFormData({ ...formData, image_url: url })
-            }
-          />
+          <div>
+            <Label htmlFor="full_description">Full Description</Label>
+            <Textarea
+              id="full_description"
+              value={formData.full_description}
+              onChange={(e) =>
+                setFormData({ ...formData, full_description: e.target.value })
+              }
+              placeholder="Detailed description of the ingredient and its properties"
+              rows={4}
+              className="bg-background"
+            />
+          </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose} type="button">
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={onClose} 
+              type="button"
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {ingredient ? "Update" : "Create"}
             </Button>
           </div>
