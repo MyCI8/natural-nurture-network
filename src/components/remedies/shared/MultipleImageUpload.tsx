@@ -85,11 +85,11 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
       {/* Image Grid */}
       <div className="grid grid-cols-1 gap-6">
         {images.map((image, index) => (
-          <div key={index} className="space-y-4 p-4 border rounded-lg">
+          <div key={index} className="space-y-4 p-4 border rounded-lg max-w-full">
             {image.url ? (
               <div className="space-y-3">
-                <div className="relative group">
-                  <AspectRatio ratio={16/9} className="overflow-hidden rounded-lg">
+                <div className="relative group w-full">
+                  <AspectRatio ratio={16/9} className="overflow-hidden rounded-lg max-w-full">
                     <img 
                       src={image.url} 
                       alt={`Upload ${index + 1}`}
@@ -133,13 +133,15 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
                 </div>
               </div>
             ) : (
-              <EnhancedImageUpload
-                value={image.url}
-                onChange={(url) => updateImage(index, url)}
-                onFileSelect={(file) => updateImage(index, URL.createObjectURL(file), file)}
-                aspectRatio={16/9}
-                showCrop={false}
-              />
+              <div className="max-w-full">
+                <EnhancedImageUpload
+                  value={image.url}
+                  onChange={(url) => updateImage(index, url)}
+                  onFileSelect={(file) => updateImage(index, URL.createObjectURL(file), file)}
+                  aspectRatio={16/9}
+                  showCrop={false}
+                />
+              </div>
             )}
           </div>
         ))}
