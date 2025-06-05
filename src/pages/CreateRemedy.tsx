@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -26,6 +27,13 @@ interface LinkData {
   description?: string;
   type: 'link' | 'video';
 }
+
+// Valid symptom enum values from the database
+const VALID_SYMPTOMS = [
+  'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 'Anxiety', 
+  'Depression', 'Insomnia', 'Headache', 'Joint Pain', 'Digestive Issues', 
+  'Fatigue', 'Skin Irritation', 'Hair Loss', 'Eye Strain'
+] as const;
 
 const CreateRemedy = () => {
   const navigate = useNavigate();
@@ -115,6 +123,13 @@ const CreateRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
+      // Filter health concerns to only include valid enum values
+      const validSymptoms = formData.health_concerns.filter(concern => 
+        VALID_SYMPTOMS.includes(concern as any)
+      ) as typeof VALID_SYMPTOMS[number][];
+
+      console.log('Valid symptoms filtered:', validSymptoms, 'from:', formData.health_concerns);
+
       // Prepare data for database insert - only use fields that exist in the database
       const remedyData = {
         name: formData.name,
@@ -124,7 +139,7 @@ const CreateRemedy = () => {
         image_url: uploadedImages[0]?.url || '', // Keep first image as main
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: formData.health_concerns, // Map health_concerns to symptoms (the correct DB field)
+        symptoms: validSymptoms, // Use filtered valid symptoms
         expert_recommendations: formData.experts,
         status: 'published' // Set to published so remedies appear immediately
       };
@@ -348,3 +363,4 @@ const CreateRemedy = () => {
 };
 
 export default CreateRemedy;
+
