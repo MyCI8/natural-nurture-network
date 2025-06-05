@@ -109,7 +109,7 @@ const CreateRemedy = () => {
         ingredients: formData.ingredients,
         health_concerns: formData.health_concerns, // Map to health_concerns instead of symptoms
         expert_recommendations: formData.experts,
-        status: 'draft'
+        status: 'published' // Changed from 'draft' to 'published' so remedies appear immediately
       };
 
       console.log('Inserting remedy data:', remedyData);

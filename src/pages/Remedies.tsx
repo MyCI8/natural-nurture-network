@@ -28,10 +28,12 @@ const Remedies = () => {
     queryKey: ["remedies"],
     queryFn: async () => {
       console.log('Fetching remedies...');
+      
+      // Fetch all remedies (both published and draft) to debug the issue
       const { data, error } = await supabase
         .from("remedies")
         .select("*")
-        .eq("status", "published")
+        .in("status", ["published", "draft"]) // Include both published and draft
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -39,16 +41,38 @@ const Remedies = () => {
         throw error;
       }
       
-      console.log('Fetched remedies:', data);
-      return data;
+      console.log('Fetched remedies count:', data?.length || 0);
+      console.log('Remedies data:', data);
+      
+      // Log remedy statuses for debugging
+      if (data) {
+        const statusCounts = data.reduce((acc, remedy) => {
+          acc[remedy.status] = (acc[remedy.status] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        console.log('Remedy status breakdown:', statusCounts);
+      }
+      
+      return data || [];
     },
   });
 
-  const filteredRemedies = remedies?.filter(remedy =>
-    remedy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    remedy.summary?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    remedy.brief_description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRemedies = remedies?.filter(remedy => {
+    // Ensure remedy has required fields
+    if (!remedy.name) {
+      console.warn('Remedy missing name:', remedy);
+      return false;
+    }
+    
+    const searchText = searchTerm.toLowerCase();
+    const name = (remedy.name || '').toLowerCase();
+    const summary = (remedy.summary || '').toLowerCase();
+    const briefDescription = (remedy.brief_description || '').toLowerCase();
+    
+    return name.includes(searchText) || 
+           summary.includes(searchText) || 
+           briefDescription.includes(searchText);
+  });
 
   const handleSearchIconClick = () => {
     if (isMobile) {
@@ -182,21 +206,21 @@ const Remedies = () => {
                 <MediaContainer 
                   aspectRatio="auto"
                   imageUrl={remedy.image_url || remedy.main_image_url || "/placeholder.svg"}
-                  imageAlt={remedy.name}
+                  imageAlt={remedy.name || "Remedy"}
                   className="bg-muted"
                 >
                   <img
                     src={remedy.image_url || remedy.main_image_url || "/placeholder.svg"}
-                    alt={remedy.name}
+                    alt={remedy.name || "Remedy"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4">
                     <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
-                      {remedy.name}
+                      {remedy.name || "Untitled Remedy"}
                     </h3>
                     <p className="text-white/90 text-sm line-clamp-2 mb-3">
-                      {remedy.summary || remedy.brief_description}
+                      {remedy.summary || remedy.brief_description || "No description available"}
                     </p>
                   </div>
                 </MediaContainer>
@@ -269,7 +293,9 @@ const Remedies = () => {
               <p className="text-muted-foreground">
                 {searchTerm 
                   ? `No remedies match "${searchTerm}"`
-                  : "No published remedies are available at the moment"
+                  : remedies && remedies.length === 0 
+                    ? "No remedies are available. Try creating your first remedy!"
+                    : "No remedies match your search"
                 }
               </p>
             </div>
