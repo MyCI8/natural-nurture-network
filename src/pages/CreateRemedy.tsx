@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -71,76 +70,62 @@ const CreateRemedy = () => {
     }
   }, [currentUser, isLoadingUser, navigate]);
 
+  const uploadImage = async (imageFile: File): Promise<string | null> => {
+    try {
+      console.log('Starting image upload...');
+      
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('remedy-images')
+        .upload(fileName, imageFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return null;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('remedy-images')
+        .getPublicUrl(fileName);
+      
+      console.log('Image uploaded successfully:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      return null;
+    }
+  };
+
   const createRemedyMutation = useMutation({
     mutationFn: async () => {
       if (!currentUser) throw new Error('User not authenticated');
 
-      console.log('Starting remedy creation with data:', {
-        formData,
-        images: images.length,
-        links: links.length
-      });
+      console.log('Starting remedy creation process...');
+      console.log('Form data:', formData);
+      console.log('Images:', images.length);
+      console.log('Links:', links.length);
 
       let uploadedImageUrl = '';
-      let imageUploadSuccess = true;
 
-      // Upload images to storage with improved error handling
-      try {
-        if (images.length > 0 && images[0].file) {
-          console.log('Attempting to upload image...');
-          
-          const image = images[0];
-          const fileExt = image.file.name.split('.').pop();
-          const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-          
-          console.log('Uploading image with filename:', fileName);
-          
-          // Check if bucket exists and create if needed
-          const { data: buckets } = await supabase.storage.listBuckets();
-          const remedyBucket = buckets?.find(bucket => bucket.name === 'remedy-images');
-          
-          if (!remedyBucket) {
-            console.log('remedy-images bucket not found, creating it...');
-            const { error: bucketError } = await supabase.storage.createBucket('remedy-images', {
-              public: true,
-              allowedMimeTypes: ['image/*'],
-              fileSizeLimit: 5242880 // 5MB
-            });
-            
-            if (bucketError) {
-              console.error('Failed to create bucket:', bucketError);
-              throw new Error(`Failed to create storage bucket: ${bucketError.message}`);
-            }
-          }
-
-          const { error: uploadError } = await supabase.storage
-            .from('remedy-images')
-            .upload(fileName, image.file, {
-              cacheControl: '3600',
-              upsert: false
-            });
-
-          if (uploadError) {
-            console.error('Image upload error:', uploadError);
-            imageUploadSuccess = false;
-            toast.error(`Image upload failed: ${uploadError.message}`);
-          } else {
-            const { data: { publicUrl } } = supabase.storage
-              .from('remedy-images')
-              .getPublicUrl(fileName);
-            
-            uploadedImageUrl = publicUrl;
-            console.log('Image uploaded successfully:', uploadedImageUrl);
-          }
-        } else if (images.length > 0 && images[0].url && !images[0].file) {
-          // Use existing URL if no file to upload
-          uploadedImageUrl = images[0].url;
-          console.log('Using existing image URL:', uploadedImageUrl);
+      // Try to upload image if provided
+      if (images.length > 0 && images[0].file) {
+        console.log('Uploading image...');
+        const imageUrl = await uploadImage(images[0].file);
+        if (imageUrl) {
+          uploadedImageUrl = imageUrl;
+          console.log('Image upload successful');
+        } else {
+          console.log('Image upload failed, continuing without image');
+          toast('Image upload failed, but remedy will be saved');
         }
-      } catch (error) {
-        console.error('Image upload process failed:', error);
-        imageUploadSuccess = false;
-        toast.error('Image upload failed, but remedy will be saved without image');
+      } else if (images.length > 0 && images[0].url && !images[0].file) {
+        uploadedImageUrl = images[0].url;
+        console.log('Using existing image URL');
       }
 
       // Combine all additional content into the description field
@@ -163,20 +148,20 @@ const CreateRemedy = () => {
         VALID_SYMPTOMS.includes(concern as any)
       ) as typeof VALID_SYMPTOMS[number][];
 
-      console.log('Valid symptoms filtered:', validSymptoms, 'from:', formData.health_concerns);
+      console.log('Valid symptoms filtered:', validSymptoms);
 
-      // Prepare data for database insert - only use fields that exist in the database
+      // Prepare data for database insert
       const remedyData = {
         name: formData.name,
         summary: formData.summary,
-        brief_description: formData.summary, // Map summary to brief_description as well
-        description: fullDescription, // Combined description with all content
-        image_url: uploadedImageUrl, // Use uploaded image URL or empty string
+        brief_description: formData.summary,
+        description: fullDescription,
+        image_url: uploadedImageUrl,
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: validSymptoms, // Use filtered valid symptoms
+        symptoms: validSymptoms,
         expert_recommendations: formData.experts,
-        status: 'published' // Set to published so remedies appear immediately
+        status: 'published' as const
       };
 
       console.log('Inserting remedy data:', remedyData);
@@ -193,24 +178,21 @@ const CreateRemedy = () => {
       }
 
       console.log('Remedy created successfully:', data);
-      
-      // Show appropriate success message
-      if (!imageUploadSuccess && images.length > 0) {
-        toast.success('Remedy created successfully, but image upload failed');
-      } else {
-        toast.success('Remedy created successfully!');
-      }
-      
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutation success, remedy created:', data);
+      toast.success('Remedy created successfully!');
       queryClient.invalidateQueries({ queryKey: ['userRemedies'] });
       queryClient.invalidateQueries({ queryKey: ['remedies'] });
+      
+      // Navigate back to remedies list
+      console.log('Navigating to /remedies');
       navigate('/remedies');
     },
     onError: (error) => {
       console.error('Error creating remedy:', error);
-      toast.error(error.message || 'Failed to create remedy');
+      toast.error(error.message || 'Failed to create remedy. Please try again.');
     },
   });
 
@@ -221,16 +203,30 @@ const CreateRemedy = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const validateForm = (): string | null => {
     if (!formData.name.trim()) {
-      toast.error('Please enter a remedy name');
-      return;
+      return 'Please enter a remedy name';
     }
     
     if (!formData.summary.trim()) {
-      toast.error('Please enter a brief description');
+      return 'Please enter a brief description';
+    }
+    
+    if (!formData.description.trim()) {
+      return 'Please enter a detailed description';
+    }
+    
+    return null;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    console.log('Form submitted');
+    
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
     
@@ -276,7 +272,7 @@ const CreateRemedy = () => {
           ) : (
             <Save className="h-4 w-4 mr-2" />
           )}
-          Save
+          {createRemedyMutation.isPending ? 'Creating...' : 'Create'}
         </Button>
       </header>
 
@@ -406,4 +402,3 @@ const CreateRemedy = () => {
 };
 
 export default CreateRemedy;
-
