@@ -81,32 +81,67 @@ const CreateRemedy = () => {
         links: links.length
       });
 
-      // Upload images to storage
-      const uploadedImages = await Promise.all(
-        images.map(async (image) => {
-          if (!image.file) return { url: image.url, description: image.description };
+      let uploadedImageUrl = '';
+      let imageUploadSuccess = true;
+
+      // Upload images to storage with improved error handling
+      try {
+        if (images.length > 0 && images[0].file) {
+          console.log('Attempting to upload image...');
           
+          const image = images[0];
           const fileExt = image.file.name.split('.').pop();
-          const fileName = `${Math.random()}.${fileExt}`;
+          const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
           
-          console.log('Uploading image:', fileName);
+          console.log('Uploading image with filename:', fileName);
           
+          // Check if bucket exists and create if needed
+          const { data: buckets } = await supabase.storage.listBuckets();
+          const remedyBucket = buckets?.find(bucket => bucket.name === 'remedy-images');
+          
+          if (!remedyBucket) {
+            console.log('remedy-images bucket not found, creating it...');
+            const { error: bucketError } = await supabase.storage.createBucket('remedy-images', {
+              public: true,
+              allowedMimeTypes: ['image/*'],
+              fileSizeLimit: 5242880 // 5MB
+            });
+            
+            if (bucketError) {
+              console.error('Failed to create bucket:', bucketError);
+              throw new Error(`Failed to create storage bucket: ${bucketError.message}`);
+            }
+          }
+
           const { error: uploadError } = await supabase.storage
             .from('remedy-images')
-            .upload(fileName, image.file);
+            .upload(fileName, image.file, {
+              cacheControl: '3600',
+              upsert: false
+            });
 
           if (uploadError) {
             console.error('Image upload error:', uploadError);
-            throw new Error(`Failed to upload image: ${uploadError.message}`);
+            imageUploadSuccess = false;
+            toast.error(`Image upload failed: ${uploadError.message}`);
+          } else {
+            const { data: { publicUrl } } = supabase.storage
+              .from('remedy-images')
+              .getPublicUrl(fileName);
+            
+            uploadedImageUrl = publicUrl;
+            console.log('Image uploaded successfully:', uploadedImageUrl);
           }
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('remedy-images')
-            .getPublicUrl(fileName);
-          
-          return { url: publicUrl, description: image.description };
-        })
-      );
+        } else if (images.length > 0 && images[0].url && !images[0].file) {
+          // Use existing URL if no file to upload
+          uploadedImageUrl = images[0].url;
+          console.log('Using existing image URL:', uploadedImageUrl);
+        }
+      } catch (error) {
+        console.error('Image upload process failed:', error);
+        imageUploadSuccess = false;
+        toast.error('Image upload failed, but remedy will be saved without image');
+      }
 
       // Combine all additional content into the description field
       let fullDescription = formData.description;
@@ -136,7 +171,7 @@ const CreateRemedy = () => {
         summary: formData.summary,
         brief_description: formData.summary, // Map summary to brief_description as well
         description: fullDescription, // Combined description with all content
-        image_url: uploadedImages[0]?.url || '', // Keep first image as main
+        image_url: uploadedImageUrl, // Use uploaded image URL or empty string
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
         symptoms: validSymptoms, // Use filtered valid symptoms
@@ -158,10 +193,17 @@ const CreateRemedy = () => {
       }
 
       console.log('Remedy created successfully:', data);
+      
+      // Show appropriate success message
+      if (!imageUploadSuccess && images.length > 0) {
+        toast.success('Remedy created successfully, but image upload failed');
+      } else {
+        toast.success('Remedy created successfully!');
+      }
+      
       return data;
     },
     onSuccess: () => {
-      toast.success('Remedy created successfully!');
       queryClient.invalidateQueries({ queryKey: ['userRemedies'] });
       queryClient.invalidateQueries({ queryKey: ['remedies'] });
       navigate('/remedies');
@@ -192,6 +234,7 @@ const CreateRemedy = () => {
       return;
     }
     
+    console.log('Form validation passed, creating remedy...');
     createRemedyMutation.mutate();
   };
 
