@@ -56,19 +56,20 @@ const MediaContainer: React.FC<MediaContainerProps> = ({
 
   const finalRatio = aspectRatio === 'auto' ? detectedRatio : aspectRatio;
 
+  // Use Tailwind's built-in aspect ratio classes
   const aspectRatioClasses = {
-    '16:9': 'aspect-ratio-16-9',
-    '1:1': 'aspect-ratio-1-1',
-    '9:16': 'aspect-ratio-9-16',
-    '4:3': 'aspect-ratio-4-3',
-    '3:4': 'aspect-ratio-3-4',
+    '16:9': 'aspect-video',
+    '1:1': 'aspect-square',
+    '9:16': 'aspect-[9/16]',
+    '4:3': 'aspect-[4/3]',
+    '3:4': 'aspect-[3/4]',
   };
 
   return (
     <div className={cn("media-container w-full", className)}>
       <div 
         className={cn(
-          "media-wrapper relative w-full h-0 overflow-hidden bg-muted",
+          "media-wrapper relative w-full overflow-hidden bg-muted",
           aspectRatioClasses[finalRatio as keyof typeof aspectRatioClasses],
           rounded && "rounded-xl",
           onClick && "cursor-pointer hover:opacity-90 transition-opacity"
