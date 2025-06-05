@@ -54,10 +54,11 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
         imageUrl = publicUrl;
       }
 
-      // Map fields to correct database schema
+      // Include both summary and brief_description fields for database compatibility
       const remedyData = {
         name: formData.name,
-        brief_description: formData.summary, // Map summary to brief_description
+        summary: formData.summary, // Required field
+        brief_description: formData.summary, // Map summary to brief_description as well
         description: formData.description,
         image_url: imageUrl,
         status: 'draft'

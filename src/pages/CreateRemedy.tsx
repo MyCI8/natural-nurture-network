@@ -97,10 +97,11 @@ const CreateRemedy = () => {
         })
       );
 
-      // Prepare data for database insert - mapping to correct field names
+      // Prepare data for database insert - include both summary and brief_description
       const remedyData = {
         name: formData.name,
-        brief_description: formData.summary, // Map summary to brief_description
+        summary: formData.summary, // Required field
+        brief_description: formData.summary, // Map summary to brief_description as well
         description: formData.description,
         image_url: uploadedImages[0]?.url || '', // Keep first image as main for compatibility
         images: JSON.stringify(uploadedImages), // Convert to JSON
