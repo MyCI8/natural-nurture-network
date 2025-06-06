@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -29,11 +28,29 @@ interface LinkData {
   type: 'link' | 'video';
 }
 
-// Valid symptom enum values from the database
-const VALID_SYMPTOMS = [
-  'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 'Anxiety', 
-  'Depression', 'Insomnia', 'Headache', 'Joint Pain', 'Digestive Issues', 
-  'Fatigue', 'Skin Irritation', 'Hair Loss', 'Eye Strain'
+// Comprehensive health concerns - matches the list from RemedyHealthConcernsSection
+const COMPREHENSIVE_HEALTH_CONCERNS = [
+  // Symptoms
+  'Cough', 'Cold', 'Sore Throat', 'Headache', 'Joint Pain', 'Back Pain', 'Eye Strain', 'Fatigue',
+  'Skin Irritation', 'Hair Loss', 'Insomnia', 'Nausea', 'Fever', 'Muscle Pain', 'Bloating',
+  
+  // Conditions
+  'Cancer', 'High Blood Pressure', 'Diabetes', 'Arthritis', 'Asthma', 'Allergies', 'Eczema',
+  'Acne', 'Migraine', 'Fibromyalgia', 'IBS', 'GERD', 'UTI', 'Sinusitis', 'Bronchitis', 'Parasites',
+  
+  // Mental Health & Wellness
+  'Stress', 'Anxiety', 'Depression', 'Mental Clarity', 'Memory Support', 'Focus Enhancement',
+  'Mood Balance', 'Emotional Wellness', 'Sleep Quality', 'Relaxation',
+  
+  // Health Goals
+  'Immunity Support', 'Weight Management', 'Energy Boost', 'Detoxification', 'Anti-Aging',
+  'Skin Health', 'Hair Growth', 'Teeth Whitening', 'Breath Freshening', 'Circulation Improvement',
+  'Metabolism Boost', 'Hormone Balance', 'Blood Sugar Control', 'Cholesterol Management',
+  
+  // Body Systems
+  'Digestive Health', 'Cardiovascular Health', 'Respiratory Health', 'Immune System',
+  'Nervous System', 'Reproductive Health', 'Bone Health', 'Liver Health', 'Kidney Health',
+  'Thyroid Support', 'Adrenal Support', 'Gut Health', 'Brain Health', 'Heart Health'
 ] as const;
 
 const EditRemedy = () => {
@@ -243,12 +260,11 @@ const EditRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
-      // Filter health concerns to only include valid enum values
-      const validSymptoms = formData.health_concerns.filter(concern => 
-        VALID_SYMPTOMS.includes(concern as any)
-      ) as typeof VALID_SYMPTOMS[number][];
+      // Keep all health concerns - allow both predefined and pending suggestions
+      // No filtering needed since the health concerns component handles validation
+      const validSymptoms = formData.health_concerns;
 
-      console.log('Valid symptoms filtered:', validSymptoms);
+      console.log('Health concerns being saved:', validSymptoms);
 
       // Prepare data for database operation - Use combined description field
       const remedyData = {
