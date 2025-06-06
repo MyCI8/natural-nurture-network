@@ -22,7 +22,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
 
 interface HealthConcernSuggestion {
   id: string;
@@ -44,65 +43,56 @@ const ManageHealthConcerns = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Mock data for now - will be replaced when migration is applied
-  const mockSuggestions: HealthConcernSuggestion[] = [
-    {
-      id: "1",
-      concern_name: "Parasites",
-      brief_description: "Intestinal and other parasitic infections",
-      category: "condition",
-      suggested_by: "user1",
-      status: "pending",
-      created_at: new Date().toISOString(),
-      user_email: "user@example.com"
-    },
-    {
-      id: "2", 
-      concern_name: "Heavy Metal Detox",
-      brief_description: "Removal of heavy metals from the body",
-      category: "goal",
-      suggested_by: "user2",
-      status: "pending",
-      created_at: new Date(Date.now() - 86400000).toISOString(),
-      user_email: "expert@example.com"
-    },
-    {
-      id: "3",
-      concern_name: "Chronic Fatigue",
-      brief_description: "Persistent tiredness and low energy",
-      category: "symptom", 
-      suggested_by: "user3",
-      status: "approved",
-      created_at: new Date(Date.now() - 172800000).toISOString(),
-      reviewed_at: new Date(Date.now() - 86400000).toISOString(),
-      user_email: "member@example.com"
-    }
-  ];
-
-  const { data: suggestions = mockSuggestions, isLoading } = useQuery({
+  const { data: suggestions = [], isLoading } = useQuery({
     queryKey: ["admin-health-concern-suggestions", filter, searchQuery],
     queryFn: async () => {
-      // Return mock data for now
-      let filtered = mockSuggestions;
-      
-      if (filter !== 'all') {
-        filtered = filtered.filter(item => item.status === filter);
+      try {
+        let query = supabase
+          .from("health_concern_suggestions" as any)
+          .select(`
+            *,
+            profiles:suggested_by(email)
+          `);
+        
+        if (filter !== 'all') {
+          query = query.eq("status", filter);
+        }
+        
+        if (searchQuery) {
+          query = query.ilike("concern_name", `%${searchQuery}%`);
+        }
+        
+        const { data, error } = await query.order("created_at", { ascending: false });
+        
+        if (error) {
+          console.error("Error fetching health concern suggestions:", error);
+          return [];
+        }
+        
+        // Transform the data to include user email
+        return (data || []).map((item: any) => ({
+          ...item,
+          user_email: item.profiles?.email || 'Unknown'
+        }));
+      } catch (error) {
+        console.error("Table might not exist yet:", error);
+        return [];
       }
-      
-      if (searchQuery) {
-        filtered = filtered.filter(item => 
-          item.concern_name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      return filtered;
     },
   });
 
   const updateSuggestionMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
-      // Mock implementation for now
-      console.log(`Would update suggestion ${id} to status: ${status}`);
+      const { error } = await supabase
+        .from("health_concern_suggestions" as any)
+        .update({ 
+          status, 
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id 
+        })
+        .eq("id", id);
+      
+      if (error) throw error;
     },
     onSuccess: (_, variables) => {
       toast({
@@ -123,7 +113,12 @@ const ManageHealthConcerns = () => {
 
   const deleteSuggestionMutation = useMutation({
     mutationFn: async (id: string) => {
-      console.log(`Would delete suggestion: ${id}`);
+      const { error } = await supabase
+        .from("health_concern_suggestions" as any)
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
     },
     onSuccess: () => {
       toast({

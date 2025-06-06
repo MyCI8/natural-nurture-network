@@ -37,7 +37,8 @@ const AdminDashboard = () => {
         expertsCount, 
         commentsCount, 
         symptoms, 
-        news
+        news,
+        healthConcernsData
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
@@ -49,10 +50,16 @@ const AdminDashboard = () => {
           .select("*")
           .order("created_at", { ascending: false })
           .limit(5),
+        // Try to get health concerns data, fallback to empty if table doesn't exist
+        supabase
+          .from("health_concern_suggestions" as any)
+          .select("*", { count: "exact" })
+          .then(result => result)
+          .catch(() => ({ count: 0, data: [] }))
       ]);
 
-      // Mock pending health concerns count
-      const pendingHealthConcerns = 2; // Parasites + Heavy Metal Detox
+      const pendingHealthConcerns = healthConcernsData?.data?.filter((item: any) => item.status === 'pending')?.length || 0;
+      const totalHealthConcerns = healthConcernsData?.count || 0;
 
       return {
         users: usersCount.count || 0,
@@ -61,7 +68,7 @@ const AdminDashboard = () => {
         comments: commentsCount.count || 0,
         symptoms: symptoms.data || [],
         recentNews: news.data || [],
-        healthConcerns: 15, // Total approved health concerns
+        healthConcerns: totalHealthConcerns,
         pendingHealthConcerns: pendingHealthConcerns,
       };
     },

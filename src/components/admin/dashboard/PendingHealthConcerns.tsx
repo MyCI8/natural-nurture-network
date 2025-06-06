@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Check, X, Clock, User, AlertCircle, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HealthConcernSuggestion {
   id: string;
@@ -20,47 +21,55 @@ interface HealthConcernSuggestion {
   user_email?: string;
 }
 
-// Mock pending suggestions - replace with real data when available
-const mockPendingSuggestions: HealthConcernSuggestion[] = [
-  {
-    id: "1",
-    concern_name: "Parasites",
-    brief_description: "Intestinal and other parasitic infections",
-    category: "condition",
-    suggested_by: "user1",
-    status: "pending",
-    created_at: new Date().toISOString(),
-    user_email: "user@example.com"
-  },
-  {
-    id: "2", 
-    concern_name: "Heavy Metal Detox",
-    brief_description: "Removal of heavy metals from the body",
-    category: "goal",
-    suggested_by: "user2",
-    status: "pending",
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    user_email: "expert@example.com"
-  }
-];
-
 const PendingHealthConcerns = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [pendingSuggestions] = useState(mockPendingSuggestions);
+
+  const { data: pendingSuggestions = [], isLoading } = useQuery({
+    queryKey: ["pending-health-concern-suggestions"],
+    queryFn: async () => {
+      try {
+        // Check if the table exists by trying to query it
+        const { data, error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .select("*")
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+        
+        if (error) {
+          console.error("Error fetching health concern suggestions:", error);
+          return [];
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error("Table might not exist yet:", error);
+        return [];
+      }
+    },
+  });
 
   const updateSuggestionMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
-      // Mock implementation for now
-      console.log(`Would update suggestion ${id} to status: ${status}`);
+      const { error } = await supabase
+        .from("health_concern_suggestions" as any)
+        .update({ 
+          status, 
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id 
+        })
+        .eq("id", id);
+      
+      if (error) throw error;
     },
     onSuccess: (_, variables) => {
       toast({
         title: "Success",
         description: `Health concern ${variables.status} successfully`,
       });
-      queryClient.invalidateQueries({ queryKey: ["admin-health-concern-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-health-concern-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
     },
     onError: (error) => {
       console.error("Error updating suggestion:", error);
@@ -86,6 +95,19 @@ const PendingHealthConcerns = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Loading Health Concerns...
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   if (pendingSuggestions.length === 0) {
     return (
@@ -146,7 +168,7 @@ const PendingHealthConcerns = () => {
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <User className="h-3 w-3" />
-                    {suggestion.user_email}
+                    {suggestion.user_email || 'Anonymous'}
                   </div>
                   <div>
                     Suggested {format(new Date(suggestion.created_at), 'MMM d, yyyy')}

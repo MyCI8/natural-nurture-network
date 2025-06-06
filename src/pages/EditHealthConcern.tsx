@@ -39,35 +39,69 @@ const EditHealthConcern = () => {
     queryFn: async () => {
       if (isNewConcern) return null;
       
-      // Mock data for now - will be replaced when migration is applied
-      const mockConcern = {
-        id: id,
-        concern_name: id === "1" ? "Parasites" : "Sample Concern",
-        brief_description: "Sample description",
-        category: "condition",
-        status: "pending" as const
-      };
-      
-      form.reset({
-        concern_name: mockConcern.concern_name,
-        brief_description: mockConcern.brief_description || "",
-        category: mockConcern.category || "symptom",
-        status: mockConcern.status,
-      });
-
-      return mockConcern;
+      try {
+        const { data, error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .select("*")
+          .eq("id", id)
+          .single();
+        
+        if (error) {
+          console.error("Error fetching health concern:", error);
+          return null;
+        }
+        
+        if (data) {
+          form.reset({
+            concern_name: data.concern_name || "",
+            brief_description: data.brief_description || "",
+            category: data.category || "symptom",
+            status: data.status || "pending",
+          });
+        }
+        
+        return data;
+      } catch (error) {
+        console.error("Error fetching health concern:", error);
+        return null;
+      }
     },
     enabled: !isNewConcern
   });
 
   const saveMutation = useMutation({
     mutationFn: async (values: HealthConcernFormValues) => {
-      // Mock implementation for now
-      console.log("Would save health concern with values:", values);
+      if (isNewConcern) {
+        const { data: user } = await supabase.auth.getUser();
+        const { error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .insert({
+            concern_name: values.concern_name,
+            brief_description: values.brief_description,
+            category: values.category,
+            status: values.status,
+            suggested_by: user.user?.id
+          });
+        
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .update({
+            concern_name: values.concern_name,
+            brief_description: values.brief_description,
+            category: values.category,
+            status: values.status,
+          })
+          .eq("id", id);
+        
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       toast.success(isNewConcern ? "Health concern created successfully" : "Health concern updated successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-health-concern-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
       navigate("/admin/health-concerns");
     },
     onError: (error) => {
