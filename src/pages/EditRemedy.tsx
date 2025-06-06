@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -14,6 +13,7 @@ import { RemedyHealthConcernsSection } from "@/components/admin/remedies/form/Re
 import { RemedyStatusSection } from "@/components/admin/remedies/form/RemedyStatusSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
+import { migrateRemedyImages, ensureImageFileObjects } from "@/utils/remedyImageMigration";
 
 interface ImageData {
   file?: File;
@@ -55,6 +55,11 @@ const EditRemedy = () => {
   const [links, setLinks] = useState<LinkData[]>([]);
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
 
+  // Run migration on component mount
+  useEffect(() => {
+    migrateRemedyImages();
+  }, []);
+
   const { data: remedy, isLoading } = useQuery({
     queryKey: ["remedy", id],
     queryFn: async () => {
@@ -86,14 +91,8 @@ const EditRemedy = () => {
       });
       setSelectedExperts(remedy.expert_recommendations || []);
       
-      // Load existing images - ensure we only use valid Supabase URLs
-      const remedyImages = (remedy as any).images;
-      if (remedyImages && Array.isArray(remedyImages)) {
-        const validImages = remedyImages.filter(img => 
-          img.url && !img.url.startsWith('blob:') && img.url.startsWith('http')
-        );
-        setImages(validImages);
-      } else if (remedy.image_url && !remedy.image_url.startsWith('blob:') && remedy.image_url.startsWith('http')) {
+      // Load existing images - ONLY use image_url field (standardized approach)
+      if (remedy.image_url && !remedy.image_url.startsWith('blob:') && remedy.image_url.startsWith('http')) {
         setImages([{ url: remedy.image_url }]);
       }
       
@@ -110,6 +109,12 @@ const EditRemedy = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleImagesChange = (newImages: ImageData[]) => {
+    // Ensure we only keep valid images with File objects or proper URLs
+    const validImages = ensureImageFileObjects(newImages);
+    setImages(validImages);
   };
 
   const uploadImage = async (imageFile: File): Promise<string | null> => {
@@ -210,13 +215,13 @@ const EditRemedy = () => {
 
       console.log('Valid symptoms filtered:', validSymptoms);
 
-      // Prepare data for database operation
+      // Prepare data for database operation - STANDARDIZED on image_url field
       const remedyData = {
         name: formData.name,
         summary: formData.summary,
         brief_description: formData.summary,
         description: fullDescription,
-        image_url: finalImageUrl, // Standardize on image_url field
+        image_url: finalImageUrl, // ONLY use image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
         symptoms: validSymptoms,
@@ -332,7 +337,7 @@ const EditRemedy = () => {
           <div className="space-y-6">
             <MultipleImageUpload
               images={images}
-              onImagesChange={setImages}
+              onImagesChange={handleImagesChange}
             />
 
             <RemedyExpertsSection

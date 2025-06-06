@@ -41,7 +41,7 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
       
       console.log('RemediesSection: Remedies fetched:', data?.length || 0);
       
-      // Add debugging for image URLs - use only image_url field
+      // STANDARDIZED: Only use image_url field for debugging
       data?.forEach((remedy, index) => {
         const safeImageUrl = getSafeImageUrl(remedy.image_url);
         
@@ -98,7 +98,7 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {remedies?.map((remedy, index) => {
-            // Use only image_url field - standardized approach
+            // STANDARDIZED: Only use image_url field
             const safeImageUrl = getSafeImageUrl(remedy.image_url);
             
             console.log(`RemediesSection: Rendering remedy ${remedy.name} with image:`, {

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -52,6 +51,16 @@ export const migrateRemedyImages = async (): Promise<void> => {
   } catch (error) {
     console.error('Error during remedy image migration:', error);
   }
+};
+
+/**
+ * Standardizes image handling by ensuring proper File objects for uploads
+ */
+export const ensureImageFileObjects = (images: Array<{ file?: File; url: string; description?: string }>) => {
+  return images.filter(img => {
+    // Only keep images that have either a File object or a valid storage URL
+    return img.file || (img.url && !img.url.startsWith('blob:') && img.url.startsWith('http'));
+  });
 };
 
 /**

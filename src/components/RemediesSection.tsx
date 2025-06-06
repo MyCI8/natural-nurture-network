@@ -19,7 +19,7 @@ const RemediesSection = () => {
     initializeRemedyImages();
   }, []);
 
-  // Add debugging for remedy data - use only image_url now
+  // STANDARDIZED: Only use image_url field for all remedies
   console.log('RemediesSection remedies:', remedies?.length || 0);
   remedies?.forEach((remedy, index) => {
     const safeImageUrl = getSafeImageUrl(remedy.image_url);
@@ -74,7 +74,7 @@ const RemediesSection = () => {
         <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {remedies.map((remedy) => {
-            // Use only image_url field - standardized approach
+            // STANDARDIZED: Only use image_url field
             const safeImageUrl = getSafeImageUrl(remedy.image_url);
             
             console.log(`RemediesSection rendering ${remedy.name} with image:`, {
