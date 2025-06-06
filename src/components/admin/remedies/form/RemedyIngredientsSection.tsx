@@ -1,10 +1,13 @@
 
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -28,16 +31,33 @@ export const RemedyIngredientsSection = ({
   onIngredientsChange,
 }: RemedyIngredientsSectionProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newIngredientName, setNewIngredientName] = useState("");
+  const [selectedIngredient, setSelectedIngredient] = useState("");
+  const [newIngredient, setNewIngredient] = useState({
+    name: "",
+    brief_description: "",
+    image_url: "",
+    description: "",
+    precautions: "",
+  });
 
-  const handleAddIngredient = async () => {
-    if (newIngredientName.trim()) {
-      const ingredientName = newIngredientName.trim();
+  // Fetch existing ingredients
+  const { data: existingIngredients = [] } = useQuery({
+    queryKey: ["ingredients"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ingredients")
+        .select("*")
+        .order("name");
       
-      // Add to current ingredients list first
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const handleAddExistingIngredient = (ingredientName: string) => {
+    if (ingredientName && !ingredients.includes(ingredientName)) {
       const updatedIngredients = [...ingredients, ingredientName];
       
-      // Call appropriate handlers
       if (setIngredients) {
         setIngredients(updatedIngredients);
       }
@@ -45,29 +65,55 @@ export const RemedyIngredientsSection = ({
         onIngredientsChange(updatedIngredients);
       }
       
-      // Also save to ingredients table (basic entry)
+      setSelectedIngredient("");
+    }
+  };
+
+  const handleCreateNewIngredient = async () => {
+    if (newIngredient.name.trim() && newIngredient.brief_description.trim()) {
+      const ingredientName = newIngredient.name.trim();
+      
+      // Add to current ingredients list first
+      const updatedIngredients = [...ingredients, ingredientName];
+      
+      if (setIngredients) {
+        setIngredients(updatedIngredients);
+      }
+      if (onIngredientsChange) {
+        onIngredientsChange(updatedIngredients);
+      }
+      
+      // Save to ingredients table with full details
       try {
         const { error } = await supabase
           .from("ingredients")
           .insert([{ 
             name: ingredientName,
-            brief_description: `${ingredientName} - Natural ingredient`
+            brief_description: newIngredient.brief_description.trim(),
+            image_url: newIngredient.image_url.trim() || null,
+            description: newIngredient.description.trim() || null,
+            precautions: newIngredient.precautions.trim() || null,
           }]);
 
         if (error) {
           console.error("Error adding ingredient:", error);
-          // Don't show error if ingredient already exists
           if (!error.message.includes('duplicate')) {
             toast.error("Failed to save ingredient to database");
           }
         } else {
-          toast.success(`Ingredient "${ingredientName}" added successfully!`);
+          toast.success(`Ingredient "${ingredientName}" created and added successfully!`);
         }
       } catch (error) {
         console.error("Error adding ingredient:", error);
       }
 
-      setNewIngredientName("");
+      setNewIngredient({
+        name: "",
+        brief_description: "",
+        image_url: "",
+        description: "",
+        precautions: "",
+      });
       setIsDialogOpen(false);
     }
   };
@@ -75,7 +121,6 @@ export const RemedyIngredientsSection = ({
   const removeIngredient = (index: number) => {
     const updatedIngredients = ingredients.filter((_, i) => i !== index);
     
-    // Call appropriate handlers
     if (setIngredients) {
       setIngredients(updatedIngredients);
     }
@@ -83,6 +128,11 @@ export const RemedyIngredientsSection = ({
       onIngredientsChange(updatedIngredients);
     }
   };
+
+  // Filter out already added ingredients
+  const availableToAdd = existingIngredients.filter(
+    ing => !ingredients.includes(ing.name)
+  );
 
   return (
     <div className="space-y-4">
@@ -96,31 +146,73 @@ export const RemedyIngredientsSection = ({
               className="bg-background touch-manipulation active-scale"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Ingredient
+              Add New
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Ingredient</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="ingredient-name">Ingredient Name</Label>
+                <Label htmlFor="ingredient-name">Name *</Label>
                 <Input
                   id="ingredient-name"
-                  value={newIngredientName}
-                  onChange={(e) => setNewIngredientName(e.target.value)}
+                  value={newIngredient.name}
+                  onChange={(e) => setNewIngredient({ ...newIngredient, name: e.target.value })}
                   className="bg-background"
                   placeholder="Enter ingredient name"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddIngredient();
-                    }
-                  }}
                 />
               </div>
-              <div className="flex gap-2">
+              
+              <div>
+                <Label htmlFor="brief-description">Brief Description *</Label>
+                <Textarea
+                  id="brief-description"
+                  value={newIngredient.brief_description}
+                  onChange={(e) => setNewIngredient({ ...newIngredient, brief_description: e.target.value })}
+                  className="bg-background"
+                  placeholder="Enter brief description"
+                  rows={2}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="image-url">Image URL</Label>
+                <Input
+                  id="image-url"
+                  value={newIngredient.image_url}
+                  onChange={(e) => setNewIngredient({ ...newIngredient, image_url: e.target.value })}
+                  className="bg-background"
+                  placeholder="Enter image URL (optional)"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="full-description">Full Description</Label>
+                <Textarea
+                  id="full-description"
+                  value={newIngredient.description}
+                  onChange={(e) => setNewIngredient({ ...newIngredient, description: e.target.value })}
+                  className="bg-background"
+                  placeholder="Enter full description (optional)"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="precautions">Precautions</Label>
+                <Textarea
+                  id="precautions"
+                  value={newIngredient.precautions}
+                  onChange={(e) => setNewIngredient({ ...newIngredient, precautions: e.target.value })}
+                  className="bg-background"
+                  placeholder="Enter precautions (optional)"
+                  rows={2}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
                 <Button 
                   variant="outline"
                   onClick={() => setIsDialogOpen(false)}
@@ -129,11 +221,11 @@ export const RemedyIngredientsSection = ({
                   Cancel
                 </Button>
                 <Button 
-                  onClick={handleAddIngredient}
+                  onClick={handleCreateNewIngredient}
                   className="flex-1 touch-manipulation active-scale"
-                  disabled={!newIngredientName.trim()}
+                  disabled={!newIngredient.name.trim() || !newIngredient.brief_description.trim()}
                 >
-                  Add Ingredient
+                  Create
                 </Button>
               </div>
             </div>
@@ -141,6 +233,26 @@ export const RemedyIngredientsSection = ({
         </Dialog>
       </div>
 
+      {/* Dropdown to select existing ingredients */}
+      {availableToAdd.length > 0 && (
+        <div>
+          <Label>Add Existing Ingredient</Label>
+          <Select value={selectedIngredient} onValueChange={handleAddExistingIngredient}>
+            <SelectTrigger className="bg-background">
+              <SelectValue placeholder="Select an ingredient..." />
+            </SelectTrigger>
+            <SelectContent>
+              {availableToAdd.map((ingredient) => (
+                <SelectItem key={ingredient.id} value={ingredient.name}>
+                  {ingredient.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Selected ingredients as badges */}
       <div className="flex flex-wrap gap-2">
         {ingredients.map((ingredient, index) => (
           <Badge
