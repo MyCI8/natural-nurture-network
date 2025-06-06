@@ -72,11 +72,12 @@ const CreateRemedy = () => {
 
   const uploadImage = async (imageFile: File): Promise<string | null> => {
     try {
-      console.log('Starting image upload...');
+      console.log('Starting image upload to remedy-images bucket...');
       
       const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const fileName = `remedy-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
+      // Upload to remedy-images bucket
       const { error: uploadError } = await supabase.storage
         .from('remedy-images')
         .upload(fileName, imageFile, {
@@ -89,11 +90,19 @@ const CreateRemedy = () => {
         return null;
       }
 
+      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('remedy-images')
         .getPublicUrl(fileName);
       
       console.log('Image uploaded successfully:', publicUrl);
+      
+      // Validate the URL format
+      if (!publicUrl.includes('supabase.co') || !publicUrl.includes('/remedy-images/')) {
+        console.error('Invalid storage URL format:', publicUrl);
+        return null;
+      }
+      
       return publicUrl;
     } catch (error) {
       console.error('Image upload failed:', error);
@@ -110,22 +119,33 @@ const CreateRemedy = () => {
       console.log('Images:', images.length);
       console.log('Links:', links.length);
 
-      let uploadedImageUrl = '';
+      let finalImageUrl = '';
 
-      // Try to upload image if provided
-      if (images.length > 0 && images[0].file) {
-        console.log('Uploading image...');
-        const imageUrl = await uploadImage(images[0].file);
-        if (imageUrl) {
-          uploadedImageUrl = imageUrl;
-          console.log('Image upload successful');
-        } else {
-          console.log('Image upload failed, continuing without image');
-          toast('Image upload failed, but remedy will be saved');
+      // Handle image upload
+      if (images.length > 0) {
+        const firstImage = images[0];
+        
+        if (firstImage.file) {
+          console.log('Uploading new image file...');
+          const uploadedUrl = await uploadImage(firstImage.file);
+          if (uploadedUrl) {
+            finalImageUrl = uploadedUrl;
+            console.log('New image uploaded successfully:', uploadedUrl);
+          } else {
+            console.log('Image upload failed, continuing without image');
+            toast('Image upload failed, but remedy will be saved');
+          }
+        } else if (firstImage.url && !firstImage.url.startsWith('blob:') && firstImage.url.startsWith('http')) {
+          // Use existing valid URL (but this shouldn't happen in create mode)
+          finalImageUrl = firstImage.url;
+          console.log('Using existing image URL:', finalImageUrl);
         }
-      } else if (images.length > 0 && images[0].url && !images[0].file) {
-        uploadedImageUrl = images[0].url;
-        console.log('Using existing image URL');
+      }
+
+      // Validate that we don't save blob URLs
+      if (finalImageUrl.startsWith('blob:')) {
+        console.error('Attempting to save blob URL, rejecting:', finalImageUrl);
+        throw new Error('Cannot save temporary image URL. Please upload a proper image.');
       }
 
       // Combine all additional content into the description field
@@ -156,7 +176,7 @@ const CreateRemedy = () => {
         summary: formData.summary,
         brief_description: formData.summary,
         description: fullDescription,
-        image_url: uploadedImageUrl,
+        image_url: finalImageUrl, // Standardize on image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
         symptoms: validSymptoms,
@@ -165,6 +185,7 @@ const CreateRemedy = () => {
       };
 
       console.log('Inserting remedy data:', remedyData);
+      console.log('Final image URL being saved:', finalImageUrl);
 
       const { error, data } = await supabase
         .from('remedies')
@@ -185,6 +206,7 @@ const CreateRemedy = () => {
       toast.success('Remedy created successfully!');
       queryClient.invalidateQueries({ queryKey: ['userRemedies'] });
       queryClient.invalidateQueries({ queryKey: ['remedies'] });
+      queryClient.invalidateQueries({ queryKey: ['latest-remedies'] });
       
       // Navigate back to remedies list
       console.log('Navigating to /remedies');

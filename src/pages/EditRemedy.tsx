@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -85,11 +86,14 @@ const EditRemedy = () => {
       });
       setSelectedExperts(remedy.expert_recommendations || []);
       
-      // Load existing images
+      // Load existing images - ensure we only use valid Supabase URLs
       const remedyImages = (remedy as any).images;
       if (remedyImages && Array.isArray(remedyImages)) {
-        setImages(remedyImages);
-      } else if (remedy.image_url) {
+        const validImages = remedyImages.filter(img => 
+          img.url && !img.url.startsWith('blob:') && img.url.startsWith('http')
+        );
+        setImages(validImages);
+      } else if (remedy.image_url && !remedy.image_url.startsWith('blob:') && remedy.image_url.startsWith('http')) {
         setImages([{ url: remedy.image_url }]);
       }
       
@@ -110,12 +114,13 @@ const EditRemedy = () => {
 
   const uploadImage = async (imageFile: File): Promise<string | null> => {
     try {
-      console.log('Starting image upload...');
+      console.log('Starting image upload to remedy-images bucket...');
       
       const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const fileName = `remedy-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       
-      const { error: uploadError } = await supabase.storage
+      // Upload to remedy-images bucket
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('remedy-images')
         .upload(fileName, imageFile, {
           cacheControl: '3600',
@@ -124,17 +129,27 @@ const EditRemedy = () => {
 
       if (uploadError) {
         console.error('Image upload error:', uploadError);
+        toast.error('Failed to upload image');
         return null;
       }
 
+      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('remedy-images')
         .getPublicUrl(fileName);
       
       console.log('Image uploaded successfully:', publicUrl);
+      
+      // Validate the URL format
+      if (!publicUrl.includes('supabase.co') || !publicUrl.includes('/remedy-images/')) {
+        console.error('Invalid storage URL format:', publicUrl);
+        return null;
+      }
+      
       return publicUrl;
     } catch (error) {
       console.error('Image upload failed:', error);
+      toast.error('Image upload failed');
       return null;
     }
   };
@@ -145,23 +160,32 @@ const EditRemedy = () => {
       console.log('Remedy ID:', id);
       console.log('Should publish:', shouldPublish);
 
-      let uploadedImageUrl = '';
+      let finalImageUrl = '';
 
-      // Try to upload new images (non-blocking)
-      if (images.length > 0 && images[0].file) {
-        console.log('Uploading new image...');
-        const imageUrl = await uploadImage(images[0].file);
-        if (imageUrl) {
-          uploadedImageUrl = imageUrl;
-        } else {
-          console.log('Image upload failed, continuing without new image');
-          // Continue with existing image if available
-          if (images[0].url && !images[0].file) {
-            uploadedImageUrl = images[0].url;
+      // Handle image upload if there's a new file
+      if (images.length > 0) {
+        const firstImage = images[0];
+        
+        if (firstImage.file) {
+          console.log('Uploading new image file...');
+          const uploadedUrl = await uploadImage(firstImage.file);
+          if (uploadedUrl) {
+            finalImageUrl = uploadedUrl;
+            console.log('New image uploaded successfully:', uploadedUrl);
+          } else {
+            throw new Error('Failed to upload image');
           }
+        } else if (firstImage.url && !firstImage.url.startsWith('blob:')) {
+          // Use existing valid URL
+          finalImageUrl = firstImage.url;
+          console.log('Using existing image URL:', finalImageUrl);
         }
-      } else if (images.length > 0 && images[0].url) {
-        uploadedImageUrl = images[0].url;
+      }
+
+      // Validate that we don't save blob URLs
+      if (finalImageUrl.startsWith('blob:')) {
+        console.error('Attempting to save blob URL, rejecting:', finalImageUrl);
+        throw new Error('Cannot save temporary image URL. Please upload a new image.');
       }
 
       // Combine all content into the description field like CreateRemedy does
@@ -192,7 +216,7 @@ const EditRemedy = () => {
         summary: formData.summary,
         brief_description: formData.summary,
         description: fullDescription,
-        image_url: uploadedImageUrl,
+        image_url: finalImageUrl, // Standardize on image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
         symptoms: validSymptoms,
@@ -201,6 +225,7 @@ const EditRemedy = () => {
       };
 
       console.log('Updating remedy with data:', remedyData);
+      console.log('Final image URL being saved:', finalImageUrl);
 
       if (id && id !== "new") {
         const { error } = await supabase
@@ -231,6 +256,7 @@ const EditRemedy = () => {
       queryClient.invalidateQueries({ queryKey: ["remedies"] });
       queryClient.invalidateQueries({ queryKey: ["remedy", id] });
       queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["latest-remedies"] });
       navigate("/admin/remedies");
     },
     onError: (error) => {

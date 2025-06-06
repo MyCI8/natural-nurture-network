@@ -12,9 +12,10 @@ interface RemediesSectionProps {
 }
 
 const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false }) => {
-  const { data: remedies, isLoading } = useQuery({
+  const { data: remedies, isLoading, error } = useQuery({
     queryKey: ['latest-remedies'],
     queryFn: async () => {
+      console.log('RemediesSection: Fetching latest remedies...');
       const { data, error } = await supabase
         .from('remedies')
         .select('*')
@@ -22,16 +23,25 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
         .order('created_at', { ascending: false })
         .limit(4);
       
-      if (error) throw error;
+      if (error) {
+        console.error('RemediesSection: Error fetching remedies:', error);
+        throw error;
+      }
       
-      // Add debugging for image URLs
-      console.log('Remedies data:', data);
+      console.log('RemediesSection: Remedies fetched:', data?.length || 0);
+      
+      // Add debugging for image URLs - standardize on image_url field
       data?.forEach((remedy, index) => {
-        console.log(`Remedy ${index + 1} (${remedy.name}):`, {
+        const imageUrl = remedy.image_url || "/placeholder.svg";
+        const isValidUrl = imageUrl && imageUrl.startsWith('http') && !imageUrl.startsWith('blob:');
+        
+        console.log(`RemediesSection - Remedy ${index + 1} (${remedy.name}):`, {
           id: remedy.id,
+          status: remedy.status,
           image_url: remedy.image_url,
-          main_image_url: remedy.main_image_url,
-          hasImage: !!(remedy.image_url || remedy.main_image_url)
+          final_image_url: imageUrl,
+          is_valid_url: isValidUrl,
+          created_at: remedy.created_at
         });
       });
       
@@ -59,6 +69,17 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
     );
   }
 
+  if (error) {
+    console.error('RemediesSection: Query error:', error);
+    return (
+      <div className={`${inNewsSection ? 'pt-6 sm:pt-8' : 'py-6 sm:py-8 lg:py-12'}`}>
+        <div className="text-center py-8 text-muted-foreground">
+          Error loading remedies. Please try again later.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`${inNewsSection ? 'pt-6 sm:pt-8' : 'py-6 sm:py-8 lg:py-12'}`}>
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,10 +88,14 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {remedies?.map((remedy, index) => {
-            // Use image_url first, then fall back to main_image_url, then placeholder
-            const imageUrl = remedy.image_url || remedy.main_image_url || "/placeholder.svg";
+            // Standardize on image_url field only, with fallback to placeholder
+            const imageUrl = remedy.image_url && 
+                           remedy.image_url.startsWith('http') && 
+                           !remedy.image_url.startsWith('blob:') 
+                           ? remedy.image_url 
+                           : "/placeholder.svg";
             
-            console.log(`Rendering remedy ${remedy.name} with image:`, imageUrl);
+            console.log(`RemediesSection: Rendering remedy ${remedy.name} with image:`, imageUrl);
             
             return (
               <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
@@ -90,13 +115,13 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                         loading="lazy"
                         onLoad={() => {
-                          console.log(`Image loaded successfully for ${remedy.name}:`, imageUrl);
+                          console.log(`RemediesSection: Image loaded successfully for ${remedy.name}:`, imageUrl);
                         }}
                         onError={(e) => {
-                          console.error(`Image failed to load for ${remedy.name}:`, imageUrl);
-                          // Set fallback image
+                          console.error(`RemediesSection: Image failed to load for ${remedy.name}:`, imageUrl);
                           const target = e.target as HTMLImageElement;
                           if (target.src !== "/placeholder.svg") {
+                            console.log('RemediesSection: Setting fallback image');
                             target.src = "/placeholder.svg";
                           }
                         }}
@@ -107,7 +132,7 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
                         {remedy.name}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
-                        {remedy.description}
+                        {remedy.description || remedy.summary}
                       </p>
                     </div>
                   </CardContent>
