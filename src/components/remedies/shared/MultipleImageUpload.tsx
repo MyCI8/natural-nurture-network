@@ -19,6 +19,18 @@ interface MultipleImageUploadProps {
   onImagesChange: (images: ImageData[]) => void;
 }
 
+// Utility function to convert blob URL to File object
+const blobUrlToFile = async (blobUrl: string, fileName: string = 'cropped-image.jpg'): Promise<File> => {
+  try {
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    return new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+  } catch (error) {
+    console.error('Error converting blob URL to file:', error);
+    throw new Error('Failed to convert cropped image');
+  }
+};
+
 export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUploadProps) => {
   const [cropModal, setCropModal] = useState<{ isOpen: boolean; imageIndex: number; imageSrc: string }>({
     isOpen: false,
@@ -59,9 +71,25 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
     });
   };
 
-  const handleCropComplete = (croppedImageUrl: string) => {
+  const handleCropComplete = async (croppedImageUrl: string) => {
     if (cropModal.imageIndex >= 0) {
-      updateImage(cropModal.imageIndex, croppedImageUrl);
+      try {
+        // Convert the cropped blob URL back to a File object
+        const croppedFile = await blobUrlToFile(croppedImageUrl, `cropped-image-${Date.now()}.jpg`);
+        
+        // Update the image with both the URL and the File object
+        updateImage(cropModal.imageIndex, croppedImageUrl, croppedFile);
+        
+        console.log('Successfully converted cropped image to file:', {
+          url: croppedImageUrl,
+          fileName: croppedFile.name,
+          fileSize: croppedFile.size
+        });
+      } catch (error) {
+        console.error('Failed to process cropped image:', error);
+        // Fallback: just update with the URL (though this might cause upload issues)
+        updateImage(cropModal.imageIndex, croppedImageUrl);
+      }
     }
     setCropModal({ isOpen: false, imageIndex: -1, imageSrc: '' });
   };
