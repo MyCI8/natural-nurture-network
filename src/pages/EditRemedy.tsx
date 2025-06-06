@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -28,29 +29,21 @@ interface LinkData {
   type: 'link' | 'video';
 }
 
-// Comprehensive health concerns - matches the list from RemedyHealthConcernsSection
-const COMPREHENSIVE_HEALTH_CONCERNS = [
-  // Symptoms
+// Database-approved health concerns (matches the symptom_type enum)
+const APPROVED_HEALTH_CONCERNS = [
   'Cough', 'Cold', 'Sore Throat', 'Headache', 'Joint Pain', 'Back Pain', 'Eye Strain', 'Fatigue',
   'Skin Irritation', 'Hair Loss', 'Insomnia', 'Nausea', 'Fever', 'Muscle Pain', 'Bloating',
-  
-  // Conditions
   'Cancer', 'High Blood Pressure', 'Diabetes', 'Arthritis', 'Asthma', 'Allergies', 'Eczema',
-  'Acne', 'Migraine', 'Fibromyalgia', 'IBS', 'GERD', 'UTI', 'Sinusitis', 'Bronchitis', 'Parasites',
-  
-  // Mental Health & Wellness
+  'Acne', 'Migraine', 'Fibromyalgia', 'IBS', 'GERD', 'UTI', 'Sinusitis', 'Bronchitis',
   'Stress', 'Anxiety', 'Depression', 'Mental Clarity', 'Memory Support', 'Focus Enhancement',
   'Mood Balance', 'Emotional Wellness', 'Sleep Quality', 'Relaxation',
-  
-  // Health Goals
   'Immunity Support', 'Weight Management', 'Energy Boost', 'Detoxification', 'Anti-Aging',
   'Skin Health', 'Hair Growth', 'Teeth Whitening', 'Breath Freshening', 'Circulation Improvement',
   'Metabolism Boost', 'Hormone Balance', 'Blood Sugar Control', 'Cholesterol Management',
-  
-  // Body Systems
   'Digestive Health', 'Cardiovascular Health', 'Respiratory Health', 'Immune System',
   'Nervous System', 'Reproductive Health', 'Bone Health', 'Liver Health', 'Kidney Health',
-  'Thyroid Support', 'Adrenal Support', 'Gut Health', 'Brain Health', 'Heart Health'
+  'Thyroid Support', 'Adrenal Support', 'Gut Health', 'Brain Health', 'Heart Health',
+  'Poor Circulation'
 ] as const;
 
 const EditRemedy = () => {
@@ -203,6 +196,37 @@ const EditRemedy = () => {
     }
   };
 
+  const savePendingHealthConcerns = async (pendingConcerns: string[]) => {
+    if (pendingConcerns.length === 0) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Save each pending concern as a suggestion
+      const suggestions = pendingConcerns.map(concern => ({
+        concern_name: concern,
+        suggested_by: user.id,
+        status: 'pending' as const
+      }));
+
+      const { error } = await supabase
+        .from("health_concern_suggestions")
+        .upsert(suggestions, { 
+          onConflict: 'concern_name,suggested_by',
+          ignoreDuplicates: true 
+        });
+
+      if (error) {
+        console.error('Error saving pending health concerns:', error);
+      } else {
+        console.log('Pending health concerns saved:', pendingConcerns);
+      }
+    } catch (error) {
+      console.error('Error in savePendingHealthConcerns:', error);
+    }
+  };
+
   const saveRemedyMutation = useMutation({
     mutationFn: async (shouldPublish: boolean = false) => {
       console.log('Starting remedy save process...');
@@ -260,11 +284,22 @@ const EditRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
-      // Keep all health concerns - allow both predefined and pending suggestions
-      // Type-cast to satisfy database schema while preserving functionality
-      const validSymptoms = formData.health_concerns as any;
+      // Separate approved health concerns from pending ones
+      const approvedConcerns = formData.health_concerns.filter(concern => 
+        APPROVED_HEALTH_CONCERNS.includes(concern as any)
+      );
+      const pendingConcerns = formData.health_concerns.filter(concern => 
+        !APPROVED_HEALTH_CONCERNS.includes(concern as any)
+      );
 
-      console.log('Health concerns being saved:', validSymptoms);
+      console.log('Approved health concerns being saved:', approvedConcerns);
+      console.log('Pending health concerns for suggestions:', pendingConcerns);
+
+      // Save pending concerns as suggestions
+      if (pendingConcerns.length > 0) {
+        await savePendingHealthConcerns(pendingConcerns);
+        toast.success(`${pendingConcerns.length} new health concern(s) submitted for review: ${pendingConcerns.join(', ')}`);
+      }
 
       // Prepare data for database operation - Use combined description field
       const remedyData = {
@@ -275,7 +310,7 @@ const EditRemedy = () => {
         image_url: finalImageUrl, // ONLY use image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: validSymptoms,
+        symptoms: approvedConcerns, // Only save approved concerns
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };
@@ -313,6 +348,7 @@ const EditRemedy = () => {
       queryClient.invalidateQueries({ queryKey: ["remedy", id] });
       queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
       queryClient.invalidateQueries({ queryKey: ["latest-remedies"] });
+      queryClient.invalidateQueries({ queryKey: ["health-concern-suggestions"] });
       navigate("/admin/remedies");
     },
     onError: (error) => {
