@@ -1,17 +1,23 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaContainer from '@/components/ui/media-container';
+import { getSafeImageUrl, ensureRemedyImagesBucket } from '@/utils/imageValidation';
 
 interface RemediesSectionProps {
   inNewsSection?: boolean;
 }
 
 const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false }) => {
+  // Check storage bucket on component mount
+  useEffect(() => {
+    ensureRemedyImagesBucket();
+  }, []);
+
   const { data: remedies, isLoading, error } = useQuery({
     queryKey: ['latest-remedies'],
     queryFn: async () => {
@@ -32,15 +38,15 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
       
       // Add debugging for image URLs - standardize on image_url field
       data?.forEach((remedy, index) => {
-        const imageUrl = remedy.image_url || "/placeholder.svg";
-        const isValidUrl = imageUrl && imageUrl.startsWith('http') && !imageUrl.startsWith('blob:');
+        const safeImageUrl = getSafeImageUrl(remedy.image_url);
         
         console.log(`RemediesSection - Remedy ${index + 1} (${remedy.name}):`, {
           id: remedy.id,
           status: remedy.status,
           image_url: remedy.image_url,
-          final_image_url: imageUrl,
-          is_valid_url: isValidUrl,
+          safe_image_url: safeImageUrl,
+          is_blob_url: remedy.image_url?.startsWith('blob:') || false,
+          is_valid_storage_url: remedy.image_url?.includes('supabase.co') && remedy.image_url?.includes('/storage/v1/object/public/') || false,
           created_at: remedy.created_at
         });
       });
@@ -88,14 +94,14 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {remedies?.map((remedy, index) => {
-            // Standardize on image_url field only, with fallback to placeholder
-            const imageUrl = remedy.image_url && 
-                           remedy.image_url.startsWith('http') && 
-                           !remedy.image_url.startsWith('blob:') 
-                           ? remedy.image_url 
-                           : "/placeholder.svg";
+            // Standardize on image_url field only, with proper validation
+            const safeImageUrl = getSafeImageUrl(remedy.image_url);
             
-            console.log(`RemediesSection: Rendering remedy ${remedy.name} with image:`, imageUrl);
+            console.log(`RemediesSection: Rendering remedy ${remedy.name} with image:`, {
+              original: remedy.image_url,
+              safe: safeImageUrl,
+              is_placeholder: safeImageUrl === "/placeholder.svg"
+            });
             
             return (
               <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
@@ -105,20 +111,20 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
                   <CardContent className="p-0 h-full">
                     <MediaContainer 
                       aspectRatio="1:1"
-                      imageUrl={imageUrl}
+                      imageUrl={safeImageUrl}
                       imageAlt={remedy.name}
                       className="bg-muted"
                     >
                       <img 
-                        src={imageUrl} 
+                        src={safeImageUrl} 
                         alt={remedy.name} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                         loading="lazy"
                         onLoad={() => {
-                          console.log(`RemediesSection: Image loaded successfully for ${remedy.name}:`, imageUrl);
+                          console.log(`RemediesSection: Image loaded successfully for ${remedy.name}:`, safeImageUrl);
                         }}
                         onError={(e) => {
-                          console.error(`RemediesSection: Image failed to load for ${remedy.name}:`, imageUrl);
+                          console.error(`RemediesSection: Image failed to load for ${remedy.name}:`, safeImageUrl);
                           const target = e.target as HTMLImageElement;
                           if (target.src !== "/placeholder.svg") {
                             console.log('RemediesSection: Setting fallback image');

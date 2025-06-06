@@ -4,6 +4,7 @@ import { X, Heart, MessageCircle, Share2, Bookmark, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MediaContainer from '@/components/ui/media-container';
+import { getSafeImageUrl } from '@/utils/imageValidation';
 
 interface RemedyModalProps {
   remedy: {
@@ -29,6 +30,9 @@ const RemedyModal: React.FC<RemedyModalProps> = ({
   onShare
 }) => {
   if (!isOpen || !remedy) return null;
+
+  // Use safe image URL with proper validation
+  const safeImageUrl = getSafeImageUrl(remedy.image_url);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -57,6 +61,12 @@ const RemedyModal: React.FC<RemedyModalProps> = ({
     };
   }, [isOpen]);
 
+  console.log(`RemedyModal rendering: ${remedy.name} with image:`, {
+    original: remedy.image_url,
+    safe: safeImageUrl,
+    is_placeholder: safeImageUrl === "/placeholder.svg"
+  });
+
   return (
     <div 
       className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center overflow-y-auto touch-manipulation"
@@ -77,15 +87,26 @@ const RemedyModal: React.FC<RemedyModalProps> = ({
           <CardContent className="p-0">
             {/* Media Section */}
             <MediaContainer 
-              aspectRatio="auto"
-              imageUrl={remedy.image_url || "/placeholder.svg"}
+              aspectRatio="16:9"
+              imageUrl={safeImageUrl}
               imageAlt={remedy.name}
               className="bg-muted"
             >
               <img
-                src={remedy.image_url || "/placeholder.svg"}
+                src={safeImageUrl}
                 alt={remedy.name}
                 className="w-full h-full object-cover"
+                onLoad={() => {
+                  console.log(`RemedyModal image loaded successfully for ${remedy.name}:`, safeImageUrl);
+                }}
+                onError={(e) => {
+                  console.error(`RemedyModal image failed to load for ${remedy.name}:`, safeImageUrl);
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== "/placeholder.svg") {
+                    console.log('RemedyModal: Setting fallback to placeholder');
+                    target.src = "/placeholder.svg";
+                  }
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">

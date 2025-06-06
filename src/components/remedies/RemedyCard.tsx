@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import MediaContainer from "@/components/ui/media-container";
+import { getSafeImageUrl } from "@/utils/imageValidation";
 
 interface RemedyCardProps {
   id: string;
@@ -17,7 +18,14 @@ const RemedyCard = ({
   imageUrl,
   onClick
 }: RemedyCardProps) => {
-  console.log(`RemedyCard rendering: ${name} with image: ${imageUrl}`);
+  // Ensure we're using a safe image URL
+  const safeImageUrl = getSafeImageUrl(imageUrl);
+  
+  console.log(`RemedyCard rendering: ${name} with image:`, {
+    original: imageUrl,
+    safe: safeImageUrl,
+    is_placeholder: safeImageUrl === "/placeholder.svg"
+  });
   
   return (
     <Card 
@@ -27,22 +35,23 @@ const RemedyCard = ({
       <CardContent className="p-0">
         <MediaContainer 
           aspectRatio="4:3"
-          imageUrl={imageUrl}
+          imageUrl={safeImageUrl}
           imageAlt={name}
           onClick={() => onClick(id)}
         >
           <img 
-            src={imageUrl} 
+            src={safeImageUrl} 
             alt={name} 
             className="w-full h-full object-cover transition-transform duration-500"
             onLoad={() => {
-              console.log(`RemedyCard image loaded successfully for ${name}:`, imageUrl);
+              console.log(`RemedyCard image loaded successfully for ${name}:`, safeImageUrl);
             }}
             onError={(e) => {
-              console.error(`RemedyCard image failed to load for ${name}:`, imageUrl);
+              console.error(`RemedyCard image failed to load for ${name}:`, safeImageUrl);
               // Set fallback image
               const target = e.target as HTMLImageElement;
               if (target.src !== "/placeholder.svg") {
+                console.log('RemedyCard: Setting fallback to placeholder');
                 target.src = "/placeholder.svg";
               }
             }}

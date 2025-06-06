@@ -39,36 +39,36 @@ export const cleanupInvalidImageUrls = async (): Promise<void> => {
   try {
     console.log('Starting cleanup of invalid image URLs...');
     
-    // Get all remedies with blob URLs
-    const { data: remediesWithBlobUrls, error: fetchError } = await supabase
+    // Get all remedies with blob URLs or invalid URLs
+    const { data: remediesWithInvalidUrls, error: fetchError } = await supabase
       .from('remedies')
       .select('id, name, image_url')
-      .like('image_url', 'blob:%');
+      .or('image_url.like.blob:%,image_url.is.null');
     
     if (fetchError) {
-      console.error('Error fetching remedies with blob URLs:', fetchError);
+      console.error('Error fetching remedies with invalid URLs:', fetchError);
       return;
     }
     
-    if (!remediesWithBlobUrls || remediesWithBlobUrls.length === 0) {
-      console.log('No remedies with blob URLs found');
+    if (!remediesWithInvalidUrls || remediesWithInvalidUrls.length === 0) {
+      console.log('No remedies with invalid URLs found');
       return;
     }
     
-    console.log(`Found ${remediesWithBlobUrls.length} remedies with blob URLs:`, remediesWithBlobUrls);
+    console.log(`Found ${remediesWithInvalidUrls.length} remedies with invalid URLs:`, remediesWithInvalidUrls);
     
-    // Update all remedies with blob URLs to use placeholder
+    // Update all remedies with invalid URLs to use empty string (will trigger placeholder)
     const { error: updateError } = await supabase
       .from('remedies')
       .update({ image_url: '' })
-      .like('image_url', 'blob:%');
+      .or('image_url.like.blob:%,image_url.is.null');
     
     if (updateError) {
-      console.error('Error updating remedies with blob URLs:', updateError);
+      console.error('Error updating remedies with invalid URLs:', updateError);
       return;
     }
     
-    console.log('Successfully cleaned up blob URLs from database');
+    console.log('Successfully cleaned up invalid URLs from database');
   } catch (error) {
     console.error('Error during cleanup:', error);
   }
@@ -79,6 +79,8 @@ export const cleanupInvalidImageUrls = async (): Promise<void> => {
  */
 export const ensureRemedyImagesBucket = async (): Promise<boolean> => {
   try {
+    console.log('Checking remedy-images bucket access...');
+    
     // Try to list files in the bucket (this will fail if bucket doesn't exist or has no permissions)
     const { data, error } = await supabase.storage
       .from('remedy-images')
@@ -86,6 +88,7 @@ export const ensureRemedyImagesBucket = async (): Promise<boolean> => {
     
     if (error) {
       console.error('Remedy images bucket error:', error);
+      console.error('Bucket may not exist or lacks proper public permissions');
       return false;
     }
     
@@ -93,6 +96,19 @@ export const ensureRemedyImagesBucket = async (): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Error checking remedy images bucket:', error);
+    return false;
+  }
+};
+
+/**
+ * Test image URL accessibility
+ */
+export const testImageUrl = async (url: string): Promise<boolean> => {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch (error) {
+    console.error('Error testing image URL:', url, error);
     return false;
   }
 };
