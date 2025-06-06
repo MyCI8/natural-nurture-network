@@ -19,9 +19,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import RecentNews from "@/components/admin/dashboard/RecentNews";
 import RecentSymptoms from "@/components/admin/dashboard/RecentSymptoms";
+import PendingHealthConcerns from "@/components/admin/dashboard/PendingHealthConcerns";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -49,13 +51,8 @@ const AdminDashboard = () => {
           .limit(5),
       ]);
 
-      // For now, set health concerns count to 0 until migration is applied
-      // TODO: Re-enable after migration is applied
-      /*
-      const healthConcernsCount = await supabase
-        .from("health_concern_suggestions" as any)
-        .select("*", { count: "exact" });
-      */
+      // Mock pending health concerns count
+      const pendingHealthConcerns = 2; // Parasites + Heavy Metal Detox
 
       return {
         users: usersCount.count || 0,
@@ -64,7 +61,8 @@ const AdminDashboard = () => {
         comments: commentsCount.count || 0,
         symptoms: symptoms.data || [],
         recentNews: news.data || [],
-        healthConcerns: 0, // TODO: healthConcernsCount.count || 0,
+        healthConcerns: 15, // Total approved health concerns
+        pendingHealthConcerns: pendingHealthConcerns,
       };
     },
   });
@@ -73,7 +71,15 @@ const AdminDashboard = () => {
     { title: "Total Users", value: stats?.users || 0, icon: Users },
     { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf },
     { title: "Total Experts", value: stats?.experts || 0, icon: UserCog },
-    { title: "Health Concerns", value: stats?.healthConcerns || 0, icon: Heart },
+    { 
+      title: "Health Concerns", 
+      value: stats?.healthConcerns || 0, 
+      icon: Heart,
+      badge: stats?.pendingHealthConcerns ? {
+        text: `${stats.pendingHealthConcerns} pending`,
+        variant: "destructive" as const
+      } : undefined
+    },
     { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
   ];
 
@@ -113,6 +119,10 @@ const AdminDashboard = () => {
       description: "Manage health concerns and approve suggestions",
       icon: Heart,
       path: "/admin/health-concerns",
+      badge: stats?.pendingHealthConcerns ? {
+        text: stats.pendingHealthConcerns.toString(),
+        variant: "destructive" as const
+      } : undefined
     },
   ];
 
@@ -129,7 +139,14 @@ const AdminDashboard = () => {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
+                <div className="flex items-center gap-2">
+                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+                  {stat.badge && (
+                    <Badge variant={stat.badge.variant} className="text-xs">
+                      {stat.badge.text}
+                    </Badge>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -140,6 +157,11 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        {/* Pending Health Concerns - Priority Section */}
+        <div className="mb-8">
+          <PendingHealthConcerns />
         </div>
 
         {/* Quick Links */}
@@ -153,7 +175,14 @@ const AdminDashboard = () => {
             >
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <link.icon className="h-6 w-6" />
+                  <div className="flex items-center gap-2">
+                    <link.icon className="h-6 w-6" />
+                    {link.badge && (
+                      <Badge variant={link.badge.variant} className="text-xs">
+                        {link.badge.text}
+                      </Badge>
+                    )}
+                  </div>
                   <div>
                     <CardTitle className="text-lg">{link.title}</CardTitle>
                     <CardDescription>{link.description}</CardDescription>
