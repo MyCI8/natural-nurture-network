@@ -8,7 +8,6 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManageExperts from "./pages/ManageExperts";
 import ManageRemedies from "./pages/ManageRemedies";
 import ManageIngredients from "./pages/ManageIngredients";
-import ManageSymptoms from "./pages/ManageSymptoms";
 import ManageHealthConcerns from "./pages/ManageHealthConcerns";
 import EditExpert from "./pages/EditExpert";
 import EditRemedy from "./pages/EditRemedy";
@@ -27,7 +26,7 @@ import EditNews from "./pages/EditNews";
 import Auth from "./pages/Auth";
 import ManageUsers from "./pages/ManageUsers";
 import EditUser from "./pages/EditUser";
-import EditSymptom from "./pages/EditSymptom";
+import EditHealthConcern from "./pages/EditHealthConcern";
 import Explore from "./pages/Explore";
 import ExploreDetail from "./pages/ExploreDetail";
 import ManageVideos from "./pages/ManageVideos";
@@ -83,7 +82,10 @@ const Routes = () => {
             <Route index element={<ManageRemedies />} />
             <Route path="edit/:id" element={<EditRemedy />} />
           </Route>
-          <Route path="health-concerns" element={<ManageHealthConcerns />} />
+          <Route path="health-concerns">
+            <Route index element={<ManageHealthConcerns />} />
+            <Route path=":id" element={<EditHealthConcern />} />
+          </Route>
           <Route path="ingredients">
             <Route index element={<ManageIngredients />} />
             <Route path=":id" element={<IngredientDetail />} />
@@ -100,10 +102,9 @@ const Routes = () => {
             <Route index element={<ManageVideos />} />
             <Route path=":id" element={<EditVideo />} />
           </Route>
-          <Route path="symptoms">
-            <Route index element={<ManageSymptoms />} />
-            <Route path=":id" element={<EditSymptom />} />
-          </Route>
+          {/* Redirect old symptoms routes to health-concerns */}
+          <Route path="symptoms" element={<Navigate to="/admin/health-concerns" replace />} />
+          <Route path="symptoms/:id" element={<Navigate to="/admin/health-concerns" replace />} />
         </Route>
         <Route path="auth" element={<Auth />} />
         <Route path="*" element={<NotFound />} />

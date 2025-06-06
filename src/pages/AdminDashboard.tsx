@@ -9,7 +9,7 @@ import {
   Apple,
   MessageSquare,
   ChevronRight,
-  Stethoscope,
+  Heart,
 } from "lucide-react";
 import {
   Card,
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
         commentsCount, 
         symptoms, 
         news,
-        symptomsCount
+        healthConcernsCount
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
           .select("*")
           .order("created_at", { ascending: false })
           .limit(5),
-        supabase.from("symptom_clicks").select("*", { count: "exact" }),
+        supabase.from("health_concern_suggestions").select("*", { count: "exact" }),
       ]);
 
       return {
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
         comments: commentsCount.count || 0,
         symptoms: symptoms.data || [],
         recentNews: news.data || [],
-        symptomsCount: symptomsCount.count || 0,
+        healthConcerns: healthConcernsCount.count || 0,
       };
     },
   });
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
     { title: "Total Users", value: stats?.users || 0, icon: Users },
     { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf },
     { title: "Total Experts", value: stats?.experts || 0, icon: UserCog },
-    { title: "Symptoms Activity", value: stats?.symptomsCount || 0, icon: Stethoscope },
+    { title: "Health Concerns", value: stats?.healthConcerns || 0, icon: Heart },
     { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
   ];
 
@@ -103,10 +103,10 @@ const AdminDashboard = () => {
       path: "/admin/ingredients",
     },
     {
-      title: "Manage Symptoms",
-      description: "View and analyze symptom statistics",
-      icon: Stethoscope,
-      path: "/admin/symptoms",
+      title: "Manage Health Concerns",
+      description: "Manage health concerns and approve suggestions",
+      icon: Heart,
+      path: "/admin/health-concerns",
     },
   ];
 

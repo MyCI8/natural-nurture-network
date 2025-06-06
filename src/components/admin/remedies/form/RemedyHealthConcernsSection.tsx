@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { healthConcerns } from "./HealthConcernsData";
 import { useHealthConcernSuggestions } from "./useHealthConcernSuggestions";
 import { HealthConcernBadge } from "./HealthConcernBadge";
 import { HealthConcernPopover } from "./HealthConcernPopover";
@@ -21,6 +20,7 @@ export const RemedyHealthConcernsSection = ({
   const [searchValue, setSearchValue] = useState("");
 
   const {
+    allAvailableConcerns,
     pendingSuggestions,
     suggestConcernMutation,
     isPendingConcern,
@@ -30,7 +30,7 @@ export const RemedyHealthConcernsSection = ({
   console.log("RemedyHealthConcernsSection render", { selectedConcerns, open });
 
   // Combine regular concerns with pending suggestions
-  const allConcerns = [...healthConcerns, ...pendingSuggestions.map(s => s.concern_name)];
+  const allConcerns = [...allAvailableConcerns, ...pendingSuggestions.map(s => s.concern_name)];
   
   const filteredConcerns = (allConcerns || []).filter(concern =>
     concern.toLowerCase().includes(searchValue.toLowerCase()) &&

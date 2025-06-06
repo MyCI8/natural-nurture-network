@@ -28,4 +28,23 @@ export interface PendingConcern {
   id: string;
   concern_name: string;
   status: 'pending' | 'approved' | 'rejected';
+  category?: string;
+  brief_description?: string;
 }
+
+// Function to get all available health concerns (static + approved suggestions)
+export const getAllHealthConcerns = async () => {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { data } = await supabase
+      .from('health_concern_suggestions')
+      .select('concern_name')
+      .eq('status', 'approved');
+    
+    const approvedConcerns = data?.map(item => item.concern_name) || [];
+    return [...healthConcerns, ...approvedConcerns];
+  } catch (error) {
+    console.error('Error fetching approved health concerns:', error);
+    return healthConcerns;
+  }
+};

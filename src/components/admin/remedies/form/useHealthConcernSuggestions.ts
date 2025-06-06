@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PendingConcern } from "./HealthConcernsData";
+import { PendingConcern, getAllHealthConcerns } from "./HealthConcernsData";
 
 export const useHealthConcernSuggestions = (
   selectedConcerns: string[],
@@ -12,6 +12,12 @@ export const useHealthConcernSuggestions = (
   const [localPendingConcerns, setLocalPendingConcerns] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch all available health concerns (static + approved)
+  const { data: allAvailableConcerns = [] } = useQuery({
+    queryKey: ["all-health-concerns"],
+    queryFn: getAllHealthConcerns,
+  });
 
   // Fetch user's pending health concern suggestions
   const { data: pendingSuggestions = [] } = useQuery({
@@ -22,7 +28,7 @@ export const useHealthConcernSuggestions = (
         if (!user) return [];
         
         const { data, error } = await supabase
-          .from("health_concern_suggestions" as any)
+          .from("health_concern_suggestions")
           .select("*")
           .eq("suggested_by", user.id)
           .eq("status", "pending");
@@ -39,7 +45,9 @@ export const useHealthConcernSuggestions = (
           .map((item: any) => ({
             id: item.id,
             concern_name: item.concern_name,
-            status: item.status || 'pending'
+            status: item.status || 'pending',
+            category: item.category,
+            brief_description: item.brief_description
           })) as PendingConcern[];
       } catch (error) {
         console.error("Error fetching pending suggestions:", error);
@@ -55,12 +63,12 @@ export const useHealthConcernSuggestions = (
       if (!user) throw new Error("Must be logged in to suggest health concerns");
 
       const { data, error } = await supabase
-        .from("health_concern_suggestions" as any)
+        .from("health_concern_suggestions")
         .insert({
           concern_name: concernName,
           suggested_by: user.id,
           status: "pending"
-        } as any)
+        })
         .select()
         .single();
 
@@ -76,6 +84,7 @@ export const useHealthConcernSuggestions = (
         description: `"${concernName}" has been submitted for review and added to your selection`,
       });
       queryClient.invalidateQueries({ queryKey: ["health-concern-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["all-health-concerns"] });
       onConcernsChange([...selectedConcerns, concernName]);
       setLocalPendingConcerns(prev => [...prev, concernName]);
     },
@@ -105,6 +114,7 @@ export const useHealthConcernSuggestions = (
   }, [pendingSuggestions]);
 
   return {
+    allAvailableConcerns,
     pendingSuggestions,
     suggestConcernMutation,
     isPendingConcern,
