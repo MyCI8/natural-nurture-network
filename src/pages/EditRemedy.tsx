@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -14,7 +13,7 @@ import { RemedyHealthConcernsSection } from "@/components/admin/remedies/form/Re
 import { RemedyStatusSection } from "@/components/admin/remedies/form/RemedyStatusSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
-import { migrateRemedyImages, filterValidImages } from "@/utils/remedyImageMigration";
+import { migrateRemedyImages, filterImagesForSaving } from "@/utils/remedyImageMigration";
 
 interface ImageData {
   file?: File;
@@ -114,10 +113,8 @@ const EditRemedy = () => {
 
   const handleImagesChange = (newImages: ImageData[]) => {
     console.log('Images changed in EditRemedy:', newImages);
-    // Use improved validation that allows the upload flow to work
-    const validImages = filterValidImages(newImages);
-    console.log('Valid images after filtering:', validImages);
-    setImages(validImages);
+    // Allow all images for UI state, including empty ones for new slots
+    setImages(newImages);
   };
 
   const uploadImage = async (imageFile: File): Promise<string | null> => {
@@ -171,9 +168,13 @@ const EditRemedy = () => {
 
       let finalImageUrl = '';
 
-      // Handle image upload if there's a new file
-      if (images.length > 0) {
-        const firstImage = images[0];
+      // Use strict filtering for saving - only valid images with files or HTTP URLs
+      const validImagesForSaving = filterImagesForSaving(images);
+      console.log('Valid images for saving:', validImagesForSaving);
+
+      // Handle image upload if there's a valid image for saving
+      if (validImagesForSaving.length > 0) {
+        const firstImage = validImagesForSaving[0];
         
         if (firstImage.file) {
           console.log('Uploading new image file...');

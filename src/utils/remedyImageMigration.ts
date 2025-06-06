@@ -55,9 +55,15 @@ export const migrateRemedyImages = async (): Promise<void> => {
 };
 
 /**
- * Validates image files and URLs for upload
+ * Validates image files and URLs for upload - RELAXED for UI state
+ * This allows empty URLs for new image slots in the UI
  */
 export const validateImageForUpload = (image: { file?: File; url: string; description?: string }): boolean => {
+  // Allow empty URLs for new image slots (UI state)
+  if (!image.url || image.url === '') {
+    return true;
+  }
+  
   // Allow images with File objects (new uploads)
   if (image.file && image.file instanceof File) {
     return true;
@@ -79,11 +85,43 @@ export const validateImageForUpload = (image: { file?: File; url: string; descri
 };
 
 /**
+ * Strict validation for saving - only valid images with files or HTTP URLs
+ */
+export const validateImageForSaving = (image: { file?: File; url: string; description?: string }): boolean => {
+  // Reject empty URLs for saving
+  if (!image.url || image.url === '') {
+    return false;
+  }
+  
+  // Allow images with File objects (new uploads)
+  if (image.file && image.file instanceof File) {
+    return true;
+  }
+  
+  // Allow images with valid HTTP URLs (existing stored images)
+  if (image.url && 
+      !image.url.startsWith('blob:') && 
+      (image.url.startsWith('http') || image.url.startsWith('https'))) {
+    return true;
+  }
+  
+  // Reject blob URLs for saving
+  return false;
+};
+
+/**
  * Filters images to only include valid ones for processing
- * This is more permissive than ensureImageFileObjects to allow the upload flow to work
+ * This is more permissive to allow the upload flow to work
  */
 export const filterValidImages = (images: Array<{ file?: File; url: string; description?: string }>) => {
   return images.filter(img => validateImageForUpload(img));
+};
+
+/**
+ * Filters images for saving - only includes images ready to be saved
+ */
+export const filterImagesForSaving = (images: Array<{ file?: File; url: string; description?: string }>) => {
+  return images.filter(img => validateImageForSaving(img));
 };
 
 /**
