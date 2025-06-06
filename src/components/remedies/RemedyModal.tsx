@@ -31,7 +31,7 @@ const RemedyModal: React.FC<RemedyModalProps> = ({
 }) => {
   if (!isOpen || !remedy) return null;
 
-  // Use safe image URL with proper validation
+  // Use only image_url field - standardized approach
   const safeImageUrl = getSafeImageUrl(remedy.image_url);
 
   const handleOverlayClick = (e: React.MouseEvent) => {

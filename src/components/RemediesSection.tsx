@@ -2,17 +2,24 @@
 import { useRemedies, updateRemedyClickCount } from "./remedies/useRemedies";
 import RemedyCard from "./remedies/RemedyCard";
 import { getSafeImageUrl, ensureRemedyImagesBucket } from "@/utils/imageValidation";
+import { migrateRemedyImages, validateRemedyImages } from "@/utils/remedyImageMigration";
 import { useEffect } from "react";
 
 const RemediesSection = () => {
   const { data: remedies = [], isLoading, error } = useRemedies();
 
-  // Check storage bucket on component mount
+  // Run migration and validation on component mount
   useEffect(() => {
-    ensureRemedyImagesBucket();
+    const initializeRemedyImages = async () => {
+      await ensureRemedyImagesBucket();
+      await migrateRemedyImages();
+      await validateRemedyImages();
+    };
+    
+    initializeRemedyImages();
   }, []);
 
-  // Add debugging for remedy data
+  // Add debugging for remedy data - use only image_url now
   console.log('RemediesSection remedies:', remedies?.length || 0);
   remedies?.forEach((remedy, index) => {
     const safeImageUrl = getSafeImageUrl(remedy.image_url);
@@ -21,7 +28,6 @@ const RemediesSection = () => {
       image_url: remedy.image_url,
       safe_image_url: safeImageUrl,
       status: remedy.status,
-      is_blob_url: remedy.image_url?.startsWith('blob:') || false,
       is_valid_http: remedy.image_url?.startsWith('http') || false
     });
   });
@@ -68,7 +74,7 @@ const RemediesSection = () => {
         <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {remedies.map((remedy) => {
-            // Standardize on image_url field only
+            // Use only image_url field - standardized approach
             const safeImageUrl = getSafeImageUrl(remedy.image_url);
             
             console.log(`RemediesSection rendering ${remedy.name} with image:`, {

@@ -7,15 +7,20 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import MediaContainer from '@/components/ui/media-container';
 import { getSafeImageUrl, ensureRemedyImagesBucket } from '@/utils/imageValidation';
+import { migrateRemedyImages } from '@/utils/remedyImageMigration';
 
 interface RemediesSectionProps {
   inNewsSection?: boolean;
 }
 
 const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false }) => {
-  // Check storage bucket on component mount
+  // Check storage bucket and run migration on component mount
   useEffect(() => {
-    ensureRemedyImagesBucket();
+    const initializeImages = async () => {
+      await ensureRemedyImagesBucket();
+      await migrateRemedyImages();
+    };
+    initializeImages();
   }, []);
 
   const { data: remedies, isLoading, error } = useQuery({
@@ -36,7 +41,7 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
       
       console.log('RemediesSection: Remedies fetched:', data?.length || 0);
       
-      // Add debugging for image URLs - standardize on image_url field
+      // Add debugging for image URLs - use only image_url field
       data?.forEach((remedy, index) => {
         const safeImageUrl = getSafeImageUrl(remedy.image_url);
         
@@ -45,7 +50,6 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
           status: remedy.status,
           image_url: remedy.image_url,
           safe_image_url: safeImageUrl,
-          is_blob_url: remedy.image_url?.startsWith('blob:') || false,
           is_valid_storage_url: remedy.image_url?.includes('supabase.co') && remedy.image_url?.includes('/storage/v1/object/public/') || false,
           created_at: remedy.created_at
         });
@@ -94,7 +98,7 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {remedies?.map((remedy, index) => {
-            // Standardize on image_url field only, with proper validation
+            // Use only image_url field - standardized approach
             const safeImageUrl = getSafeImageUrl(remedy.image_url);
             
             console.log(`RemediesSection: Rendering remedy ${remedy.name} with image:`, {

@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
 import MediaContainer from "@/components/ui/media-container";
 import RemedyModal from "@/components/remedies/RemedyModal";
+import { migrateRemedyImages } from "@/utils/remedyImageMigration";
 
 const Remedies = () => {
   const navigate = useNavigate();
@@ -23,6 +24,11 @@ const Remedies = () => {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Run migration on page load
+  useEffect(() => {
+    migrateRemedyImages();
+  }, []);
   
   const { data: remedies, isLoading, error } = useQuery({
     queryKey: ["remedies"],
@@ -44,13 +50,33 @@ const Remedies = () => {
       console.log('Fetched remedies count:', data?.length || 0);
       console.log('Remedies data:', data);
       
-      // Log remedy statuses for debugging
+      // Log remedy statuses and images for debugging
       if (data) {
         const statusCounts = data.reduce((acc, remedy) => {
           acc[remedy.status] = (acc[remedy.status] || 0) + 1;
           return acc;
         }, {} as Record<string, number>);
         console.log('Remedy status breakdown:', statusCounts);
+        
+        // Check specific remedies we're having issues with
+        const parasiteRemedy = data.find(r => r.name?.includes('Parasite Cleanse'));
+        const mitochondriaRemedy = data.find(r => r.name?.includes('mitochondria'));
+        
+        if (parasiteRemedy) {
+          console.log('Parasite Cleanse remedy:', {
+            name: parasiteRemedy.name,
+            image_url: parasiteRemedy.image_url,
+            status: parasiteRemedy.status
+          });
+        }
+        
+        if (mitochondriaRemedy) {
+          console.log('Mitochondria remedy:', {
+            name: mitochondriaRemedy.name,
+            image_url: mitochondriaRemedy.image_url,
+            status: mitochondriaRemedy.status
+          });
+        }
       }
       
       return data || [];
@@ -205,12 +231,12 @@ const Remedies = () => {
               <CardContent className="p-0">
                 <MediaContainer 
                   aspectRatio="auto"
-                  imageUrl={remedy.image_url || remedy.main_image_url || "/placeholder.svg"}
+                  imageUrl={remedy.image_url || "/placeholder.svg"}
                   imageAlt={remedy.name || "Remedy"}
                   className="bg-muted"
                 >
                   <img
-                    src={remedy.image_url || remedy.main_image_url || "/placeholder.svg"}
+                    src={remedy.image_url || "/placeholder.svg"}
                     alt={remedy.name || "Remedy"}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
