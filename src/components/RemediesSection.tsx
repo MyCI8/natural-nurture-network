@@ -1,8 +1,20 @@
+
 import { useRemedies, updateRemedyClickCount } from "./remedies/useRemedies";
 import RemedyCard from "./remedies/RemedyCard";
 
 const RemediesSection = () => {
   const { data: remedies = [] } = useRemedies();
+
+  // Add debugging for remedy data
+  console.log('RemediesSection remedies:', remedies);
+  remedies.forEach((remedy, index) => {
+    console.log(`Main RemediesSection - Remedy ${index + 1} (${remedy.name}):`, {
+      id: remedy.id,
+      image_url: remedy.image_url,
+      main_image_url: remedy.main_image_url,
+      status: remedy.status
+    });
+  });
 
   const handleRemedyClick = async (remedyId: string) => {
     const remedy = remedies.find(r => r.id === remedyId);
@@ -22,7 +34,7 @@ const RemediesSection = () => {
               id={remedy.id}
               name={remedy.name}
               summary={remedy.summary}
-              imageUrl={remedy.image_url}
+              imageUrl={remedy.image_url || remedy.main_image_url || "/placeholder.svg"}
               onClick={handleRemedyClick}
             />
           ))}

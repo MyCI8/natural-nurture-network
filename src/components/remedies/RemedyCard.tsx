@@ -17,6 +17,8 @@ const RemedyCard = ({
   imageUrl,
   onClick
 }: RemedyCardProps) => {
+  console.log(`RemedyCard rendering: ${name} with image: ${imageUrl}`);
+  
   return (
     <Card 
       className="x-media-card cursor-pointer touch-manipulation active-scale" 
@@ -24,7 +26,7 @@ const RemedyCard = ({
     >
       <CardContent className="p-0">
         <MediaContainer 
-          aspectRatio="auto"
+          aspectRatio="4:3"
           imageUrl={imageUrl}
           imageAlt={name}
           onClick={() => onClick(id)}
@@ -32,7 +34,18 @@ const RemedyCard = ({
           <img 
             src={imageUrl} 
             alt={name} 
-            className="w-full h-full object-cover transition-transform duration-500" 
+            className="w-full h-full object-cover transition-transform duration-500"
+            onLoad={() => {
+              console.log(`RemedyCard image loaded successfully for ${name}:`, imageUrl);
+            }}
+            onError={(e) => {
+              console.error(`RemedyCard image failed to load for ${name}:`, imageUrl);
+              // Set fallback image
+              const target = e.target as HTMLImageElement;
+              if (target.src !== "/placeholder.svg") {
+                target.src = "/placeholder.svg";
+              }
+            }}
           />
         </MediaContainer>
         <div className="p-6 px-[20px] py-[8px]">
