@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -34,7 +33,7 @@ const APPROVED_HEALTH_CONCERNS = [
   'Cough', 'Cold', 'Sore Throat', 'Headache', 'Joint Pain', 'Back Pain', 'Eye Strain', 'Fatigue',
   'Skin Irritation', 'Hair Loss', 'Insomnia', 'Nausea', 'Fever', 'Muscle Pain', 'Bloating',
   'Cancer', 'High Blood Pressure', 'Diabetes', 'Arthritis', 'Asthma', 'Allergies', 'Eczema',
-  'Acne', 'Migraine', 'Fibromyalgia', 'IBS', 'GERD', 'UTI', 'Sinusitis', 'Bronchitis', 'Parasites',
+  'Acne', 'Migraine', 'Fibromyalgia', 'IBS', 'GERD', 'UTI', 'Sinusitis', 'Bronchitis',
   'Stress', 'Anxiety', 'Depression', 'Mental Clarity', 'Memory Support', 'Focus Enhancement',
   'Mood Balance', 'Emotional Wellness', 'Sleep Quality', 'Relaxation',
   'Immunity Support', 'Weight Management', 'Energy Boost', 'Detoxification', 'Anti-Aging',
@@ -71,6 +70,41 @@ const EditRemedy = () => {
     migrateRemedyImages();
   }, []);
 
+  // Fetch user's pending health concern suggestions to restore pending selections
+  const { data: pendingSuggestions = [] } = useQuery({
+    queryKey: ["health-concern-suggestions"],
+    queryFn: async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+        
+        const { data, error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .select("*")
+          .eq("suggested_by", user.id)
+          .eq("status", "pending");
+        
+        if (error) {
+          console.error("Database error:", error);
+          return [];
+        }
+        
+        if (!data || !Array.isArray(data)) return [];
+        
+        return data
+          .filter((item: any) => item && typeof item === 'object' && item.id && item.concern_name)
+          .map((item: any) => ({
+            id: item.id,
+            concern_name: item.concern_name,
+            status: item.status || 'pending'
+          }));
+      } catch (error) {
+        console.error("Error fetching pending suggestions:", error);
+        return [];
+      }
+    },
+  });
+
   const { data: remedy, isLoading } = useQuery({
     queryKey: ["remedy", id],
     queryFn: async () => {
@@ -88,8 +122,9 @@ const EditRemedy = () => {
   });
 
   useEffect(() => {
-    if (remedy) {
+    if (remedy && pendingSuggestions) {
       console.log('Loading remedy data:', remedy);
+      console.log('Pending suggestions:', pendingSuggestions);
       
       // Parse content fields if they exist in the description (backwards compatibility)
       let description = remedy.description || "";
@@ -114,6 +149,23 @@ const EditRemedy = () => {
           }
         });
       }
+
+      // Combine approved concerns from database with user's pending concerns that were previously selected
+      const approvedConcerns = remedy.symptoms || [];
+      const pendingConcernNames = pendingSuggestions.map(s => s.concern_name);
+      
+      // Get previously selected pending concerns from localStorage if available
+      const storageKey = `remedy-pending-concerns-${id}`;
+      const savedPendingConcerns = localStorage.getItem(storageKey);
+      const previouslySelectedPending = savedPendingConcerns ? JSON.parse(savedPendingConcerns) : [];
+      
+      // Combine approved + any pending concerns that were previously selected
+      const allHealthConcerns = [
+        ...approvedConcerns,
+        ...previouslySelectedPending.filter((concern: string) => pendingConcernNames.includes(concern))
+      ];
+
+      console.log('Restored health concerns:', allHealthConcerns);
       
       setFormData({
         name: remedy.name || "",
@@ -123,7 +175,7 @@ const EditRemedy = () => {
         dosage_instructions: dosage_instructions,
         precautions_side_effects: precautions_side_effects,
         ingredients: remedy.ingredients || [],
-        health_concerns: remedy.symptoms || [],
+        health_concerns: allHealthConcerns,
         status: remedy.status as "draft" | "published" || "draft",
       });
       setSelectedExperts(remedy.expert_recommendations || []);
@@ -139,13 +191,29 @@ const EditRemedy = () => {
         setLinks(remedyLinks);
       }
     }
-  }, [remedy]);
+  }, [remedy, pendingSuggestions, id]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newFormData = {
+        ...prev,
+        [field]: value
+      };
+
+      // Save pending concerns to localStorage when health_concerns change
+      if (field === 'health_concerns' && id) {
+        const pendingConcernNames = pendingSuggestions.map(s => s.concern_name);
+        const selectedPendingConcerns = value.filter((concern: string) => 
+          pendingConcernNames.includes(concern)
+        );
+        
+        const storageKey = `remedy-pending-concerns-${id}`;
+        localStorage.setItem(storageKey, JSON.stringify(selectedPendingConcerns));
+        console.log('Saved pending concerns to localStorage:', selectedPendingConcerns);
+      }
+
+      return newFormData;
+    });
   };
 
   const handleImagesChange = (newImages: ImageData[]) => {
@@ -253,23 +321,23 @@ const EditRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
-      // Separate approved health concerns from unsupported ones
+      // Only save APPROVED health concerns to the database symptoms field
       const approvedConcerns = formData.health_concerns.filter(concern => 
         APPROVED_HEALTH_CONCERNS.includes(concern as any)
       );
-      const unsupportedConcerns = formData.health_concerns.filter(concern => 
+      const pendingConcerns = formData.health_concerns.filter(concern => 
         !APPROVED_HEALTH_CONCERNS.includes(concern as any)
       );
 
-      console.log('Approved health concerns being saved:', approvedConcerns);
-      console.log('Unsupported health concerns (will be skipped):', unsupportedConcerns);
+      console.log('Approved health concerns being saved to DB:', approvedConcerns);
+      console.log('Pending health concerns (kept in UI only):', pendingConcerns);
 
-      // Show message about unsupported concerns
-      if (unsupportedConcerns.length > 0) {
-        toast.error(`The following health concerns are not supported and were skipped: ${unsupportedConcerns.join(', ')}. Please contact an admin to add new health concerns to the system.`);
+      // Show info about pending concerns
+      if (pendingConcerns.length > 0) {
+        toast.success(`Remedy saved! Note: ${pendingConcerns.join(', ')} will remain as pending selections until approved by an admin.`);
       }
 
-      // Prepare data for database operation - Use combined description field
+      // Prepare data for database operation - Only save approved concerns to symptoms field
       const remedyData = {
         name: formData.name,
         summary: formData.summary,
@@ -278,7 +346,7 @@ const EditRemedy = () => {
         image_url: finalImageUrl, // ONLY use image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: approvedConcerns as any, // Type cast to allow database save
+        symptoms: approvedConcerns as any, // Only approved concerns go to DB
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };
