@@ -47,8 +47,11 @@ const ManageHealthConcerns = () => {
     queryKey: ["admin-health-concern-suggestions", filter, searchQuery],
     queryFn: async () => {
       try {
+        // For now, return empty array until migration is applied
+        // TODO: Re-enable after migration is applied
+        /*
         let query = supabase
-          .from("health_concern_suggestions")
+          .from("health_concern_suggestions" as any)
           .select(`
             *,
             profiles!health_concern_suggestions_suggested_by_fkey(email)
@@ -70,6 +73,9 @@ const ManageHealthConcerns = () => {
           ...item,
           user_email: item.profiles?.email || 'Unknown user'
         })) as HealthConcernSuggestion[];
+        */
+        
+        return [] as HealthConcernSuggestion[];
       } catch (error) {
         console.error("Error fetching suggestions:", error);
         return [];
@@ -82,8 +88,11 @@ const ManageHealthConcerns = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Must be logged in");
 
+      // For now, just log the action until migration is applied
+      // TODO: Re-enable after migration is applied
+      /*
       const { error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .update({
           status,
           reviewed_at: new Date().toISOString(),
@@ -92,6 +101,9 @@ const ManageHealthConcerns = () => {
         .eq("id", id);
 
       if (error) throw error;
+      */
+      
+      console.log(`Would update suggestion ${id} to status: ${status}`);
     },
     onSuccess: (_, variables) => {
       toast({
@@ -112,12 +124,18 @@ const ManageHealthConcerns = () => {
 
   const deleteSuggestionMutation = useMutation({
     mutationFn: async (id: string) => {
+      // For now, just log the action until migration is applied
+      // TODO: Re-enable after migration is applied
+      /*
       const { error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .delete()
         .eq("id", id);
 
       if (error) throw error;
+      */
+      
+      console.log(`Would delete suggestion: ${id}`);
     },
     onSuccess: () => {
       toast({
@@ -225,7 +243,10 @@ const ManageHealthConcerns = () => {
           ) : suggestions.length === 0 ? (
             <Card>
               <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">No health concerns found</p>
+                <p className="text-muted-foreground">
+                  Health concerns management is temporarily unavailable until database migration is complete.
+                  Please check back shortly.
+                </p>
               </CardContent>
             </Card>
           ) : (

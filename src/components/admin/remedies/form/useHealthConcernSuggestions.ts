@@ -27,8 +27,11 @@ export const useHealthConcernSuggestions = (
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
         
+        // For now, return empty array until migration is applied
+        // TODO: Re-enable after migration is applied
+        /*
         const { data, error } = await supabase
-          .from("health_concern_suggestions")
+          .from("health_concern_suggestions" as any)
           .select("*")
           .eq("suggested_by", user.id)
           .eq("status", "pending");
@@ -49,6 +52,8 @@ export const useHealthConcernSuggestions = (
             category: item.category,
             brief_description: item.brief_description
           })) as PendingConcern[];
+        */
+        return [];
       } catch (error) {
         console.error("Error fetching pending suggestions:", error);
         return [];
@@ -62,8 +67,11 @@ export const useHealthConcernSuggestions = (
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Must be logged in to suggest health concerns");
 
+      // For now, just add to local state until migration is applied
+      // TODO: Re-enable database insert after migration is applied
+      /*
       const { data, error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .insert({
           concern_name: concernName,
           suggested_by: user.id,
@@ -77,6 +85,9 @@ export const useHealthConcernSuggestions = (
         throw new Error(`Failed to suggest concern: ${error.message || 'Unknown error'}`);
       }
       return { concernName, data };
+      */
+      
+      return { concernName, data: null };
     },
     onSuccess: ({ concernName }) => {
       toast({

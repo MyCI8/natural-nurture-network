@@ -35,14 +35,19 @@ export interface PendingConcern {
 // Function to get all available health concerns (static + approved suggestions)
 export const getAllHealthConcerns = async () => {
   try {
+    // For now, return static concerns until migration is applied
+    // TODO: Re-enable after migration is applied
+    /*
     const { supabase } = await import('@/integrations/supabase/client');
     const { data } = await supabase
-      .from('health_concern_suggestions')
+      .from("health_concern_suggestions" as any)
       .select('concern_name')
       .eq('status', 'approved');
     
-    const approvedConcerns = data?.map(item => item.concern_name) || [];
+    const approvedConcerns = data?.map((item: any) => item.concern_name) || [];
     return [...healthConcerns, ...approvedConcerns];
+    */
+    return healthConcerns;
   } catch (error) {
     console.error('Error fetching approved health concerns:', error);
     return healthConcerns;

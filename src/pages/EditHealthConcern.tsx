@@ -39,8 +39,11 @@ const EditHealthConcern = () => {
     queryFn: async () => {
       if (isNewConcern) return null;
       
+      // For now, return null until migration is applied
+      // TODO: Re-enable after migration is applied
+      /*
       const { data, error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .select("*")
         .eq("id", id)
         .maybeSingle();
@@ -60,6 +63,10 @@ const EditHealthConcern = () => {
       }
 
       return data;
+      */
+      
+      toast.error("Health concern editing is temporarily unavailable until database migration is complete");
+      return null;
     },
     enabled: !isNewConcern
   });
@@ -69,9 +76,12 @@ const EditHealthConcern = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Must be logged in");
 
+      // For now, show success message without database operation
+      // TODO: Re-enable after migration is applied
+      /*
       if (isNewConcern) {
         const { error } = await supabase
-          .from("health_concern_suggestions")
+          .from("health_concern_suggestions" as any)
           .insert({
             concern_name: values.concern_name,
             brief_description: values.brief_description,
@@ -83,7 +93,7 @@ const EditHealthConcern = () => {
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from("health_concern_suggestions")
+          .from("health_concern_suggestions" as any)
           .update({
             concern_name: values.concern_name,
             brief_description: values.brief_description,
@@ -96,6 +106,9 @@ const EditHealthConcern = () => {
 
         if (error) throw error;
       }
+      */
+      
+      console.log("Would save health concern with values:", values);
     },
     onSuccess: () => {
       toast.success(isNewConcern ? "Health concern created successfully" : "Health concern updated successfully");

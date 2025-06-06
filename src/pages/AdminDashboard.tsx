@@ -35,8 +35,7 @@ const AdminDashboard = () => {
         expertsCount, 
         commentsCount, 
         symptoms, 
-        news,
-        healthConcernsCount
+        news
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
@@ -48,8 +47,15 @@ const AdminDashboard = () => {
           .select("*")
           .order("created_at", { ascending: false })
           .limit(5),
-        supabase.from("health_concern_suggestions").select("*", { count: "exact" }),
       ]);
+
+      // For now, set health concerns count to 0 until migration is applied
+      // TODO: Re-enable after migration is applied
+      /*
+      const healthConcernsCount = await supabase
+        .from("health_concern_suggestions" as any)
+        .select("*", { count: "exact" });
+      */
 
       return {
         users: usersCount.count || 0,
@@ -58,7 +64,7 @@ const AdminDashboard = () => {
         comments: commentsCount.count || 0,
         symptoms: symptoms.data || [],
         recentNews: news.data || [],
-        healthConcerns: healthConcernsCount.count || 0,
+        healthConcerns: 0, // TODO: healthConcernsCount.count || 0,
       };
     },
   });
