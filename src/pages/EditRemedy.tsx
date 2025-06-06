@@ -261,8 +261,8 @@ const EditRemedy = () => {
       }
 
       // Keep all health concerns - allow both predefined and pending suggestions
-      // No filtering needed since the health concerns component handles validation
-      const validSymptoms = formData.health_concerns;
+      // Type-cast to satisfy database schema while preserving functionality
+      const validSymptoms = formData.health_concerns as any;
 
       console.log('Health concerns being saved:', validSymptoms);
 
