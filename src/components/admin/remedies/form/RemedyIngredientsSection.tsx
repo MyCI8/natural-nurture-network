@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { EnhancedImageUpload } from "@/components/ui/enhanced-image-upload";
 
 interface RemedyIngredientsSectionProps {
   ingredients: string[];
@@ -39,6 +40,7 @@ export const RemedyIngredientsSection = ({
     description: "",
     precautions: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Fetch existing ingredients
   const { data: existingIngredients = [] } = useQuery({
@@ -69,6 +71,39 @@ export const RemedyIngredientsSection = ({
     }
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      console.log('Starting image upload to ingredient-images bucket...');
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `ingredient-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      // Upload to ingredient-images bucket
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from('ingredient-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Image upload error:', uploadError);
+        return null;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('ingredient-images')
+        .getPublicUrl(fileName);
+      
+      console.log('Image uploaded successfully:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      return null;
+    }
+  };
+
   const handleCreateNewIngredient = async () => {
     if (newIngredient.name.trim() && newIngredient.brief_description.trim()) {
       const ingredientName = newIngredient.name.trim();
@@ -83,6 +118,15 @@ export const RemedyIngredientsSection = ({
         onIngredientsChange(updatedIngredients);
       }
       
+      // Handle image upload if there's a file
+      let finalImageUrl = newIngredient.image_url;
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) {
+          finalImageUrl = uploadedUrl;
+        }
+      }
+      
       // Save to ingredients table with full details
       try {
         const { error } = await supabase
@@ -90,7 +134,7 @@ export const RemedyIngredientsSection = ({
           .insert([{ 
             name: ingredientName,
             brief_description: newIngredient.brief_description.trim(),
-            image_url: newIngredient.image_url.trim() || null,
+            image_url: finalImageUrl || null,
             description: newIngredient.description.trim() || null,
             precautions: newIngredient.precautions.trim() || null,
           }]);
@@ -114,6 +158,7 @@ export const RemedyIngredientsSection = ({
         description: "",
         precautions: "",
       });
+      setImageFile(null);
       setIsDialogOpen(false);
     }
   };
@@ -151,7 +196,10 @@ export const RemedyIngredientsSection = ({
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Ingredient</DialogTitle>
+              <DialogTitle>Create New Ingredient</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                Fill in the details to create a new ingredient
+              </p>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -178,13 +226,14 @@ export const RemedyIngredientsSection = ({
               </div>
 
               <div>
-                <Label htmlFor="image-url">Image URL</Label>
-                <Input
-                  id="image-url"
+                <Label>Image</Label>
+                <EnhancedImageUpload
                   value={newIngredient.image_url}
-                  onChange={(e) => setNewIngredient({ ...newIngredient, image_url: e.target.value })}
-                  className="bg-background"
-                  placeholder="Enter image URL (optional)"
+                  onChange={(url) => setNewIngredient({ ...newIngredient, image_url: url })}
+                  onFileSelect={(file) => setImageFile(file)}
+                  aspectRatio={1}
+                  maxSize={5}
+                  className="mt-2"
                 />
               </div>
 
