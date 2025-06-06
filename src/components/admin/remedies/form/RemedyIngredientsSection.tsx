@@ -13,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 interface RemedyIngredientsSectionProps {
@@ -29,14 +28,11 @@ export const RemedyIngredientsSection = ({
   onIngredientsChange,
 }: RemedyIngredientsSectionProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newIngredient, setNewIngredient] = useState({
-    name: "",
-    description: "",
-  });
+  const [newIngredientName, setNewIngredientName] = useState("");
 
   const handleAddIngredient = async () => {
-    if (newIngredient.name.trim()) {
-      const ingredientName = newIngredient.name.trim();
+    if (newIngredientName.trim()) {
+      const ingredientName = newIngredientName.trim();
       
       // Add to current ingredients list first
       const updatedIngredients = [...ingredients, ingredientName];
@@ -49,13 +45,13 @@ export const RemedyIngredientsSection = ({
         onIngredientsChange(updatedIngredients);
       }
       
-      // Also save to ingredients table
+      // Also save to ingredients table (basic entry)
       try {
         const { error } = await supabase
           .from("ingredients")
           .insert([{ 
             name: ingredientName,
-            description: newIngredient.description.trim()
+            brief_description: `${ingredientName} - Natural ingredient`
           }]);
 
         if (error) {
@@ -71,7 +67,7 @@ export const RemedyIngredientsSection = ({
         console.error("Error adding ingredient:", error);
       }
 
-      setNewIngredient({ name: "", description: "" });
+      setNewIngredientName("");
       setIsDialogOpen(false);
     }
   };
@@ -103,40 +99,43 @@ export const RemedyIngredientsSection = ({
               Add Ingredient
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Add New Ingredient</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Name</Label>
+                <Label htmlFor="ingredient-name">Ingredient Name</Label>
                 <Input
-                  value={newIngredient.name}
-                  onChange={(e) =>
-                    setNewIngredient({ ...newIngredient, name: e.target.value })
-                  }
+                  id="ingredient-name"
+                  value={newIngredientName}
+                  onChange={(e) => setNewIngredientName(e.target.value)}
                   className="bg-background"
                   placeholder="Enter ingredient name"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddIngredient();
+                    }
+                  }}
                 />
               </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  value={newIngredient.description}
-                  onChange={(e) =>
-                    setNewIngredient({ ...newIngredient, description: e.target.value })
-                  }
-                  className="bg-background"
-                  placeholder="Enter ingredient description (optional)"
-                />
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="flex-1 touch-manipulation"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleAddIngredient}
+                  className="flex-1 touch-manipulation active-scale"
+                  disabled={!newIngredientName.trim()}
+                >
+                  Add Ingredient
+                </Button>
               </div>
-              <Button 
-                onClick={handleAddIngredient}
-                className="touch-manipulation active-scale"
-                disabled={!newIngredient.name.trim()}
-              >
-                Add Ingredient
-              </Button>
             </div>
           </DialogContent>
         </Dialog>
