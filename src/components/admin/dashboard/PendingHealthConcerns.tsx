@@ -30,7 +30,6 @@ const PendingHealthConcerns = () => {
     queryKey: ["pending-health-concern-suggestions"],
     queryFn: async () => {
       try {
-        // Check if the table exists by trying to query it
         const { data, error } = await supabase
           .from("health_concern_suggestions" as any)
           .select("*")
@@ -42,9 +41,19 @@ const PendingHealthConcerns = () => {
           return [];
         }
         
-        return data || [];
+        // Type assertion to ensure we have the right shape
+        return (data || []).map((item: any) => ({
+          id: item.id,
+          concern_name: item.concern_name,
+          brief_description: item.brief_description,
+          category: item.category,
+          suggested_by: item.suggested_by,
+          status: item.status,
+          created_at: item.created_at,
+          user_email: item.user_email || 'Anonymous'
+        })) as HealthConcernSuggestion[];
       } catch (error) {
-        console.error("Table might not exist yet:", error);
+        console.error("Health concern suggestions table might not exist yet:", error);
         return [];
       }
     },
@@ -52,16 +61,21 @@ const PendingHealthConcerns = () => {
 
   const updateSuggestionMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
-      const { error } = await supabase
-        .from("health_concern_suggestions" as any)
-        .update({ 
-          status, 
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id 
-        })
-        .eq("id", id);
-      
-      if (error) throw error;
+      try {
+        const { error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .update({ 
+            status, 
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: (await supabase.auth.getUser()).data.user?.id 
+          })
+          .eq("id", id);
+        
+        if (error) throw error;
+      } catch (error) {
+        console.error("Error updating suggestion:", error);
+        throw error;
+      }
     },
     onSuccess: (_, variables) => {
       toast({

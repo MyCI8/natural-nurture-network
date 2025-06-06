@@ -59,24 +59,29 @@ export const useHealthConcernSuggestions = (
   // Mutation to suggest a new health concern
   const suggestConcernMutation = useMutation({
     mutationFn: async (concernName: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Must be logged in to suggest health concerns");
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Must be logged in to suggest health concerns");
 
-      const { data, error } = await supabase
-        .from("health_concern_suggestions" as any)
-        .insert({
-          concern_name: concernName,
-          suggested_by: user.id,
-          status: "pending"
-        })
-        .select()
-        .single();
+        const { data, error } = await supabase
+          .from("health_concern_suggestions" as any)
+          .insert({
+            concern_name: concernName,
+            suggested_by: user.id,
+            status: "pending"
+          })
+          .select()
+          .single();
 
-      if (error) {
-        console.error("Insert error:", error);
-        throw new Error(`Failed to suggest concern: ${error.message || 'Unknown error'}`);
+        if (error) {
+          console.error("Insert error:", error);
+          throw new Error(`Failed to suggest concern: ${error.message || 'Unknown error'}`);
+        }
+        return { concernName, data };
+      } catch (error) {
+        console.error("Error suggesting concern:", error);
+        throw error;
       }
-      return { concernName, data };
     },
     onSuccess: ({ concernName }) => {
       toast({

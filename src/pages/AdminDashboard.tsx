@@ -50,12 +50,18 @@ const AdminDashboard = () => {
           .select("*")
           .order("created_at", { ascending: false })
           .limit(5),
-        // Try to get health concerns data, fallback to empty if table doesn't exist
-        supabase
-          .from("health_concern_suggestions" as any)
-          .select("*", { count: "exact" })
-          .then(result => result)
-          .catch(() => ({ count: 0, data: [] }))
+        // Safely handle health concerns data
+        (async () => {
+          try {
+            const result = await supabase
+              .from("health_concern_suggestions" as any)
+              .select("*", { count: "exact" });
+            return result;
+          } catch (error) {
+            console.error("Health concerns table might not exist:", error);
+            return { count: 0, data: [] };
+          }
+        })()
       ]);
 
       const pendingHealthConcerns = healthConcernsData?.data?.filter((item: any) => item.status === 'pending')?.length || 0;

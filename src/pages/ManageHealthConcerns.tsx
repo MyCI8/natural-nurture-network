@@ -69,13 +69,21 @@ const ManageHealthConcerns = () => {
           return [];
         }
         
-        // Transform the data to include user email
+        // Transform the data to include user email with proper type handling
         return (data || []).map((item: any) => ({
-          ...item,
+          id: item.id,
+          concern_name: item.concern_name,
+          brief_description: item.brief_description,
+          category: item.category,
+          suggested_by: item.suggested_by,
+          status: item.status,
+          created_at: item.created_at,
+          reviewed_at: item.reviewed_at,
+          reviewed_by: item.reviewed_by,
           user_email: item.profiles?.email || 'Unknown'
-        }));
+        })) as HealthConcernSuggestion[];
       } catch (error) {
-        console.error("Table might not exist yet:", error);
+        console.error("Health concerns table might not exist yet:", error);
         return [];
       }
     },

@@ -52,11 +52,13 @@ const EditHealthConcern = () => {
         }
         
         if (data) {
+          // Type assertion to safely access properties
+          const typedData = data as any;
           form.reset({
-            concern_name: data.concern_name || "",
-            brief_description: data.brief_description || "",
-            category: data.category || "symptom",
-            status: data.status || "pending",
+            concern_name: typedData.concern_name || "",
+            brief_description: typedData.brief_description || "",
+            category: typedData.category || "symptom",
+            status: typedData.status || "pending",
           });
         }
         
@@ -71,31 +73,36 @@ const EditHealthConcern = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (values: HealthConcernFormValues) => {
-      if (isNewConcern) {
-        const { data: user } = await supabase.auth.getUser();
-        const { error } = await supabase
-          .from("health_concern_suggestions" as any)
-          .insert({
-            concern_name: values.concern_name,
-            brief_description: values.brief_description,
-            category: values.category,
-            status: values.status,
-            suggested_by: user.user?.id
-          });
-        
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("health_concern_suggestions" as any)
-          .update({
-            concern_name: values.concern_name,
-            brief_description: values.brief_description,
-            category: values.category,
-            status: values.status,
-          })
-          .eq("id", id);
-        
-        if (error) throw error;
+      try {
+        if (isNewConcern) {
+          const { data: user } = await supabase.auth.getUser();
+          const { error } = await supabase
+            .from("health_concern_suggestions" as any)
+            .insert({
+              concern_name: values.concern_name,
+              brief_description: values.brief_description,
+              category: values.category,
+              status: values.status,
+              suggested_by: user.user?.id
+            });
+          
+          if (error) throw error;
+        } else {
+          const { error } = await supabase
+            .from("health_concern_suggestions" as any)
+            .update({
+              concern_name: values.concern_name,
+              brief_description: values.brief_description,
+              category: values.category,
+              status: values.status,
+            })
+            .eq("id", id);
+          
+          if (error) throw error;
+        }
+      } catch (error) {
+        console.error("Error saving health concern:", error);
+        throw error;
       }
     },
     onSuccess: () => {
