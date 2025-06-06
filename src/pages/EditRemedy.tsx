@@ -186,8 +186,10 @@ const EditRemedy = () => {
 
       console.log('Valid symptoms filtered:', validSymptoms);
 
-      // Only include fields that exist in the database schema
+      // Prepare data for database operation
       const remedyData = {
+        name: formData.name,
+        summary: formData.summary,
         brief_description: formData.summary,
         description: fullDescription,
         image_url: uploadedImageUrl,
