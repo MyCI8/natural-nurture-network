@@ -30,6 +30,7 @@ export const ImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }: Im
   const [scale, setScale] = useState(1);
   const [rotate, setRotate] = useState(0);
   const [aspect, setAspect] = useState<number | undefined>(1);
+  const [isProcessing, setIsProcessing] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -52,55 +53,122 @@ export const ImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }: Im
     }
   }, [aspect]);
 
-  const getCroppedImg = useCallback(async () => {
-    if (!completedCrop || !imgRef.current || !previewCanvasRef.current) {
-      return;
-    }
+  // Convert image to canvas with CORS-safe approach
+  const loadImageToCorsCanvas = useCallback(async (imageSrc: string): Promise<HTMLCanvasElement> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
 
-    const image = imgRef.current;
-    const canvas = previewCanvasRef.current;
-    const ctx = canvas.getContext('2d');
-
-    if (!ctx) {
-      throw new Error('No 2d context');
-    }
-
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
-
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    ctx.imageSmoothingQuality = 'high';
-
-    ctx.drawImage(
-      image,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
-      0,
-      0,
-      completedCrop.width,
-      completedCrop.height,
-    );
-
-    return new Promise<string>((resolve) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            console.error('Canvas is empty');
-            return;
-          }
-          const croppedImageUrl = URL.createObjectURL(blob);
-          resolve(croppedImageUrl);
-        },
-        'image/jpeg',
-        0.9,
-      );
+      const img = new Image();
+      
+      // Handle both blob URLs and regular URLs
+      if (imageSrc.startsWith('blob:') || imageSrc.startsWith('data:')) {
+        // For blob URLs and data URLs, no CORS issues
+        img.onload = () => {
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas);
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = imageSrc;
+      } else {
+        // For regular URLs, try with crossOrigin
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas);
+        };
+        img.onerror = () => {
+          // Fallback: try without crossOrigin for same-origin images
+          const fallbackImg = new Image();
+          fallbackImg.onload = () => {
+            canvas.width = fallbackImg.naturalWidth;
+            canvas.height = fallbackImg.naturalHeight;
+            ctx.drawImage(fallbackImg, 0, 0);
+            resolve(canvas);
+          };
+          fallbackImg.onerror = () => reject(new Error('Failed to load image'));
+          fallbackImg.src = imageSrc;
+        };
+        img.src = imageSrc;
+      }
     });
-  }, [completedCrop, scale]);
+  }, []);
+
+  const getCroppedImg = useCallback(async () => {
+    if (!completedCrop || !imgRef.current) {
+      throw new Error('Crop data not available');
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Load image to a CORS-safe canvas
+      const sourceCanvas = await loadImageToCorsCanvas(imageSrc);
+      
+      // Create output canvas
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        throw new Error('No 2d context available');
+      }
+
+      const scaleX = sourceCanvas.width / imgRef.current.width;
+      const scaleY = sourceCanvas.height / imgRef.current.height;
+
+      canvas.width = completedCrop.width;
+      canvas.height = completedCrop.height;
+
+      // Apply transformations if needed
+      if (rotate !== 0 || scale !== 1) {
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((rotate * Math.PI) / 180);
+        ctx.scale(scale, scale);
+        ctx.translate(-canvas.width / 2, -canvas.height / 2);
+      }
+
+      ctx.imageSmoothingQuality = 'high';
+
+      // Draw the cropped portion
+      ctx.drawImage(
+        sourceCanvas,
+        completedCrop.x * scaleX,
+        completedCrop.y * scaleY,
+        completedCrop.width * scaleX,
+        completedCrop.height * scaleY,
+        0,
+        0,
+        completedCrop.width,
+        completedCrop.height,
+      );
+
+      return new Promise<string>((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Canvas is empty or could not generate blob'));
+              return;
+            }
+            const croppedImageUrl = URL.createObjectURL(blob);
+            resolve(croppedImageUrl);
+          },
+          'image/jpeg',
+          0.9,
+        );
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [completedCrop, scale, rotate, imageSrc, loadImageToCorsCanvas]);
 
   const handleCropConfirm = async () => {
     try {
@@ -111,6 +179,8 @@ export const ImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }: Im
       }
     } catch (error) {
       console.error('Error cropping image:', error);
+      // Show user-friendly error message
+      alert('Failed to crop image. Please try uploading a new image or contact support if the issue persists.');
     }
   };
 
@@ -205,6 +275,7 @@ export const ImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }: Im
                   maxWidth: '100%'
                 }}
                 onLoad={onImageLoad}
+                crossOrigin="anonymous"
               />
             </ReactCrop>
           </div>
@@ -219,11 +290,15 @@ export const ImageCropModal = ({ isOpen, onClose, imageSrc, onCropComplete }: Im
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isProcessing}>
             Cancel
           </Button>
-          <Button onClick={handleCropConfirm} className="touch-manipulation">
-            Apply Crop
+          <Button 
+            onClick={handleCropConfirm} 
+            className="touch-manipulation"
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Processing...' : 'Apply Crop'}
           </Button>
         </DialogFooter>
       </DialogContent>
