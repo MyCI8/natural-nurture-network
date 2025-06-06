@@ -83,12 +83,12 @@ const EditRemedy = () => {
       
       // Parse content fields if they exist in the description (backwards compatibility)
       let description = remedy.description || "";
-      let preparation_method = (remedy as any).preparation_method || "";
-      let dosage_instructions = (remedy as any).dosage_instructions || "";
-      let precautions_side_effects = (remedy as any).precautions_side_effects || "";
+      let preparation_method = "";
+      let dosage_instructions = "";
+      let precautions_side_effects = "";
       
-      // If separate fields are empty but description contains structured content, try to parse it
-      if (!preparation_method && !dosage_instructions && !precautions_side_effects && description.includes('**')) {
+      // Try to parse structured content from description
+      if (description.includes('**')) {
         const sections = description.split('\n\n**');
         
         sections.forEach((section, index) => {
@@ -228,6 +228,21 @@ const EditRemedy = () => {
         throw new Error('Cannot save temporary image URL. Please upload a new image.');
       }
 
+      // Combine all content into the description field to match database schema
+      let fullDescription = formData.description;
+      
+      if (formData.preparation_method) {
+        fullDescription += `\n\n**Preparation Method:**\n${formData.preparation_method}`;
+      }
+      
+      if (formData.dosage_instructions) {
+        fullDescription += `\n\n**Dosage Instructions:**\n${formData.dosage_instructions}`;
+      }
+      
+      if (formData.precautions_side_effects) {
+        fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
+      }
+
       // Filter health concerns to only include valid enum values
       const validSymptoms = formData.health_concerns.filter(concern => 
         VALID_SYMPTOMS.includes(concern as any)
@@ -235,15 +250,12 @@ const EditRemedy = () => {
 
       console.log('Valid symptoms filtered:', validSymptoms);
 
-      // Prepare data for database operation - Store fields separately
+      // Prepare data for database operation - Use combined description field
       const remedyData = {
         name: formData.name,
         summary: formData.summary,
         brief_description: formData.summary,
-        description: formData.description, // Only the main description
-        preparation_method: formData.preparation_method,
-        dosage_instructions: formData.dosage_instructions,
-        precautions_side_effects: formData.precautions_side_effects,
+        description: fullDescription, // Combined content
         image_url: finalImageUrl, // ONLY use image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
