@@ -196,37 +196,6 @@ const EditRemedy = () => {
     }
   };
 
-  const savePendingHealthConcerns = async (pendingConcerns: string[]) => {
-    if (pendingConcerns.length === 0) return;
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Save each pending concern as a suggestion
-      const suggestions = pendingConcerns.map(concern => ({
-        concern_name: concern,
-        suggested_by: user.id,
-        status: 'pending' as const
-      }));
-
-      const { error } = await supabase
-        .from("health_concern_suggestions")
-        .upsert(suggestions, { 
-          onConflict: 'concern_name,suggested_by',
-          ignoreDuplicates: true 
-        });
-
-      if (error) {
-        console.error('Error saving pending health concerns:', error);
-      } else {
-        console.log('Pending health concerns saved:', pendingConcerns);
-      }
-    } catch (error) {
-      console.error('Error in savePendingHealthConcerns:', error);
-    }
-  };
-
   const saveRemedyMutation = useMutation({
     mutationFn: async (shouldPublish: boolean = false) => {
       console.log('Starting remedy save process...');
@@ -284,21 +253,20 @@ const EditRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
-      // Separate approved health concerns from pending ones
+      // Separate approved health concerns from unsupported ones
       const approvedConcerns = formData.health_concerns.filter(concern => 
         APPROVED_HEALTH_CONCERNS.includes(concern as any)
       );
-      const pendingConcerns = formData.health_concerns.filter(concern => 
+      const unsupportedConcerns = formData.health_concerns.filter(concern => 
         !APPROVED_HEALTH_CONCERNS.includes(concern as any)
       );
 
       console.log('Approved health concerns being saved:', approvedConcerns);
-      console.log('Pending health concerns for suggestions:', pendingConcerns);
+      console.log('Unsupported health concerns (will be skipped):', unsupportedConcerns);
 
-      // Save pending concerns as suggestions
-      if (pendingConcerns.length > 0) {
-        await savePendingHealthConcerns(pendingConcerns);
-        toast.success(`${pendingConcerns.length} new health concern(s) submitted for review: ${pendingConcerns.join(', ')}`);
+      // Show message about unsupported concerns
+      if (unsupportedConcerns.length > 0) {
+        toast.error(`The following health concerns are not supported and were skipped: ${unsupportedConcerns.join(', ')}. Please contact an admin to add new health concerns to the system.`);
       }
 
       // Prepare data for database operation - Use combined description field
@@ -310,7 +278,7 @@ const EditRemedy = () => {
         image_url: finalImageUrl, // ONLY use image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: approvedConcerns, // Only save approved concerns
+        symptoms: approvedConcerns as any, // Type cast to allow database save
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };
@@ -348,7 +316,6 @@ const EditRemedy = () => {
       queryClient.invalidateQueries({ queryKey: ["remedy", id] });
       queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
       queryClient.invalidateQueries({ queryKey: ["latest-remedies"] });
-      queryClient.invalidateQueries({ queryKey: ["health-concern-suggestions"] });
       navigate("/admin/remedies");
     },
     onError: (error) => {
