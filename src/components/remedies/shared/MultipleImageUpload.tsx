@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, X, Crop, Edit } from 'lucide-react';
+import { Plus, X, Crop } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { EnhancedImageUpload } from '@/components/ui/enhanced-image-upload';
 import { ImageCropModal } from '@/components/ui/image-crop-modal';
@@ -39,12 +39,14 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
   });
 
   const addNewImage = () => {
-    // Add a placeholder for new image
+    console.log('Adding new image slot');
+    // Add a placeholder for new image with empty url to trigger upload component
     const newImages = [...images, { url: '', description: '' }];
     onImagesChange(newImages);
   };
 
   const updateImage = (index: number, url: string, file?: File) => {
+    console.log('Updating image at index:', index, 'with url:', url, 'and file:', !!file);
     const updatedImages = images.map((img, i) => 
       i === index ? { ...img, url, file } : img
     );
@@ -52,6 +54,7 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
   };
 
   const removeImage = (index: number) => {
+    console.log('Removing image at index:', index);
     const updatedImages = images.filter((_, i) => i !== index);
     onImagesChange(updatedImages);
   };
@@ -72,6 +75,7 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
   };
 
   const handleCropComplete = async (croppedImageUrl: string) => {
+    console.log('Crop completed, processing result:', croppedImageUrl);
     if (cropModal.imageIndex >= 0) {
       try {
         // Convert the cropped blob URL back to a File object
@@ -163,9 +167,16 @@ export const MultipleImageUpload = ({ images, onImagesChange }: MultipleImageUpl
             ) : (
               <div className="max-w-full">
                 <EnhancedImageUpload
-                  value={image.url}
-                  onChange={(url) => updateImage(index, url)}
-                  onFileSelect={(file) => updateImage(index, URL.createObjectURL(file), file)}
+                  value=""
+                  onChange={(url) => {
+                    console.log('EnhancedImageUpload onChange called with url:', url);
+                    updateImage(index, url);
+                  }}
+                  onFileSelect={(file) => {
+                    console.log('EnhancedImageUpload onFileSelect called with file:', file.name);
+                    const blobUrl = URL.createObjectURL(file);
+                    updateImage(index, blobUrl, file);
+                  }}
                   aspectRatio={16/9}
                   showCrop={false}
                 />

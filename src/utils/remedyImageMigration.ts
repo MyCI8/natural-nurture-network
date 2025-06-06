@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -54,13 +55,35 @@ export const migrateRemedyImages = async (): Promise<void> => {
 };
 
 /**
- * Standardizes image handling by ensuring proper File objects for uploads
+ * Validates image files and URLs for upload
  */
-export const ensureImageFileObjects = (images: Array<{ file?: File; url: string; description?: string }>) => {
-  return images.filter(img => {
-    // Only keep images that have either a File object or a valid storage URL
-    return img.file || (img.url && !img.url.startsWith('blob:') && img.url.startsWith('http'));
-  });
+export const validateImageForUpload = (image: { file?: File; url: string; description?: string }): boolean => {
+  // Allow images with File objects (new uploads)
+  if (image.file && image.file instanceof File) {
+    return true;
+  }
+  
+  // Allow images with valid HTTP URLs (existing stored images)
+  if (image.url && 
+      !image.url.startsWith('blob:') && 
+      (image.url.startsWith('http') || image.url.startsWith('https'))) {
+    return true;
+  }
+  
+  // Allow blob URLs temporarily (for cropped images that will be converted to files)
+  if (image.url && image.url.startsWith('blob:')) {
+    return true;
+  }
+  
+  return false;
+};
+
+/**
+ * Filters images to only include valid ones for processing
+ * This is more permissive than ensureImageFileObjects to allow the upload flow to work
+ */
+export const filterValidImages = (images: Array<{ file?: File; url: string; description?: string }>) => {
+  return images.filter(img => validateImageForUpload(img));
 };
 
 /**

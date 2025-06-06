@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -13,7 +14,7 @@ import { RemedyHealthConcernsSection } from "@/components/admin/remedies/form/Re
 import { RemedyStatusSection } from "@/components/admin/remedies/form/RemedyStatusSection";
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
-import { migrateRemedyImages, ensureImageFileObjects } from "@/utils/remedyImageMigration";
+import { migrateRemedyImages, filterValidImages } from "@/utils/remedyImageMigration";
 
 interface ImageData {
   file?: File;
@@ -91,7 +92,7 @@ const EditRemedy = () => {
       });
       setSelectedExperts(remedy.expert_recommendations || []);
       
-      // Load existing images - ONLY use image_url field (standardized approach)
+      // Load existing images - STANDARDIZED: Only use image_url field
       if (remedy.image_url && !remedy.image_url.startsWith('blob:') && remedy.image_url.startsWith('http')) {
         setImages([{ url: remedy.image_url }]);
       }
@@ -112,8 +113,10 @@ const EditRemedy = () => {
   };
 
   const handleImagesChange = (newImages: ImageData[]) => {
-    // Ensure we only keep valid images with File objects or proper URLs
-    const validImages = ensureImageFileObjects(newImages);
+    console.log('Images changed in EditRemedy:', newImages);
+    // Use improved validation that allows the upload flow to work
+    const validImages = filterValidImages(newImages);
+    console.log('Valid images after filtering:', validImages);
     setImages(validImages);
   };
 
@@ -164,6 +167,7 @@ const EditRemedy = () => {
       console.log('Starting remedy save process...');
       console.log('Remedy ID:', id);
       console.log('Should publish:', shouldPublish);
+      console.log('Current images:', images);
 
       let finalImageUrl = '';
 
@@ -184,6 +188,9 @@ const EditRemedy = () => {
           // Use existing valid URL
           finalImageUrl = firstImage.url;
           console.log('Using existing image URL:', finalImageUrl);
+        } else if (firstImage.url && firstImage.url.startsWith('blob:')) {
+          console.error('Blob URL detected, this should have been converted to a file:', firstImage.url);
+          throw new Error('Cannot save temporary image URL. Please try uploading the image again.');
         }
       }
 
