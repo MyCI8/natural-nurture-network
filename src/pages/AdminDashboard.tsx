@@ -68,13 +68,14 @@ const AdminDashboard = () => {
   });
 
   const statsCards = [
-    { title: "Total Users", value: stats?.users || 0, icon: Users },
-    { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf },
-    { title: "Total Experts", value: stats?.experts || 0, icon: UserCog },
+    { title: "Total Users", value: stats?.users || 0, icon: Users, path: "/admin/users" },
+    { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf, path: "/admin/remedies" },
+    { title: "Total Experts", value: stats?.experts || 0, icon: UserCog, path: "/admin/manage-experts" },
     { 
       title: "Health Concerns", 
       value: stats?.healthConcerns || 0, 
       icon: Heart,
+      path: "/admin/health-concerns",
       badge: stats?.pendingHealthConcerns ? {
         text: `${stats.pendingHealthConcerns} pending`,
         variant: "destructive" as const
@@ -126,6 +127,12 @@ const AdminDashboard = () => {
     },
   ];
 
+  const handleCardClick = (path?: string) => {
+    if (path) {
+      navigate(path);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6">
@@ -134,7 +141,11 @@ const AdminDashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {statsCards.map((stat) => (
-            <Card key={stat.title}>
+            <Card 
+              key={stat.title}
+              className={stat.path ? "cursor-pointer hover:bg-accent/50 transition-colors" : ""}
+              onClick={() => handleCardClick(stat.path)}
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
