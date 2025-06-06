@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -78,13 +79,39 @@ const EditRemedy = () => {
 
   useEffect(() => {
     if (remedy) {
+      console.log('Loading remedy data:', remedy);
+      
+      // Parse content fields if they exist in the description (backwards compatibility)
+      let description = remedy.description || "";
+      let preparation_method = (remedy as any).preparation_method || "";
+      let dosage_instructions = (remedy as any).dosage_instructions || "";
+      let precautions_side_effects = (remedy as any).precautions_side_effects || "";
+      
+      // If separate fields are empty but description contains structured content, try to parse it
+      if (!preparation_method && !dosage_instructions && !precautions_side_effects && description.includes('**')) {
+        const sections = description.split('\n\n**');
+        
+        sections.forEach((section, index) => {
+          if (index === 0) {
+            // First section is the main description
+            description = section;
+          } else if (section.startsWith('Preparation Method:')) {
+            preparation_method = section.replace('Preparation Method:**\n', '').replace('Preparation Method:', '').trim();
+          } else if (section.startsWith('Dosage Instructions:')) {
+            dosage_instructions = section.replace('Dosage Instructions:**\n', '').replace('Dosage Instructions:', '').trim();
+          } else if (section.startsWith('Precautions & Side Effects:')) {
+            precautions_side_effects = section.replace('Precautions & Side Effects:**\n', '').replace('Precautions & Side Effects:', '').trim();
+          }
+        });
+      }
+      
       setFormData({
         name: remedy.name || "",
         summary: remedy.summary || remedy.brief_description || "",
-        description: remedy.description || "",
-        preparation_method: (remedy as any).preparation_method || "",
-        dosage_instructions: (remedy as any).dosage_instructions || "",
-        precautions_side_effects: (remedy as any).precautions_side_effects || "",
+        description: description,
+        preparation_method: preparation_method,
+        dosage_instructions: dosage_instructions,
+        precautions_side_effects: precautions_side_effects,
         ingredients: remedy.ingredients || [],
         health_concerns: remedy.symptoms || [],
         status: remedy.status as "draft" | "published" || "draft",
@@ -201,21 +228,6 @@ const EditRemedy = () => {
         throw new Error('Cannot save temporary image URL. Please upload a new image.');
       }
 
-      // Combine all content into the description field like CreateRemedy does
-      let fullDescription = formData.description;
-      
-      if (formData.preparation_method) {
-        fullDescription += `\n\n**Preparation Method:**\n${formData.preparation_method}`;
-      }
-      
-      if (formData.dosage_instructions) {
-        fullDescription += `\n\n**Dosage Instructions:**\n${formData.dosage_instructions}`;
-      }
-      
-      if (formData.precautions_side_effects) {
-        fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
-      }
-
       // Filter health concerns to only include valid enum values
       const validSymptoms = formData.health_concerns.filter(concern => 
         VALID_SYMPTOMS.includes(concern as any)
@@ -223,12 +235,15 @@ const EditRemedy = () => {
 
       console.log('Valid symptoms filtered:', validSymptoms);
 
-      // Prepare data for database operation - STANDARDIZED on image_url field
+      // Prepare data for database operation - Store fields separately
       const remedyData = {
         name: formData.name,
         summary: formData.summary,
         brief_description: formData.summary,
-        description: fullDescription,
+        description: formData.description, // Only the main description
+        preparation_method: formData.preparation_method,
+        dosage_instructions: formData.dosage_instructions,
+        precautions_side_effects: formData.precautions_side_effects,
         image_url: finalImageUrl, // ONLY use image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
