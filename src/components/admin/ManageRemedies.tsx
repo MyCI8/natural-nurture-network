@@ -17,7 +17,6 @@ import {
 import RemedyListHeader from "./remedies/RemedyListHeader";
 import RemedyFilters from "./remedies/RemedyFilters";
 import RemedyGrid from "./remedies/RemedyGrid";
-import RemedyForm from "./RemedyForm";
 import { Database } from "@/integrations/supabase/types";
 
 type SymptomType = Database['public']['Enums']['symptom_type'];
@@ -35,8 +34,6 @@ const ManageRemedies = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [symptomFilter, setSymptomFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"popularity" | "recent">("recent");
-  const [showForm, setShowForm] = useState(false);
-  const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
   const [remedyToDelete, setRemedyToDelete] = useState<any>(null);
   const [isPublishingAll, setIsPublishingAll] = useState(false);
 
@@ -170,11 +167,6 @@ const ManageRemedies = () => {
     }
   };
 
-  const handleFormClose = () => {
-    setShowForm(false);
-    setSelectedRemedy(null);
-  };
-
   const draftCount = remedies.filter(r => r.status === "draft").length;
 
   return (
@@ -210,13 +202,6 @@ const ManageRemedies = () => {
         onToggleStatus={handleToggleStatus}
       />
 
-      {showForm && (
-        <RemedyForm 
-          onClose={handleFormClose}
-          remedy={selectedRemedy}
-        />
-      )}
-
       <AlertDialog open={!!remedyToDelete} onOpenChange={() => setRemedyToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -231,7 +216,7 @@ const ManageRemedies = () => {
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
             </AlertDialogAction>
-          </AlertDialogFooter>
+            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
