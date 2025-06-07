@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -48,15 +47,16 @@ const ManageHealthConcerns = () => {
   const { data: suggestions = [], isLoading, error } = useQuery({
     queryKey: ["admin-health-concern-suggestions", filter, searchQuery],
     queryFn: async () => {
-      console.log("Fetching health concern suggestions...");
+      console.log("🔍 Fetching health concern suggestions with filter:", filter, "search:", searchQuery);
       
       try {
-        // First try to fetch from health_concern_suggestions table (using type casting)
+        // First, try to fetch from health_concern_suggestions table
         let query = supabase
-          .from("health_concern_suggestions" as any)
+          .from("health_concern_suggestions")
           .select(`
             id,
             concern_name,
+            brief_description,
             category,
             suggested_by,
             status,
@@ -77,45 +77,55 @@ const ManageHealthConcerns = () => {
         
         const { data: healthConcerns, error: healthConcernsError } = await query.order("created_at", { ascending: false });
         
-        console.log("Health concerns data:", healthConcerns);
-        console.log("Health concerns error:", healthConcernsError);
+        console.log("📊 Health concerns query result:", { healthConcerns, healthConcernsError });
         
-        // If table doesn't exist or has errors, fetch from symptom_details as fallback
         let allConcerns: any[] = [];
         
-        if (healthConcernsError || !healthConcerns) {
-          console.log("Fetching from symptom_details as fallback...");
+        if (healthConcernsError) {
+          console.error("❌ Error fetching from health_concern_suggestions:", healthConcernsError);
           
-          // Fetch from symptom_details table
-          let symptomQuery = supabase
-            .from("symptom_details")
-            .select("id, symptom, description, brief_description, created_at");
-          
-          if (searchQuery) {
-            symptomQuery = symptomQuery.ilike("symptom", `%${searchQuery}%`);
-          }
-          
-          const { data: symptoms, error: symptomsError } = await symptomQuery.order("created_at", { ascending: false });
-          
-          if (symptoms && !symptomsError) {
-            // Convert symptoms to health concern format
-            allConcerns = symptoms.map((symptom: any) => ({
-              id: symptom.id,
-              concern_name: symptom.symptom,
-              brief_description: symptom.brief_description || symptom.description,
-              category: 'symptom',
-              suggested_by: 'system',
-              status: 'approved',
-              created_at: symptom.created_at,
-              reviewed_at: symptom.created_at,
-              reviewed_by: 'system',
-              user_email: 'System',
-              symptom_id: symptom.id,
-              has_detailed_content: true
-            }));
+          // Fallback to symptom_details only if the table doesn't exist
+          if (healthConcernsError.message?.includes('does not exist') || healthConcernsError.message?.includes('relation')) {
+            console.log("🔄 Falling back to symptom_details table...");
+            
+            let symptomQuery = supabase
+              .from("symptom_details")
+              .select("id, symptom, description, brief_description, created_at");
+            
+            if (searchQuery) {
+              symptomQuery = symptomQuery.ilike("symptom", `%${searchQuery}%`);
+            }
+            
+            const { data: symptoms, error: symptomsError } = await symptomQuery.order("created_at", { ascending: false });
+            
+            if (symptoms && !symptomsError) {
+              allConcerns = symptoms.map((symptom: any) => ({
+                id: symptom.id,
+                concern_name: symptom.symptom,
+                brief_description: symptom.brief_description || symptom.description,
+                category: 'symptom',
+                suggested_by: 'system',
+                status: 'approved',
+                created_at: symptom.created_at,
+                reviewed_at: symptom.created_at,
+                reviewed_by: 'system',
+                user_email: 'System',
+                symptom_id: symptom.id,
+                has_detailed_content: true
+              }));
+              
+              console.log("📋 Using fallback symptom data:", allConcerns.length, "items");
+            } else {
+              console.error("❌ Error fetching symptom fallback:", symptomsError);
+            }
+          } else {
+            // Re-throw other types of errors
+            throw healthConcernsError;
           }
         } else {
+          // Successfully got data from health_concern_suggestions
           allConcerns = healthConcerns || [];
+          console.log("✅ Successfully fetched from health_concern_suggestions:", allConcerns.length, "items");
         }
         
         // Get user emails for the suggestions
@@ -123,6 +133,7 @@ const ManageHealthConcerns = () => {
         let userEmails: Record<string, string> = {};
         
         if (userIds.length > 0) {
+          console.log("👥 Fetching user emails for IDs:", userIds);
           const { data: profiles } = await supabase
             .from("profiles")
             .select("id, email")
@@ -133,10 +144,11 @@ const ManageHealthConcerns = () => {
               acc[profile.id] = profile.email || 'Unknown';
               return acc;
             }, {} as Record<string, string>);
+            console.log("📧 User emails mapped:", userEmails);
           }
         }
         
-        return allConcerns.map((item: any) => ({
+        const finalResults = allConcerns.map((item: any) => ({
           id: item.id,
           concern_name: item.concern_name,
           brief_description: item.brief_description,
@@ -151,25 +163,42 @@ const ManageHealthConcerns = () => {
           has_detailed_content: item.has_detailed_content
         })) as HealthConcernSuggestion[];
         
+        console.log("🎯 Final results:", finalResults.length, "items");
+        console.log("📋 Results breakdown by status:", {
+          pending: finalResults.filter(r => r.status === 'pending').length,
+          approved: finalResults.filter(r => r.status === 'approved').length,
+          rejected: finalResults.filter(r => r.status === 'rejected').length
+        });
+        
+        return finalResults;
+        
       } catch (error) {
-        console.error("Error in health concerns query:", error);
-        return [];
+        console.error("💥 Critical error in health concerns query:", error);
+        throw error;
       }
     },
   });
 
   const updateSuggestionMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
+      console.log("🔄 Updating suggestion:", id, "to status:", status);
+      
+      const { data: user } = await supabase.auth.getUser();
       const { error } = await supabase
-        .from("health_concern_suggestions" as any)
+        .from("health_concern_suggestions")
         .update({ 
           status, 
           reviewed_at: new Date().toISOString(),
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id 
+          reviewed_by: user.user?.id 
         })
         .eq("id", id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Error updating suggestion:", error);
+        throw error;
+      }
+      
+      console.log("✅ Successfully updated suggestion");
     },
     onSuccess: (_, variables) => {
       toast({
@@ -179,7 +208,7 @@ const ManageHealthConcerns = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-health-concern-suggestions"] });
     },
     onError: (error) => {
-      console.error("Error updating suggestion:", error);
+      console.error("❌ Error in update mutation:", error);
       toast({
         title: "Error",
         description: "Failed to update suggestion",
@@ -190,12 +219,19 @@ const ManageHealthConcerns = () => {
 
   const deleteSuggestionMutation = useMutation({
     mutationFn: async (id: string) => {
+      console.log("🗑️ Deleting suggestion:", id);
+      
       const { error } = await supabase
-        .from("health_concern_suggestions" as any)
+        .from("health_concern_suggestions")
         .delete()
         .eq("id", id);
       
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Error deleting suggestion:", error);
+        throw error;
+      }
+      
+      console.log("✅ Successfully deleted suggestion");
     },
     onSuccess: () => {
       toast({
@@ -205,7 +241,7 @@ const ManageHealthConcerns = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-health-concern-suggestions"] });
     },
     onError: (error) => {
-      console.error("Error deleting suggestion:", error);
+      console.error("❌ Error in delete mutation:", error);
       toast({
         title: "Error",
         description: "Failed to delete health concern",
@@ -268,7 +304,7 @@ const ManageHealthConcerns = () => {
   };
 
   if (error) {
-    console.error("Query error:", error);
+    console.error("🚨 Query error in component:", error);
   }
 
   return (
@@ -283,15 +319,40 @@ const ManageHealthConcerns = () => {
               {migratedCount > 0 && ` (${migratedCount} migrated from symptoms)`}
             </p>
             {error && (
-              <p className="text-red-600 text-sm mt-1">
-                Error loading data. Showing fallback symptom data.
-              </p>
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm font-medium">Database Error:</p>
+                <p className="text-red-600 text-sm">{error.message}</p>
+                <p className="text-red-600 text-xs mt-1">Check console for detailed logs</p>
+              </div>
             )}
           </div>
           <Button onClick={() => navigate("/admin/health-concerns/new")} size="lg">
             <Plus className="mr-2 h-5 w-5" /> Add Health Concern
           </Button>
         </div>
+
+        {/* Debug Information Card */}
+        <Card className="mb-6 border-blue-200 bg-blue-50/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-blue-700">Database Status</p>
+                <p className="text-sm text-blue-600">
+                  {isLoading ? "Loading..." : error ? "Error connecting to database" : "Connected successfully"}
+                </p>
+                {!isLoading && !error && (
+                  <p className="text-xs text-blue-500 mt-1">
+                    Found {totalCount} total items ({pendingCount} pending review)
+                  </p>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-blue-500">Last Updated</p>
+                <p className="text-xs text-blue-600">{new Date().toLocaleTimeString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Dashboard */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -323,10 +384,10 @@ const ManageHealthConcerns = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Available Symptoms</p>
-                  <p className="text-3xl font-bold text-blue-600">{totalCount}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Rejected</p>
+                  <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-blue-500" />
+                <X className="h-8 w-8 text-red-500" />
               </div>
             </CardContent>
           </Card>
@@ -343,25 +404,6 @@ const ManageHealthConcerns = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Debug Information */}
-        {isLoading && (
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <p className="text-muted-foreground">Loading health concerns...</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {!isLoading && suggestions.length === 0 && (
-          <Card className="mb-6 border-orange-200 bg-orange-50/50">
-            <CardContent className="p-4">
-              <p className="text-orange-700">
-                No health concerns found. The migration may not have run yet. Check the database console for the health_concern_suggestions table.
-              </p>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Pending Approvals Section */}
         {pendingCount > 0 && (
@@ -479,8 +521,13 @@ const ManageHealthConcerns = () => {
             ) : suggestions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
-                  No health concerns found. Check database migration status.
+                  No health concerns found matching the current filters.
                 </p>
+                {error && (
+                  <p className="text-red-600 text-sm mt-2">
+                    Database connection failed. Check console for details.
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
