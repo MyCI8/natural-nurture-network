@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +25,6 @@ import {
 interface HealthConcernSuggestion {
   id: string;
   concern_name: string;
-  brief_description?: string;
   category?: string;
   suggested_by: string;
   status: 'pending' | 'approved' | 'rejected';
@@ -54,13 +52,12 @@ const ManageHealthConcerns = () => {
         // Type cast the supabase client to bypass TypeScript errors for the new table
         const supabaseAny = supabase as any;
         
-        // Query the health_concern_suggestions table
+        // Query the health_concern_suggestions table - only select columns that exist
         let query = supabaseAny
           .from("health_concern_suggestions")
           .select(`
             id,
             concern_name,
-            brief_description,
             category,
             suggested_by,
             status,
@@ -118,7 +115,6 @@ const ManageHealthConcerns = () => {
         const finalResults = allConcerns.map((item: any) => ({
           id: item.id,
           concern_name: item.concern_name,
-          brief_description: item.brief_description,
           category: item.category,
           suggested_by: item.suggested_by,
           status: item.status,
