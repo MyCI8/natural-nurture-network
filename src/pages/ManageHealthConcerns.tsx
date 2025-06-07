@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Clock, User, Plus, Edit2, Trash2, Search, AlertCircle, TrendingUp, Archive } from "lucide-react";
+import { Check, X, Clock, User, Plus, Edit2, Trash2, Search, AlertCircle, TrendingUp, Archive, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -34,6 +33,8 @@ interface HealthConcernSuggestion {
   reviewed_at?: string;
   reviewed_by?: string;
   user_email?: string;
+  symptom_id?: string;
+  has_detailed_content?: boolean;
 }
 
 const ManageHealthConcerns = () => {
@@ -69,7 +70,6 @@ const ManageHealthConcerns = () => {
           return [];
         }
         
-        // Transform the data to include user email with proper type handling
         return (data || []).map((item: any) => ({
           id: item.id,
           concern_name: item.concern_name,
@@ -80,7 +80,9 @@ const ManageHealthConcerns = () => {
           created_at: item.created_at,
           reviewed_at: item.reviewed_at,
           reviewed_by: item.reviewed_by,
-          user_email: item.profiles?.email || 'Unknown'
+          user_email: item.profiles?.email || 'System',
+          symptom_id: item.symptom_id,
+          has_detailed_content: item.has_detailed_content
         })) as HealthConcernSuggestion[];
       } catch (error) {
         console.error("Health concerns table might not exist yet:", error);
@@ -149,6 +151,7 @@ const ManageHealthConcerns = () => {
   const approvedCount = suggestions.filter(s => s.status === 'approved').length;
   const rejectedCount = suggestions.filter(s => s.status === 'rejected').length;
   const totalCount = suggestions.length;
+  const migratedCount = suggestions.filter(s => s.symptom_id).length;
 
   const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
   const otherSuggestions = suggestions.filter(s => s.status !== 'pending');
@@ -194,6 +197,10 @@ const ManageHealthConcerns = () => {
     }
   };
 
+  const handleViewDetailedContent = (symptomId: string) => {
+    navigate(`/symptoms/${symptomId}`);
+  };
+
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6 max-w-7xl">
@@ -202,7 +209,7 @@ const ManageHealthConcerns = () => {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Health Concerns Management</h1>
             <p className="text-muted-foreground mt-2">
-              Manage health concerns, symptoms, conditions, and wellness goals
+              Manage health concerns, symptoms, conditions, and wellness goals ({migratedCount} migrated from symptoms)
             </p>
           </div>
           <Button onClick={() => navigate("/admin/health-concerns/new")} size="lg">
@@ -240,10 +247,10 @@ const ManageHealthConcerns = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Rejected</p>
-                  <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Migrated Symptoms</p>
+                  <p className="text-3xl font-bold text-blue-600">{migratedCount}</p>
                 </div>
-                <Archive className="h-8 w-8 text-red-500" />
+                <TrendingUp className="h-8 w-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
@@ -255,7 +262,7 @@ const ManageHealthConcerns = () => {
                   <p className="text-sm font-medium text-muted-foreground">Total</p>
                   <p className="text-3xl font-bold">{totalCount}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-blue-500" />
+                <Archive className="h-8 w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -280,6 +287,11 @@ const ManageHealthConcerns = () => {
                         {suggestion.category && (
                           <Badge className={`text-xs ${getCategoryColor(suggestion.category)}`}>
                             {suggestion.category.replace('_', ' ')}
+                          </Badge>
+                        )}
+                        {suggestion.has_detailed_content && (
+                          <Badge variant="outline" className="text-xs">
+                            Rich Content
                           </Badge>
                         )}
                       </div>
@@ -392,6 +404,16 @@ const ManageHealthConcerns = () => {
                             {getStatusIcon(suggestion.status)}
                             {suggestion.status}
                           </Badge>
+                          {suggestion.symptom_id && (
+                            <Badge variant="outline" className="text-xs text-blue-600">
+                              Migrated Symptom
+                            </Badge>
+                          )}
+                          {suggestion.has_detailed_content && (
+                            <Badge variant="outline" className="text-xs text-purple-600">
+                              Rich Content
+                            </Badge>
+                          )}
                         </div>
                         {suggestion.brief_description && (
                           <p className="text-sm text-muted-foreground mb-2">
@@ -415,6 +437,16 @@ const ManageHealthConcerns = () => {
                       </div>
                       
                       <div className="flex gap-2">
+                        {suggestion.symptom_id && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewDetailedContent(suggestion.symptom_id!)}
+                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
@@ -434,6 +466,11 @@ const ManageHealthConcerns = () => {
                               <AlertDialogTitle>Delete Health Concern</AlertDialogTitle>
                               <AlertDialogDescription>
                                 Are you sure you want to delete "{suggestion.concern_name}"? This action cannot be undone.
+                                {suggestion.symptom_id && (
+                                  <span className="block mt-2 text-orange-600">
+                                    Note: This will only remove the health concern entry. The original symptom data will be preserved.
+                                  </span>
+                                )}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
