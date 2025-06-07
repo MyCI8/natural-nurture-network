@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -95,7 +96,7 @@ const ManageHealthConcerns = () => {
           .map((item: any) => item.suggested_by)
           .filter((id: any): id is string => typeof id === 'string' && id !== 'system');
         
-        const userIds = Array.from(new Set(suggestedByIds));
+        const userIds: string[] = Array.from(new Set(suggestedByIds));
         let userEmails: Record<string, string> = {};
         
         if (userIds.length > 0) {
