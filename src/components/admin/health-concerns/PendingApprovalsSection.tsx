@@ -8,6 +8,7 @@ import { UseMutationResult } from "@tanstack/react-query";
 interface HealthConcernSuggestion {
   id: string;
   concern_name: string;
+  brief_description?: string;
   suggested_by: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
@@ -45,6 +46,11 @@ export const PendingApprovalsSection = ({
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-semibold text-lg">{suggestion.concern_name}</h3>
                 </div>
+                {suggestion.brief_description && (
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {suggestion.brief_description}
+                  </p>
+                )}
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <User className="h-3 w-3" />

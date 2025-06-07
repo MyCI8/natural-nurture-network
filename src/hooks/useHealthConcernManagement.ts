@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 interface HealthConcernSuggestion {
   id: string;
   concern_name: string;
+  brief_description?: string;
   suggested_by: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
@@ -34,6 +35,7 @@ export const useHealthConcernManagement = (
           .select(`
             id,
             concern_name,
+            brief_description,
             suggested_by,
             status,
             created_at,
@@ -61,38 +63,17 @@ export const useHealthConcernManagement = (
         const allConcerns = healthConcerns || [];
         console.log("✅ Successfully fetched health concerns:", allConcerns.length, "items");
         
-        const suggestedByIds = allConcerns
-          .map((item: any) => item.suggested_by)
-          .filter((id: any): id is string => typeof id === 'string' && id !== 'system');
-        
-        const userIds: string[] = Array.from(new Set(suggestedByIds));
-        let userEmails: Record<string, string> = {};
-        
-        if (userIds.length > 0) {
-          console.log("👥 Fetching user emails for IDs:", userIds);
-          const { data: profiles } = await supabase
-            .from("profiles")
-            .select("id, email")
-            .in("id", userIds);
-          
-          if (profiles) {
-            userEmails = profiles.reduce((acc, profile) => {
-              acc[profile.id] = profile.email || 'Unknown';
-              return acc;
-            }, {} as Record<string, string>);
-            console.log("📧 User emails mapped:", userEmails);
-          }
-        }
-        
+        // For system suggestions, just use 'System' as user_email
         const finalResults = allConcerns.map((item: any) => ({
           id: item.id,
           concern_name: item.concern_name,
+          brief_description: item.brief_description,
           suggested_by: item.suggested_by,
           status: item.status,
           created_at: item.created_at,
           reviewed_at: item.reviewed_at,
           reviewed_by: item.reviewed_by,
-          user_email: userEmails[item.suggested_by] || (item.suggested_by === 'system' ? 'System' : 'Unknown')
+          user_email: item.suggested_by === 'system' ? 'System' : 'User'
         })) as HealthConcernSuggestion[];
         
         console.log("🎯 Final results:", finalResults.length, "items");
@@ -123,7 +104,7 @@ export const useHealthConcernManagement = (
         .update({ 
           status, 
           reviewed_at: new Date().toISOString(),
-          reviewed_by: user.user?.id 
+          reviewed_by: user.user?.id || 'system'
         })
         .eq("id", id);
       
