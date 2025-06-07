@@ -44,15 +44,27 @@ const ManageHealthConcerns = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: suggestions = [], isLoading } = useQuery({
+  const { data: suggestions = [], isLoading, error } = useQuery({
     queryKey: ["admin-health-concern-suggestions", filter, searchQuery],
     queryFn: async () => {
+      console.log("Fetching health concern suggestions...");
+      
       try {
+        // First try to fetch from health_concern_suggestions table
         let query = supabase
-          .from("health_concern_suggestions" as any)
+          .from("health_concern_suggestions")
           .select(`
-            *,
-            profiles:suggested_by(email)
+            id,
+            concern_name,
+            brief_description,
+            category,
+            suggested_by,
+            status,
+            created_at,
+            reviewed_at,
+            reviewed_by,
+            symptom_id,
+            has_detailed_content
           `);
         
         if (filter !== 'all') {
@@ -63,14 +75,35 @@ const ManageHealthConcerns = () => {
           query = query.ilike("concern_name", `%${searchQuery}%`);
         }
         
-        const { data, error } = await query.order("created_at", { ascending: false });
+        const { data: healthConcerns, error: healthConcernsError } = await query.order("created_at", { ascending: false });
         
-        if (error) {
-          console.error("Error fetching health concern suggestions:", error);
+        console.log("Health concerns data:", healthConcerns);
+        console.log("Health concerns error:", healthConcernsError);
+        
+        if (healthConcernsError) {
+          console.error("Error fetching health concern suggestions:", healthConcernsError);
           return [];
         }
         
-        return (data || []).map((item: any) => ({
+        // Get user emails for the suggestions
+        const userIds = [...new Set((healthConcerns || []).map(item => item.suggested_by).filter(Boolean))];
+        let userEmails: Record<string, string> = {};
+        
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, email")
+            .in("id", userIds);
+          
+          if (profiles) {
+            userEmails = profiles.reduce((acc, profile) => {
+              acc[profile.id] = profile.email || 'Unknown';
+              return acc;
+            }, {} as Record<string, string>);
+          }
+        }
+        
+        return (healthConcerns || []).map((item: any) => ({
           id: item.id,
           concern_name: item.concern_name,
           brief_description: item.brief_description,
@@ -80,12 +113,13 @@ const ManageHealthConcerns = () => {
           created_at: item.created_at,
           reviewed_at: item.reviewed_at,
           reviewed_by: item.reviewed_by,
-          user_email: item.profiles?.email || 'System',
+          user_email: userEmails[item.suggested_by] || 'System',
           symptom_id: item.symptom_id,
           has_detailed_content: item.has_detailed_content
         })) as HealthConcernSuggestion[];
+        
       } catch (error) {
-        console.error("Health concerns table might not exist yet:", error);
+        console.error("Error in health concerns query:", error);
         return [];
       }
     },
@@ -94,7 +128,7 @@ const ManageHealthConcerns = () => {
   const updateSuggestionMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
       const { error } = await supabase
-        .from("health_concern_suggestions" as any)
+        .from("health_concern_suggestions")
         .update({ 
           status, 
           reviewed_at: new Date().toISOString(),
@@ -124,7 +158,7 @@ const ManageHealthConcerns = () => {
   const deleteSuggestionMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("health_concern_suggestions" as any)
+        .from("health_concern_suggestions")
         .delete()
         .eq("id", id);
       
@@ -201,6 +235,10 @@ const ManageHealthConcerns = () => {
     navigate(`/symptoms/${symptomId}`);
   };
 
+  if (error) {
+    console.error("Query error:", error);
+  }
+
   return (
     <div className="min-h-screen bg-background pt-16">
       <div className="container mx-auto p-6 max-w-7xl">
@@ -209,8 +247,14 @@ const ManageHealthConcerns = () => {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Health Concerns Management</h1>
             <p className="text-muted-foreground mt-2">
-              Manage health concerns, symptoms, conditions, and wellness goals ({migratedCount} migrated from symptoms)
+              Manage health concerns, symptoms, conditions, and wellness goals
+              {migratedCount > 0 && ` (${migratedCount} migrated from symptoms)`}
             </p>
+            {error && (
+              <p className="text-red-600 text-sm mt-1">
+                Error loading data. Check console for details.
+              </p>
+            )}
           </div>
           <Button onClick={() => navigate("/admin/health-concerns/new")} size="lg">
             <Plus className="mr-2 h-5 w-5" /> Add Health Concern
@@ -267,6 +311,25 @@ const ManageHealthConcerns = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Debug Information */}
+        {isLoading && (
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <p className="text-muted-foreground">Loading health concerns...</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && suggestions.length === 0 && (
+          <Card className="mb-6 border-orange-200 bg-orange-50/50">
+            <CardContent className="p-4">
+              <p className="text-orange-700">
+                No health concerns found. The migration may not have run yet. Check the database console for the health_concern_suggestions table.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pending Approvals Section */}
         {pendingCount > 0 && (
@@ -374,22 +437,25 @@ const ManageHealthConcerns = () => {
         {/* All Health Concerns */}
         <Card>
           <CardHeader>
-            <CardTitle>All Health Concerns</CardTitle>
+            <CardTitle>All Health Concerns ({suggestions.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">Loading health concerns...</p>
               </div>
-            ) : otherSuggestions.length === 0 ? (
+            ) : suggestions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
-                  No health concerns found matching your filters.
+                  No health concerns found. The migration may need to be run manually.
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Check the database for the health_concern_suggestions table and run the migration script.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
-                {otherSuggestions.map((suggestion) => (
+                {suggestions.map((suggestion) => (
                   <div key={suggestion.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
