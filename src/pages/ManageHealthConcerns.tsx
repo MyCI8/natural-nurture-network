@@ -90,8 +90,12 @@ const ManageHealthConcerns = () => {
         const allConcerns = healthConcerns || [];
         console.log("✅ Successfully fetched health concerns:", allConcerns.length, "items");
         
-        // Get user emails for the suggestions
-        const userIds = [...new Set(allConcerns.map((item: any) => item.suggested_by).filter(Boolean).filter((id: string) => id !== 'system'))];
+        // Get user emails for the suggestions with proper type casting
+        const userIds = [...new Set(
+          allConcerns
+            .map((item: any) => item.suggested_by as string)
+            .filter((id: string) => id && id !== 'system')
+        )];
         let userEmails: Record<string, string> = {};
         
         if (userIds.length > 0) {
