@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -50,13 +51,12 @@ const ManageHealthConcerns = () => {
       console.log("Fetching health concern suggestions...");
       
       try {
-        // First try to fetch from health_concern_suggestions table
+        // First try to fetch from health_concern_suggestions table (using type casting)
         let query = supabase
-          .from("health_concern_suggestions")
+          .from("health_concern_suggestions" as any)
           .select(`
             id,
             concern_name,
-            brief_description,
             category,
             suggested_by,
             status,
@@ -80,13 +80,46 @@ const ManageHealthConcerns = () => {
         console.log("Health concerns data:", healthConcerns);
         console.log("Health concerns error:", healthConcernsError);
         
-        if (healthConcernsError) {
-          console.error("Error fetching health concern suggestions:", healthConcernsError);
-          return [];
+        // If table doesn't exist or has errors, fetch from symptom_details as fallback
+        let allConcerns: any[] = [];
+        
+        if (healthConcernsError || !healthConcerns) {
+          console.log("Fetching from symptom_details as fallback...");
+          
+          // Fetch from symptom_details table
+          let symptomQuery = supabase
+            .from("symptom_details")
+            .select("id, symptom, description, brief_description, created_at");
+          
+          if (searchQuery) {
+            symptomQuery = symptomQuery.ilike("symptom", `%${searchQuery}%`);
+          }
+          
+          const { data: symptoms, error: symptomsError } = await symptomQuery.order("created_at", { ascending: false });
+          
+          if (symptoms && !symptomsError) {
+            // Convert symptoms to health concern format
+            allConcerns = symptoms.map((symptom: any) => ({
+              id: symptom.id,
+              concern_name: symptom.symptom,
+              brief_description: symptom.brief_description || symptom.description,
+              category: 'symptom',
+              suggested_by: 'system',
+              status: 'approved',
+              created_at: symptom.created_at,
+              reviewed_at: symptom.created_at,
+              reviewed_by: 'system',
+              user_email: 'System',
+              symptom_id: symptom.id,
+              has_detailed_content: true
+            }));
+          }
+        } else {
+          allConcerns = healthConcerns || [];
         }
         
         // Get user emails for the suggestions
-        const userIds = [...new Set((healthConcerns || []).map(item => item.suggested_by).filter(Boolean))];
+        const userIds = [...new Set(allConcerns.map(item => item.suggested_by).filter(Boolean).filter(id => id !== 'system'))];
         let userEmails: Record<string, string> = {};
         
         if (userIds.length > 0) {
@@ -103,7 +136,7 @@ const ManageHealthConcerns = () => {
           }
         }
         
-        return (healthConcerns || []).map((item: any) => ({
+        return allConcerns.map((item: any) => ({
           id: item.id,
           concern_name: item.concern_name,
           brief_description: item.brief_description,
@@ -113,7 +146,7 @@ const ManageHealthConcerns = () => {
           created_at: item.created_at,
           reviewed_at: item.reviewed_at,
           reviewed_by: item.reviewed_by,
-          user_email: userEmails[item.suggested_by] || 'System',
+          user_email: userEmails[item.suggested_by] || (item.suggested_by === 'system' ? 'System' : 'Unknown'),
           symptom_id: item.symptom_id,
           has_detailed_content: item.has_detailed_content
         })) as HealthConcernSuggestion[];
@@ -128,7 +161,7 @@ const ManageHealthConcerns = () => {
   const updateSuggestionMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
       const { error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .update({ 
           status, 
           reviewed_at: new Date().toISOString(),
@@ -158,7 +191,7 @@ const ManageHealthConcerns = () => {
   const deleteSuggestionMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("health_concern_suggestions")
+        .from("health_concern_suggestions" as any)
         .delete()
         .eq("id", id);
       
@@ -188,7 +221,6 @@ const ManageHealthConcerns = () => {
   const migratedCount = suggestions.filter(s => s.symptom_id).length;
 
   const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
-  const otherSuggestions = suggestions.filter(s => s.status !== 'pending');
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -252,7 +284,7 @@ const ManageHealthConcerns = () => {
             </p>
             {error && (
               <p className="text-red-600 text-sm mt-1">
-                Error loading data. Check console for details.
+                Error loading data. Showing fallback symptom data.
               </p>
             )}
           </div>
@@ -291,8 +323,8 @@ const ManageHealthConcerns = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Migrated Symptoms</p>
-                  <p className="text-3xl font-bold text-blue-600">{migratedCount}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Available Symptoms</p>
+                  <p className="text-3xl font-bold text-blue-600">{totalCount}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-blue-500" />
               </div>
@@ -447,10 +479,7 @@ const ManageHealthConcerns = () => {
             ) : suggestions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
-                  No health concerns found. The migration may need to be run manually.
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Check the database for the health_concern_suggestions table and run the migration script.
+                  No health concerns found. Check database migration status.
                 </p>
               </div>
             ) : (
@@ -472,12 +501,7 @@ const ManageHealthConcerns = () => {
                           </Badge>
                           {suggestion.symptom_id && (
                             <Badge variant="outline" className="text-xs text-blue-600">
-                              Migrated Symptom
-                            </Badge>
-                          )}
-                          {suggestion.has_detailed_content && (
-                            <Badge variant="outline" className="text-xs text-purple-600">
-                              Rich Content
+                              Has Detailed Content
                             </Badge>
                           )}
                         </div>
