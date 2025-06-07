@@ -50,8 +50,11 @@ const ManageHealthConcerns = () => {
       console.log("🔍 Fetching health concern suggestions with filter:", filter, "search:", searchQuery);
       
       try {
-        // First, try to fetch from health_concern_suggestions table
-        let query = supabase
+        // Type cast the supabase client to bypass TypeScript errors for the new table
+        const supabaseAny = supabase as any;
+        
+        // Query the health_concern_suggestions table
+        let query = supabaseAny
           .from("health_concern_suggestions")
           .select(`
             id,
@@ -79,57 +82,16 @@ const ManageHealthConcerns = () => {
         
         console.log("📊 Health concerns query result:", { healthConcerns, healthConcernsError });
         
-        let allConcerns: any[] = [];
-        
         if (healthConcernsError) {
-          console.error("❌ Error fetching from health_concern_suggestions:", healthConcernsError);
-          
-          // Fallback to symptom_details only if the table doesn't exist
-          if (healthConcernsError.message?.includes('does not exist') || healthConcernsError.message?.includes('relation')) {
-            console.log("🔄 Falling back to symptom_details table...");
-            
-            let symptomQuery = supabase
-              .from("symptom_details")
-              .select("id, symptom, description, brief_description, created_at");
-            
-            if (searchQuery) {
-              symptomQuery = symptomQuery.ilike("symptom", `%${searchQuery}%`);
-            }
-            
-            const { data: symptoms, error: symptomsError } = await symptomQuery.order("created_at", { ascending: false });
-            
-            if (symptoms && !symptomsError) {
-              allConcerns = symptoms.map((symptom: any) => ({
-                id: symptom.id,
-                concern_name: symptom.symptom,
-                brief_description: symptom.brief_description || symptom.description,
-                category: 'symptom',
-                suggested_by: 'system',
-                status: 'approved',
-                created_at: symptom.created_at,
-                reviewed_at: symptom.created_at,
-                reviewed_by: 'system',
-                user_email: 'System',
-                symptom_id: symptom.id,
-                has_detailed_content: true
-              }));
-              
-              console.log("📋 Using fallback symptom data:", allConcerns.length, "items");
-            } else {
-              console.error("❌ Error fetching symptom fallback:", symptomsError);
-            }
-          } else {
-            // Re-throw other types of errors
-            throw healthConcernsError;
-          }
-        } else {
-          // Successfully got data from health_concern_suggestions
-          allConcerns = healthConcerns || [];
-          console.log("✅ Successfully fetched from health_concern_suggestions:", allConcerns.length, "items");
+          console.error("❌ Error fetching health concerns:", healthConcernsError);
+          throw healthConcernsError;
         }
         
+        const allConcerns = healthConcerns || [];
+        console.log("✅ Successfully fetched health concerns:", allConcerns.length, "items");
+        
         // Get user emails for the suggestions
-        const userIds = [...new Set(allConcerns.map(item => item.suggested_by).filter(Boolean).filter(id => id !== 'system'))];
+        const userIds = [...new Set(allConcerns.map((item: any) => item.suggested_by).filter(Boolean).filter((id: string) => id !== 'system'))];
         let userEmails: Record<string, string> = {};
         
         if (userIds.length > 0) {
@@ -184,7 +146,9 @@ const ManageHealthConcerns = () => {
       console.log("🔄 Updating suggestion:", id, "to status:", status);
       
       const { data: user } = await supabase.auth.getUser();
-      const { error } = await supabase
+      const supabaseAny = supabase as any;
+      
+      const { error } = await supabaseAny
         .from("health_concern_suggestions")
         .update({ 
           status, 
@@ -221,7 +185,8 @@ const ManageHealthConcerns = () => {
     mutationFn: async (id: string) => {
       console.log("🗑️ Deleting suggestion:", id);
       
-      const { error } = await supabase
+      const supabaseAny = supabase as any;
+      const { error } = await supabaseAny
         .from("health_concern_suggestions")
         .delete()
         .eq("id", id);
