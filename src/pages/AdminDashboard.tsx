@@ -9,6 +9,7 @@ import {
   Apple,
   MessageSquare,
   ChevronRight,
+  Heart,
 } from "lucide-react";
 import {
   Card,
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
   const statsCards = [
     { title: "Total Users", value: stats?.users || 0, icon: Users, path: "/admin/users" },
     { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf, path: "/admin/remedies" },
-    { title: "Total Experts", value: stats?.experts || 0, icon: UserCog, path: "/admin/manage-experts" },
+    { title: "Total Experts", value: stats?.experts || 0, icon: UserCog, path: "/admin/experts" },
     { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
   ];
 
@@ -78,7 +79,7 @@ const AdminDashboard = () => {
       title: "Manage Experts",
       description: "Add, edit, or remove expert profiles",
       icon: UserCog,
-      path: "/admin/manage-experts",
+      path: "/admin/experts",
     },
     {
       title: "Manage Remedies",
@@ -97,6 +98,12 @@ const AdminDashboard = () => {
       description: "Add and update remedy ingredients",
       icon: Apple,
       path: "/admin/ingredients",
+    },
+    {
+      title: "Manage Health Concerns",
+      description: "Manage health concerns and symptoms",
+      icon: Heart,
+      path: "/admin/health-concerns",
     },
   ];
 

@@ -1,3 +1,4 @@
+
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import Layout from "@/components/Layout";
@@ -26,10 +27,10 @@ import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
 import ManageRemedies from "./pages/ManageRemedies";
 import ManageIngredients from "./pages/ManageIngredients";
-import ManageSymptoms from "./pages/ManageSymptoms";
+import ManageHealthConcerns from "./pages/ManageHealthConcerns";
 import IngredientDetail from "./pages/IngredientDetail";
 import EditRemedy from "./pages/EditRemedy";
-import EditSymptom from "./pages/EditSymptom";
+import EditHealthConcern from "./pages/EditHealthConcern";
 import Experts from "./pages/Experts";
 import ExpertProfile from "./pages/ExpertProfile";
 import Remedies from "./pages/Remedies";
@@ -131,9 +132,9 @@ function App() {
               <Route index element={<ManageIngredients />} />
               <Route path=":id" element={<IngredientDetail />} />
             </Route>
-            <Route path="symptoms">
-              <Route index element={<ManageSymptoms />} />
-              <Route path=":id" element={<EditSymptom />} />
+            <Route path="health-concerns">
+              <Route index element={<ManageHealthConcerns />} />
+              <Route path=":id" element={<EditHealthConcern />} />
             </Route>
           </Route>
         </Route>
