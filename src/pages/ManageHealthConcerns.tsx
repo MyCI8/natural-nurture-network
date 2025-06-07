@@ -91,10 +91,10 @@ const ManageHealthConcerns = () => {
         console.log("✅ Successfully fetched health concerns:", allConcerns.length, "items");
         
         // Get user emails for the suggestions with proper type casting
-        const userIds = [...new Set(
+        const userIds: string[] = [...new Set(
           allConcerns
-            .map((item: any) => item.suggested_by as string)
-            .filter((id: string) => id && id !== 'system')
+            .map((item: any) => item.suggested_by)
+            .filter((id: any): id is string => typeof id === 'string' && id !== 'system')
         )];
         let userEmails: Record<string, string> = {};
         
