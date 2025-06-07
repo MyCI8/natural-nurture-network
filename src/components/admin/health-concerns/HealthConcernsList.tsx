@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock, User, Edit2, Trash2 } from "lucide-react";
+import { User, Edit2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { UseMutationResult } from "@tanstack/react-query";
@@ -21,7 +21,6 @@ import {
 interface HealthConcernSuggestion {
   id: string;
   concern_name: string;
-  category?: string;
   suggested_by: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
@@ -37,7 +36,6 @@ interface HealthConcernsListProps {
   deleteSuggestionMutation: UseMutationResult<void, Error, string, unknown>;
   getStatusIcon: (status: string) => JSX.Element | null;
   getStatusVariant: (status: string) => string;
-  getCategoryColor: (category?: string) => string;
 }
 
 export const HealthConcernsList = ({
@@ -46,8 +44,7 @@ export const HealthConcernsList = ({
   error,
   deleteSuggestionMutation,
   getStatusIcon,
-  getStatusVariant,
-  getCategoryColor
+  getStatusVariant
 }: HealthConcernsListProps) => {
   const navigate = useNavigate();
 
@@ -80,11 +77,6 @@ export const HealthConcernsList = ({
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold">{suggestion.concern_name}</h3>
-                      {suggestion.category && (
-                        <Badge className={`text-xs ${getCategoryColor(suggestion.category)}`}>
-                          {suggestion.category.replace('_', ' ')}
-                        </Badge>
-                      )}
                       <Badge variant={getStatusVariant(suggestion.status) as any} className="flex items-center gap-1">
                         {getStatusIcon(suggestion.status)}
                         {suggestion.status}

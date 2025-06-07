@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 interface HealthConcernSuggestion {
   id: string;
   concern_name: string;
-  category?: string;
   suggested_by: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;

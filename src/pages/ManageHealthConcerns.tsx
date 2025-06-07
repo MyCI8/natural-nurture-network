@@ -9,7 +9,7 @@ import { HealthConcernStats } from "@/components/admin/health-concerns/HealthCon
 import { PendingApprovalsSection } from "@/components/admin/health-concerns/PendingApprovalsSection";
 import { HealthConcernFilters } from "@/components/admin/health-concerns/HealthConcernFilters";
 import { HealthConcernsList } from "@/components/admin/health-concerns/HealthConcernsList";
-import { getStatusIcon, getStatusVariant, getCategoryColor } from "@/components/admin/health-concerns/utils";
+import { getStatusIcon, getStatusVariant } from "@/components/admin/health-concerns/utils";
 
 const ManageHealthConcerns = () => {
   const navigate = useNavigate();
@@ -94,7 +94,6 @@ const ManageHealthConcerns = () => {
           pendingCount={pendingCount}
           pendingSuggestions={pendingSuggestions}
           updateSuggestionMutation={updateSuggestionMutation}
-          getCategoryColor={getCategoryColor}
         />
 
         {/* Filters and Search */}
@@ -113,7 +112,6 @@ const ManageHealthConcerns = () => {
           deleteSuggestionMutation={deleteSuggestionMutation}
           getStatusIcon={getStatusIcon}
           getStatusVariant={getStatusVariant}
-          getCategoryColor={getCategoryColor}
         />
       </div>
     </div>

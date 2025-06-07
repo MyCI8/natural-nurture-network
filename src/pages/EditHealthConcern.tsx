@@ -15,7 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface HealthConcernFormValues {
   concern_name: string;
   brief_description: string;
-  category: string;
   status: 'pending' | 'approved' | 'rejected';
 }
 
@@ -29,7 +28,6 @@ const EditHealthConcern = () => {
     defaultValues: {
       concern_name: "",
       brief_description: "",
-      category: "symptom",
       status: "approved",
     },
   });
@@ -57,7 +55,6 @@ const EditHealthConcern = () => {
           form.reset({
             concern_name: typedData.concern_name || "",
             brief_description: typedData.brief_description || "",
-            category: typedData.category || "symptom",
             status: typedData.status || "pending",
           });
         }
@@ -81,7 +78,6 @@ const EditHealthConcern = () => {
             .insert({
               concern_name: values.concern_name,
               brief_description: values.brief_description,
-              category: values.category,
               status: values.status,
               suggested_by: user.user?.id
             });
@@ -93,7 +89,6 @@ const EditHealthConcern = () => {
             .update({
               concern_name: values.concern_name,
               brief_description: values.brief_description,
-              category: values.category,
               status: values.status,
             })
             .eq("id", id);
@@ -202,29 +197,6 @@ const EditHealthConcern = () => {
             />
             <p className="text-xs text-muted-foreground mt-1">
               Optional: Provide a brief description to help users understand this concern
-            </p>
-          </div>
-
-          <div>
-            <Label htmlFor="category" className="text-sm font-medium">
-              Category *
-            </Label>
-            <Select 
-              value={form.watch("category")} 
-              onValueChange={(value) => form.setValue("category", value)}
-            >
-              <SelectTrigger className="bg-background mt-2">
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="symptom">Symptom</SelectItem>
-                <SelectItem value="condition">Condition</SelectItem>
-                <SelectItem value="goal">Health Goal</SelectItem>
-                <SelectItem value="body_system">Body System</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground mt-1">
-              Choose the most appropriate category for this health concern
             </p>
           </div>
 

@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Check, X, User } from "lucide-react";
 import { format } from "date-fns";
@@ -9,7 +8,6 @@ import { UseMutationResult } from "@tanstack/react-query";
 interface HealthConcernSuggestion {
   id: string;
   concern_name: string;
-  category?: string;
   suggested_by: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
@@ -22,14 +20,12 @@ interface PendingApprovalsSectionProps {
   pendingCount: number;
   pendingSuggestions: HealthConcernSuggestion[];
   updateSuggestionMutation: UseMutationResult<void, Error, { id: string; status: 'approved' | 'rejected' }, unknown>;
-  getCategoryColor: (category?: string) => string;
 }
 
 export const PendingApprovalsSection = ({
   pendingCount,
   pendingSuggestions,
-  updateSuggestionMutation,
-  getCategoryColor
+  updateSuggestionMutation
 }: PendingApprovalsSectionProps) => {
   if (pendingCount === 0) return null;
 
@@ -48,11 +44,6 @@ export const PendingApprovalsSection = ({
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="font-semibold text-lg">{suggestion.concern_name}</h3>
-                  {suggestion.category && (
-                    <Badge className={`text-xs ${getCategoryColor(suggestion.category)}`}>
-                      {suggestion.category.replace('_', ' ')}
-                    </Badge>
-                  )}
                 </div>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
