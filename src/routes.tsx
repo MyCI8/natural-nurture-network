@@ -77,7 +77,11 @@ const Routes = () => {
             <Route index element={<ManageUsers />} />
             <Route path=":id" element={<EditUser />} />
           </Route>
-          <Route path="manage-experts/*" element={<ManageExperts />} />
+          <Route path="experts">
+            <Route index element={<ManageExperts />} />
+            <Route path=":id" element={<EditExpert />} />
+            <Route path="new" element={<EditExpert />} />
+          </Route>
           <Route path="remedies">
             <Route index element={<ManageRemedies />} />
             <Route path="edit/:id" element={<EditRemedy />} />
@@ -85,6 +89,7 @@ const Routes = () => {
           <Route path="health-concerns">
             <Route index element={<ManageHealthConcerns />} />
             <Route path=":id" element={<EditHealthConcern />} />
+            <Route path="new" element={<EditHealthConcern />} />
           </Route>
           <Route path="ingredients">
             <Route index element={<ManageIngredients />} />
