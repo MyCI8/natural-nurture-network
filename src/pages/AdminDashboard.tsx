@@ -9,7 +9,6 @@ import {
   Apple,
   MessageSquare,
   ChevronRight,
-  Heart,
 } from "lucide-react";
 import {
   Card,
@@ -19,11 +18,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import RecentNews from "@/components/admin/dashboard/RecentNews";
 import RecentSymptoms from "@/components/admin/dashboard/RecentSymptoms";
-import PendingHealthConcerns from "@/components/admin/dashboard/PendingHealthConcerns";
+import HealthConcernsCard from "@/components/admin/dashboard/HealthConcernsCard";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -37,8 +35,7 @@ const AdminDashboard = () => {
         expertsCount, 
         commentsCount, 
         symptoms, 
-        news,
-        healthConcernsData
+        news
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
@@ -49,23 +46,8 @@ const AdminDashboard = () => {
           .from("news_articles")
           .select("*")
           .order("created_at", { ascending: false })
-          .limit(5),
-        // Safely handle health concerns data
-        (async () => {
-          try {
-            const result = await supabase
-              .from("health_concern_suggestions" as any)
-              .select("*", { count: "exact" });
-            return result;
-          } catch (error) {
-            console.error("Health concerns table might not exist:", error);
-            return { count: 0, data: [] };
-          }
-        })()
+          .limit(5)
       ]);
-
-      const pendingHealthConcerns = healthConcernsData?.data?.filter((item: any) => item.status === 'pending')?.length || 0;
-      const totalHealthConcerns = healthConcernsData?.count || 0;
 
       return {
         users: usersCount.count || 0,
@@ -74,8 +56,6 @@ const AdminDashboard = () => {
         comments: commentsCount.count || 0,
         symptoms: symptoms.data || [],
         recentNews: news.data || [],
-        healthConcerns: totalHealthConcerns,
-        pendingHealthConcerns: pendingHealthConcerns,
       };
     },
   });
@@ -84,16 +64,6 @@ const AdminDashboard = () => {
     { title: "Total Users", value: stats?.users || 0, icon: Users, path: "/admin/users" },
     { title: "Total Remedies", value: stats?.remedies || 0, icon: Leaf, path: "/admin/remedies" },
     { title: "Total Experts", value: stats?.experts || 0, icon: UserCog, path: "/admin/manage-experts" },
-    { 
-      title: "Health Concerns", 
-      value: stats?.healthConcerns || 0, 
-      icon: Heart,
-      path: "/admin/health-concerns",
-      badge: stats?.pendingHealthConcerns ? {
-        text: `${stats.pendingHealthConcerns} pending`,
-        variant: "destructive" as const
-      } : undefined
-    },
     { title: "Total Comments", value: stats?.comments || 0, icon: MessageSquare },
   ];
 
@@ -128,16 +98,6 @@ const AdminDashboard = () => {
       icon: Apple,
       path: "/admin/ingredients",
     },
-    {
-      title: "Manage Health Concerns",
-      description: "Manage health concerns and approve suggestions",
-      icon: Heart,
-      path: "/admin/health-concerns",
-      badge: stats?.pendingHealthConcerns ? {
-        text: stats.pendingHealthConcerns.toString(),
-        variant: "destructive" as const
-      } : undefined
-    },
   ];
 
   const handleCardClick = (path?: string) => {
@@ -152,7 +112,7 @@ const AdminDashboard = () => {
         <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {statsCards.map((stat) => (
             <Card 
               key={stat.title}
@@ -163,14 +123,7 @@ const AdminDashboard = () => {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <stat.icon className="h-4 w-4 text-muted-foreground" />
-                  {stat.badge && (
-                    <Badge variant={stat.badge.variant} className="text-xs">
-                      {stat.badge.text}
-                    </Badge>
-                  )}
-                </div>
+                <stat.icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -183,9 +136,10 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Pending Health Concerns - Priority Section */}
-        <div className="mb-8">
-          <PendingHealthConcerns />
+        {/* Health Concerns Management - Priority Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <HealthConcernsCard />
+          <RecentSymptoms symptoms={stats?.symptoms || []} isLoading={isLoading} />
         </div>
 
         {/* Quick Links */}
@@ -199,14 +153,7 @@ const AdminDashboard = () => {
             >
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center gap-2">
-                    <link.icon className="h-6 w-6" />
-                    {link.badge && (
-                      <Badge variant={link.badge.variant} className="text-xs">
-                        {link.badge.text}
-                      </Badge>
-                    )}
-                  </div>
+                  <link.icon className="h-6 w-6" />
                   <div>
                     <CardTitle className="text-lg">{link.title}</CardTitle>
                     <CardDescription>{link.description}</CardDescription>
@@ -218,11 +165,8 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* Dashboard Cards */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <RecentNews news={stats?.recentNews || []} isLoading={isLoading} />
-          <RecentSymptoms symptoms={stats?.symptoms || []} isLoading={isLoading} />
-        </div>
+        {/* Recent News */}
+        <RecentNews news={stats?.recentNews || []} isLoading={isLoading} />
       </div>
     </div>
   );
