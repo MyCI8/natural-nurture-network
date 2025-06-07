@@ -13,8 +13,6 @@ interface HealthConcernSuggestion {
   reviewed_at?: string;
   reviewed_by?: string;
   user_email?: string;
-  symptom_id?: string;
-  has_detailed_content?: boolean;
 }
 
 export const useHealthConcernManagement = (
@@ -41,9 +39,7 @@ export const useHealthConcernManagement = (
             status,
             created_at,
             reviewed_at,
-            reviewed_by,
-            symptom_id,
-            has_detailed_content
+            reviewed_by
           `);
         
         if (filter !== 'all') {
@@ -97,9 +93,7 @@ export const useHealthConcernManagement = (
           created_at: item.created_at,
           reviewed_at: item.reviewed_at,
           reviewed_by: item.reviewed_by,
-          user_email: userEmails[item.suggested_by] || (item.suggested_by === 'system' ? 'System' : 'Unknown'),
-          symptom_id: item.symptom_id,
-          has_detailed_content: item.has_detailed_content
+          user_email: userEmails[item.suggested_by] || (item.suggested_by === 'system' ? 'System' : 'Unknown')
         })) as HealthConcernSuggestion[];
         
         console.log("🎯 Final results:", finalResults.length, "items");

@@ -28,7 +28,6 @@ const ManageHealthConcerns = () => {
   const approvedCount = suggestions.filter(s => s.status === 'approved').length;
   const rejectedCount = suggestions.filter(s => s.status === 'rejected').length;
   const totalCount = suggestions.length;
-  const migratedCount = suggestions.filter(s => s.symptom_id).length;
 
   const pendingSuggestions = suggestions.filter(s => s.status === 'pending');
 
@@ -45,7 +44,6 @@ const ManageHealthConcerns = () => {
             <h1 className="text-3xl font-bold text-foreground">Health Concerns Management</h1>
             <p className="text-muted-foreground mt-2">
               Manage health concerns, symptoms, conditions, and wellness goals
-              {migratedCount > 0 && ` (${migratedCount} migrated from symptoms)`}
             </p>
             {error && (
               <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">

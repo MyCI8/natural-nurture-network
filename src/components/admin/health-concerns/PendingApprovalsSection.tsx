@@ -16,8 +16,6 @@ interface HealthConcernSuggestion {
   reviewed_at?: string;
   reviewed_by?: string;
   user_email?: string;
-  symptom_id?: string;
-  has_detailed_content?: boolean;
 }
 
 interface PendingApprovalsSectionProps {
@@ -53,11 +51,6 @@ export const PendingApprovalsSection = ({
                   {suggestion.category && (
                     <Badge className={`text-xs ${getCategoryColor(suggestion.category)}`}>
                       {suggestion.category.replace('_', ' ')}
-                    </Badge>
-                  )}
-                  {suggestion.has_detailed_content && (
-                    <Badge variant="outline" className="text-xs">
-                      Rich Content
                     </Badge>
                   )}
                 </div>

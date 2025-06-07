@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock, User, Edit2, Trash2, ExternalLink } from "lucide-react";
+import { Check, X, Clock, User, Edit2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { UseMutationResult } from "@tanstack/react-query";
@@ -28,8 +28,6 @@ interface HealthConcernSuggestion {
   reviewed_at?: string;
   reviewed_by?: string;
   user_email?: string;
-  symptom_id?: string;
-  has_detailed_content?: boolean;
 }
 
 interface HealthConcernsListProps {
@@ -52,10 +50,6 @@ export const HealthConcernsList = ({
   getCategoryColor
 }: HealthConcernsListProps) => {
   const navigate = useNavigate();
-
-  const handleViewDetailedContent = (symptomId: string) => {
-    navigate(`/symptoms/${symptomId}`);
-  };
 
   return (
     <Card>
@@ -95,11 +89,6 @@ export const HealthConcernsList = ({
                         {getStatusIcon(suggestion.status)}
                         {suggestion.status}
                       </Badge>
-                      {suggestion.symptom_id && (
-                        <Badge variant="outline" className="text-xs text-blue-600">
-                          Has Detailed Content
-                        </Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
@@ -118,16 +107,6 @@ export const HealthConcernsList = ({
                   </div>
                   
                   <div className="flex gap-2">
-                    {suggestion.symptom_id && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewDetailedContent(suggestion.symptom_id!)}
-                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    )}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -147,11 +126,6 @@ export const HealthConcernsList = ({
                           <AlertDialogTitle>Delete Health Concern</AlertDialogTitle>
                           <AlertDialogDescription>
                             Are you sure you want to delete "{suggestion.concern_name}"? This action cannot be undone.
-                            {suggestion.symptom_id && (
-                              <span className="block mt-2 text-orange-600">
-                                Note: This will only remove the health concern entry. The original symptom data will be preserved.
-                              </span>
-                            )}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
