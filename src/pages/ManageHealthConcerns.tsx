@@ -398,11 +398,6 @@ const ManageHealthConcerns = () => {
                           </Badge>
                         )}
                       </div>
-                      {suggestion.brief_description && (
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {suggestion.brief_description}
-                        </p>
-                      )}
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <User className="h-3 w-3" />
@@ -518,11 +513,6 @@ const ManageHealthConcerns = () => {
                             </Badge>
                           )}
                         </div>
-                        {suggestion.brief_description && (
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {suggestion.brief_description}
-                          </p>
-                        )}
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <User className="h-3 w-3" />
