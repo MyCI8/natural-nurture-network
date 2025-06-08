@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -53,7 +52,7 @@ export const useHealthConcernManagement = (
         
         const { data: healthConcerns, error: healthConcernsError } = await query.order("created_at", { ascending: false });
         
-        console.log("📊 Health concerns query result:", { healthConcerns, healthConcernsError });
+        console.log("📊 Health concerns raw query result:", { healthConcerns, healthConcernsError });
         
         if (healthConcernsError) {
           console.error("❌ Error fetching health concerns:", healthConcernsError);
@@ -62,6 +61,7 @@ export const useHealthConcernManagement = (
         
         const allConcerns = healthConcerns || [];
         console.log("✅ Successfully fetched health concerns:", allConcerns.length, "items");
+        console.log("📋 First few items:", allConcerns.slice(0, 3));
         
         // For system suggestions, just use 'System' as user_email
         const finalResults = allConcerns.map((item: any) => ({
