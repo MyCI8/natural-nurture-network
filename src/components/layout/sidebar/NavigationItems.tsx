@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Video, Newspaper, Pill, Stethoscope, TestTube, Activity } from 'lucide-react';
+import { Home, Video, Newspaper, Pill, Stethoscope, TestTube, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface NavigationItemsProps {
@@ -25,14 +25,14 @@ const NavigationItems: React.FC<NavigationItemsProps> = ({
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Main navigation items only
+  // Main navigation items with health concerns instead of symptoms
   const mainItems = [
     { name: 'Home', icon: Home, path: '/' },
     { name: 'Explore', icon: Video, path: '/explore' },
     { name: 'Remedies', icon: Pill, path: '/remedies' },
     { name: 'Experts', icon: Stethoscope, path: '/experts' },
     { name: 'Ingredients', icon: TestTube, path: '/ingredients' },
-    { name: 'Symptoms', icon: Activity, path: '/symptoms' },
+    { name: 'Health Concerns', icon: Heart, path: '/health-concerns' },
     { name: 'News', icon: Newspaper, path: '/news' },
   ];
 
@@ -45,7 +45,7 @@ const NavigationItems: React.FC<NavigationItemsProps> = ({
 
   return (
     <div className="space-y-1">
-      {/* Main Navigation Only */}
+      {/* Main Navigation */}
       <div className="space-y-1">
         {mainItems.map((item) => (
           <Button

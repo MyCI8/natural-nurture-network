@@ -32,8 +32,8 @@ import ExploreDetail from "./pages/ExploreDetail";
 import ManageVideos from "./pages/ManageVideos";
 import EditVideo from "./pages/EditVideo";
 import UserProfile from "./pages/UserProfile";
-import Symptoms from "./pages/Symptoms";
-import SymptomDetail from "./pages/SymptomDetail";
+import HealthConcerns from "./pages/HealthConcerns";
+import HealthConcernDetail from "./pages/HealthConcernDetail";
 import Post from "./pages/Post";
 
 // Settings pages
@@ -56,8 +56,8 @@ const Routes = () => {
         <Route path="experts/:id" element={<ExpertProfile />} />
         <Route path="remedies" element={<Remedies />} />
         <Route path="ingredients" element={<Ingredients />} />
-        <Route path="symptoms" element={<Symptoms />} />
-        <Route path="symptoms/:id" element={<SymptomDetail />} />
+        <Route path="health-concerns" element={<HealthConcerns />} />
+        <Route path="health-concerns/:id" element={<HealthConcernDetail />} />
         <Route path="news" element={<News />} />
         <Route path="news/:id" element={<NewsArticle />} />
         <Route path="news/videos/:id" element={<EditVideo />} />
@@ -107,10 +107,12 @@ const Routes = () => {
             <Route index element={<ManageVideos />} />
             <Route path=":id" element={<EditVideo />} />
           </Route>
-          {/* Redirect old symptoms routes to health-concerns */}
-          <Route path="symptoms" element={<Navigate to="/admin/health-concerns" replace />} />
-          <Route path="symptoms/:id" element={<Navigate to="/admin/health-concerns" replace />} />
         </Route>
+        
+        {/* Redirect old symptoms routes to health-concerns */}
+        <Route path="symptoms" element={<Navigate to="/health-concerns" replace />} />
+        <Route path="symptoms/:id" element={<Navigate to="/health-concerns" replace />} />
+        
         <Route path="auth" element={<Auth />} />
         <Route path="*" element={<NotFound />} />
       </Route>

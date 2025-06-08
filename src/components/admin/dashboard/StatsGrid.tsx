@@ -1,4 +1,5 @@
-import { Users, BookOpen, MessageSquare, Newspaper, Apple, GraduationCap, Activity, Video } from "lucide-react";
+
+import { Users, BookOpen, MessageSquare, Newspaper, Apple, GraduationCap, Heart, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +11,7 @@ type DashboardStats = {
   pendingComments: number;
   recentNews: any[];
   experts: number;
-  symptoms: number;
+  healthConcerns: number;
   videos: number;
 };
 
@@ -62,7 +63,7 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       value: stats?.pendingComments || 0,
       icon: MessageSquare,
       description: "Awaiting moderation",
-      path: undefined, // No navigation for comments yet
+      path: undefined,
     },
     {
       title: "Recent News",
@@ -79,11 +80,11 @@ const StatsGrid = ({ stats, isLoading }: StatsGridProps) => {
       path: "/admin/manage-experts",
     },
     {
-      title: "Total Symptoms",
-      value: stats?.symptoms || 0,
-      icon: Activity,
-      description: "Active Symp/Cond",
-      path: "/admin/symptoms",
+      title: "Health Concerns",
+      value: stats?.healthConcerns || 0,
+      icon: Heart,
+      description: "Active concerns",
+      path: "/admin/health-concerns",
     },
   ];
 

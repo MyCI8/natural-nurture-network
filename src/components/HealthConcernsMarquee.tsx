@@ -9,71 +9,68 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-type SymptomType = Database['public']['Enums']['symptom_type'];
-
-const defaultSymptoms: SymptomType[] = [
-  'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
-  'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
-  'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
-  'Weak Immunity', 'Back Pain', 'Poor Circulation', 'Hair Loss', 'Eye Strain'
+const defaultHealthConcerns = [
+  'Sore Throat', 'Depression', 'Joint Pain', 'Anxiety', 'Fatigue', 
+  'Cold', 'High Blood Pressure', 'Headache', 'Allergies', 'Stress',
+  'Eye Strain', 'Back Pain', 'Cough', 'Cancer', 'Weak Immunity',
+  'Skin Irritation', 'Poor Circulation', 'Digestive Issues', 'Insomnia', 'Hair Loss'
 ];
 
-const SymptomsMarquee = () => {
+const HealthConcernsMarquee = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { data: topSymptoms = defaultSymptoms } = useQuery({
-    queryKey: ['topSymptoms'],
+  const { data: topHealthConcerns = defaultHealthConcerns } = useQuery({
+    queryKey: ['topHealthConcerns'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase.rpc('get_top_symptoms', { limit_count: 20 });
+        const { data, error } = await supabase.rpc('get_top_health_concerns', { limit_count: 20 });
         if (error) {
-          console.error('Error fetching top symptoms:', error);
-          return defaultSymptoms;
+          console.error('Error fetching top health concerns:', error);
+          return defaultHealthConcerns;
         }
-        return data.length > 0 ? data.map(item => item.symptom) : defaultSymptoms;
+        return data.length > 0 ? data.map(item => item.health_concern_name) : defaultHealthConcerns;
       } catch (error) {
-        console.error('Error in symptom query:', error);
-        return defaultSymptoms;
+        console.error('Error in health concern query:', error);
+        return defaultHealthConcerns;
       }
     },
-    initialData: defaultSymptoms,
+    initialData: defaultHealthConcerns,
     retry: 1
   });
 
-  const handleSymptomClick = async (symptom: SymptomType) => {
+  const handleHealthConcernClick = async (concernName: string) => {
     try {
       // Log the click
       const { error } = await supabase
-        .from('symptom_clicks')
-        .insert([{ symptom, user_id: (await supabase.auth.getUser()).data.user?.id }]);
+        .from('health_concern_clicks')
+        .insert([{ health_concern_name: concernName, user_id: (await supabase.auth.getUser()).data.user?.id }]);
       
       if (error) {
-        console.error('Error logging symptom click:', error);
+        console.error('Error logging health concern click:', error);
       }
       
-      // Find the symptom ID or navigate by name
-      const { data: symptomData, error: lookupError } = await supabase
-        .from('symptom_details')
+      // Find the health concern ID or navigate by name
+      const { data: healthConcernData, error: lookupError } = await supabase
+        .from('health_concerns')
         .select('id')
-        .eq('symptom', symptom)
+        .eq('name', concernName)
         .maybeSingle();
       
       if (lookupError) {
-        console.error('Error looking up symptom:', lookupError);
+        console.error('Error looking up health concern:', lookupError);
       }
       
-      if (symptomData?.id) {
-        navigate(`/symptoms/${symptomData.id}`);
+      if (healthConcernData?.id) {
+        navigate(`/health-concerns/${healthConcernData.id}`);
       } else {
-        navigate(`/symptoms/${encodeURIComponent(symptom)}`);
+        navigate(`/health-concerns/${encodeURIComponent(concernName)}`);
         toast({
-          description: `Navigating to ${symptom}`,
+          description: `Navigating to ${concernName}`,
         });
       }
     } catch (error) {
@@ -82,7 +79,7 @@ const SymptomsMarquee = () => {
   };
 
   return (
-    <section className="py-8 bg-accent dark:bg-dm-mist overflow-hidden z-0 relative symptoms-marquee">
+    <section className="py-8 bg-accent dark:bg-dm-mist overflow-hidden z-0 relative health-concerns-marquee">
       <div className="w-full mx-auto">
         <div className="group relative">
           <Carousel
@@ -98,11 +95,11 @@ const SymptomsMarquee = () => {
               "group-hover:[animation-play-state:paused]",
               isMobile ? "animate-marquee-fast" : "animate-marquee"
             )}>
-              {[...topSymptoms, ...topSymptoms].map((symptom, index) => (
+              {[...topHealthConcerns, ...topHealthConcerns].map((concern, index) => (
                 <CarouselItem
-                  key={`${symptom}-${index}`}
+                  key={`${concern}-${index}`}
                   className="basis-auto pl-8 cursor-pointer touch-manipulation active-scale"
-                  onClick={() => handleSymptomClick(symptom)}
+                  onClick={() => handleHealthConcernClick(concern)}
                 >
                   <div
                     className={cn(
@@ -113,11 +110,11 @@ const SymptomsMarquee = () => {
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
-                        handleSymptomClick(symptom);
+                        handleHealthConcernClick(concern);
                       }
                     }}
                   >
-                    {symptom}
+                    {concern}
                   </div>
                 </CarouselItem>
               ))}
@@ -129,4 +126,4 @@ const SymptomsMarquee = () => {
   );
 };
 
-export default SymptomsMarquee;
+export default HealthConcernsMarquee;
