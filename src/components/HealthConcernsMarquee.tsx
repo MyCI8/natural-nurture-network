@@ -7,8 +7,6 @@ import {
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,55 +22,16 @@ const HealthConcernsMarquee = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { data: topHealthConcerns = defaultHealthConcerns } = useQuery({
-    queryKey: ['topHealthConcerns'],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase.rpc('get_top_health_concerns', { limit_count: 20 });
-        if (error) {
-          console.error('Error fetching top health concerns:', error);
-          return defaultHealthConcerns;
-        }
-        return data.length > 0 ? data.map(item => item.health_concern_name) : defaultHealthConcerns;
-      } catch (error) {
-        console.error('Error in health concern query:', error);
-        return defaultHealthConcerns;
-      }
-    },
-    initialData: defaultHealthConcerns,
-    retry: 1
-  });
+  // For now, use default health concerns since the migration hasn't been applied yet
+  const topHealthConcerns = defaultHealthConcerns;
 
   const handleHealthConcernClick = async (concernName: string) => {
     try {
-      // Log the click
-      const { error } = await supabase
-        .from('health_concern_clicks')
-        .insert([{ health_concern_name: concernName, user_id: (await supabase.auth.getUser()).data.user?.id }]);
-      
-      if (error) {
-        console.error('Error logging health concern click:', error);
-      }
-      
-      // Find the health concern ID or navigate by name
-      const { data: healthConcernData, error: lookupError } = await supabase
-        .from('health_concerns')
-        .select('id')
-        .eq('name', concernName)
-        .maybeSingle();
-      
-      if (lookupError) {
-        console.error('Error looking up health concern:', lookupError);
-      }
-      
-      if (healthConcernData?.id) {
-        navigate(`/health-concerns/${healthConcernData.id}`);
-      } else {
-        navigate(`/health-concerns/${encodeURIComponent(concernName)}`);
-        toast({
-          description: `Navigating to ${concernName}`,
-        });
-      }
+      // Navigate directly using the concern name for now
+      navigate(`/health-concerns/${encodeURIComponent(concernName)}`);
+      toast({
+        description: `Navigating to ${concernName}`,
+      });
     } catch (error) {
       console.error('Error:', error);
     }
