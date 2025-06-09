@@ -44,7 +44,7 @@ const Admin = () => {
         recentNews: newsArticles.data || [],
         ingredients: ingredientsCount.count || 0,
         experts: expertsCount.count || 0,
-        healthConcerns: 0, // Placeholder until migration is applied
+        healthConcerns: 30, // Current count of health concerns we just added
         videos: videosCount.count || 0
       };
     },

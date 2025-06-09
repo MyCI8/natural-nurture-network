@@ -30,6 +30,131 @@ const healthConcernData = {
     name: 'Fatigue',
     brief_description: 'Ongoing tiredness not relieved by rest',
     description: 'Ongoing tiredness not relieved by rest, potentially eased with adaptogens like ashwagandha or improved sleep.'
+  },
+  'Cold': {
+    name: 'Cold',
+    brief_description: 'Common viral infection',
+    description: 'Common viral infection causing runny nose or cough, treatable with vitamin C or elderberry.'
+  },
+  'High Blood Pressure': {
+    name: 'High Blood Pressure',
+    brief_description: 'Elevated blood pressure',
+    description: 'Elevated blood pressure, manageable with hawthorn, a plant-based diet, or stress reduction.'
+  },
+  'Headache': {
+    name: 'Headache',
+    brief_description: 'Pain in the head',
+    description: 'Pain in the head, often due to tension or dehydration, alleviated by magnesium or peppermint oil.'
+  },
+  'Allergies': {
+    name: 'Allergies',
+    brief_description: 'Reactions to pollen or food',
+    description: 'Reactions to pollen or food causing sneezing, treatable with quercetin or local honey.'
+  },
+  'Stress': {
+    name: 'Stress',
+    brief_description: 'Mental or physical tension',
+    description: 'Mental or physical tension, reducible with lavender, yoga, or meditation.'
+  },
+  'Eye Strain': {
+    name: 'Eye Strain',
+    brief_description: 'Fatigue from prolonged screen use',
+    description: 'Fatigue or discomfort from prolonged screen use, eased with eye exercises or bilberry.'
+  },
+  'Back Pain': {
+    name: 'Back Pain',
+    brief_description: 'Discomfort in the back',
+    description: 'Discomfort in the back, often from poor posture, relieved by stretching or anti-inflammatory herbs.'
+  },
+  'Cough': {
+    name: 'Cough',
+    brief_description: 'Frequent throat clearing',
+    description: 'Frequent throat clearing or irritation, soothed with eucalyptus or warm teas.'
+  },
+  'Cancer': {
+    name: 'Cancer',
+    brief_description: 'Serious condition involving cell growth',
+    description: 'Serious condition involving uncontrolled cell growth, supported by immune-boosting remedies like medicinal mushrooms (consult a doctor).'
+  },
+  'Weak Immunity': {
+    name: 'Weak Immunity',
+    brief_description: 'Frequent illness due to low immune function',
+    description: 'Frequent illness due to low immune function, strengthened with zinc or echinacea.'
+  },
+  'Skin Irritation': {
+    name: 'Skin Irritation',
+    brief_description: 'Redness or itching on the skin',
+    description: 'Redness or itching on the skin, treatable with aloe vera or dietary adjustments.'
+  },
+  'Poor Circulation': {
+    name: 'Poor Circulation',
+    brief_description: 'Reduced blood flow',
+    description: 'Reduced blood flow, improved with ginkgo biloba or regular movement.'
+  },
+  'Digestive Issues': {
+    name: 'Digestive Issues',
+    brief_description: 'Problems like bloating or IBS',
+    description: 'Problems like bloating or IBS, managed with probiotics or ginger.'
+  },
+  'Insomnia': {
+    name: 'Insomnia',
+    brief_description: 'Difficulty sleeping',
+    description: 'Difficulty sleeping, addressable with valerian root or a consistent sleep schedule.'
+  },
+  'Hair Loss': {
+    name: 'Hair Loss',
+    brief_description: 'Thinning or loss of hair',
+    description: 'Thinning or loss of hair, potentially supported by biotin or scalp massages.'
+  },
+  'Chronic Fatigue': {
+    name: 'Chronic Fatigue',
+    brief_description: 'Persistent exhaustion not relieved by rest',
+    description: 'Persistent exhaustion not relieved by rest, eased with B vitamins or energy-boosting herbs.'
+  },
+  'Hormonal Imbalances': {
+    name: 'Hormonal Imbalances',
+    brief_description: 'Irregular hormones',
+    description: 'Irregular hormones (e.g., PCOS), balanced with vitex or dietary changes.'
+  },
+  'Immune System Weakness': {
+    name: 'Immune System Weakness',
+    brief_description: 'Frequent infections',
+    description: 'Frequent infections, boosted with elderberry or medicinal mushrooms.'
+  },
+  'Parasites': {
+    name: 'Parasites',
+    brief_description: 'Intestinal parasites causing digestive issues',
+    description: 'Intestinal parasites causing digestive issues, treated with black walnut or wormwood.'
+  },
+  'Skin Conditions': {
+    name: 'Skin Conditions',
+    brief_description: 'Chronic issues like eczema',
+    description: 'Chronic issues like eczema, managed with tea tree oil or omega-3s.'
+  },
+  'Low Energy and Adrenal Fatigue': {
+    name: 'Low Energy and Adrenal Fatigue',
+    brief_description: 'Persistent low energy from adrenal stress',
+    description: 'Persistent low energy from adrenal stress, supported by licorice root or rest.'
+  },
+  'Cardiovascular Health': {
+    name: 'Cardiovascular Health',
+    brief_description: 'Issues like high cholesterol',
+    description: 'Issues like high cholesterol, improved with CoQ10 or plant-based diets.'
+  },
+  'Blood Sugar Imbalances': {
+    name: 'Blood Sugar Imbalances',
+    brief_description: 'Fluctuations like pre-diabetes',
+    description: 'Fluctuations like pre-diabetes, managed with cinnamon or low-glycemic diets.'
+  },
+  'Respiratory Issues': {
+    name: 'Respiratory Issues',
+    brief_description: 'Conditions like asthma',
+    description: 'Conditions like asthma, eased with eucalyptus or breathing exercises.'
+  },
+  'Weight Management': {
+    name: 'Weight Management',
+    brief_description: 'Challenges with weight',
+    description: 'Challenges with weight, supported by green tea extract or exercise.'
   }
 };
 

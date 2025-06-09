@@ -14,7 +14,9 @@ const defaultHealthConcerns = [
   'Sore Throat', 'Depression', 'Joint Pain', 'Anxiety', 'Fatigue', 
   'Cold', 'High Blood Pressure', 'Headache', 'Allergies', 'Stress',
   'Eye Strain', 'Back Pain', 'Cough', 'Cancer', 'Weak Immunity',
-  'Skin Irritation', 'Poor Circulation', 'Digestive Issues', 'Insomnia', 'Hair Loss'
+  'Skin Irritation', 'Poor Circulation', 'Digestive Issues', 'Insomnia', 'Hair Loss',
+  'Chronic Fatigue', 'Hormonal Imbalances', 'Immune System Weakness', 'Parasites', 'Skin Conditions',
+  'Low Energy and Adrenal Fatigue', 'Cardiovascular Health', 'Blood Sugar Imbalances', 'Respiratory Issues', 'Weight Management'
 ];
 
 const HealthConcernsMarquee = () => {

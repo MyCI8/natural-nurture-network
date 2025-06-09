@@ -1,25 +1,32 @@
 
 // Comprehensive health concerns covering symptoms, conditions, health goals, and body systems
 export const healthConcerns = [
-  // Symptoms
-  'Cough', 'Cold', 'Sore Throat', 'Headache', 'Joint Pain', 'Back Pain', 'Eye Strain', 'Fatigue',
-  'Skin Irritation', 'Hair Loss', 'Insomnia', 'Nausea', 'Fever', 'Muscle Pain', 'Bloating',
+  // Core Health Concerns - the ones you specified
+  'Sore Throat', 'Depression', 'Joint Pain', 'Anxiety', 'Fatigue', 
+  'Cold', 'High Blood Pressure', 'Headache', 'Allergies', 'Stress',
+  'Eye Strain', 'Back Pain', 'Cough', 'Cancer', 'Weak Immunity',
+  'Skin Irritation', 'Poor Circulation', 'Digestive Issues', 'Insomnia', 'Hair Loss',
+  'Chronic Fatigue', 'Hormonal Imbalances', 'Immune System Weakness', 'Parasites', 'Skin Conditions',
+  'Low Energy and Adrenal Fatigue', 'Cardiovascular Health', 'Blood Sugar Imbalances', 'Respiratory Issues', 'Weight Management',
   
-  // Conditions
-  'Cancer', 'High Blood Pressure', 'Diabetes', 'Arthritis', 'Asthma', 'Allergies', 'Eczema',
+  // Additional symptoms
+  'Nausea', 'Fever', 'Muscle Pain', 'Bloating',
+  
+  // Additional conditions
+  'Diabetes', 'Arthritis', 'Asthma', 'Eczema',
   'Acne', 'Migraine', 'Fibromyalgia', 'IBS', 'GERD', 'UTI', 'Sinusitis', 'Bronchitis',
   
   // Mental Health & Wellness
-  'Stress', 'Anxiety', 'Depression', 'Mental Clarity', 'Memory Support', 'Focus Enhancement',
+  'Mental Clarity', 'Memory Support', 'Focus Enhancement',
   'Mood Balance', 'Emotional Wellness', 'Sleep Quality', 'Relaxation',
   
   // Health Goals
-  'Immunity Support', 'Weight Management', 'Energy Boost', 'Detoxification', 'Anti-Aging',
+  'Immunity Support', 'Energy Boost', 'Detoxification', 'Anti-Aging',
   'Skin Health', 'Hair Growth', 'Teeth Whitening', 'Breath Freshening', 'Circulation Improvement',
   'Metabolism Boost', 'Hormone Balance', 'Blood Sugar Control', 'Cholesterol Management',
   
   // Body Systems
-  'Digestive Health', 'Cardiovascular Health', 'Respiratory Health', 'Immune System',
+  'Digestive Health', 'Respiratory Health', 'Immune System',
   'Nervous System', 'Reproductive Health', 'Bone Health', 'Liver Health', 'Kidney Health',
   'Thyroid Support', 'Adrenal Support', 'Gut Health', 'Brain Health', 'Heart Health'
 ];
