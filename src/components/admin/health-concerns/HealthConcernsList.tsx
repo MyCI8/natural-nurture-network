@@ -41,6 +41,16 @@ export const HealthConcernsList = ({
 }: HealthConcernsListProps) => {
   const navigate = useNavigate();
 
+  const handleEdit = (concern: HealthConcern) => {
+    // Show alert for now since we're using static data
+    alert(`Editing "${concern.name}" - Database migration pending. Edit functionality will be available after migration is applied.`);
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    // Show alert for now since we're using static data
+    alert(`Deleting "${name}" - Database migration pending. Delete functionality will be available after migration is applied.`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -92,35 +102,18 @@ export const HealthConcernsList = ({
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => navigate(`/admin/health-concerns/${concern.id}`)}
+                      onClick={() => handleEdit(concern)}
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
                     
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button size="sm" variant="ghost">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Health Concern</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{concern.name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteHealthConcernMutation.mutate(concern.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => handleDelete(concern.id, concern.name)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </div>

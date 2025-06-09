@@ -1,10 +1,11 @@
 
 import { useState } from "react";
-import { ArrowLeft, Plus, Search } from "lucide-react";
+import { ArrowLeft, Plus, Search, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useHealthConcernManagement } from "@/hooks/useHealthConcernManagement";
 import { HealthConcernsList } from "@/components/admin/health-concerns/HealthConcernsList";
 
@@ -19,6 +20,11 @@ const ManageHealthConcerns = () => {
     error,
     deleteHealthConcernMutation
   } = useHealthConcernManagement(filter, searchQuery);
+
+  const handleAddNew = () => {
+    // Show a toast for now since we're using static data
+    alert("Database migration pending. New health concerns will be available after migration is applied.");
+  };
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -39,11 +45,18 @@ const ManageHealthConcerns = () => {
               Add, edit, and manage health concerns in your system
             </p>
           </div>
-          <Button onClick={() => navigate("/admin/health-concerns/new")}>
+          <Button onClick={handleAddNew}>
             <Plus className="h-4 w-4 mr-2" />
             Add Health Concern
           </Button>
         </div>
+
+        <Alert className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Currently showing static health concerns data. Database operations will be available after migration is applied.
+          </AlertDescription>
+        </Alert>
 
         <div className="flex gap-4 mb-6">
           <div className="relative flex-1 max-w-sm">
