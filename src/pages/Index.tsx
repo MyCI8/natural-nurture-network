@@ -3,7 +3,7 @@ import Hero from "../components/Hero";
 import Features from "../components/Features";
 import NewsSection from "../components/NewsSection";
 import RemediesSection from "../components/RemediesSection";
-import SymptomsMarquee from "../components/SymptomsMarquee";
+import HealthConcernsMarquee from "../components/HealthConcernsMarquee";
 import { useEffect } from "react";
 
 const Index = () => {
@@ -54,7 +54,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background dark:bg-background overflow-hidden">
       <Hero />
-      <SymptomsMarquee />
+      <HealthConcernsMarquee />
       <NewsSection />
       <RemediesSection />
       <Features />

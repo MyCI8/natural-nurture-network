@@ -2,13 +2,13 @@
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import NewsSection from "@/components/NewsSection";
-import SymptomsMarquee from "@/components/SymptomsMarquee";
+import HealthConcernsMarquee from "@/components/HealthConcernsMarquee";
 
 const Home = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-background overflow-hidden">
       <Hero />
-      <SymptomsMarquee />
+      <HealthConcernsMarquee />
       <NewsSection />
       <Features />
     </div>

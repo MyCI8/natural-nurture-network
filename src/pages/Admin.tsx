@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Outlet, useLocation } from "react-router-dom";
@@ -27,7 +26,6 @@ const Admin = () => {
         newsArticles, 
         ingredientsCount, 
         expertsCount, 
-        symptomsCount,
         videosCount
       ] = await Promise.all([
         supabase.from("profiles").select("id", { count: "exact" }),
@@ -36,7 +34,6 @@ const Admin = () => {
         supabase.from("news_articles").select("*").order("created_at", { ascending: false }).limit(5),
         supabase.from("ingredients").select("id", { count: "exact" }),
         supabase.from("experts").select("id", { count: "exact" }),
-        supabase.from("symptom_details").select("id", { count: "exact" }),
         supabase.from("videos").select("id", { count: "exact" })
       ]);
 
@@ -47,7 +44,7 @@ const Admin = () => {
         recentNews: newsArticles.data || [],
         ingredients: ingredientsCount.count || 0,
         experts: expertsCount.count || 0,
-        symptoms: symptomsCount.count || 0,
+        healthConcerns: 0, // Placeholder until migration is applied
         videos: videosCount.count || 0
       };
     },
