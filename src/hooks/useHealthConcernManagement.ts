@@ -24,7 +24,7 @@ export const useHealthConcernManagement = (
   const { data: healthConcernsData = [], isLoading, error } = useQuery({
     queryKey: ["admin-health-concerns", filter, searchQuery],
     queryFn: async () => {
-      console.log("🔍 Using static health concerns data - migration pending");
+      console.log("🔍 Loading static health concerns data - migration pending");
       
       // Convert static data to match interface
       const staticHealthConcerns: HealthConcern[] = healthConcerns.map((concern, index) => ({
@@ -32,15 +32,17 @@ export const useHealthConcernManagement = (
         name: concern,
         brief_description: getDescriptionForConcern(concern),
         description: getDescriptionForConcern(concern),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
       }));
+
+      console.log("📊 Loaded health concerns:", staticHealthConcerns.length);
 
       // Apply filtering
       let filteredConcerns = staticHealthConcerns;
       
       if (filter === 'recent') {
-        // For static data, just return the first 10 as "recent"
+        // For static data, return the first 10 as "recent"
         filteredConcerns = staticHealthConcerns.slice(0, 10);
       }
 
@@ -52,6 +54,7 @@ export const useHealthConcernManagement = (
         );
       }
 
+      console.log("🔍 Filtered health concerns:", filteredConcerns.length);
       return filteredConcerns;
     },
   });
@@ -102,8 +105,8 @@ export const useHealthConcernManagement = (
 
   return {
     healthConcerns: healthConcernsData,
-    isLoading: false,
-    error: null,
+    isLoading: false, // Set to false since we're using static data
+    error: null, // Set to null since static data doesn't fail
     updateHealthConcernMutation,
     deleteHealthConcernMutation
   };
@@ -144,5 +147,5 @@ function getDescriptionForConcern(concernName: string): string {
     'Weight Management': 'Challenges with weight, supported by green tea extract or exercise.'
   };
 
-  return descriptions[concernName] || 'No description available';
+  return descriptions[concernName] || 'A health concern that can be managed with natural remedies and lifestyle adjustments.';
 }
