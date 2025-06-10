@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -14,6 +15,7 @@ import { RemedyStatusSection } from "@/components/admin/remedies/form/RemedyStat
 import { MultipleImageUpload } from "@/components/remedies/shared/MultipleImageUpload";
 import { SmartLinkInput } from "@/components/remedies/shared/SmartLinkInput";
 import { migrateRemedyImages, filterImagesForSaving } from "@/utils/remedyImageMigration";
+import { healthConcerns } from "@/components/admin/remedies/form/HealthConcernsData";
 
 interface ImageData {
   file?: File;
@@ -27,23 +29,6 @@ interface LinkData {
   description?: string;
   type: 'link' | 'video';
 }
-
-// Database-approved health concerns (matches the symptom_type enum)
-const APPROVED_HEALTH_CONCERNS = [
-  'Cough', 'Cold', 'Sore Throat', 'Headache', 'Joint Pain', 'Back Pain', 'Eye Strain', 'Fatigue',
-  'Skin Irritation', 'Hair Loss', 'Insomnia', 'Nausea', 'Fever', 'Muscle Pain', 'Bloating',
-  'Cancer', 'High Blood Pressure', 'Diabetes', 'Arthritis', 'Asthma', 'Allergies', 'Eczema',
-  'Acne', 'Migraine', 'Fibromyalgia', 'IBS', 'GERD', 'UTI', 'Sinusitis', 'Bronchitis',
-  'Stress', 'Anxiety', 'Depression', 'Mental Clarity', 'Memory Support', 'Focus Enhancement',
-  'Mood Balance', 'Emotional Wellness', 'Sleep Quality', 'Relaxation',
-  'Immunity Support', 'Weight Management', 'Energy Boost', 'Detoxification', 'Anti-Aging',
-  'Skin Health', 'Hair Growth', 'Teeth Whitening', 'Breath Freshening', 'Circulation Improvement',
-  'Metabolism Boost', 'Hormone Balance', 'Blood Sugar Control', 'Cholesterol Management',
-  'Digestive Health', 'Cardiovascular Health', 'Respiratory Health', 'Immune System',
-  'Nervous System', 'Reproductive Health', 'Bone Health', 'Liver Health', 'Kidney Health',
-  'Thyroid Support', 'Adrenal Support', 'Gut Health', 'Brain Health', 'Heart Health',
-  'Poor Circulation'
-] as const;
 
 const EditRemedy = () => {
   const { id } = useParams();
@@ -150,22 +135,27 @@ const EditRemedy = () => {
         });
       }
 
-      // Combine approved concerns from database with user's pending concerns that were previously selected
-      const approvedConcerns = remedy.symptoms || [];
-      const pendingConcernNames = pendingSuggestions.map(s => s.concern_name);
+      // Get all stored health concerns from database (symptoms field)
+      const storedConcerns = remedy.symptoms || [];
       
       // Get previously selected pending concerns from localStorage if available
       const storageKey = `remedy-pending-concerns-${id}`;
       const savedPendingConcerns = localStorage.getItem(storageKey);
       const previouslySelectedPending = savedPendingConcerns ? JSON.parse(savedPendingConcerns) : [];
       
-      // Combine approved + any pending concerns that were previously selected
+      // Get all available health concerns from static data
+      const allAvailableConcerns = [...healthConcerns];
+      
+      // Combine stored concerns with any available concerns (both static and pending)
       const allHealthConcerns = [
-        ...approvedConcerns,
-        ...previouslySelectedPending.filter((concern: string) => pendingConcernNames.includes(concern))
+        ...storedConcerns,
+        ...previouslySelectedPending.filter((concern: string) => 
+          !storedConcerns.includes(concern) && 
+          (allAvailableConcerns.includes(concern) || pendingSuggestions.some(p => p.concern_name === concern))
+        )
       ];
 
-      console.log('Restored health concerns:', allHealthConcerns);
+      console.log('Final restored health concerns:', allHealthConcerns);
       
       setFormData({
         name: remedy.name || "",
@@ -200,16 +190,11 @@ const EditRemedy = () => {
         [field]: value
       };
 
-      // Save pending concerns to localStorage when health_concerns change
+      // Save ALL health concerns to localStorage when they change (both approved and pending)
       if (field === 'health_concerns' && id) {
-        const pendingConcernNames = pendingSuggestions.map(s => s.concern_name);
-        const selectedPendingConcerns = value.filter((concern: string) => 
-          pendingConcernNames.includes(concern)
-        );
-        
-        const storageKey = `remedy-pending-concerns-${id}`;
-        localStorage.setItem(storageKey, JSON.stringify(selectedPendingConcerns));
-        console.log('Saved pending concerns to localStorage:', selectedPendingConcerns);
+        const storageKey = `remedy-health-concerns-${id}`;
+        localStorage.setItem(storageKey, JSON.stringify(value));
+        console.log('Saved ALL health concerns to localStorage:', value);
       }
 
       return newFormData;
@@ -270,6 +255,7 @@ const EditRemedy = () => {
       console.log('Remedy ID:', id);
       console.log('Should publish:', shouldPublish);
       console.log('Current images:', images);
+      console.log('All health concerns to save:', formData.health_concerns);
 
       let finalImageUrl = '';
 
@@ -321,23 +307,24 @@ const EditRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
-      // Only save APPROVED health concerns to the database symptoms field
-      const approvedConcerns = formData.health_concerns.filter(concern => 
-        APPROVED_HEALTH_CONCERNS.includes(concern as any)
-      );
-      const pendingConcerns = formData.health_concerns.filter(concern => 
-        !APPROVED_HEALTH_CONCERNS.includes(concern as any)
+      // Get all available health concerns from static data
+      const allAvailableConcerns = [...healthConcerns];
+      
+      // Separate concerns: Save ALL selected concerns to the symptoms field
+      // The database should store all user selections, not filter them
+      const allSelectedConcerns = formData.health_concerns.filter(concern => 
+        allAvailableConcerns.includes(concern) // Only save concerns that exist in our static data
       );
 
-      console.log('Approved health concerns being saved to DB:', approvedConcerns);
-      console.log('Pending health concerns (kept in UI only):', pendingConcerns);
+      console.log('Health concerns being saved to DB:', allSelectedConcerns);
 
-      // Show info about pending concerns
-      if (pendingConcerns.length > 0) {
-        toast.success(`Remedy saved! Note: ${pendingConcerns.join(', ')} will remain as pending selections until approved by an admin.`);
+      // Show success message
+      if (allSelectedConcerns.length !== formData.health_concerns.length) {
+        const pendingCount = formData.health_concerns.length - allSelectedConcerns.length;
+        toast.success(`Remedy saved! Note: ${pendingCount} pending health concern(s) will be available after admin approval.`);
       }
 
-      // Prepare data for database operation - Only save approved concerns to symptoms field
+      // Prepare data for database operation - Save ALL available concerns to symptoms field
       const remedyData = {
         name: formData.name,
         summary: formData.summary,
@@ -346,7 +333,7 @@ const EditRemedy = () => {
         image_url: finalImageUrl, // ONLY use image_url field
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: approvedConcerns as any, // Only approved concerns go to DB
+        symptoms: allSelectedConcerns as any, // Save ALL selected available concerns
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };
