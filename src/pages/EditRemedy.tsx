@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -150,7 +151,7 @@ const EditRemedy = () => {
         ...storedConcerns,
         ...previouslySelectedPending.filter((concern: string) => 
           !storedConcerns.includes(concern) && 
-          (allAvailableConcerns.includes(concern as any) || pendingSuggestions.some(p => p.concern_name === concern))
+          (allAvailableConcerns.some(staticConcern => staticConcern === concern) || pendingSuggestions.some(p => p.concern_name === concern))
         )
       ];
 
@@ -309,7 +310,7 @@ const EditRemedy = () => {
       // Separate concerns: Save only concerns that exist in our static data
       // Use a type-safe filtering approach
       const allSelectedConcerns = formData.health_concerns.filter(concern => 
-        (healthConcerns as readonly string[]).includes(concern)
+        healthConcerns.some(staticConcern => staticConcern === concern)
       );
 
       console.log('Health concerns being saved to DB:', allSelectedConcerns);
