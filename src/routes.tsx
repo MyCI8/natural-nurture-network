@@ -1,4 +1,3 @@
-
 import { Routes as RouterRoutes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -15,6 +14,7 @@ import IngredientDetail from "./pages/IngredientDetail";
 import ExpertProfile from "./pages/ExpertProfile";
 import Experts from "./pages/Experts";
 import Remedies from "./pages/Remedies";
+import CreateRemedy from "./pages/CreateRemedy";
 import Ingredients from "./pages/Ingredients";
 import News from "./pages/News";
 import NewsArticle from "./pages/NewsArticle";
@@ -54,7 +54,10 @@ const Routes = () => {
         </Route>
         <Route path="experts" element={<Experts />} />
         <Route path="experts/:id" element={<ExpertProfile />} />
-        <Route path="remedies" element={<Remedies />} />
+        <Route path="remedies">
+          <Route index element={<Remedies />} />
+          <Route path="create" element={<CreateRemedy />} />
+        </Route>
         <Route path="ingredients" element={<Ingredients />} />
         <Route path="health-concerns" element={<HealthConcerns />} />
         <Route path="health-concerns/:id" element={<HealthConcernDetail />} />
