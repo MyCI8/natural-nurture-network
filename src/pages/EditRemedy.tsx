@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -307,13 +306,10 @@ const EditRemedy = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
-      // Get all available health concerns from static data
-      const allAvailableConcerns = [...healthConcerns];
-      
-      // Separate concerns: Save ALL selected concerns to the symptoms field
-      // The database should store all user selections, not filter them
+      // Separate concerns: Save only concerns that exist in our static data
+      // Use a safer filtering approach that doesn't rely on strict TypeScript types
       const allSelectedConcerns = formData.health_concerns.filter(concern => 
-        allAvailableConcerns.includes(concern) // Only save concerns that exist in our static data
+        healthConcerns.some(staticConcern => staticConcern === concern)
       );
 
       console.log('Health concerns being saved to DB:', allSelectedConcerns);
