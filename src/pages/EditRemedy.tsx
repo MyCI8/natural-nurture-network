@@ -150,7 +150,7 @@ const EditRemedy = () => {
         ...storedConcerns,
         ...previouslySelectedPending.filter((concern: string) => 
           !storedConcerns.includes(concern) && 
-          (allAvailableConcerns.includes(concern) || pendingSuggestions.some(p => p.concern_name === concern))
+          (allAvailableConcerns.includes(concern as any) || pendingSuggestions.some(p => p.concern_name === concern))
         )
       ];
 
@@ -307,9 +307,9 @@ const EditRemedy = () => {
       }
 
       // Separate concerns: Save only concerns that exist in our static data
-      // Use a safer filtering approach that doesn't rely on strict TypeScript types
+      // Use a type-safe filtering approach
       const allSelectedConcerns = formData.health_concerns.filter(concern => 
-        healthConcerns.some(staticConcern => staticConcern === concern)
+        (healthConcerns as readonly string[]).includes(concern)
       );
 
       console.log('Health concerns being saved to DB:', allSelectedConcerns);
