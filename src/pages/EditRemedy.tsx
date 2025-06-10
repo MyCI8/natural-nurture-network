@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -150,7 +149,7 @@ const EditRemedy = () => {
       const allHealthConcerns = [
         ...storedConcerns,
         ...previouslySelectedPending.filter((concern: string) => 
-          !storedConcerns.includes(concern) && 
+          !storedConcerns.some((stored: string) => stored === concern) && 
           (healthConcerns.some(hc => hc === concern) || pendingSuggestions.some(p => p.concern_name === concern))
         )
       ];
