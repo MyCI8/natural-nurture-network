@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { VideoLoadingState } from "@/components/explore/VideoLoadingState";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const Post = () => {
   const navigate = useNavigate();
@@ -54,7 +53,10 @@ const Post = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!mediaPreview) {
+    console.log('Submit clicked - formState:', formState);
+    console.log('Submit clicked - mediaPreview:', mediaPreview);
+    
+    if (!mediaPreview && !formState.video_url) {
       toast("Please upload a video or image first");
       return;
     }
@@ -82,6 +84,10 @@ const Post = () => {
   if (isLoadingUser) {
     return <VideoLoadingState />;
   }
+
+  // Check if we have valid media for button state
+  const hasValidMedia = !!(mediaPreview || formState.video_url);
+  console.log('Button state - hasValidMedia:', hasValidMedia, 'mediaPreview:', mediaPreview, 'video_url:', formState.video_url);
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20">
@@ -128,28 +134,6 @@ const Post = () => {
             )}
           </div>
           
-          {/* Media preview (if available) */}
-          {mediaPreview && (
-            <div className="rounded-lg overflow-hidden bg-muted">
-              <AspectRatio ratio={4/5} className="max-h-64 mx-auto">
-                {formState.video_url?.includes('video') || formState.video_url?.includes('.mp4') ? (
-                  <video
-                    src={mediaPreview}
-                    className="w-full h-full object-cover"
-                    controls
-                    muted
-                  />
-                ) : (
-                  <img
-                    src={mediaPreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                )}
-              </AspectRatio>
-            </div>
-          )}
-          
           {/* Form fields */}
           <div className="space-y-4">
             <div>
@@ -171,7 +155,7 @@ const Post = () => {
           <Button 
             type="submit" 
             className="w-full py-6 rounded-full flex items-center justify-center gap-2 touch-manipulation"
-            disabled={isSaving || isProcessing || !mediaPreview}
+            disabled={isSaving || isProcessing || !hasValidMedia}
           >
             <UploadIcon className="h-5 w-5" />
             <span>{isProcessing ? "Posting..." : "Post"}</span>

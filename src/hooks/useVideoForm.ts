@@ -29,9 +29,9 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     mediaPreview,
     thumbnailFile,
     isYoutubeLink,
-    handleMediaUpload,
+    handleMediaUpload: originalHandleMediaUpload,
     handleVideoLinkChange,
-    clearMediaFile,
+    clearMediaFile: originalClearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
     setMediaPreview
@@ -41,6 +41,22 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     isSaving,
     saveVideo: save
   } = useVideoSave();
+
+  // Enhanced media upload that syncs with form state
+  const handleMediaUpload = async (file: File) => {
+    console.log('handleMediaUpload called with:', file.name);
+    await originalHandleMediaUpload(file, (url) => {
+      // Update form state with the preview URL
+      handleInputChange({ target: { name: 'video_url', value: url } });
+    });
+  };
+
+  // Enhanced clear that syncs with form state
+  const clearMediaFile = () => {
+    console.log('clearMediaFile called');
+    originalClearMediaFile();
+    handleInputChange({ target: { name: 'video_url', value: '' } });
+  };
 
   // Initialize form state when video is loaded
   useEffect(() => {
@@ -55,6 +71,10 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
   }, [video]);
 
   const saveVideo = async (asDraft = false) => {
+    console.log('saveVideo called with asDraft:', asDraft);
+    console.log('Current formState:', formState);
+    console.log('Current mediaFile:', mediaFile);
+    
     return save(
       videoId, 
       formState, 

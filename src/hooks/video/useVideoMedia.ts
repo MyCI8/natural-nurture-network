@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 // Utility to extract first frame from video file and return a File (jpeg)
@@ -92,23 +93,34 @@ export function useVideoMedia() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   
-  const handleMediaUpload = async (file: File) => {
+  const handleMediaUpload = async (file: File, onVideoUrlChange?: (url: string) => void) => {
+    console.log('Media upload started:', file.name, file.type);
     setMediaFile(file);
-    setMediaPreview(URL.createObjectURL(file));
+    const previewUrl = URL.createObjectURL(file);
+    setMediaPreview(previewUrl);
     setIsYoutubeLink(false);
+    
+    // Update form state immediately with preview URL
+    if (onVideoUrlChange) {
+      onVideoUrlChange(previewUrl);
+      console.log('Updated video_url with preview:', previewUrl);
+    }
     
     // Automatically generate thumbnail
     try {
       let thumbnail: File | null = null;
       
       if (file.type.startsWith('video/')) {
+        console.log('Generating video thumbnail...');
         thumbnail = await generateThumbnailFromVideoFile(file);
       } else if (file.type.startsWith('image/')) {
+        console.log('Generating image thumbnail...');
         thumbnail = await generateThumbnailFromImageFile(file);
       }
       
       if (thumbnail) {
         setThumbnailFile(thumbnail);
+        console.log('Thumbnail generated successfully');
       }
     } catch (err) {
       console.warn('Failed to generate thumbnail:', err);
@@ -116,6 +128,7 @@ export function useVideoMedia() {
   };
 
   const handleVideoLinkChange = (url: string) => {
+    console.log('Video link changed:', url);
     setIsYoutubeLink(true);
     setMediaFile(null);
     
@@ -124,10 +137,12 @@ export function useVideoMedia() {
   };
 
   const clearMediaFile = () => {
+    console.log('Clearing media file');
     if (mediaPreview && !isYoutubeLink) URL.revokeObjectURL(mediaPreview);
     setMediaFile(null);
     setMediaPreview(null);
     setThumbnailFile(null);
+    setIsYoutubeLink(false);
   };
 
   const getYouTubeThumbnail = (url: string): string | null => {

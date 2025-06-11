@@ -38,7 +38,7 @@ export function MediaUploader({
           videoUrl={videoUrl}
           onClearMedia={onClearMedia}
           onMediaUpdate={handleMediaUpdate}
-          compact={compact}
+          compact={false}
         />
       ) : (
         <EnhancedMediaUploader
