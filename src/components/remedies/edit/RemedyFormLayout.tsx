@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { FormActions } from '@/components/shared/form/FormActions';
 
 interface RemedyFormLayoutProps {
   onBack: () => void;
@@ -33,33 +34,11 @@ export const RemedyFormLayout = ({
           
           {/* Save Actions Column */}
           <div className="space-y-6">
-            <div className="space-y-2">
-              <Button 
-                variant="outline" 
-                onClick={() => onSave(false)}
-                className="w-full touch-manipulation"
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                Save as Draft
-              </Button>
-              <Button 
-                onClick={() => onSave(true)}
-                className="w-full touch-manipulation"
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                Publish
-              </Button>
-            </div>
+            <FormActions
+              onSave={onSave}
+              isSaving={isSaving}
+              showPublishOption={true}
+            />
           </div>
         </div>
       </div>
