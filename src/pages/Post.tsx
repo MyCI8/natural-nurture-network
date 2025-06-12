@@ -37,13 +37,15 @@ const Post = () => {
   const {
     formState,
     isSaving,
+    isProcessing: mediaProcessing,
     mediaPreview,
     isYoutubeLink,
     handleInputChange,
     handleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile,
-    saveVideo
+    saveVideo,
+    hasValidMedia
   } = useVideoForm(undefined, "explore");
 
   const goBack = () => {
@@ -53,29 +55,45 @@ const Post = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Submit clicked - formState:', formState);
-    console.log('Submit clicked - mediaPreview:', mediaPreview);
+    console.log('🚀 Post submit clicked - validation check:', {
+      hasValidMedia: hasValidMedia(),
+      mediaPreview: !!mediaPreview,
+      isProcessing: mediaProcessing,
+      formState: {
+        description: formState.description,
+        video_url: formState.video_url
+      }
+    });
     
-    if (!mediaPreview && !formState.video_url) {
-      toast("Please upload a video or image first");
+    // Check if we have valid media ready for upload
+    if (!hasValidMedia()) {
+      toast.error("Please upload a video or image first");
+      return;
+    }
+
+    // Validate description for explore posts
+    if (!formState.description?.trim()) {
+      toast.error("Please add a description for your post");
       return;
     }
 
     setIsProcessing(true);
     
     try {
+      console.log('💾 Starting save process...');
+      
       // Save as published
       const result = await saveVideo(false);
       
       if (result) {
-        toast("Post created successfully!");
+        toast.success("Post created successfully!");
         navigate("/explore");
       } else {
-        toast("Failed to create post");
+        toast.error("Failed to create post");
       }
     } catch (error) {
-      console.error("Error creating post:", error);
-      toast("An error occurred while creating your post");
+      console.error("❌ Error creating post:", error);
+      toast.error("An error occurred while creating your post");
     } finally {
       setIsProcessing(false);
     }
@@ -85,9 +103,17 @@ const Post = () => {
     return <VideoLoadingState />;
   }
 
-  // Check if we have valid media for button state
-  const hasValidMedia = !!(mediaPreview || formState.video_url);
-  console.log('Button state - hasValidMedia:', hasValidMedia, 'mediaPreview:', mediaPreview, 'video_url:', formState.video_url);
+  // Button state logic
+  const isButtonDisabled = isSaving || isProcessing || mediaProcessing || !hasValidMedia();
+  
+  console.log('🔘 Post button state:', {
+    isSaving,
+    isProcessing,
+    mediaProcessing,
+    hasValidMedia: hasValidMedia(),
+    isButtonDisabled,
+    mediaPreview: !!mediaPreview
+  });
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20">
@@ -151,15 +177,27 @@ const Post = () => {
             </div>
           </div>
           
-          {/* Post button */}
+          {/* Post button with improved feedback */}
           <Button 
             type="submit" 
             className="w-full py-6 rounded-full flex items-center justify-center gap-2 touch-manipulation"
-            disabled={isSaving || isProcessing || !hasValidMedia}
+            disabled={isButtonDisabled}
           >
             <UploadIcon className="h-5 w-5" />
-            <span>{isProcessing ? "Posting..." : "Post"}</span>
+            <span>
+              {mediaProcessing ? "Processing..." : 
+               isProcessing ? "Posting..." : 
+               isSaving ? "Saving..." : 
+               "Post"}
+            </span>
           </Button>
+          
+          {/* Debug info in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded">
+              Debug: hasMedia={hasValidMedia().toString()}, processing={mediaProcessing.toString()}, preview={!!mediaPreview}
+            </div>
+          )}
         </form>
       </main>
     </div>

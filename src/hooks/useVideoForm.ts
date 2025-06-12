@@ -29,12 +29,14 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     mediaPreview,
     thumbnailFile,
     isYoutubeLink,
+    isProcessing,
     handleMediaUpload: originalHandleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile: originalClearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    setMediaPreview
+    setMediaPreview,
+    hasValidMedia
   } = useVideoMedia();
   
   const {
@@ -44,16 +46,23 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced media upload that syncs with form state
   const handleMediaUpload = async (file: File) => {
-    console.log('handleMediaUpload called with:', file.name);
-    await originalHandleMediaUpload(file, (url) => {
-      // Update form state with the preview URL
-      handleInputChange({ target: { name: 'video_url', value: url } });
-    });
+    console.log('📤 useVideoForm handleMediaUpload called with:', file.name);
+    
+    try {
+      await originalHandleMediaUpload(file, (filename) => {
+        // Store filename for tracking, not blob URL
+        handleInputChange({ target: { name: 'video_url', value: filename } });
+        console.log('📝 Form video_url updated with filename:', filename);
+      });
+    } catch (error) {
+      console.error('❌ Media upload failed in useVideoForm:', error);
+      throw error; // Re-throw for UI handling
+    }
   };
 
   // Enhanced clear that syncs with form state
   const clearMediaFile = () => {
-    console.log('clearMediaFile called');
+    console.log('🗑️ useVideoForm clearMediaFile called');
     originalClearMediaFile();
     handleInputChange({ target: { name: 'video_url', value: '' } });
   };
@@ -71,9 +80,17 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
   }, [video]);
 
   const saveVideo = async (asDraft = false) => {
-    console.log('saveVideo called with asDraft:', asDraft);
-    console.log('Current formState:', formState);
-    console.log('Current mediaFile:', mediaFile);
+    console.log('💾 saveVideo called with:', {
+      asDraft,
+      hasValidMedia: hasValidMedia(),
+      mediaFile: mediaFile?.name || 'none',
+      formState: {
+        title: formState.title,
+        description: formState.description,
+        video_url: formState.video_url,
+        video_type: formState.video_type
+      }
+    });
     
     return save(
       videoId, 
@@ -90,6 +107,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     formState,
     isLoading,
     isSaving,
+    isProcessing,
     mediaPreview,
     isYoutubeLink,
     articles,
@@ -100,6 +118,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     handleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile,
-    saveVideo
+    saveVideo,
+    hasValidMedia
   };
 }

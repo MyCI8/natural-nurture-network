@@ -92,57 +92,99 @@ export function useVideoMedia() {
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const handleMediaUpload = async (file: File, onVideoUrlChange?: (url: string) => void) => {
-    console.log('Media upload started:', file.name, file.type);
-    setMediaFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    setMediaPreview(previewUrl);
-    setIsYoutubeLink(false);
+    console.log('🎬 Media upload started:', {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+    });
     
-    // Update form state immediately with preview URL
-    if (onVideoUrlChange) {
-      onVideoUrlChange(previewUrl);
-      console.log('Updated video_url with preview:', previewUrl);
-    }
+    setIsProcessing(true);
     
-    // Automatically generate thumbnail
     try {
-      let thumbnail: File | null = null;
+      // Store the actual file object
+      setMediaFile(file);
+      console.log('✅ File object stored:', file);
       
-      if (file.type.startsWith('video/')) {
-        console.log('Generating video thumbnail...');
-        thumbnail = await generateThumbnailFromVideoFile(file);
-      } else if (file.type.startsWith('image/')) {
-        console.log('Generating image thumbnail...');
-        thumbnail = await generateThumbnailFromImageFile(file);
+      // Create preview URL for display only
+      const previewUrl = URL.createObjectURL(file);
+      setMediaPreview(previewUrl);
+      setIsYoutubeLink(false);
+      
+      console.log('🖼️ Preview URL created:', previewUrl);
+      
+      // Set the file name or a placeholder for form state tracking
+      // Don't use blob URL for form state - use file name for tracking
+      if (onVideoUrlChange) {
+        onVideoUrlChange(file.name); // Use filename for tracking, not blob URL
+        console.log('📝 Form state updated with filename:', file.name);
       }
       
-      if (thumbnail) {
-        setThumbnailFile(thumbnail);
-        console.log('Thumbnail generated successfully');
+      // Generate thumbnail in background
+      try {
+        let thumbnail: File | null = null;
+        
+        if (file.type.startsWith('video/')) {
+          console.log('🎥 Generating video thumbnail...');
+          thumbnail = await generateThumbnailFromVideoFile(file);
+        } else if (file.type.startsWith('image/')) {
+          console.log('🖼️ Generating image thumbnail...');
+          thumbnail = await generateThumbnailFromImageFile(file);
+        }
+        
+        if (thumbnail) {
+          setThumbnailFile(thumbnail);
+          console.log('✅ Thumbnail generated successfully:', thumbnail);
+        }
+      } catch (err) {
+        console.warn('⚠️ Thumbnail generation failed, continuing without thumbnail:', err);
+        // Don't fail the upload if thumbnail generation fails
       }
-    } catch (err) {
-      console.warn('Failed to generate thumbnail:', err);
+      
+    } catch (error) {
+      console.error('❌ Media upload failed:', error);
+      // Clean up on error
+      setMediaFile(null);
+      setMediaPreview(null);
+      setThumbnailFile(null);
+      throw error; // Re-throw to handle in UI
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleVideoLinkChange = (url: string) => {
-    console.log('Video link changed:', url);
+    console.log('🔗 Video link changed:', url);
+    
+    // Clean up any existing file data
+    if (mediaPreview && !isYoutubeLink) {
+      URL.revokeObjectURL(mediaPreview);
+    }
+    
     setIsYoutubeLink(true);
     setMediaFile(null);
+    setThumbnailFile(null);
     
     const thumbnailUrl = getYouTubeThumbnail(url);
     setMediaPreview(thumbnailUrl);
+    console.log('📺 YouTube thumbnail set:', thumbnailUrl);
   };
 
   const clearMediaFile = () => {
-    console.log('Clearing media file');
-    if (mediaPreview && !isYoutubeLink) URL.revokeObjectURL(mediaPreview);
+    console.log('🗑️ Clearing all media');
+    
+    // Clean up blob URLs to prevent memory leaks
+    if (mediaPreview && !isYoutubeLink) {
+      URL.revokeObjectURL(mediaPreview);
+    }
+    
     setMediaFile(null);
     setMediaPreview(null);
     setThumbnailFile(null);
     setIsYoutubeLink(false);
+    setIsProcessing(false);
   };
 
   const getYouTubeThumbnail = (url: string): string | null => {
@@ -165,16 +207,32 @@ export function useVideoMedia() {
     return null;
   };
 
+  // Helper function to check if we have valid media ready for upload
+  const hasValidMedia = () => {
+    const hasFile = mediaFile !== null;
+    const hasYouTube = isYoutubeLink && mediaPreview !== null;
+    console.log('🔍 Media validation check:', {
+      hasFile,
+      hasYouTube,
+      isProcessing,
+      mediaFile: mediaFile?.name || 'none',
+      mediaPreview: mediaPreview || 'none'
+    });
+    return (hasFile || hasYouTube) && !isProcessing;
+  };
+
   return {
     mediaFile,
     mediaPreview,
     thumbnailFile,
     isYoutubeLink,
+    isProcessing,
     handleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    setMediaPreview
+    setMediaPreview,
+    hasValidMedia
   };
 }

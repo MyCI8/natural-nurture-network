@@ -51,38 +51,40 @@ export function MediaPreviewCard({
   return (
     <>
       <div className="relative group">
-        {/* Use explore-standard aspect ratio (4:5 for mobile feeds) */}
-        <AspectRatio ratio={4/5} className="bg-muted overflow-hidden rounded-lg max-h-64 mx-auto">
-          {isVideo && !isYoutubeLink ? (
-            <video
-              src={mediaPreview}
-              className="w-full h-full object-cover"
-              controls={false}
-              muted
-              loop
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-            />
-          ) : isImage ? (
-            <img
-              src={mediaPreview}
-              alt="Media preview"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            // YouTube preview
-            <div className="relative w-full h-full">
+        {/* Use mobile-optimized aspect ratio (9:16 for vertical mobile content) */}
+        <div className="w-full max-w-sm mx-auto">
+          <AspectRatio ratio={9/16} className="bg-muted overflow-hidden rounded-lg">
+            {isVideo && !isYoutubeLink ? (
+              <video
+                src={mediaPreview}
+                className="w-full h-full object-cover"
+                controls={false}
+                muted
+                loop
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+              />
+            ) : isImage ? (
               <img
                 src={mediaPreview}
-                alt="YouTube preview"
+                alt="Media preview"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                <Play className="h-12 w-12 text-white" />
+            ) : (
+              // YouTube preview
+              <div className="relative w-full h-full">
+                <img
+                  src={mediaPreview}
+                  alt="YouTube preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <Play className="h-12 w-12 text-white" />
+                </div>
               </div>
-            </div>
-          )}
-        </AspectRatio>
+            )}
+          </AspectRatio>
+        </div>
 
         {/* Media Controls Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
