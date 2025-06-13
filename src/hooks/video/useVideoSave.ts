@@ -7,6 +7,26 @@ import { VideoFormState } from "./useVideoFormState";
 export function useVideoSave() {
   const [isSaving, setIsSaving] = useState(false);
 
+  const verifyStorageBucket = async () => {
+    try {
+      console.log('🪣 Checking storage bucket existence...');
+      const { data: buckets, error } = await supabase.storage.listBuckets();
+      
+      if (error) {
+        console.error('❌ Error checking buckets:', error);
+        return false;
+      }
+      
+      const videoBucket = buckets?.find(bucket => bucket.name === 'video-media');
+      console.log('🪣 Video-media bucket exists:', !!videoBucket);
+      
+      return !!videoBucket;
+    } catch (error) {
+      console.error('❌ Storage bucket verification failed:', error);
+      return false;
+    }
+  };
+
   const saveVideo = async (
     videoId: string | undefined,
     formState: VideoFormState,
@@ -20,6 +40,7 @@ export function useVideoSave() {
       videoId,
       hasMediaFile: !!mediaFile,
       mediaFileName: mediaFile?.name,
+      mediaFileSize: mediaFile ? `${(mediaFile.size / 1024 / 1024).toFixed(2)}MB` : 'N/A',
       isYoutubeLink,
       asDraft,
       formState: {
@@ -55,21 +76,54 @@ export function useVideoSave() {
       if (mediaFile && !isYoutubeLink) {
         console.log('📤 Starting file upload for:', mediaFile.name);
         
+        // Verify storage bucket exists
+        const bucketExists = await verifyStorageBucket();
+        if (!bucketExists) {
+          console.error('❌ Storage bucket "video-media" does not exist');
+          toast.error("Storage configuration error. Please contact support.");
+          return false;
+        }
+        
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
-        // Upload video file to storage
-        console.log('🗂️ Uploading to storage bucket: video-media');
-        const { error: uploadError, data } = await supabase.storage
-          .from('video-media')
-          .upload(fileName, mediaFile);
+        console.log('🗂️ Uploading to storage bucket: video-media, filename:', fileName);
+        
+        // Upload video file to storage with retry logic
+        let uploadAttempts = 0;
+        const maxAttempts = 3;
+        let uploadError = null;
+        let uploadData = null;
 
-        if (uploadError) {
-          console.error('❌ Storage upload failed:', uploadError);
-          throw new Error(`Upload failed: ${uploadError.message}`);
+        while (uploadAttempts < maxAttempts && !uploadData) {
+          uploadAttempts++;
+          console.log(`📤 Upload attempt ${uploadAttempts}/${maxAttempts}`);
+          
+          const { error, data } = await supabase.storage
+            .from('video-media')
+            .upload(fileName, mediaFile, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (error) {
+            uploadError = error;
+            console.error(`❌ Upload attempt ${uploadAttempts} failed:`, error);
+            if (uploadAttempts < maxAttempts) {
+              console.log('⏳ Retrying upload...');
+              await new Promise(resolve => setTimeout(resolve, 1000 * uploadAttempts));
+            }
+          } else {
+            uploadData = data;
+            uploadError = null;
+            console.log('✅ File uploaded successfully:', data);
+          }
         }
 
-        console.log('✅ File uploaded successfully:', data);
+        if (uploadError || !uploadData) {
+          console.error('❌ All upload attempts failed:', uploadError);
+          throw new Error(`Upload failed after ${maxAttempts} attempts: ${uploadError?.message || 'Unknown error'}`);
+        }
 
         videoUrl = supabase.storage
           .from('video-media')
@@ -160,7 +214,18 @@ export function useVideoSave() {
       return result;
     } catch (error: any) {
       console.error("❌ Error saving video:", error);
-      toast.error(`Failed to save: ${error.message}`);
+      
+      // More specific error messages
+      if (error.message?.includes('bucket')) {
+        toast.error("Storage configuration error. Please try again.");
+      } else if (error.message?.includes('network')) {
+        toast.error("Network error. Please check your connection and try again.");
+      } else if (error.message?.includes('size')) {
+        toast.error("File too large. Please choose a smaller file.");
+      } else {
+        toast.error(`Failed to save: ${error.message}`);
+      }
+      
       return false;
     } finally {
       setIsSaving(false);

@@ -30,7 +30,7 @@ export function MediaUploader({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {mediaPreview ? (
         <MediaPreviewCard
           mediaPreview={mediaPreview}
@@ -38,7 +38,7 @@ export function MediaUploader({
           videoUrl={videoUrl}
           onClearMedia={onClearMedia}
           onMediaUpdate={handleMediaUpdate}
-          compact={false}
+          compact={compact}
         />
       ) : (
         <EnhancedMediaUploader

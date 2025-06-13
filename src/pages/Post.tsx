@@ -139,11 +139,11 @@ const Post = () => {
         </div>
       </header>
 
-      {/* Main content area with reduced spacing */}
-      <main className="px-4 py-2">
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Compact Media upload section */}
-          <div className="space-y-2">
+      {/* Main content area with minimal spacing */}
+      <main className="px-4 py-1">
+        <form onSubmit={handleSubmit} className="space-y-2">
+          {/* Ultra compact Media upload section */}
+          <div className="space-y-1">
             <MediaUploader
               mediaPreview={mediaPreview}
               isYoutubeLink={isYoutubeLink}
@@ -162,8 +162,8 @@ const Post = () => {
             )}
           </div>
           
-          {/* Form fields with more prominence */}
-          <div className="space-y-3">
+          {/* Form fields with more prominence and reduced spacing */}
+          <div className="space-y-2 pt-2">
             <div>
               <Label htmlFor="description" className="text-sm font-medium">
                 Description
@@ -179,20 +179,22 @@ const Post = () => {
             </div>
           </div>
           
-          {/* Post button */}
-          <Button 
-            type="submit" 
-            className="w-full py-6 rounded-full flex items-center justify-center gap-2 touch-manipulation"
-            disabled={isButtonDisabled}
-          >
-            <UploadIcon className="h-5 w-5" />
-            <span>
-              {mediaProcessing ? "Processing..." : 
-               isProcessing ? "Posting..." : 
-               isSaving ? "Saving..." : 
-               "Post"}
-            </span>
-          </Button>
+          {/* Post button with reduced top margin */}
+          <div className="pt-2">
+            <Button 
+              type="submit" 
+              className="w-full py-6 rounded-full flex items-center justify-center gap-2 touch-manipulation"
+              disabled={isButtonDisabled}
+            >
+              <UploadIcon className="h-5 w-5" />
+              <span>
+                {mediaProcessing ? "Processing..." : 
+                 isProcessing ? "Posting..." : 
+                 isSaving ? "Saving..." : 
+                 "Post"}
+              </span>
+            </Button>
+          </div>
           
           {/* Debug info in development */}
           {process.env.NODE_ENV === 'development' && (

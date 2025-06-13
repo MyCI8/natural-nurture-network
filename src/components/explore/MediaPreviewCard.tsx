@@ -51,9 +51,9 @@ export function MediaPreviewCard({
   return (
     <>
       <div className="relative group">
-        {/* Compact mobile-optimized preview */}
-        <div className={`w-full ${compact ? 'max-w-44' : 'max-w-sm'} mx-auto`}>
-          <AspectRatio ratio={9/16} className="bg-muted overflow-hidden rounded-lg">
+        {/* Ultra compact mobile-optimized preview */}
+        <div className={`w-full ${compact ? 'max-w-32' : 'max-w-sm'} mx-auto`}>
+          <AspectRatio ratio={compact ? 16/9 : 9/16} className="bg-muted overflow-hidden rounded-lg">
             {isVideo && !isYoutubeLink ? (
               <video
                 src={mediaPreview}
@@ -79,7 +79,7 @@ export function MediaPreviewCard({
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <Play className={`${compact ? 'h-8 w-8' : 'h-12 w-12'} text-white`} />
+                  <Play className={`${compact ? 'h-6 w-6' : 'h-12 w-12'} text-white`} />
                 </div>
               </div>
             )}
@@ -92,7 +92,7 @@ export function MediaPreviewCard({
           {isVideo && !isYoutubeLink && (
             <Button
               variant="secondary"
-              size={compact ? "sm" : "sm"}
+              size="sm"
               className="touch-manipulation text-xs"
               onClick={(e) => {
                 e.stopPropagation();
@@ -115,7 +115,7 @@ export function MediaPreviewCard({
           {!isYoutubeLink && (
             <Button
               variant="secondary"
-              size={compact ? "sm" : "sm"}
+              size="sm"
               className="touch-manipulation text-xs"
               onClick={(e) => {
                 e.stopPropagation();
@@ -130,7 +130,7 @@ export function MediaPreviewCard({
           {/* Delete button */}
           <Button
             variant="destructive"
-            size={compact ? "sm" : "sm"}
+            size="sm"
             className="touch-manipulation text-xs"
             onClick={(e) => {
               e.stopPropagation();
