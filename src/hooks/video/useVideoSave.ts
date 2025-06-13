@@ -169,7 +169,7 @@ export function useVideoSave() {
         description: formState.description,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
-        status: (asDraft ? "draft" : "published") as "draft" | "published" | "archived",
+        status: "published" as "draft" | "published" | "archived", // Always publish for posts
         creator_id: user.id,
         video_type: mappedVideoType,
         related_article_id: formState.related_article_id,

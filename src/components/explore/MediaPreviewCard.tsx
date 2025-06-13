@@ -51,8 +51,8 @@ export function MediaPreviewCard({
   return (
     <>
       <div className="relative group">
-        {/* Ultra compact mobile-optimized preview */}
-        <div className={`w-full ${compact ? 'max-w-32' : 'max-w-sm'} mx-auto`}>
+        {/* Better sized preview - not too small, not too big */}
+        <div className={`w-full ${compact ? 'max-w-48' : 'max-w-sm'} mx-auto`}>
           <AspectRatio ratio={compact ? 16/9 : 9/16} className="bg-muted overflow-hidden rounded-lg">
             {isVideo && !isYoutubeLink ? (
               <video
@@ -79,21 +79,21 @@ export function MediaPreviewCard({
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <Play className={`${compact ? 'h-6 w-6' : 'h-12 w-12'} text-white`} />
+                  <Play className={`${compact ? 'h-8 w-8' : 'h-12 w-12'} text-white`} />
                 </div>
               </div>
             )}
           </AspectRatio>
         </div>
 
-        {/* Media Controls Overlay - smaller buttons for compact mode */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+        {/* Media Controls Overlay */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           {/* Play/Pause for videos */}
           {isVideo && !isYoutubeLink && (
             <Button
               variant="secondary"
               size="sm"
-              className="touch-manipulation text-xs"
+              className="touch-manipulation"
               onClick={(e) => {
                 e.stopPropagation();
                 const video = e.currentTarget.parentElement?.parentElement?.querySelector('video');
@@ -107,7 +107,7 @@ export function MediaPreviewCard({
               }}
             >
               {isPlaying ? <Pause className="h-3 w-3 mr-1" /> : <Play className="h-3 w-3 mr-1" />}
-              {compact ? '' : (isPlaying ? 'Pause' : 'Play')}
+              {isPlaying ? 'Pause' : 'Play'}
             </Button>
           )}
 
@@ -116,14 +116,14 @@ export function MediaPreviewCard({
             <Button
               variant="secondary"
               size="sm"
-              className="touch-manipulation text-xs"
+              className="touch-manipulation"
               onClick={(e) => {
                 e.stopPropagation();
                 handleEdit();
               }}
             >
               {isImage ? <Crop className="h-3 w-3 mr-1" /> : <Edit className="h-3 w-3 mr-1" />}
-              {compact ? '' : (isImage ? 'Crop' : 'Edit')}
+              {isImage ? 'Crop' : 'Edit'}
             </Button>
           )}
 
@@ -131,14 +131,14 @@ export function MediaPreviewCard({
           <Button
             variant="destructive"
             size="sm"
-            className="touch-manipulation text-xs"
+            className="touch-manipulation"
             onClick={(e) => {
               e.stopPropagation();
               onClearMedia();
             }}
           >
             <Trash2 className="h-3 w-3 mr-1" />
-            {compact ? '' : 'Remove'}
+            Remove
           </Button>
         </div>
       </div>

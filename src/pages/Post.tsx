@@ -82,8 +82,8 @@ const Post = () => {
     try {
       console.log('💾 Starting save process as published...');
       
-      // Save as published (changed from false to true)
-      const result = await saveVideo(true);
+      // Save as published
+      const result = await saveVideo(false); // Save as published, not draft
       
       if (result) {
         toast.success("Post created successfully!");
@@ -119,8 +119,8 @@ const Post = () => {
 
   return (
     <div className="min-h-screen bg-background pt-14 pb-20">
-      {/* Header with back button */}
-      <header className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-background z-10">
+      {/* Header with back button - reduced bottom border */}
+      <header className="flex items-center justify-between px-4 py-2 border-b sticky top-0 bg-background z-10">
         <Button 
           variant="ghost" 
           size="icon" 
@@ -139,10 +139,10 @@ const Post = () => {
         </div>
       </header>
 
-      {/* Main content area with minimal spacing */}
-      <main className="px-4 py-1">
-        <form onSubmit={handleSubmit} className="space-y-2">
-          {/* Ultra compact Media upload section */}
+      {/* Main content area with reduced top padding */}
+      <main className="px-4 pt-2 pb-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Media upload section with reduced spacing */}
           <div className="space-y-1">
             <MediaUploader
               mediaPreview={mediaPreview}
@@ -162,8 +162,8 @@ const Post = () => {
             )}
           </div>
           
-          {/* Form fields with more prominence and reduced spacing */}
-          <div className="space-y-2 pt-2">
+          {/* Form fields with reduced spacing */}
+          <div className="space-y-2">
             <div>
               <Label htmlFor="description" className="text-sm font-medium">
                 Description
@@ -179,7 +179,7 @@ const Post = () => {
             </div>
           </div>
           
-          {/* Post button with reduced top margin */}
+          {/* Post button */}
           <div className="pt-2">
             <Button 
               type="submit" 
