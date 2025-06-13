@@ -80,20 +80,22 @@ const Post = () => {
     setIsProcessing(true);
     
     try {
-      console.log('💾 Starting save process...');
+      console.log('💾 Starting save process as published...');
       
-      // Save as published
-      const result = await saveVideo(false);
+      // Save as published (changed from false to true)
+      const result = await saveVideo(true);
       
       if (result) {
         toast.success("Post created successfully!");
         navigate("/explore");
       } else {
-        toast.error("Failed to create post");
+        console.error('❌ Save video returned false/null');
+        toast.error("Failed to create post - please check your connection");
       }
     } catch (error) {
       console.error("❌ Error creating post:", error);
-      toast.error("An error occurred while creating your post");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      toast.error(`Failed to create post: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }
@@ -137,11 +139,11 @@ const Post = () => {
         </div>
       </header>
 
-      {/* Main content area */}
-      <main className="px-4 py-4">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Enhanced Media upload section */}
-          <div className="space-y-4">
+      {/* Main content area with reduced spacing */}
+      <main className="px-4 py-2">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Compact Media upload section */}
+          <div className="space-y-2">
             <MediaUploader
               mediaPreview={mediaPreview}
               isYoutubeLink={isYoutubeLink}
@@ -153,15 +155,15 @@ const Post = () => {
             />
             
             {!mediaPreview && (
-              <div className="text-center text-sm text-muted-foreground">
-                <p>Upload a video or photo to share with advanced editing tools</p>
-                <p className="text-xs mt-1">Drag & drop supported • Crop images • Edit videos</p>
+              <div className="text-center text-xs text-muted-foreground px-2">
+                <p>Upload a video or photo to share</p>
+                <p className="text-[10px] mt-1">Drag & drop • Crop • Edit</p>
               </div>
             )}
           </div>
           
-          {/* Form fields */}
-          <div className="space-y-4">
+          {/* Form fields with more prominence */}
+          <div className="space-y-3">
             <div>
               <Label htmlFor="description" className="text-sm font-medium">
                 Description
@@ -172,12 +174,12 @@ const Post = () => {
                 value={formState.description || ""}
                 onChange={handleInputChange}
                 placeholder="What's on your mind?"
-                className="mt-1 min-h-[100px] touch-manipulation"
+                className="mt-1 min-h-[120px] touch-manipulation"
               />
             </div>
           </div>
           
-          {/* Post button with improved feedback */}
+          {/* Post button */}
           <Button 
             type="submit" 
             className="w-full py-6 rounded-full flex items-center justify-center gap-2 touch-manipulation"
