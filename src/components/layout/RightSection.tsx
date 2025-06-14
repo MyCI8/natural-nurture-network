@@ -1,4 +1,3 @@
-
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,27 +43,30 @@ const RightSection = () => {
     if (path.startsWith('/explore/') && path.split('/').length === 3) {
       const videoId = path.split('/')[2];
       
-      // Show product links if they exist, otherwise show comments
+      // Show comments first and product links pinned to bottom
       if (productLinks.length > 0) {
         return (
           <div className="h-full flex flex-col">
+            {/* Comments Section - Takes most of the space */}
             <div className="border-b pb-3 mb-4">
-              <h3 className="text-lg font-semibold">Featured Products</h3>
+              <h3 className="text-lg font-semibold">Comments</h3>
             </div>
-            <div className="flex-1 overflow-y-auto">
-              <ProductLinksList productLinks={productLinks} />
+            <div className="flex-1 overflow-y-auto mb-4">
+              <Comments videoId={videoId} currentUser={currentUser} />
             </div>
-            <div className="border-t pt-4 mt-4">
-              <h3 className="text-lg font-semibold mb-4">Comments</h3>
-              <div className="max-h-64 overflow-hidden">
-                <Comments videoId={videoId} currentUser={currentUser} />
+            
+            {/* Featured Products - Pinned to bottom */}
+            <div className="border-t pt-4 max-h-64 overflow-hidden">
+              <h3 className="text-lg font-semibold mb-3">Featured Products</h3>
+              <div className="max-h-48 overflow-y-auto">
+                <ProductLinksList productLinks={productLinks} />
               </div>
             </div>
           </div>
         );
       }
       
-      // Fall back to comments if no product links
+      // Fall back to comments only if no product links
       return (
         <div className="h-full flex flex-col">
           <div className="border-b pb-3 mb-4">
