@@ -7,6 +7,7 @@ import { useInView } from 'react-intersection-observer';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Progress } from '@/components/ui/progress';
 import { isImagePost } from './utils/videoPlayerUtils';
+import ProductLinkCard from './ProductLinkCard';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -409,25 +410,19 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
         </>
       )}
 
-      {productLinks.map(link => (
+      {/* Product Link Card - slides up from bottom */}
+      {productLinks.length > 0 && productLinks.map(link => (
         visibleProductLink === link.id && (
           <div
             key={link.id}
-            className="absolute bg-white border border-gray-200 rounded-md shadow-lg p-4 z-20"
-            style={{
-              top: `${link.position_y ?? 50}%`,
-              left: `${link.position_x ?? 50}%`,
-              transform: 'translate(10px, -50%)',
-              width: '200px',
-              maxWidth: '200px'
-            }}
-            onClick={e => e.stopPropagation()}
+            className={`absolute bottom-0 left-0 right-0 z-30 transition-transform duration-300 ease-out ${
+              visibleProductLink === link.id ? 'translate-y-0' : 'translate-y-full'
+            }`}
           >
-            <h4 className="font-semibold text-sm">{link.title}</h4>
-            {link.price && <p className="text-gray-600 text-xs">${link.price.toFixed(2)}</p>}
-            <Button size="sm" className="w-full mt-2" onClick={() => window.open(link.url, '_blank')}>
-              Shop Now
-            </Button>
+            <ProductLinkCard
+              link={link}
+              onClose={() => toggleProductLink?.(link.id)}
+            />
           </div>
         )
       ))}
