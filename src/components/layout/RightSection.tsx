@@ -1,5 +1,5 @@
 
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
@@ -15,10 +15,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { usePostManagement } from "@/hooks/usePostManagement";
 
 const RightSection = () => {
   const location = useLocation();
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { deletePost, isDeleting } = usePostManagement();
 
   // Get current user for comments functionality
   const { data: currentUser } = useQuery({
@@ -72,6 +87,34 @@ const RightSection = () => {
     enabled: !!id && location.pathname.startsWith('/explore/') && location.pathname.split('/').length === 3
   });
 
+  const handleDeletePost = () => {
+    if (id) {
+      deletePost(id);
+      setShowDeleteDialog(false);
+      navigate('/explore');
+    }
+  };
+
+  const handleMenuAction = (action: string) => {
+    switch (action) {
+      case 'delete':
+        setShowDeleteDialog(true);
+        break;
+      case 'edit':
+        if (id) {
+          navigate(`/edit-video/${id}`);
+        }
+        break;
+      case 'report':
+        // TODO: Implement report functionality
+        console.log('Report post');
+        break;
+    }
+  };
+
+  // Check if current user owns the post
+  const isPostOwner = currentUser && video && currentUser.id === video.creator_id;
+
   const renderContent = () => {
     const path = location.pathname;
     
@@ -103,9 +146,19 @@ const RightSection = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Delete Post</DropdownMenuItem>
-                    <DropdownMenuItem>Edit Post</DropdownMenuItem>
-                    <DropdownMenuItem>Report</DropdownMenuItem>
+                    {isPostOwner && (
+                      <>
+                        <DropdownMenuItem onClick={() => handleMenuAction('delete')}>
+                          Delete Post
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleMenuAction('edit')}>
+                          Edit Post
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    <DropdownMenuItem onClick={() => handleMenuAction('report')}>
+                      Report
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -149,9 +202,19 @@ const RightSection = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Delete Post</DropdownMenuItem>
-                  <DropdownMenuItem>Edit Post</DropdownMenuItem>
-                  <DropdownMenuItem>Report</DropdownMenuItem>
+                  {isPostOwner && (
+                    <>
+                      <DropdownMenuItem onClick={() => handleMenuAction('delete')}>
+                        Delete Post
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleMenuAction('edit')}>
+                        Edit Post
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={() => handleMenuAction('report')}>
+                    Report
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -186,11 +249,35 @@ const RightSection = () => {
   };
 
   return (
-    <aside className="w-80 shrink-0 sticky top-0 h-screen overflow-y-auto border-l bg-background/50 backdrop-blur-sm">
-      <div className="p-6 h-full">
-        {renderContent()}
-      </div>
-    </aside>
+    <>
+      <aside className="w-80 shrink-0 sticky top-0 h-screen overflow-y-auto border-l bg-background/50 backdrop-blur-sm">
+        <div className="p-6 h-full">
+          {renderContent()}
+        </div>
+      </aside>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your post and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeletePost}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
