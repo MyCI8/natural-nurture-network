@@ -1,3 +1,4 @@
+
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,6 +6,15 @@ import PopularRemedies from "@/components/remedies/PopularRemedies";
 import LatestVideos from "@/components/news/LatestVideos";
 import Comments from "@/components/video/Comments";
 import ProductLinksList from "@/components/video/ProductLinksList";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const RightSection = () => {
   const location = useLocation();
@@ -17,6 +27,32 @@ const RightSection = () => {
       const { data: { session } } = await supabase.auth.getSession();
       return session?.user || null;
     },
+  });
+
+  // Fetch video data to get creator info
+  const { data: video } = useQuery({
+    queryKey: ['video', id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      const { data, error } = await supabase
+        .from('videos')
+        .select(`
+          *,
+          creator:creator_id (
+            id,
+            username,
+            avatar_url,
+            full_name
+          )
+        `)
+        .eq('id', id)
+        .single();
+        
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id && location.pathname.startsWith('/explore/') && location.pathname.split('/').length === 3
   });
 
   // Fetch product links for explore detail pages
@@ -47,17 +83,41 @@ const RightSection = () => {
       if (productLinks.length > 0) {
         return (
           <div className="h-full flex flex-col">
+            {/* Post Header - Profile info and menu */}
+            {video && (
+              <div className="flex items-center justify-between p-3 border-b">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-10 w-10">
+                    {video.creator?.avatar_url ? (
+                      <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+                    ) : (
+                      <AvatarFallback>{(video.creator?.username || 'U')[0]}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="font-semibold text-sm">{video.creator?.username || 'Unknown User'}</span>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Delete Post</DropdownMenuItem>
+                    <DropdownMenuItem>Edit Post</DropdownMenuItem>
+                    <DropdownMenuItem>Report</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+            
             {/* Comments Section - Takes most of the space */}
-            <div className="border-b pb-3 mb-4">
-              <h3 className="text-lg font-semibold">Comments</h3>
-            </div>
             <div className="flex-1 overflow-y-auto mb-4">
               <Comments videoId={videoId} currentUser={currentUser} />
             </div>
             
             {/* Featured Products - Pinned to bottom */}
             <div className="border-t pt-4 max-h-64 overflow-hidden">
-              <h3 className="text-lg font-semibold mb-3">Featured Products</h3>
               <div className="max-h-48 overflow-y-auto">
                 <ProductLinksList productLinks={productLinks} />
               </div>
@@ -69,9 +129,34 @@ const RightSection = () => {
       // Fall back to comments only if no product links
       return (
         <div className="h-full flex flex-col">
-          <div className="border-b pb-3 mb-4">
-            <h3 className="text-lg font-semibold">Comments</h3>
-          </div>
+          {/* Post Header - Profile info and menu */}
+          {video && (
+            <div className="flex items-center justify-between p-3 border-b">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-10 w-10">
+                  {video.creator?.avatar_url ? (
+                    <AvatarImage src={video.creator.avatar_url} alt={video.creator.username || ''} />
+                  ) : (
+                    <AvatarFallback>{(video.creator?.username || 'U')[0]}</AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="font-semibold text-sm">{video.creator?.username || 'Unknown User'}</span>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Delete Post</DropdownMenuItem>
+                  <DropdownMenuItem>Edit Post</DropdownMenuItem>
+                  <DropdownMenuItem>Report</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+          
           <div className="flex-1 overflow-hidden">
             <Comments videoId={videoId} currentUser={currentUser} />
           </div>
