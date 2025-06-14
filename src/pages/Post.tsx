@@ -1,16 +1,16 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload as UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useVideoForm } from "@/hooks/useVideoForm";
-import { MediaUploader } from "@/components/explore/MediaUploader";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { VideoLoadingState } from "@/components/explore/VideoLoadingState";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import MobileUploadBox from "@/components/explore/MobileUploadBox";
 
 const Post = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const Post = () => {
 
   // Get current user
   const { data: currentUser, isLoading: isLoadingUser } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: ["currentUser"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       return session?.user || null;
@@ -26,7 +26,7 @@ const Post = () => {
   });
 
   // Redirect to auth if not logged in
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isLoadingUser && !currentUser) {
       toast("Please sign in to create a post");
       navigate("/auth");
@@ -38,24 +38,32 @@ const Post = () => {
     formState,
     isSaving,
     isProcessing: mediaProcessing,
-    mediaPreview,
-    isYoutubeLink,
     handleInputChange,
-    handleMediaUpload,
-    handleVideoLinkChange,
     clearMediaFile,
     saveVideo,
-    hasValidMedia
   } = useVideoForm(undefined, "explore");
+
+  // New: hold the uploaded file & URL to pass into saveVideo
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [uploadedFilename, setUploadedFilename] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const goBack = () => {
     navigate(-1);
   };
 
+  // Callback for unified uploader
+  const handleUploadSuccess = (url: string, filename: string, file: File) => {
+    setUploadedUrl(url);
+    setUploadedFilename(filename);
+    setUploadedFile(file);
+    handleInputChange({ target: { name: "video_url", value: url } });
+    toast.success("Media uploaded! Please add your description and post.");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!hasValidMedia()) {
+    if (!uploadedUrl) {
       toast.error("Please upload a video or image first");
       return;
     }
@@ -66,8 +74,7 @@ const Post = () => {
     setIsProcessing(true);
 
     try {
-      const result = await saveVideo(false); // Save as published, not draft
-
+      const result = await saveVideo(false, uploadedFile); // Save as published, not draft
       if (result) {
         toast.success("Post created successfully!");
         navigate("/explore");
@@ -87,15 +94,15 @@ const Post = () => {
   }
 
   // Button state logic
-  const isButtonDisabled = isSaving || isProcessing || mediaProcessing || !hasValidMedia();
+  const isButtonDisabled = isSaving || isProcessing || mediaProcessing || !uploadedUrl;
 
   return (
     <div className="min-h-screen bg-background pt-8 pb-16 flex flex-col">
-      {/* Header with back button - reduced bottom border and more compact */}
+      {/* Header with back button */}
       <header className="flex items-center px-4 py-1 border-b sticky top-0 bg-background z-10 gap-2" style={{ minHeight: "48px" }}>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={goBack}
           className="rounded-full h-10 w-10 touch-manipulation"
           aria-label="Back"
@@ -109,29 +116,23 @@ const Post = () => {
       {/* Main content area */}
       <main className="flex-1 px-2 sm:px-4 pt-2 pb-4 flex flex-col items-center">
         <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-2">
-          {/* Media upload section - responsive, compact, tight spacing */}
+          {/* New MobileUploadBox */}
           <div className="w-full flex justify-center mt-0 mb-2">
-            <MediaUploader
-              mediaPreview={mediaPreview}
-              isYoutubeLink={isYoutubeLink}
-              videoUrl={formState.video_url}
-              onMediaUpload={handleMediaUpload}
-              onVideoLinkChange={handleVideoLinkChange}
-              onClearMedia={clearMediaFile}
-              compact={true}
-            />
+            <MobileUploadBox onUploadSuccess={handleUploadSuccess} />
           </div>
 
-          {!mediaPreview && (
+          {!uploadedUrl && (
             <div className="text-center text-xs text-muted-foreground px-2">
               <p>Upload a video or photo to share</p>
-              <p className="text-[10px] mt-1">Drag & drop • Crop • Edit — Max 50MB</p>
+              <p className="text-[10px] mt-1">Tap to select • Crop • Edit — Max 50MB</p>
             </div>
           )}
 
           {/* Form field: Description */}
           <div>
-            <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+            <Label htmlFor="description" className="text-sm font-medium">
+              Description
+            </Label>
             <Textarea
               id="description"
               name="description"
@@ -147,17 +148,20 @@ const Post = () => {
 
           {/* Post button and progress state */}
           <div className="pt-1">
-            <Button 
+            <Button
               type="submit"
               className="w-full py-5 rounded-full flex items-center justify-center gap-2 touch-manipulation text-base"
               disabled={isButtonDisabled}
             >
               <UploadIcon className="h-5 w-5" />
               <span>
-                {mediaProcessing ? "Processing..." :
-                 isProcessing ? "Posting..." :
-                 isSaving ? "Saving..." :
-                 "Post"}
+                {mediaProcessing
+                  ? "Processing..."
+                  : isProcessing
+                  ? "Posting..."
+                  : isSaving
+                  ? "Saving..."
+                  : "Post"}
               </span>
             </Button>
           </div>
@@ -170,13 +174,6 @@ const Post = () => {
               </span>
             </div>
           )}
-
-          {/* Debug info in development */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-muted-foreground mt-1 p-1 bg-muted rounded">
-              Debug: hasMedia={hasValidMedia().toString()}, processing={mediaProcessing.toString()}, preview={!!mediaPreview}
-            </div>
-          )}
         </form>
       </main>
     </div>
@@ -184,4 +181,3 @@ const Post = () => {
 };
 
 export default Post;
-
