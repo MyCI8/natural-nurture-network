@@ -1,7 +1,11 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { VideoFormState } from "./useVideoFormState";
+
+// Types for video status
+type VideoStatus = "draft" | "published" | "archived";
 
 export function useVideoSave() {
   const [isSaving, setIsSaving] = useState(false);
@@ -14,17 +18,16 @@ export function useVideoSave() {
       let videoBucket = buckets?.find(bucket => bucket.name === 'video-media');
 
       if (!videoBucket) {
-        // Create bucket if not exists.
-        const { data: createData, error: createError } = await supabase.storage.createBucket('video-media', {
+        // Only create, don't expect as full Bucket object
+        const { error: createError } = await supabase.storage.createBucket('video-media', {
           public: true,
         });
         if (createError) {
           toast.error("Failed to create storage bucket. Please contact support.");
           return false;
         }
-        videoBucket = createData;
       }
-      return !!videoBucket;
+      return true;
     } catch (err) {
       console.error('❌ Bucket check/create failed:', err);
       toast.error("Storage setup failed. Contact support.");
@@ -130,19 +133,22 @@ export function useVideoSave() {
         const words = formState.description.split(' ');
         title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
       }
+
       // PATCH: always published for post page (+type mapping)
+      const statusVal: VideoStatus = asDraft ? "draft" : "published";
+      // Ensure tags & location are null if missing, to satisfy types
       const videoData = {
         title: title || "Untitled Post",
         description: formState.description,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
-        status: asDraft ? "draft" : "published",
+        status: statusVal,
         creator_id: user.id,
         video_type: submitType,
-        related_article_id: formState.related_article_id,
+        related_article_id: formState.related_article_id ?? null,
         show_in_latest: formState.show_in_latest,
-        location: formState.location,
-        tags: formState.tags
+        location: formState.location ?? null,
+        tags: formState.tags ?? null,
       };
 
       let result;
