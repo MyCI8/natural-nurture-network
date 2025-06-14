@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { useVideoFetch } from "./video/useVideoFetch";
 import { useVideoFormState } from "./video/useVideoFormState";
@@ -50,10 +49,10 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     console.log('📤 useVideoForm handleMediaUpload called with:', file.name);
     
     try {
-      const filename = await originalHandleMediaUpload(file);
-      if (filename) {
-        handleInputChange({ target: { name: 'video_url', value: filename } });
-        console.log('📝 Form video_url updated with filename:', filename);
+      const mediaData = await originalHandleMediaUpload(file);
+      if (mediaData) {
+        handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
+        console.log('📝 Form video_url updated with previewUrl:', mediaData.previewUrl);
         toast.success("Media ready for preview", {
           description: `Your ${file.type.startsWith('video/') ? 'video' : 'image'} has been processed.`,
         });
@@ -63,7 +62,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       toast.error("Upload failed", {
         description: "There was an error processing your media.",
       });
-      throw error; // Re-throw for UI handling
+      // No re-throw, error is handled with a toast here.
     }
   };
 

@@ -54,8 +54,8 @@ export function useVideoSave() {
       let videoUrl = formState.video_url;
       let thumbnailUrl = formState.thumbnail_url;
 
-      // Only handle file upload if we have a file and no existing URL
-      if (mediaFile && !isYoutubeLink && !videoUrl?.startsWith('http')) {
+      // Only handle file upload if we have a file (and it's not a youtube link)
+      if (mediaFile && !isYoutubeLink) {
         console.log('📤 Starting file upload to Supabase storage bucket: video-media');
         console.log('File details:', { name: mediaFile.name, size: mediaFile.size, type: mediaFile.type });
         

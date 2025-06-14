@@ -93,7 +93,7 @@ export function useVideoMedia() {
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const handleMediaUpload = async (file: File): Promise<string | null> => {
+  const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string }> => {
     console.log('🎬 Media upload started:', {
       fileName: file.name,
       fileType: file.type,
@@ -134,7 +134,7 @@ export function useVideoMedia() {
         console.warn('⚠️ Thumbnail generation failed, continuing without thumbnail:', err);
       }
 
-      return file.name;
+      return { filename: file.name, previewUrl };
       
     } catch (error) {
       console.error('❌ Media upload failed:', error);
