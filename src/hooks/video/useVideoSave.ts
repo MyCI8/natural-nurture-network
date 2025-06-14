@@ -125,8 +125,6 @@ export function useVideoSave() {
         video_type: submitType,
         related_article_id: formState.related_article_id ?? null,
         show_in_latest: formState.show_in_latest,
-        location: formState.location ?? null,
-        tags: formState.tags ?? null,
       };
 
       console.log('💾 Saving video data to database:', videoData);

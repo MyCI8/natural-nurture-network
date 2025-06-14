@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Video } from "@/types/video";
 
@@ -12,8 +11,6 @@ export interface VideoFormState {
   status: string;
   related_article_id: string | null;
   show_in_latest: boolean;
-  location?: string | null;
-  tags?: string[] | null;
 }
 
 export function useVideoFormState(videoId?: string, defaultVideoType: "news" | "explore" | "general" = "explore") {
@@ -26,8 +23,6 @@ export function useVideoFormState(videoId?: string, defaultVideoType: "news" | "
     status: "draft",
     related_article_id: null,
     show_in_latest: false,
-    location: null,
-    tags: null,
   };
 
   const [formState, setFormState] = useState<VideoFormState>(initialState);
@@ -64,8 +59,6 @@ export function useVideoFormState(videoId?: string, defaultVideoType: "news" | "
       status: video.status || "draft",
       related_article_id: video.related_article_id,
       show_in_latest: video.show_in_latest || false,
-      location: video.location || null,
-      tags: video.tags || null,
     });
   };
 

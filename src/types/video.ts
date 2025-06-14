@@ -1,4 +1,3 @@
-
 export interface Video {
   id: string;
   title: string;
@@ -30,8 +29,6 @@ export interface Video {
   
   // Additional fields for social media style features
   comments_count?: number;
-  location?: string | null;
-  tags?: string[] | null;
   mentions?: string[] | null;
   is_liked_by_user?: boolean;
   is_bookmarked?: boolean;
