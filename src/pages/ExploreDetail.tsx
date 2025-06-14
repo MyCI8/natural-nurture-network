@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -9,15 +10,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Swipeable } from '@/components/ui/swipeable';
 import { Progress } from '@/components/ui/progress';
 import { Video } from '@/types/video';
-import { X, MoreHorizontal } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileReelsView from '@/components/video/MobileReelsView';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -178,23 +173,6 @@ const ExploreDetail = () => {
     }
   };
 
-  const handleMenuAction = (action: string) => {
-    switch (action) {
-      case 'delete':
-        setShowDeleteDialog(true);
-        break;
-      case 'edit':
-        if (id) {
-          navigate(`/edit-video/${id}`);
-        }
-        break;
-      case 'report':
-        // TODO: Implement report functionality
-        console.log('Report post');
-        break;
-    }
-  };
-
   // Check if current user owns the post
   const isPostOwner = currentUser && video && currentUser.id === video.creator_id;
 
@@ -235,33 +213,6 @@ const ExploreDetail = () => {
         className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
       >
         <div className="absolute top-4 right-4 z-50 flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full bg-black/30 border-none hover:bg-black/50 text-white"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="solid-dropdown">
-              {isPostOwner && (
-                <>
-                  <DropdownMenuItem onClick={() => handleMenuAction('delete')}>
-                    Delete Post
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleMenuAction('edit')}>
-                    Edit Post
-                  </DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuItem onClick={() => handleMenuAction('report')}>
-                Report
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
           <Button
             variant="outline"
             size="icon"
