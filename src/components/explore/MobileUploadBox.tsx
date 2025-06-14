@@ -78,7 +78,8 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
 
   const handleSelectFile = async (file: File) => {
     cleanupPreview();
-    // Validate size/type
+    
+    // Validate file type
     if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
       toast({
         title: "Invalid file type",
@@ -87,6 +88,8 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
       });
       return;
     }
+    
+    // Validate file size
     if (file.size > maxSizeMB * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -95,105 +98,76 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
       });
       return;
     }
+    
     const previewUrl = URL.createObjectURL(file);
     dispatch({ type: "SELECT_FILE", file, previewUrl });
   };
 
   const handleUpload = async () => {
     if (!state.file) return;
+    
     dispatch({ type: "START_UPLOAD" });
     
     try {
-      // Check if bucket exists first
-      const { data: buckets, error: bucketsErr } = await supabase.storage.listBuckets();
-      if (bucketsErr) {
-        console.error("Bucket list error:", bucketsErr);
-        dispatch({ type: "FAIL", error: "Storage access denied. Please contact support." });
+      // Check authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        dispatch({ type: "FAIL", error: "Please sign in to upload files" });
         toast({
-          title: "Storage Error",
-          description: "Cannot access storage. Admin setup may be required.",
+          title: "Authentication Required",
+          description: "Please sign in to upload files.",
           variant: "destructive",
         });
         return;
       }
 
-      // Check if video-media bucket exists
-      const videoBucket = buckets?.find((b: any) => b.name === "video-media");
-      if (!videoBucket) {
-        // Try to create bucket, but handle RLS errors gracefully
-        const { error: createErr } = await supabase.storage.createBucket("video-media", { public: true });
-        if (createErr) {
-          console.error("Bucket creation failed:", createErr);
-          let errorMsg = "Storage setup incomplete.";
-          if (createErr.message?.toLowerCase().includes("rls") || createErr.message?.toLowerCase().includes("policy")) {
-            errorMsg = "Storage bucket needs admin setup. Please contact support.";
-          }
-          dispatch({ type: "FAIL", error: errorMsg });
-          toast({
-            title: "Storage Setup Required",
-            description: errorMsg,
-            variant: "destructive",
-          });
-          return;
-        }
-      }
+      dispatch({ type: "PROGRESS", value: 25 });
 
-      // Generate unique filename
+      // Generate unique filename with user folder structure
       const ext = state.file.name.split(".").pop();
-      const filename = `${crypto.randomUUID()}.${ext}`;
+      const userId = session.user.id;
+      const filename = `${userId}/${crypto.randomUUID()}.${ext}`;
       
-      // Attempt upload with retry logic
-      let uploadSuccess = false;
-      let lastError = "";
-      
-      for (let attempt = 1; attempt <= 3 && !uploadSuccess; attempt++) {
-        try {
-          dispatch({ type: "PROGRESS", value: Math.min(attempt * 25, 75) });
-          
-          const { data, error } = await supabase.storage
-            .from("video-media")
-            .upload(filename, state.file, {
-              cacheControl: "3600",
-              upsert: false
-            });
+      dispatch({ type: "PROGRESS", value: 50 });
 
-          if (error) {
-            lastError = error.message;
-            console.error(`Upload attempt ${attempt} failed:`, error);
-            if (attempt < 3) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-            }
-          } else {
-            uploadSuccess = true;
-            dispatch({ type: "PROGRESS", value: 100 });
-            
-            // Get public URL
-            const publicUrl = supabase.storage.from("video-media").getPublicUrl(filename).data.publicUrl;
-            
-            dispatch({ type: "DONE" });
-            onUploadSuccess(publicUrl, filename, state.file);
-            toast({
-              title: "Upload Complete!",
-              description: "Your media is ready to post.",
-            });
-          }
-        } catch (err: any) {
-          lastError = err.message || "Network error";
-          console.error(`Upload attempt ${attempt} error:`, err);
-        }
-      }
+      // Upload file to the pre-configured bucket
+      const { data, error } = await supabase.storage
+        .from("video-media")
+        .upload(filename, state.file, {
+          cacheControl: "3600",
+          upsert: false
+        });
 
-      if (!uploadSuccess) {
-        dispatch({ type: "FAIL", error: lastError || "Upload failed after 3 attempts" });
+      if (error) {
+        console.error("Upload error:", error);
+        dispatch({ type: "FAIL", error: error.message });
         toast({
           title: "Upload Failed",
-          description: "Please check your connection and try again.",
+          description: error.message,
           variant: "destructive",
         });
+        return;
       }
 
+      dispatch({ type: "PROGRESS", value: 90 });
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from("video-media")
+        .getPublicUrl(filename);
+      
+      dispatch({ type: "PROGRESS", value: 100 });
+      dispatch({ type: "DONE" });
+      
+      onUploadSuccess(publicUrlData.publicUrl, filename, state.file);
+      toast({
+        title: "Upload Complete!",
+        description: "Your media is ready to post.",
+      });
+
     } catch (error: any) {
-      dispatch({ type: "FAIL", error: error?.message || "Unexpected error" });
+      console.error("Upload error:", error);
+      dispatch({ type: "FAIL", error: error?.message || "Upload failed" });
       toast({
         title: "Upload Error",
         description: error?.message || "Something went wrong.",
@@ -214,9 +188,16 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
           role="button"
           tabIndex={0}
           className={`border-2 border-dashed rounded-lg w-full max-w-xs mx-auto p-8 flex flex-col items-center text-center transition-all duration-200 
-            bg-background min-h-[216px] ${state.status === "error" ? "border-destructive" : "hover:border-primary/60"}
+            bg-background min-h-[216px] cursor-pointer ${
+              state.status === "error" ? "border-destructive" : "border-border hover:border-primary/60"
+            }
           `}
           onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              fileInputRef.current?.click();
+            }
+          }}
         >
           <Upload className="h-8 w-8 text-primary mb-2" />
           <div className="text-lg font-medium">
@@ -235,7 +216,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
             }}
           />
           {state.status === "error" && (
-            <div className="mt-2 text-red-700 text-xs">{state.error}</div>
+            <div className="mt-2 text-destructive text-xs">{state.error}</div>
           )}
         </div>
       ) : (
@@ -248,7 +229,6 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
                   className="w-full h-full object-contain"
                   controls
                   preload="metadata"
-                  poster=""
                   tabIndex={-1}
                 />
               ) : (
@@ -267,7 +247,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
           <Button
             size="icon"
             variant="destructive"
-            className="absolute top-2 right-2 z-20 rounded-full bg-destructive/90 bg-blur touch-manipulation"
+            className="absolute top-2 right-2 z-20 rounded-full bg-destructive/90 backdrop-blur-sm touch-manipulation"
             type="button"
             aria-label="Remove"
             onClick={handleRemove}
@@ -278,7 +258,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
           {/* Upload button - only show when ready */}
           {state.status === "ready" && (
             <Button
-              className="mt-4 w-full rounded-full"
+              className="mt-4 w-full rounded-full touch-manipulation"
               onClick={handleUpload}
               disabled={false}
               type="button"
@@ -289,7 +269,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
           
           {/* Progress indicator - only show when uploading */}
           {state.status === "uploading" && (
-            <div className="absolute inset-x-0 bottom-6 flex flex-col items-center">
+            <div className="mt-4 flex flex-col items-center">
               <Loader2 className="h-5 w-5 animate-spin text-primary mb-2" />
               <Progress value={state.progress} className="w-full h-2 rounded" />
               <span className="text-xs text-muted-foreground mt-1">{state.progress}%</span>
@@ -298,7 +278,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
           
           {/* Success state */}
           {state.status === "uploaded" && (
-            <div className="absolute inset-x-0 bottom-2 flex flex-col items-center">
+            <div className="mt-4 flex flex-col items-center">
               <span className="text-xs text-green-600">
                 Upload complete!
               </span>
