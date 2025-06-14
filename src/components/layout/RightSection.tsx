@@ -1,13 +1,15 @@
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
 import LatestVideos from "@/components/news/LatestVideos";
 import Comments from "@/components/video/Comments";
+import ProductLinksList from "@/components/video/ProductLinksList";
 
 const RightSection = () => {
   const location = useLocation();
+  const { id } = useParams();
 
   // Get current user for comments functionality
   const { data: currentUser } = useQuery({
@@ -18,12 +20,51 @@ const RightSection = () => {
     },
   });
 
+  // Fetch product links for explore detail pages
+  const { data: productLinks = [] } = useQuery({
+    queryKey: ['videoProductLinks', id],
+    queryFn: async () => {
+      if (!id) return [];
+      
+      const { data, error } = await supabase
+        .from('video_product_links')
+        .select('*')
+        .eq('video_id', id);
+        
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id && location.pathname.startsWith('/explore/') && location.pathname.split('/').length === 3
+  });
+
   const renderContent = () => {
     const path = location.pathname;
     
     // Check if we're on an explore video detail page
     if (path.startsWith('/explore/') && path.split('/').length === 3) {
       const videoId = path.split('/')[2];
+      
+      // Show product links if they exist, otherwise show comments
+      if (productLinks.length > 0) {
+        return (
+          <div className="h-full flex flex-col">
+            <div className="border-b pb-3 mb-4">
+              <h3 className="text-lg font-semibold">Featured Products</h3>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <ProductLinksList productLinks={productLinks} />
+            </div>
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-lg font-semibold mb-4">Comments</h3>
+              <div className="max-h-64 overflow-hidden">
+                <Comments videoId={videoId} currentUser={currentUser} />
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      // Fall back to comments if no product links
       return (
         <div className="h-full flex flex-col">
           <div className="border-b pb-3 mb-4">

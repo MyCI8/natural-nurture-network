@@ -233,20 +233,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           <MessageCircle className="h-6 w-6" />
         </Button>
 
-        {productLinks.length > 0 && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleProductLink?.(productLinks[0]?.id);
-            }}
-          >
-            <ShoppingCart className="h-6 w-6" />
-          </Button>
-        )}
-
         <Button
           variant="ghost"
           size="icon"
@@ -383,21 +369,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
               </Button>
             )}
-
-            {productLinks.length > 0 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation"
-                onClick={e => {
-                  e.stopPropagation();
-                  toggleProductLink?.(productLinks[0]?.id);
-                }}
-                aria-label="Show product links"
-              >
-                <ShoppingCart className="h-5 w-5" />
-              </Button>
-            )}
           </div>
 
           {showControls && (
@@ -409,23 +380,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
           )}
         </>
       )}
-
-      {/* Product Link Card - slides up from bottom */}
-      {productLinks.length > 0 && productLinks.map(link => (
-        visibleProductLink === link.id && (
-          <div
-            key={link.id}
-            className={`absolute bottom-0 left-0 right-0 z-30 transition-transform duration-300 ease-out ${
-              visibleProductLink === link.id ? 'translate-y-0' : 'translate-y-full'
-            }`}
-          >
-            <ProductLinkCard
-              link={link}
-              onClose={() => toggleProductLink?.(link.id)}
-            />
-          </div>
-        )
-      ))}
 
       {isFullscreen && !hideControls && (
         <Button
