@@ -7,7 +7,7 @@ interface MediaUploaderProps {
   mediaPreview: string | null;
   isYoutubeLink: boolean;
   videoUrl: string;
-  onMediaUpload: (file: File) => void;
+  onMediaUpload: (file: File) => Promise<void>;
   onVideoLinkChange: (url: string) => void;
   onClearMedia: () => void;
   compact?: boolean;

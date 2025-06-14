@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,7 @@ interface VideoDetailsFormProps {
   videoId?: string;
   isSaving: boolean;
   handleInputChange: (name: string, value: any) => void;
-  handleMediaUpload: (file: File) => void;
+  handleMediaUpload: (file: File) => Promise<void>;
   handleVideoLinkChange: (url: string) => void;
   clearMediaFile: () => void;
   handleSubmit: (e: React.FormEvent) => Promise<void>;

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from "react";
 import { Upload, Video, Image, FileX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface EnhancedMediaUploaderProps {
-  onMediaUpload: (file: File) => void;
+  onMediaUpload: (file: File) => Promise<void>;
   onVideoLinkChange: (url: string) => void;
   compact?: boolean;
   maxSizeMB?: number;
@@ -95,7 +94,7 @@ export function EnhancedMediaUploader({
       clearInterval(progressInterval);
       setUploadProgress(100);
       
-      onMediaUpload(processedFile);
+      await onMediaUpload(processedFile);
       
       toast({
         title: "Media uploaded successfully",
@@ -111,7 +110,7 @@ export function EnhancedMediaUploader({
       setIsProcessing(false);
       setUploadProgress(0);
     }
-  }, [onMediaUpload, toast, validateFile]);
+  }, [onMediaUpload, toast, validateFile, acceptedTypes, maxSizeMB]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
