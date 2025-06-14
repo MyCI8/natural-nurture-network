@@ -1,13 +1,40 @@
 
 import { useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
 import LatestVideos from "@/components/news/LatestVideos";
+import Comments from "@/components/video/Comments";
 
 const RightSection = () => {
   const location = useLocation();
 
+  // Get current user for comments functionality
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session?.user || null;
+    },
+  });
+
   const renderContent = () => {
     const path = location.pathname;
+    
+    // Check if we're on an explore video detail page
+    if (path.startsWith('/explore/') && path.split('/').length === 3) {
+      const videoId = path.split('/')[2];
+      return (
+        <div className="h-full flex flex-col">
+          <div className="border-b pb-3 mb-4">
+            <h3 className="text-lg font-semibold">Comments</h3>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <Comments videoId={videoId} currentUser={currentUser} />
+          </div>
+        </div>
+      );
+    }
     
     if (path === '/remedies' || path.startsWith('/remedies/')) {
       return <PopularRemedies />;
@@ -32,7 +59,7 @@ const RightSection = () => {
 
   return (
     <aside className="w-80 shrink-0 sticky top-0 h-screen overflow-y-auto border-l bg-background/50 backdrop-blur-sm">
-      <div className="p-6">
+      <div className="p-6 h-full">
         {renderContent()}
       </div>
     </aside>
