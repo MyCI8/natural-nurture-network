@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload as UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ import MobileUploadBox from "@/components/explore/MobileUploadBox";
 
 const Post = () => {
   const navigate = useNavigate();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // Get current user
   const { data: currentUser, isLoading: isLoadingUser } = useQuery({
@@ -77,21 +76,17 @@ const Post = () => {
       return;
     }
     
-    setIsProcessing(true);
-
     try {
       const result = await saveVideo();
       if (result) {
         toast.success("Post created successfully!");
         navigate("/explore");
       } else {
-        toast.error("Failed to create post - please check your connection");
+        // Specific error is toasted from the hook
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       toast.error(`Failed to create post: ${errorMessage}`);
-    } finally {
-      setIsProcessing(false);
     }
   };
 
@@ -100,7 +95,7 @@ const Post = () => {
   }
 
   // Button state logic
-  const isButtonDisabled = isSaving || isProcessing || mediaProcessing || !hasValidMedia();
+  const isButtonDisabled = isSaving || mediaProcessing || !hasValidMedia();
 
   return (
     <div className="min-h-screen bg-background pt-8 pb-16 flex flex-col">
@@ -163,20 +158,18 @@ const Post = () => {
               <span>
                 {mediaProcessing
                   ? "Processing..."
-                  : isProcessing
-                  ? "Posting..."
                   : isSaving
-                  ? "Saving..."
+                  ? "Posting..."
                   : "Post"}
               </span>
             </Button>
           </div>
 
           {/* Show processing progress visually */}
-          {(isProcessing || mediaProcessing) && (
+          {(isSaving || mediaProcessing) && (
             <div className="w-full flex justify-center pt-2">
               <span className="text-xs text-muted-foreground animate-pulse">
-                {isProcessing ? "Finalizing upload..." : "Processing file..."}
+                {isSaving ? "Finalizing upload..." : "Processing file..."}
               </span>
             </div>
           )}
