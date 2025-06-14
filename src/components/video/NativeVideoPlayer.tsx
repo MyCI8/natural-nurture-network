@@ -284,6 +284,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 muted={isMuted}
                 loop
                 playsInline
+                disableRemotePlayback={true}
                 className="w-full h-full"
                 style={{ objectFit }}
                 onTimeUpdate={handleTimeUpdate}
@@ -327,6 +328,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 muted={isMuted}
                 loop
                 playsInline
+                disableRemotePlayback={true}
                 className="max-w-full max-h-full"
                 style={{ objectFit }}
                 onTimeUpdate={handleTimeUpdate}
