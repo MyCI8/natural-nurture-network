@@ -6,9 +6,8 @@ import { Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface MediaUploaderProps {
-  mediaPreview: string | null;
-  isYoutubeLink: boolean;
   videoUrl: string;
+  isYoutubeLink: boolean;
   onMediaUpload: (file: File) => Promise<void>;
   onVideoLinkChange: (url: string) => void;
   onClearMedia: () => void;
@@ -17,9 +16,8 @@ interface MediaUploaderProps {
 }
 
 export function MediaUploader({
-  mediaPreview,
-  isYoutubeLink,
   videoUrl,
+  isYoutubeLink,
   onMediaUpload,
   onVideoLinkChange,
   onClearMedia,
@@ -30,24 +28,23 @@ export function MediaUploader({
   // Add debugging to track state changes
   useEffect(() => {
     console.log('🎯 MediaUploader state changed:', {
-      mediaPreview: mediaPreview ? 'HAS_PREVIEW' : 'NO_PREVIEW',
+      videoUrl: videoUrl ? 'HAS_URL' : 'NO_URL',
       isYoutubeLink,
-      videoUrl,
       isProcessing,
-      previewLength: mediaPreview?.length || 0
+      urlLength: videoUrl?.length || 0
     });
-  }, [mediaPreview, isYoutubeLink, videoUrl, isProcessing]);
+  }, [videoUrl, isYoutubeLink, isProcessing]);
 
   // Stable computation of whether we have valid media
   const hasValidMedia = useMemo(() => {
-    const hasPreview = Boolean(mediaPreview && mediaPreview.length > 0);
+    const hasUrl = Boolean(videoUrl && videoUrl.length > 0);
     console.log('🔍 MediaUploader hasValidMedia check:', {
-      hasPreview,
-      mediaPreview: mediaPreview ? 'EXISTS' : 'NULL',
+      hasUrl,
+      videoUrl: videoUrl ? 'EXISTS' : 'EMPTY',
       isProcessing
     });
-    return hasPreview;
-  }, [mediaPreview, isProcessing]);
+    return hasUrl;
+  }, [videoUrl, isProcessing]);
 
   const handleMediaUpdate = (newUrl: string) => {
     // This would be called when media is edited (cropped, trimmed, etc.)
@@ -59,7 +56,7 @@ export function MediaUploader({
     console.log('🖼️ MediaUploader renderContent called with:', {
       isProcessing,
       hasValidMedia,
-      mediaPreview: mediaPreview ? 'HAS_PREVIEW' : 'NO_PREVIEW'
+      videoUrl: videoUrl ? 'HAS_URL' : 'NO_URL'
     });
 
     if (isProcessing) {
@@ -75,11 +72,11 @@ export function MediaUploader({
       );
     }
 
-    if (hasValidMedia && mediaPreview) {
+    if (hasValidMedia && videoUrl) {
       console.log('📺 Showing preview card');
       return (
         <MediaPreviewCard
-          mediaPreview={mediaPreview}
+          mediaPreview={videoUrl}
           isYoutubeLink={isYoutubeLink}
           videoUrl={videoUrl}
           onClearMedia={onClearMedia}

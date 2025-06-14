@@ -36,7 +36,6 @@ const Post = () => {
     formState,
     isSaving,
     isProcessing: mediaProcessing,
-    mediaPreview,
     isYoutubeLink,
     handleInputChange,
     handleMediaUpload,
@@ -107,9 +106,8 @@ const Post = () => {
           {/* Media Uploader */}
           <div className="w-full flex justify-center mt-0 mb-2">
             <MediaUploader
-              mediaPreview={mediaPreview}
-              isYoutubeLink={isYoutubeLink}
               videoUrl={formState.video_url}
+              isYoutubeLink={isYoutubeLink}
               onMediaUpload={handleMediaUpload}
               onVideoLinkChange={handleVideoLinkChange}
               onClearMedia={clearMediaFile}

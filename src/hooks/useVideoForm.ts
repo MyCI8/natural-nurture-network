@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { useVideoFetch } from "./video/useVideoFetch";
 import { useVideoFormState } from "./video/useVideoFormState";
@@ -26,16 +27,14 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
   
   const {
     mediaFile,
-    mediaPreview,
     thumbnailFile,
     isYoutubeLink,
     isProcessing,
     handleMediaUpload: originalHandleMediaUpload,
-    handleVideoLinkChange,
+    handleVideoLinkChange: originalHandleVideoLinkChange,
     clearMediaFile: originalClearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    setMediaPreview,
     hasValidMedia
   } = useVideoMedia();
   
@@ -62,7 +61,20 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       toast.error("Upload failed", {
         description: "There was an error processing your media.",
       });
-      // No re-throw, error is handled with a toast here.
+    }
+  };
+
+  // Enhanced video link change that syncs with form state
+  const handleVideoLinkChange = (url: string) => {
+    console.log('🔗 useVideoForm handleVideoLinkChange called with:', url);
+    originalHandleVideoLinkChange(url);
+    handleInputChange({ target: { name: 'video_url', value: url } });
+    
+    if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+      const thumbnailUrl = getYouTubeThumbnail(url);
+      if (thumbnailUrl) {
+        handleInputChange({ target: { name: 'video_url', value: thumbnailUrl } });
+      }
     }
   };
 
@@ -80,10 +92,9 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       
       if (video.video_url && (video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be'))) {
         setIsYoutubeLink(true);
-        setMediaPreview(getYouTubeThumbnail(video.video_url));
       }
     }
-  }, [video, initializeFormFromVideo, setIsYoutubeLink, setMediaPreview, getYouTubeThumbnail]);
+  }, [video, initializeFormFromVideo, setIsYoutubeLink]);
 
   const saveVideo = async (asDraft = false) => {
     console.log('💾 saveVideo called with:', {
@@ -114,7 +125,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     isLoading,
     isSaving,
     isProcessing,
-    mediaPreview,
     isYoutubeLink,
     articles,
     video,

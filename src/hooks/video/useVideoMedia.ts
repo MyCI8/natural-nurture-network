@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 // Utility to extract first frame from video file and return a File (jpeg)
