@@ -94,6 +94,12 @@ export function useVideoMedia() {
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
+  // Add debugging wrapper for setMediaPreview
+  const setMediaPreviewWithLogging = (value: string | null) => {
+    console.log('🎯 SETTING mediaPreview:', value ? 'VALID_URL' : 'NULL', new Error().stack);
+    setMediaPreview(value);
+  };
+  
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string }> => {
     console.log('🎬 Media upload started:', {
       fileName: file.name,
@@ -112,13 +118,19 @@ export function useVideoMedia() {
       const previewUrl = URL.createObjectURL(file);
       console.log('🖼️ Preview URL created:', previewUrl);
       
-      // Set preview BEFORE clearing processing state to avoid timing issues
-      setMediaPreview(previewUrl);
+      // Set preview FIRST and ensure it stays
+      setMediaPreviewWithLogging(previewUrl);
       setIsYoutubeLink(false);
       
-      console.log('🎯 MediaPreview state set, about to clear processing');
+      console.log('🎯 MediaPreview state set, waiting before clearing processing...');
       
-      // Generate thumbnail in background (don't block the preview)
+      // Wait a bit longer to ensure state is fully propagated
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Clear processing state AFTER preview is definitely set
+      setIsProcessing(false);
+      
+      // Generate thumbnail in background
       setTimeout(async () => {
         try {
           let thumbnail: File | null = null;
@@ -138,11 +150,8 @@ export function useVideoMedia() {
         } catch (err) {
           console.warn('⚠️ Thumbnail generation failed, continuing without thumbnail:', err);
         }
-      }, 100);
+      }, 300);
 
-      // Clear processing state AFTER preview is set
-      setIsProcessing(false);
-      
       console.log('✅ Media upload completed successfully');
       return { filename: file.name, previewUrl };
       
@@ -150,10 +159,10 @@ export function useVideoMedia() {
       console.error('❌ Media upload failed:', error);
       // Clean up on error
       setMediaFile(null);
-      setMediaPreview(null);
+      setMediaPreviewWithLogging(null);
       setThumbnailFile(null);
       setIsProcessing(false);
-      throw error; // Re-throw to handle in UI
+      throw error;
     }
   };
 
@@ -170,12 +179,12 @@ export function useVideoMedia() {
     setThumbnailFile(null);
     
     const thumbnailUrl = getYouTubeThumbnail(url);
-    setMediaPreview(thumbnailUrl);
+    setMediaPreviewWithLogging(thumbnailUrl);
     console.log('📺 YouTube thumbnail set:', thumbnailUrl);
   };
 
   const clearMediaFile = () => {
-    console.log('🗑️ Clearing all media');
+    console.log('🗑️ CLEAR MEDIA CALLED - Clearing all media');
     
     // Clean up blob URLs to prevent memory leaks
     if (mediaPreview && !isYoutubeLink) {
@@ -183,7 +192,7 @@ export function useVideoMedia() {
     }
     
     setMediaFile(null);
-    setMediaPreview(null);
+    setMediaPreviewWithLogging(null);
     setThumbnailFile(null);
     setIsYoutubeLink(false);
     setIsProcessing(false);
@@ -234,7 +243,7 @@ export function useVideoMedia() {
     clearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    setMediaPreview,
+    setMediaPreview: setMediaPreviewWithLogging,
     hasValidMedia
   };
 }
