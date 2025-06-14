@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Trash2, Edit, Play, Pause, RotateCw, Crop } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,18 +7,16 @@ import { VideoEditModal } from "./VideoEditModal";
 import { ImageCropModal } from "@/components/ui/image-crop-modal";
 
 interface MediaPreviewCardProps {
-  mediaPreview: string;
-  isYoutubeLink: boolean;
   videoUrl: string;
+  isYoutubeLink: boolean;
   onClearMedia: () => void;
   onMediaUpdate?: (url: string) => void;
   compact?: boolean;
 }
 
 export function MediaPreviewCard({
-  mediaPreview,
-  isYoutubeLink,
   videoUrl,
+  isYoutubeLink,
   onClearMedia,
   onMediaUpdate,
   compact = false
@@ -26,7 +25,7 @@ export function MediaPreviewCard({
   const [showImageCropModal, setShowImageCropModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const isVideo = mediaPreview.includes('video') || videoUrl.includes('.mp4') || videoUrl.includes('.mov') || videoUrl.includes('.webm');
+  const isVideo = videoUrl.includes('video') || videoUrl.includes('.mp4') || videoUrl.includes('.mov') || videoUrl.includes('.webm');
   const isImage = !isVideo && !isYoutubeLink;
 
   const handleEdit = () => {
@@ -61,7 +60,7 @@ export function MediaPreviewCard({
           <AspectRatio ratio={aspect} className="bg-muted overflow-hidden rounded-lg">
             {isVideo && !isYoutubeLink ? (
               <video
-                src={mediaPreview}
+                src={videoUrl}
                 className="w-full h-full object-contain"
                 controls={false}
                 muted
@@ -72,7 +71,7 @@ export function MediaPreviewCard({
               />
             ) : isImage ? (
               <img
-                src={mediaPreview}
+                src={videoUrl}
                 alt="Media preview"
                 className="w-full h-full object-contain"
                 style={{ background: "#0a0a0a" }}
@@ -81,7 +80,7 @@ export function MediaPreviewCard({
               // YouTube preview
               <div className="relative w-full h-full">
                 <img
-                  src={mediaPreview}
+                  src={videoUrl}
                   alt="YouTube preview"
                   className="w-full h-full object-cover"
                 />
@@ -154,7 +153,7 @@ export function MediaPreviewCard({
       <VideoEditModal
         isOpen={showVideoEditModal}
         onClose={() => setShowVideoEditModal(false)}
-        videoSrc={mediaPreview}
+        videoSrc={videoUrl}
         onSave={handleVideoEdit}
       />
 
@@ -162,7 +161,7 @@ export function MediaPreviewCard({
       <ImageCropModal
         isOpen={showImageCropModal}
         onClose={() => setShowImageCropModal(false)}
-        imageSrc={mediaPreview}
+        imageSrc={videoUrl}
         onCropComplete={handleImageCrop}
       />
     </>
