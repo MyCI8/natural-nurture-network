@@ -4,7 +4,7 @@ import { Upload, Loader2, X } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 type State = {
@@ -60,7 +60,6 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
   accept = "video/*,image/*",
   maxSizeMB = 50,
 }) => {
-  const { toast } = useToast();
   const [state, dispatch] = useReducer(uploadReducer, {
     file: null,
     previewUrl: null,
@@ -81,21 +80,13 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
     
     // Validate file type
     if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
-      toast({
-        title: "Invalid file type",
-        description: "Must be video or image.",
-        variant: "destructive",
-      });
+      toast.error("Invalid file type - must be video or image");
       return;
     }
     
     // Validate file size
     if (file.size > maxSizeMB * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: `Max allowed size is ${maxSizeMB}MB.`,
-        variant: "destructive",
-      });
+      toast.error(`File too large - max allowed size is ${maxSizeMB}MB`);
       return;
     }
     
@@ -109,15 +100,11 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
     dispatch({ type: "START_UPLOAD" });
     
     try {
-      // Check authentication
+      // Check authentication first
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         dispatch({ type: "FAIL", error: "Please sign in to upload files" });
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to upload files.",
-          variant: "destructive",
-        });
+        toast.error("Please sign in to upload files");
         return;
       }
 
@@ -141,11 +128,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
       if (error) {
         console.error("Upload error:", error);
         dispatch({ type: "FAIL", error: error.message });
-        toast({
-          title: "Upload Failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error(`Upload failed: ${error.message}`);
         return;
       }
 
@@ -160,19 +143,13 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
       dispatch({ type: "DONE" });
       
       onUploadSuccess(publicUrlData.publicUrl, filename, state.file);
-      toast({
-        title: "Upload Complete!",
-        description: "Your media is ready to post.",
-      });
+      toast.success("Upload complete! Ready to post.");
 
     } catch (error: any) {
       console.error("Upload error:", error);
-      dispatch({ type: "FAIL", error: error?.message || "Upload failed" });
-      toast({
-        title: "Upload Error",
-        description: error?.message || "Something went wrong.",
-        variant: "destructive",
-      });
+      const errorMessage = error?.message || "Upload failed";
+      dispatch({ type: "FAIL", error: errorMessage });
+      toast.error(`Upload error: ${errorMessage}`);
     }
   };
 

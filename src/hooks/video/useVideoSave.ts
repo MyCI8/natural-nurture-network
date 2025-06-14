@@ -29,7 +29,8 @@ export function useVideoSave() {
       formState: {
         title: formState.title,
         description: formState.description,
-        video_type: formState.video_type
+        video_type: formState.video_type,
+        video_url: formState.video_url
       }
     });
 
@@ -56,12 +57,11 @@ export function useVideoSave() {
       let videoUrl = formState.video_url;
       let thumbnailUrl = formState.thumbnail_url;
 
-      // Only for uploaded videos (not YouTube)
-      if (mediaFile && !isYoutubeLink) {
+      // Only handle file upload if we have a file and it's not already a full URL
+      if (mediaFile && !isYoutubeLink && !videoUrl?.startsWith('http')) {
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
-        // Upload with simplified logic - bucket already exists
         const { error, data } = await supabase.storage
           .from('video-media')
           .upload(fileName, mediaFile, { 
