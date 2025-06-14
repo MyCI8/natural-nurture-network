@@ -42,7 +42,7 @@ const PopularRemedies = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
+      <div className="space-y-1">
         <div className="flex items-center gap-2 mb-4">
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-5 w-32" />
@@ -61,7 +61,7 @@ const PopularRemedies = () => {
         <h2 className="font-semibold text-lg">Popular Remedies</h2>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         {popularRemedies?.map((remedy) => (
           <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
             <Card className="group hover:shadow-lg transition-shadow">
