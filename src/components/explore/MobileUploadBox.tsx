@@ -1,4 +1,3 @@
-
 import React, { useReducer, useRef } from "react";
 import { Upload, Loader2, X } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -117,20 +116,16 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
       const ext = state.file.name.split(".").pop();
       const filename = `${crypto.randomUUID()}.${ext}`;
       let result;
-      // (Chunked upload not natively in Supabase, so fallback to single up, but can be retried.)
+      // NOTE: Supabase Storage currently does not support 'onUploadProgress'
+      // So, we remove it from the upload options.
       for (let attempt = 1; attempt <= 3; attempt++) {
         const { data, error } = await supabase.storage.from("video-media").upload(
           filename,
           state.file,
           {
             cacheControl: "3600",
-            upsert: false,
-            onUploadProgress: (evt: ProgressEvent) => {
-              if (evt.lengthComputable) {
-                const pct = Math.round((evt.loaded / evt.total) * 100);
-                dispatch({ type: "PROGRESS", value: pct });
-              }
-            },
+            upsert: false
+            // onUploadProgress removed; not supported by supabase-js v2+
           }
         );
         if (error) {

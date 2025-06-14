@@ -74,7 +74,8 @@ const Post = () => {
     setIsProcessing(true);
 
     try {
-      const result = await saveVideo(false, uploadedFile); // Save as published, not draft
+      // PATCH: saveVideo expects 0-1 args, NOT (false, uploadedFile)
+      const result = await saveVideo(); // Correct usage
       if (result) {
         toast.success("Post created successfully!");
         navigate("/explore");
