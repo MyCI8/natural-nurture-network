@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 // Utility to extract first frame from video file and return a File (jpeg)
@@ -7,7 +8,6 @@ export async function generateThumbnailFromVideoFile(file: File): Promise<File> 
     video.preload = 'metadata';
     video.muted = true;
     video.playsInline = true;
-    // Safari fix: must append to DOM briefly
     video.style.display = 'none';
     document.body.appendChild(video);
 
@@ -15,7 +15,6 @@ export async function generateThumbnailFromVideoFile(file: File): Promise<File> 
     video.src = url;
 
     video.onloadeddata = () => {
-      // Seek to time 0
       video.currentTime = 0;
       video.onseeked = () => {
         const canvas = document.createElement('canvas');
@@ -26,18 +25,18 @@ export async function generateThumbnailFromVideoFile(file: File): Promise<File> 
         canvas.toBlob((blob) => {
           URL.revokeObjectURL(url);
           video.remove();
-          if (!blob) return reject('Thumbnail extraction failed (canvas.toBlob null)');
+          if (!blob) return reject('Thumbnail extraction failed');
           resolve(new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' }));
         }, 'image/jpeg', 0.9);
       };
-      video.onerror = (err) => {
+      video.onerror = () => {
         URL.revokeObjectURL(url);
         video.remove();
-        reject('Error seeking video or extracting thumbnail');
+        reject('Error seeking video');
       };
-      video.currentTime = 0.01; // in case 0 causes issues on some browsers
+      video.currentTime = 0.01;
     };
-    video.onerror = (err) => {
+    video.onerror = () => {
       URL.revokeObjectURL(url);
       video.remove();
       reject('Video load failed');
@@ -51,7 +50,6 @@ export async function generateThumbnailFromImageFile(file: File): Promise<File> 
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      // Keep aspect ratio but resize if needed
       const MAX_SIZE = 800;
       let width = img.width;
       let height = img.height;
@@ -93,31 +91,23 @@ export function useVideoMedia() {
   const [isProcessing, setIsProcessing] = useState(false);
   
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string }> => {
-    console.log('🎬 Media upload started:', {
-      fileName: file.name,
-      fileType: file.type,
-      fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`
-    });
+    console.log('Media upload started:', file.name);
     
     setIsProcessing(true);
     
     try {
       // Store the actual file object
       setMediaFile(file);
-      console.log('✅ File object stored:', file);
       
       // Create preview URL for display
       const previewUrl = URL.createObjectURL(file);
-      console.log('🖼️ Preview URL created:', previewUrl);
+      console.log('Preview URL created:', previewUrl);
       
       setIsYoutubeLink(false);
       
-      console.log('🎯 MediaPreview state set, waiting before clearing processing...');
-      
-      // Wait a bit longer to ensure state is fully propagated
+      // Wait a bit to ensure state is propagated
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      // Clear processing state AFTER preview is definitely set
       setIsProcessing(false);
       
       // Generate thumbnail in background
@@ -126,28 +116,25 @@ export function useVideoMedia() {
           let thumbnail: File | null = null;
           
           if (file.type.startsWith('video/')) {
-            console.log('🎥 Generating video thumbnail...');
             thumbnail = await generateThumbnailFromVideoFile(file);
           } else if (file.type.startsWith('image/')) {
-            console.log('🖼️ Generating image thumbnail...');
             thumbnail = await generateThumbnailFromImageFile(file);
           }
           
           if (thumbnail) {
             setThumbnailFile(thumbnail);
-            console.log('✅ Thumbnail generated successfully:', thumbnail);
+            console.log('Thumbnail generated successfully');
           }
         } catch (err) {
-          console.warn('⚠️ Thumbnail generation failed, continuing without thumbnail:', err);
+          console.warn('Thumbnail generation failed:', err);
         }
       }, 300);
 
-      console.log('✅ Media upload completed successfully');
+      console.log('Media upload completed successfully');
       return { filename: file.name, previewUrl };
       
     } catch (error) {
-      console.error('❌ Media upload failed:', error);
-      // Clean up on error
+      console.error('Media upload failed:', error);
       setMediaFile(null);
       setThumbnailFile(null);
       setIsProcessing(false);
@@ -156,18 +143,15 @@ export function useVideoMedia() {
   };
 
   const handleVideoLinkChange = (url: string) => {
-    console.log('🔗 Video link changed:', url);
+    console.log('Video link changed:', url);
     
-    setIsYoutubeLink(true);
+    setIsYoutubeLink(url.includes('youtube.com') || url.includes('youtu.be'));
     setMediaFile(null);
     setThumbnailFile(null);
-    
-    const thumbnailUrl = getYouTubeThumbnail(url);
-    console.log('📺 YouTube thumbnail set:', thumbnailUrl);
   };
 
   const clearMediaFile = () => {
-    console.log('🗑️ CLEAR MEDIA CALLED - Clearing all media');
+    console.log('Clearing all media');
     
     setMediaFile(null);
     setThumbnailFile(null);
@@ -195,16 +179,9 @@ export function useVideoMedia() {
     return null;
   };
 
-  // Helper function to check if we have valid media ready for upload
   const hasValidMedia = () => {
     const hasFile = mediaFile !== null;
     const hasYouTube = isYoutubeLink;
-    console.log('🔍 Media validation check:', {
-      hasFile,
-      hasYouTube,
-      isProcessing,
-      mediaFile: mediaFile?.name || 'none'
-    });
     return (hasFile || hasYouTube) && !isProcessing;
   };
 

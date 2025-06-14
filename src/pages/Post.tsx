@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload as UploadIcon } from "lucide-react";
@@ -52,6 +53,12 @@ const Post = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submit - checking media:', {
+      hasValidMedia: hasValidMedia(),
+      formStateVideoUrl: formState.video_url,
+      description: formState.description
+    });
+    
     if (!hasValidMedia()) {
       toast.error("Please select a video or image first");
       return;
@@ -67,8 +74,6 @@ const Post = () => {
       if (result) {
         toast.success("Post created successfully!");
         navigate("/explore");
-      } else {
-        // Specific error is toasted from the hook
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -105,15 +110,17 @@ const Post = () => {
         <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-2">
           {/* Media Uploader */}
           <div className="w-full flex justify-center mt-0 mb-2">
-            <MediaUploader
-              videoUrl={formState.video_url}
-              isYoutubeLink={isYoutubeLink}
-              onMediaUpload={handleMediaUpload}
-              onVideoLinkChange={handleVideoLinkChange}
-              onClearMedia={clearMediaFile}
-              compact={false}
-              isProcessing={mediaProcessing}
-            />
+            <div className="w-full">
+              <MediaUploader
+                videoUrl={formState.video_url || ""}
+                isYoutubeLink={isYoutubeLink}
+                onMediaUpload={handleMediaUpload}
+                onVideoLinkChange={handleVideoLinkChange}
+                onClearMedia={clearMediaFile}
+                compact={false}
+                isProcessing={mediaProcessing}
+              />
+            </div>
           </div>
 
           {/* Form field: Description */}

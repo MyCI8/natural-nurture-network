@@ -45,9 +45,11 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced media upload that syncs with form state
   const handleMediaUpload = async (file: File) => {
+    console.log('handleMediaUpload called with:', file.name);
     try {
       const mediaData = await originalHandleMediaUpload(file);
-      if (mediaData) {
+      if (mediaData && mediaData.previewUrl) {
+        console.log('Setting video_url to:', mediaData.previewUrl);
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
         toast.success("Media ready for preview", {
           description: `Your ${file.type.startsWith('video/') ? 'video' : 'image'} has been processed.`,
@@ -63,21 +65,24 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced video link change that syncs with form state
   const handleVideoLinkChange = (url: string) => {
+    console.log('handleVideoLinkChange called with:', url);
     originalHandleVideoLinkChange(url);
     handleInputChange({ target: { name: 'video_url', value: url } });
     
     if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
       const thumbnailUrl = getYouTubeThumbnail(url);
       if (thumbnailUrl) {
-        handleInputChange({ target: { name: 'video_url', value: thumbnailUrl } });
+        handleInputChange({ target: { name: 'thumbnail_url', value: thumbnailUrl } });
       }
     }
   };
 
   // Enhanced clear that syncs with form state
   const clearMediaFile = () => {
+    console.log('clearMediaFile called');
     originalClearMediaFile();
     handleInputChange({ target: { name: 'video_url', value: '' } });
+    handleInputChange({ target: { name: 'thumbnail_url', value: '' } });
   };
 
   // Initialize form state when video is loaded
@@ -103,6 +108,17 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     );
   };
 
+  const hasValidMediaCheck = () => {
+    const hasFormUrl = Boolean(formState.video_url && formState.video_url.length > 0);
+    const hasMediaFile = hasValidMedia();
+    console.log('hasValidMedia check:', {
+      hasFormUrl,
+      hasMediaFile,
+      formStateVideoUrl: formState.video_url
+    });
+    return hasFormUrl || hasMediaFile;
+  };
+
   return {
     formState,
     isLoading,
@@ -118,6 +134,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     handleVideoLinkChange,
     clearMediaFile,
     saveVideo,
-    hasValidMedia: () => Boolean(formState.video_url) || hasValidMedia()
+    hasValidMedia: hasValidMediaCheck
   };
 }
