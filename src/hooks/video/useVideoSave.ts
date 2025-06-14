@@ -33,12 +33,10 @@ export function useVideoSave() {
       }
     });
 
-    // For Explore posts, title is optional and type is always 'general'
+    // For Explore posts, type is 'general'
     const submitType = formState.video_type === "explore" ? "general" : formState.video_type;
-    if (formState.video_type !== "explore" && !formState.title) {
-      toast.error("Please provide a title for the video");
-      return false;
-    }
+    
+    // Title validation removed as it's auto-generated if missing.
 
     if (!formState.video_url && !mediaFile) {
       toast.error("Please provide a video URL or upload a file");
@@ -106,9 +104,9 @@ export function useVideoSave() {
         thumbnailUrl = getYouTubeThumbnail(formState.video_url);
       }
 
-      // For explore, use part of description for title if missing
+      // If title is missing, generate it from the description
       let title = formState.title;
-      if (!title && formState.description && formState.video_type === "explore") {
+      if (!title && formState.description) {
         const words = formState.description.split(' ');
         title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
       }

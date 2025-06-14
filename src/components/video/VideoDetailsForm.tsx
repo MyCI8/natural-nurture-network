@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,19 +43,7 @@ export function VideoDetailsForm({
   return (
     <form onSubmit={handleSubmit}>
       <div className="pt-4 space-y-4 sm:pt-6 sm:space-y-6 px-4 sm:px-6">
-        {/* Only show title if videoType is not 'explore' */}
-        {formState.video_type !== 'explore' && (
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={formState.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              placeholder="Enter video title"
-              className="border-gray-300"
-            />
-          </div>
-        )}
+        {/* Title field removed, it is now auto-generated from description */}
 
         {formState.video_type === 'news' && (
           <div className="space-y-2">
@@ -157,7 +144,6 @@ export function VideoDetailsForm({
           type="submit"
           disabled={
             isSaving ||
-            (formState.video_type !== "explore" && !formState.title) || 
             (!formState.video_url && !mediaPreview)
           }
           className="touch-manipulation"
