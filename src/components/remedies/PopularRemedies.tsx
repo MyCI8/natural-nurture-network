@@ -42,13 +42,13 @@ const PopularRemedies = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-0.5">
+      <div className="space-y-1">
         <div className="flex items-center gap-2 mb-4">
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-5 w-32" />
         </div>
         {Array.from({ length: maxCards }).map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
+          <Skeleton key={i} className="h-16 w-full mb-1" />
         ))}
       </div>
     );
@@ -61,10 +61,10 @@ const PopularRemedies = () => {
         <h2 className="font-semibold text-lg">Popular Remedies</h2>
       </div>
 
-      <div className="space-y-0.5">
-        {popularRemedies?.map((remedy) => (
+      <div>
+        {popularRemedies?.map((remedy, index) => (
           <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
-            <Card className="group hover:shadow-lg transition-shadow">
+            <Card className={`group hover:shadow-lg transition-shadow ${index > 0 ? 'mt-1' : ''}`}>
               <CardContent className="p-2">
                 <div className="flex gap-2">
                   <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-muted">
