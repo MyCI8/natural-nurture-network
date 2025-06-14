@@ -1,4 +1,3 @@
-
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -125,7 +124,7 @@ const RightSection = () => {
       // Show comments first and product links pinned to bottom
       if (productLinks.length > 0) {
         return (
-          <div className="h-full flex flex-col">
+          <div className="flex flex-col">
             {/* Post Header - Profile info and menu */}
             {video && (
               <div className="flex items-center justify-between p-3 border-b">
@@ -164,16 +163,14 @@ const RightSection = () => {
               </div>
             )}
             
-            {/* Comments Section - Takes most of the space */}
-            <div className="flex-1 overflow-y-auto mb-4">
+            {/* Comments Section - Takes available space with scrolling */}
+            <div className="flex-1 overflow-y-auto mb-4 min-h-0">
               <Comments videoId={videoId} currentUser={currentUser} />
             </div>
             
-            {/* Featured Products - Pinned to bottom */}
-            <div className="border-t pt-4 max-h-64 overflow-hidden">
-              <div className="max-h-48 overflow-y-auto">
-                <ProductLinksList productLinks={productLinks} />
-              </div>
+            {/* Featured Products - At bottom */}
+            <div className="border-t pt-4">
+              <ProductLinksList productLinks={productLinks} />
             </div>
           </div>
         );
@@ -181,7 +178,7 @@ const RightSection = () => {
       
       // Fall back to comments only if no product links
       return (
-        <div className="h-full flex flex-col">
+        <div className="flex flex-col">
           {/* Post Header - Profile info and menu */}
           {video && (
             <div className="flex items-center justify-between p-3 border-b">
@@ -220,7 +217,7 @@ const RightSection = () => {
             </div>
           )}
           
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0">
             <Comments videoId={videoId} currentUser={currentUser} />
           </div>
         </div>
@@ -250,8 +247,8 @@ const RightSection = () => {
 
   return (
     <>
-      <aside className="w-80 shrink-0 sticky top-0 h-screen overflow-y-auto border-l bg-background/50 backdrop-blur-sm">
-        <div className="p-6 h-full">
+      <aside className="w-80 shrink-0 sticky top-0 min-h-screen border-l bg-background/50 backdrop-blur-sm">
+        <div className="p-6">
           {renderContent()}
         </div>
       </aside>
