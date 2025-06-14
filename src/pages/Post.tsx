@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload as UploadIcon } from "lucide-react";
@@ -10,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { VideoLoadingState } from "@/components/explore/VideoLoadingState";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import MobileUploadBox from "@/components/explore/MobileUploadBox";
+import { MediaUploader } from "@/components/explore/MediaUploader";
 
 const Post = () => {
   const navigate = useNavigate();
@@ -37,8 +36,11 @@ const Post = () => {
     formState,
     isSaving,
     isProcessing: mediaProcessing,
+    mediaPreview,
+    isYoutubeLink,
     handleInputChange,
     handleMediaUpload,
+    handleVideoLinkChange,
     clearMediaFile,
     saveVideo,
     hasValidMedia
@@ -46,21 +48,6 @@ const Post = () => {
 
   const goBack = () => {
     navigate(-1);
-  };
-
-  // Handle file selection from MobileUploadBox
-  const handleFileSelect = async (file: File) => {
-    if (!file) {
-      clearMediaFile();
-      return;
-    }
-
-    try {
-      await handleMediaUpload(file);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "File upload failed";
-      toast.error(errorMessage);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,17 +104,18 @@ const Post = () => {
       {/* Main content area */}
       <main className="flex-1 px-2 sm:px-4 pt-2 pb-4 flex flex-col items-center">
         <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-2">
-          {/* MobileUploadBox */}
+          {/* Media Uploader */}
           <div className="w-full flex justify-center mt-0 mb-2">
-            <MobileUploadBox onFileSelect={handleFileSelect} />
+            <MediaUploader
+              mediaPreview={mediaPreview}
+              isYoutubeLink={isYoutubeLink}
+              videoUrl={formState.video_url}
+              onMediaUpload={handleMediaUpload}
+              onVideoLinkChange={handleVideoLinkChange}
+              onClearMedia={clearMediaFile}
+              compact={false}
+            />
           </div>
-
-          {!hasValidMedia() && (
-            <div className="text-center text-xs text-muted-foreground px-2">
-              <p>Upload a video or photo to share</p>
-              <p className="text-[10px] mt-1">Tap to select • Max 50MB</p>
-            </div>
-          )}
 
           {/* Form field: Description */}
           <div>
