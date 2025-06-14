@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Swipeable } from '@/components/ui/swipeable';
 import { Progress } from '@/components/ui/progress';
-import { Video } from '@/types/video';
+import { Video, ProductLink } from '@/types/video';
 import { X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileReelsView from '@/components/video/MobileReelsView';
@@ -63,6 +63,23 @@ const ExploreDetail = () => {
         related_article_id: data.related_article_id || null
       };
     }
+  });
+
+  // Query to fetch product links for the current video
+  const { data: productLinks = [] } = useQuery({
+    queryKey: ['videoProductLinks', id],
+    queryFn: async () => {
+      if (!id) return [];
+      
+      const { data, error } = await supabase
+        .from('video_product_links')
+        .select('*')
+        .eq('video_id', id);
+        
+      if (error) throw error;
+      return data as ProductLink[];
+    },
+    enabled: !!id
   });
 
   // Query to fetch adjacent videos for swipe navigation
@@ -192,7 +209,7 @@ const ExploreDetail = () => {
         <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center relative">
           <VideoPlayer 
             video={video} 
-            productLinks={[]} 
+            productLinks={productLinks} 
             autoPlay={true} 
             showControls={false} 
             isFullscreen={false} 
