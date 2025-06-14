@@ -296,11 +296,11 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
             </div>
           )}
           
-          {/* Error state - show error message when status is error */}
-          {state.status === "error" && (
+          {/* Success state */}
+          {state.status === "uploaded" && (
             <div className="absolute inset-x-0 bottom-2 flex flex-col items-center">
-              <span className="text-xs text-destructive">
-                {state.error}
+              <span className="text-xs text-green-600">
+                Upload complete!
               </span>
             </div>
           )}
