@@ -57,8 +57,10 @@ export function useVideoSave() {
       let videoUrl = formState.video_url;
       let thumbnailUrl = formState.thumbnail_url;
 
-      // Only handle file upload if we have a file and it's not already a full URL
+      // Only handle file upload if we have a file and no existing URL
       if (mediaFile && !isYoutubeLink && !videoUrl?.startsWith('http')) {
+        console.log('📤 Starting file upload to Supabase...');
+        
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
 
@@ -76,6 +78,7 @@ export function useVideoSave() {
         }
 
         videoUrl = supabase.storage.from('video-media').getPublicUrl(fileName).data.publicUrl;
+        console.log('✅ File uploaded successfully:', videoUrl);
         
         // Upload thumbnail if present
         if (thumbnailFile) {
@@ -120,6 +123,8 @@ export function useVideoSave() {
         tags: formState.tags ?? null,
       };
 
+      console.log('💾 Saving video data to database:', videoData);
+
       let result;
       if (videoId) {
         const { data, error } = await supabase
@@ -139,6 +144,8 @@ export function useVideoSave() {
         if (error) throw error;
         result = data;
       }
+      
+      console.log('✅ Video saved successfully:', result);
       return result;
     } catch (error: any) {
       console.error("Save error:", error);

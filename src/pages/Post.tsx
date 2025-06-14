@@ -33,50 +33,42 @@ const Post = () => {
     }
   }, [currentUser, isLoadingUser, navigate]);
 
-  // Initialize video form with "explore" type (for Explore videos)
+  // Initialize video form with "explore" type
   const {
     formState,
     isSaving,
     isProcessing: mediaProcessing,
     handleInputChange,
+    handleMediaUpload,
     clearMediaFile,
     saveVideo,
+    hasValidMedia
   } = useVideoForm(undefined, "explore");
-
-  // State to track upload success and file info
-  const [uploadState, setUploadState] = useState<{
-    url: string | null;
-    filename: string | null;
-    file: File | null;
-    isUploaded: boolean;
-  }>({
-    url: null,
-    filename: null,
-    file: null,
-    isUploaded: false,
-  });
 
   const goBack = () => {
     navigate(-1);
   };
 
-  // Callback for unified uploader
-  const handleUploadSuccess = (url: string, filename: string, file: File) => {
-    setUploadState({
-      url,
-      filename,
-      file,
-      isUploaded: true,
-    });
-    handleInputChange({ target: { name: "video_url", value: url } });
-    toast.success("Media uploaded! Please add your description and post.");
+  // Handle file selection from MobileUploadBox
+  const handleFileSelect = async (file: File) => {
+    if (!file) {
+      clearMediaFile();
+      return;
+    }
+
+    try {
+      await handleMediaUpload(file);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "File upload failed";
+      toast.error(errorMessage);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!uploadState.isUploaded || !uploadState.url) {
-      toast.error("Please upload a video or image first");
+    if (!hasValidMedia()) {
+      toast.error("Please select a video or image first");
       return;
     }
     
@@ -108,7 +100,7 @@ const Post = () => {
   }
 
   // Button state logic
-  const isButtonDisabled = isSaving || isProcessing || mediaProcessing || !uploadState.isUploaded;
+  const isButtonDisabled = isSaving || isProcessing || mediaProcessing || !hasValidMedia();
 
   return (
     <div className="min-h-screen bg-background pt-8 pb-16 flex flex-col">
@@ -132,13 +124,13 @@ const Post = () => {
         <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-2">
           {/* MobileUploadBox */}
           <div className="w-full flex justify-center mt-0 mb-2">
-            <MobileUploadBox onUploadSuccess={handleUploadSuccess} />
+            <MobileUploadBox onFileSelect={handleFileSelect} />
           </div>
 
-          {!uploadState.isUploaded && (
+          {!hasValidMedia() && (
             <div className="text-center text-xs text-muted-foreground px-2">
               <p>Upload a video or photo to share</p>
-              <p className="text-[10px] mt-1">Tap to select • Crop • Edit — Max 50MB</p>
+              <p className="text-[10px] mt-1">Tap to select • Max 50MB</p>
             </div>
           )}
 
