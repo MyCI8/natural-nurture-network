@@ -91,8 +91,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   // Use provided visibleProductLink if available, otherwise fall back to local state
   const activeProductLink = visibleProductLink !== undefined ? visibleProductLink : localVisibleProductLink;
 
-  // Filter product links for fullscreen/detail view to remove them from the video player
-  const activeProductLinks = isFullscreen ? [] : productLinks;
+  // Always pass through product links - don't filter them out
+  const activeProductLinks = productLinks;
 
   // Handle touch interactions
   const handleVideoTouch = () => {

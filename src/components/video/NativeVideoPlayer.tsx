@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { X, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
@@ -366,21 +365,38 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
 
       {renderMobileControls()}
 
-      {!isMobile && !hideControls && !isImage && (
+      {!isMobile && !hideControls && (
         <>
-          <div className="absolute bottom-3 right-3 z-20">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation"
-              onClick={e => {
-                e.stopPropagation();
-                onMuteToggle?.(e);
-              }}
-              aria-label={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-            </Button>
+          <div className="absolute bottom-3 right-3 flex gap-2 z-20">
+            {!isImage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation"
+                onClick={e => {
+                  e.stopPropagation();
+                  onMuteToggle?.(e);
+                }}
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </Button>
+            )}
+
+            {productLinks.length > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white bg-black/60 hover:bg-black/80 rounded-full border border-white touch-manipulation"
+                onClick={e => {
+                  e.stopPropagation();
+                  toggleProductLink?.(productLinks[0]?.id);
+                }}
+                aria-label="Show product links"
+              >
+                <ShoppingCart className="h-5 w-5" />
+              </Button>
+            )}
           </div>
 
           {showControls && (
