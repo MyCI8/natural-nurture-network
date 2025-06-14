@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 // Utility to extract first frame from video file and return a File (jpeg)
@@ -94,7 +93,7 @@ export function useVideoMedia() {
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const handleMediaUpload = async (file: File, onVideoUrlChange?: (url: string) => void) => {
+  const handleMediaUpload = async (file: File): Promise<string | null> => {
     console.log('🎬 Media upload started:', {
       fileName: file.name,
       fileType: file.type,
@@ -115,13 +114,6 @@ export function useVideoMedia() {
       
       console.log('🖼️ Preview URL created:', previewUrl);
       
-      // Set the file name or a placeholder for form state tracking
-      // Don't use blob URL for form state - use file name for tracking
-      if (onVideoUrlChange) {
-        onVideoUrlChange(file.name); // Use filename for tracking, not blob URL
-        console.log('📝 Form state updated with filename:', file.name);
-      }
-      
       // Generate thumbnail in background
       try {
         let thumbnail: File | null = null;
@@ -140,8 +132,9 @@ export function useVideoMedia() {
         }
       } catch (err) {
         console.warn('⚠️ Thumbnail generation failed, continuing without thumbnail:', err);
-        // Don't fail the upload if thumbnail generation fails
       }
+
+      return file.name;
       
     } catch (error) {
       console.error('❌ Media upload failed:', error);

@@ -1,9 +1,7 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { useVideoFetch } from "./video/useVideoFetch";
 import { useVideoFormState } from "./video/useVideoFormState";
 import { useVideoMedia } from "./video/useVideoMedia";
-import { useVideoSave } from "./video/useVideoSave";
 import { useState, useEffect } from "react";
 
 export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explore" | "general" = "explore") {
@@ -49,11 +47,11 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     console.log('📤 useVideoForm handleMediaUpload called with:', file.name);
     
     try {
-      await originalHandleMediaUpload(file, (filename) => {
-        // Store filename for tracking, not blob URL
+      const filename = await originalHandleMediaUpload(file);
+      if (filename) {
         handleInputChange({ target: { name: 'video_url', value: filename } });
         console.log('📝 Form video_url updated with filename:', filename);
-      });
+      }
     } catch (error) {
       console.error('❌ Media upload failed in useVideoForm:', error);
       throw error; // Re-throw for UI handling
@@ -77,7 +75,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
         setMediaPreview(getYouTubeThumbnail(video.video_url));
       }
     }
-  }, [video]);
+  }, [video, initializeFormFromVideo, setIsYoutubeLink, setMediaPreview, getYouTubeThumbnail]);
 
   const saveVideo = async (asDraft = false) => {
     console.log('💾 saveVideo called with:', {
