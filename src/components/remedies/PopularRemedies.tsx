@@ -5,17 +5,35 @@ import { Star, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from "react";
 
 const PopularRemedies = () => {
+  const [maxCards, setMaxCards] = useState(5);
+
+  // Calculate how many cards can fit based on screen height
+  useEffect(() => {
+    const calculateMaxCards = () => {
+      const availableHeight = window.innerHeight - 200; // Account for header, padding, title
+      const cardHeight = 72; // Approximate height of each card (64px + spacing)
+      const calculatedCards = Math.floor(availableHeight / cardHeight);
+      const finalCardCount = Math.min(Math.max(calculatedCards, 3), 10); // Min 3, max 10
+      setMaxCards(finalCardCount);
+    };
+
+    calculateMaxCards();
+    window.addEventListener('resize', calculateMaxCards);
+    return () => window.removeEventListener('resize', calculateMaxCards);
+  }, []);
+
   const { data: popularRemedies, isLoading } = useQuery({
-    queryKey: ["popularRemedies"],
+    queryKey: ["popularRemedies", maxCards],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("remedies")
         .select("*")
         .eq("status", "published")
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(maxCards);
 
       if (error) throw error;
       return data;
@@ -24,13 +42,13 @@ const PopularRemedies = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-2">
         <div className="flex items-center gap-2 mb-4">
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-5 w-32" />
         </div>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Skeleton key={i} className="h-20 w-full" />
+        {Array.from({ length: maxCards }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full" />
         ))}
       </div>
     );
@@ -43,13 +61,13 @@ const PopularRemedies = () => {
         <h2 className="font-semibold text-lg">Popular Remedies</h2>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {popularRemedies?.map((remedy) => (
           <Link to={`/remedies/${remedy.id}`} key={remedy.id}>
             <Card className="group hover:shadow-lg transition-shadow">
-              <CardContent className="p-3">
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted">
+              <CardContent className="p-2">
+                <div className="flex gap-2">
+                  <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-muted">
                     <img
                       src={remedy.image_url || "/placeholder.svg"}
                       alt={remedy.name}
@@ -63,7 +81,7 @@ const PopularRemedies = () => {
                     <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                       {remedy.summary}
                     </p>
-                    <div className="flex items-center gap-1 mt-2">
+                    <div className="flex items-center gap-1 mt-1">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                       <span className="text-xs font-medium">4.8</span>
                       <span className="text-xs text-muted-foreground ml-1">2.3k saves</span>
