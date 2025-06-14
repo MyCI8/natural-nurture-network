@@ -212,7 +212,7 @@ const ExploreDetail = () => {
             productLinks={productLinks} 
             autoPlay={true} 
             showControls={false} 
-            isFullscreen={false} 
+            isFullscreen={false}
             className="w-full rounded-md overflow-hidden" 
             objectFit="contain"
             useAspectRatio={true}
