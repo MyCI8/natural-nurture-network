@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 // Utility to extract first frame from video file and return a File (jpeg)
@@ -107,33 +108,42 @@ export function useVideoMedia() {
       setMediaFile(file);
       console.log('✅ File object stored:', file);
       
-      // Create preview URL for display only
+      // Create preview URL for display
       const previewUrl = URL.createObjectURL(file);
+      console.log('🖼️ Preview URL created:', previewUrl);
+      
+      // Set preview BEFORE clearing processing state to avoid timing issues
       setMediaPreview(previewUrl);
       setIsYoutubeLink(false);
       
-      console.log('🖼️ Preview URL created:', previewUrl);
+      console.log('🎯 MediaPreview state set, about to clear processing');
       
-      // Generate thumbnail in background
-      try {
-        let thumbnail: File | null = null;
-        
-        if (file.type.startsWith('video/')) {
-          console.log('🎥 Generating video thumbnail...');
-          thumbnail = await generateThumbnailFromVideoFile(file);
-        } else if (file.type.startsWith('image/')) {
-          console.log('🖼️ Generating image thumbnail...');
-          thumbnail = await generateThumbnailFromImageFile(file);
+      // Generate thumbnail in background (don't block the preview)
+      setTimeout(async () => {
+        try {
+          let thumbnail: File | null = null;
+          
+          if (file.type.startsWith('video/')) {
+            console.log('🎥 Generating video thumbnail...');
+            thumbnail = await generateThumbnailFromVideoFile(file);
+          } else if (file.type.startsWith('image/')) {
+            console.log('🖼️ Generating image thumbnail...');
+            thumbnail = await generateThumbnailFromImageFile(file);
+          }
+          
+          if (thumbnail) {
+            setThumbnailFile(thumbnail);
+            console.log('✅ Thumbnail generated successfully:', thumbnail);
+          }
+        } catch (err) {
+          console.warn('⚠️ Thumbnail generation failed, continuing without thumbnail:', err);
         }
-        
-        if (thumbnail) {
-          setThumbnailFile(thumbnail);
-          console.log('✅ Thumbnail generated successfully:', thumbnail);
-        }
-      } catch (err) {
-        console.warn('⚠️ Thumbnail generation failed, continuing without thumbnail:', err);
-      }
+      }, 100);
 
+      // Clear processing state AFTER preview is set
+      setIsProcessing(false);
+      
+      console.log('✅ Media upload completed successfully');
       return { filename: file.name, previewUrl };
       
     } catch (error) {
@@ -142,9 +152,8 @@ export function useVideoMedia() {
       setMediaFile(null);
       setMediaPreview(null);
       setThumbnailFile(null);
-      throw error; // Re-throw to handle in UI
-    } finally {
       setIsProcessing(false);
+      throw error; // Re-throw to handle in UI
     }
   };
 
