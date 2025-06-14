@@ -25,8 +25,31 @@ export function MediaPreviewCard({
   const [showImageCropModal, setShowImageCropModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const isVideo = videoUrl.includes('video') || videoUrl.includes('.mp4') || videoUrl.includes('.mov') || videoUrl.includes('.webm');
-  const isImage = !isVideo && !isYoutubeLink;
+  // Better media type detection
+  const isVideo = isYoutubeLink ? false : (
+    videoUrl.includes('video') || 
+    videoUrl.includes('.mp4') || 
+    videoUrl.includes('.mov') || 
+    videoUrl.includes('.webm') ||
+    videoUrl.includes('.avi') ||
+    videoUrl.startsWith('blob:') // Blob URLs are likely videos from our upload
+  );
+  
+  const isImage = !isVideo && !isYoutubeLink && (
+    videoUrl.includes('.jpg') || 
+    videoUrl.includes('.jpeg') || 
+    videoUrl.includes('.png') || 
+    videoUrl.includes('.gif') || 
+    videoUrl.includes('.webp') ||
+    videoUrl.includes('image')
+  );
+
+  console.log('MediaPreviewCard render:', {
+    videoUrl,
+    isVideo,
+    isImage,
+    isYoutubeLink
+  });
 
   const handleEdit = () => {
     if (isVideo && !isYoutubeLink) {
@@ -65,8 +88,12 @@ export function MediaPreviewCard({
                 controls={false}
                 muted
                 loop
+                autoPlay={false}
+                preload="metadata"
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
+                onLoadedData={() => console.log('Video loaded successfully')}
+                onError={(e) => console.error('Video error:', e)}
                 style={{ background: "#0a0a0a" }}
               />
             ) : isImage ? (
@@ -74,6 +101,8 @@ export function MediaPreviewCard({
                 src={videoUrl}
                 alt="Media preview"
                 className="w-full h-full object-contain"
+                onLoad={() => console.log('Image loaded successfully')}
+                onError={(e) => console.error('Image error:', e)}
                 style={{ background: "#0a0a0a" }}
               />
             ) : (
