@@ -45,19 +45,16 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced media upload that syncs with form state
   const handleMediaUpload = async (file: File) => {
-    console.log('📤 useVideoForm handleMediaUpload called with:', file.name);
-    
     try {
       const mediaData = await originalHandleMediaUpload(file);
       if (mediaData) {
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
-        console.log('📝 Form video_url updated with previewUrl:', mediaData.previewUrl);
         toast.success("Media ready for preview", {
           description: `Your ${file.type.startsWith('video/') ? 'video' : 'image'} has been processed.`,
         });
       }
     } catch (error) {
-      console.error('❌ Media upload failed in useVideoForm:', error);
+      console.error('Media upload failed:', error);
       toast.error("Upload failed", {
         description: "There was an error processing your media.",
       });
@@ -66,7 +63,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced video link change that syncs with form state
   const handleVideoLinkChange = (url: string) => {
-    console.log('🔗 useVideoForm handleVideoLinkChange called with:', url);
     originalHandleVideoLinkChange(url);
     handleInputChange({ target: { name: 'video_url', value: url } });
     
@@ -80,7 +76,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced clear that syncs with form state
   const clearMediaFile = () => {
-    console.log('🗑️ useVideoForm clearMediaFile called');
     originalClearMediaFile();
     handleInputChange({ target: { name: 'video_url', value: '' } });
   };
@@ -97,18 +92,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
   }, [video, initializeFormFromVideo, setIsYoutubeLink]);
 
   const saveVideo = async (asDraft = false) => {
-    console.log('💾 saveVideo called with:', {
-      asDraft,
-      hasValidMedia: hasValidMedia(),
-      mediaFile: mediaFile?.name || 'none',
-      formState: {
-        title: formState.title,
-        description: formState.description,
-        video_url: formState.video_url,
-        video_type: formState.video_type
-      }
-    });
-    
     return save(
       videoId, 
       formState, 
@@ -135,6 +118,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     handleVideoLinkChange,
     clearMediaFile,
     saveVideo,
-    hasValidMedia
+    hasValidMedia: () => Boolean(formState.video_url) || hasValidMedia()
   };
 }

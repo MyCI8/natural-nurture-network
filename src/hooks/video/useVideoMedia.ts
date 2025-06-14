@@ -88,16 +88,9 @@ export async function generateThumbnailFromImageFile(file: File): Promise<File> 
 
 export function useVideoMedia() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Add debugging wrapper for setMediaPreview
-  const setMediaPreviewWithLogging = (value: string | null) => {
-    console.log('🎯 SETTING mediaPreview:', value ? 'VALID_URL' : 'NULL', new Error().stack);
-    setMediaPreview(value);
-  };
   
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string }> => {
     console.log('🎬 Media upload started:', {
@@ -117,8 +110,6 @@ export function useVideoMedia() {
       const previewUrl = URL.createObjectURL(file);
       console.log('🖼️ Preview URL created:', previewUrl);
       
-      // Set preview FIRST and ensure it stays
-      setMediaPreviewWithLogging(previewUrl);
       setIsYoutubeLink(false);
       
       console.log('🎯 MediaPreview state set, waiting before clearing processing...');
@@ -158,7 +149,6 @@ export function useVideoMedia() {
       console.error('❌ Media upload failed:', error);
       // Clean up on error
       setMediaFile(null);
-      setMediaPreviewWithLogging(null);
       setThumbnailFile(null);
       setIsProcessing(false);
       throw error;
@@ -168,30 +158,18 @@ export function useVideoMedia() {
   const handleVideoLinkChange = (url: string) => {
     console.log('🔗 Video link changed:', url);
     
-    // Clean up any existing file data
-    if (mediaPreview && !isYoutubeLink) {
-      URL.revokeObjectURL(mediaPreview);
-    }
-    
     setIsYoutubeLink(true);
     setMediaFile(null);
     setThumbnailFile(null);
     
     const thumbnailUrl = getYouTubeThumbnail(url);
-    setMediaPreviewWithLogging(thumbnailUrl);
     console.log('📺 YouTube thumbnail set:', thumbnailUrl);
   };
 
   const clearMediaFile = () => {
     console.log('🗑️ CLEAR MEDIA CALLED - Clearing all media');
     
-    // Clean up blob URLs to prevent memory leaks
-    if (mediaPreview && !isYoutubeLink) {
-      URL.revokeObjectURL(mediaPreview);
-    }
-    
     setMediaFile(null);
-    setMediaPreviewWithLogging(null);
     setThumbnailFile(null);
     setIsYoutubeLink(false);
     setIsProcessing(false);
@@ -220,20 +198,18 @@ export function useVideoMedia() {
   // Helper function to check if we have valid media ready for upload
   const hasValidMedia = () => {
     const hasFile = mediaFile !== null;
-    const hasYouTube = isYoutubeLink && mediaPreview !== null;
+    const hasYouTube = isYoutubeLink;
     console.log('🔍 Media validation check:', {
       hasFile,
       hasYouTube,
       isProcessing,
-      mediaFile: mediaFile?.name || 'none',
-      mediaPreview: mediaPreview || 'none'
+      mediaFile: mediaFile?.name || 'none'
     });
     return (hasFile || hasYouTube) && !isProcessing;
   };
 
   return {
     mediaFile,
-    mediaPreview,
     thumbnailFile,
     isYoutubeLink,
     isProcessing,
@@ -242,7 +218,6 @@ export function useVideoMedia() {
     clearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    setMediaPreview: setMediaPreviewWithLogging,
     hasValidMedia
   };
 }
