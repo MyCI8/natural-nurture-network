@@ -114,6 +114,7 @@ const Post = () => {
               onVideoLinkChange={handleVideoLinkChange}
               onClearMedia={clearMediaFile}
               compact={false}
+              isProcessing={mediaProcessing}
             />
           </div>
 

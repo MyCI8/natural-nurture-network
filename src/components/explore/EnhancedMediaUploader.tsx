@@ -1,7 +1,6 @@
-import { useState, useRef, useCallback } from "react";
-import { Upload, Video, Image, FileX, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+
+import { useRef, useCallback, useState } from "react";
+import { Upload, Video, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -28,8 +27,6 @@ export function EnhancedMediaUploader({
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragState, setDragState] = useState<DragState>({ isDragging: false, dragCounter: 0 });
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const validateFile = (file: File): boolean => {
     // Check file type
@@ -65,52 +62,13 @@ export function EnhancedMediaUploader({
   const processFile = useCallback(async (file: File) => {
     if (!validateFile(file)) return;
 
-    setIsProcessing(true);
-    setUploadProgress(0);
-
     try {
-      // Simulate processing progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
-
-      // For video files, we might want to compress or process them
-      let processedFile = file;
-      
-      if (file.type.startsWith('video/')) {
-        // Video processing could be added here
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate processing
-      } else if (file.type.startsWith('image/')) {
-        // Image optimization could be added here
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate processing
-      }
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-      
-      await onMediaUpload(processedFile);
-      
-      toast({
-        title: "Media uploaded successfully",
-        description: `Your ${file.type.startsWith('video/') ? 'video' : 'image'} has been processed and is ready to use`,
-      });
+      await onMediaUpload(file);
     } catch (error) {
-      toast({
-        title: "Upload failed",
-        description: "There was an error processing your media",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-      setUploadProgress(0);
+      // Error is now handled and toasted in useVideoForm
+      console.error("Error during media upload processing:", error);
     }
-  }, [onMediaUpload, toast, validateFile, acceptedTypes, maxSizeMB]);
+  }, [onMediaUpload, validateFile]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -155,10 +113,13 @@ export function EnhancedMediaUploader({
     if (file) {
       processFile(file);
     }
-    e.target.value = '';
+    if (e.target) e.target.value = '';
   };
 
   const getFileTypeIcon = () => {
+    if (acceptedTypes.includes("video/*") && acceptedTypes.includes("image/*")) {
+       return <Upload className="h-8 w-8 text-muted-foreground" />;
+    }
     if (acceptedTypes.includes("video/*")) {
       return <Video className="h-8 w-8 text-blue-500" />;
     }
@@ -176,62 +137,50 @@ export function EnhancedMediaUploader({
           compact ? "p-6" : "p-8",
           dragState.isDragging 
             ? "border-primary bg-primary/10 scale-105" 
-            : "border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50",
-          isProcessing && "pointer-events-none opacity-70"
+            : "border-muted-foreground/25 hover:border-primary/50 hover:bg-accent/50"
         )}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onClick={() => !isProcessing && fileInputRef.current?.click()}
+        onClick={() => fileInputRef.current?.click()}
       >
-        {isProcessing ? (
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Processing media...</p>
-              <Progress value={uploadProgress} className="w-full max-w-xs mx-auto" />
-              <p className="text-xs text-muted-foreground">{uploadProgress}% complete</p>
-            </div>
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            {dragState.isDragging ? (
+              <Upload className="h-8 w-8 text-primary animate-bounce" />
+            ) : (
+              getFileTypeIcon()
+            )}
           </div>
-        ) : (
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">
-              {dragState.isDragging ? (
-                <Upload className="h-8 w-8 text-primary animate-bounce" />
-              ) : (
-                getFileTypeIcon()
+          
+          <div className="space-y-2">
+            <h3 className={cn(
+              "font-medium",
+              compact ? "text-base" : "text-lg"
+            )}>
+              {dragState.isDragging ? 'Drop your media here' : 'Upload Media'}
+            </h3>
+            <p className={cn(
+              "text-muted-foreground",
+              compact ? "text-xs" : "text-sm"
+            )}>
+              Drag & drop or click to browse • Max {maxSizeMB}MB
+            </p>
+            <div className="flex justify-center gap-2 text-xs text-muted-foreground">
+              {acceptedTypes.includes("video/*") && (
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
+                  Video
+                </span>
+              )}
+              {acceptedTypes.includes("image/*") && (
+                <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                  Image
+                </span>
               )}
             </div>
-            
-            <div className="space-y-2">
-              <h3 className={cn(
-                "font-medium",
-                compact ? "text-base" : "text-lg"
-              )}>
-                {dragState.isDragging ? 'Drop your media here' : 'Upload Media'}
-              </h3>
-              <p className={cn(
-                "text-muted-foreground",
-                compact ? "text-xs" : "text-sm"
-              )}>
-                Drag & drop or click to browse • Max {maxSizeMB}MB
-              </p>
-              <div className="flex justify-center gap-2 text-xs text-muted-foreground">
-                {acceptedTypes.includes("video/*") && (
-                  <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
-                    Video
-                  </span>
-                )}
-                {acceptedTypes.includes("image/*") && (
-                  <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded">
-                    Image
-                  </span>
-                )}
-              </div>
-            </div>
           </div>
-        )}
+        </div>
       </div>
 
       <input
@@ -240,7 +189,6 @@ export function EnhancedMediaUploader({
         accept={acceptedTypes.join(",")}
         onChange={handleFileInputChange}
         className="hidden"
-        disabled={isProcessing}
       />
     </div>
   );

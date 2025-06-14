@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { EnhancedMediaUploader } from "./EnhancedMediaUploader";
 import { MediaPreviewCard } from "./MediaPreviewCard";
+import { Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 interface MediaUploaderProps {
   mediaPreview: string | null;
@@ -11,6 +13,7 @@ interface MediaUploaderProps {
   onVideoLinkChange: (url: string) => void;
   onClearMedia: () => void;
   compact?: boolean;
+  isProcessing?: boolean;
 }
 
 export function MediaUploader({
@@ -20,7 +23,8 @@ export function MediaUploader({
   onMediaUpload,
   onVideoLinkChange,
   onClearMedia,
-  compact = false
+  compact = false,
+  isProcessing = false
 }: MediaUploaderProps) {
 
   const handleMediaUpdate = (newUrl: string) => {
@@ -29,9 +33,21 @@ export function MediaUploader({
     onVideoLinkChange(newUrl);
   };
 
-  return (
-    <div className="space-y-2">
-      {mediaPreview ? (
+  const renderContent = () => {
+    if (isProcessing) {
+      return (
+        <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
+          <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Processing media...</p>
+            <p className="text-xs text-muted-foreground">Please wait a moment.</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (mediaPreview) {
+      return (
         <MediaPreviewCard
           mediaPreview={mediaPreview}
           isYoutubeLink={isYoutubeLink}
@@ -40,15 +56,23 @@ export function MediaUploader({
           onMediaUpdate={handleMediaUpdate}
           compact={compact}
         />
-      ) : (
-        <EnhancedMediaUploader
-          onMediaUpload={onMediaUpload}
-          onVideoLinkChange={onVideoLinkChange}
-          compact={compact}
-          maxSizeMB={50}
-          acceptedTypes={["video/*", "image/*"]}
-        />
-      )}
+      );
+    }
+    
+    return (
+      <EnhancedMediaUploader
+        onMediaUpload={onMediaUpload}
+        onVideoLinkChange={onVideoLinkChange}
+        compact={compact}
+        maxSizeMB={50}
+        acceptedTypes={["video/*", "image/*"]}
+      />
+    );
+  };
+  
+  return (
+    <div className="space-y-2">
+      {renderContent()}
     </div>
   );
 }

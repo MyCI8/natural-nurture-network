@@ -5,6 +5,7 @@ import { useVideoFormState } from "./video/useVideoFormState";
 import { useVideoMedia } from "./video/useVideoMedia";
 import { useState, useEffect } from "react";
 import { useVideoSave } from "./video/useVideoSave";
+import { toast } from "sonner";
 
 export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explore" | "general" = "explore") {
   const navigate = useNavigate();
@@ -53,9 +54,15 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       if (filename) {
         handleInputChange({ target: { name: 'video_url', value: filename } });
         console.log('📝 Form video_url updated with filename:', filename);
+        toast.success("Media ready for preview", {
+          description: `Your ${file.type.startsWith('video/') ? 'video' : 'image'} has been processed.`,
+        });
       }
     } catch (error) {
       console.error('❌ Media upload failed in useVideoForm:', error);
+      toast.error("Upload failed", {
+        description: "There was an error processing your media.",
+      });
       throw error; // Re-throw for UI handling
     }
   };
