@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -59,10 +58,12 @@ export function useVideoSave() {
 
       // Only handle file upload if we have a file and no existing URL
       if (mediaFile && !isYoutubeLink && !videoUrl?.startsWith('http')) {
-        console.log('📤 Starting file upload to Supabase...');
+        console.log('📤 Starting file upload to Supabase storage bucket: video-media');
+        console.log('File details:', { name: mediaFile.name, size: mediaFile.size, type: mediaFile.type });
         
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
+        console.log('Generated file path in bucket:', fileName);
 
         const { error, data } = await supabase.storage
           .from('video-media')
@@ -72,8 +73,15 @@ export function useVideoSave() {
           });
 
         if (error) {
-          console.error("Upload error:", error);
-          toast.error(`Upload failed: ${error.message}`);
+          console.error("Supabase Storage Upload Error:", error);
+          if (error.message.includes("The resource was not found")) {
+            toast.error("Upload Failed: Storage bucket 'video-media' not found.", {
+              description: "Please check your Supabase project settings. The 'video-media' bucket might be missing or misconfigured.",
+              duration: 10000
+            });
+          } else {
+            toast.error(`Upload failed: ${error.message}`);
+          }
           return false;
         }
 
