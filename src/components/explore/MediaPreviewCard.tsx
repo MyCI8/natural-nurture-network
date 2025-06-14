@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Trash2, Edit, Play, Pause, RotateCw, Crop } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,27 +47,35 @@ export function MediaPreviewCard({
     setShowImageCropModal(false);
   };
 
+  // Responsive sizing: max-w at 48 for mobile, 72 for desktop, 4:3 aspect in compact
+  const containerClass = compact
+    ? "w-full max-w-[288px] sm:max-w-[384px] mx-auto"    // 48, 72 as px
+    : "w-full max-w-sm mx-auto";
+  const aspect = compact ? 4 / 3 : 9 / 16;
+
   return (
     <>
       <div className="relative group">
-        {/* Better sized preview - not too small, not too big */}
-        <div className={`w-full ${compact ? 'max-w-48' : 'max-w-sm'} mx-auto`}>
-          <AspectRatio ratio={compact ? 16/9 : 9/16} className="bg-muted overflow-hidden rounded-lg">
+        {/* Responsive preview */}
+        <div className={containerClass}>
+          <AspectRatio ratio={aspect} className="bg-muted overflow-hidden rounded-lg">
             {isVideo && !isYoutubeLink ? (
               <video
                 src={mediaPreview}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 controls={false}
                 muted
                 loop
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
+                style={{ background: "#0a0a0a" }}
               />
             ) : isImage ? (
               <img
                 src={mediaPreview}
                 alt="Media preview"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
+                style={{ background: "#0a0a0a" }}
               />
             ) : (
               // YouTube preview

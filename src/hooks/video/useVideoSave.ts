@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -7,22 +6,28 @@ import { VideoFormState } from "./useVideoFormState";
 export function useVideoSave() {
   const [isSaving, setIsSaving] = useState(false);
 
-  const verifyStorageBucket = async () => {
+  // Patch: ensure bucket exists, else create (for robust upload).
+  const ensureStorageBucket = async () => {
     try {
-      console.log('🪣 Checking storage bucket existence...');
-      const { data: buckets, error } = await supabase.storage.listBuckets();
-      
-      if (error) {
-        console.error('❌ Error checking buckets:', error);
-        return false;
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      if (listError) throw listError;
+      let videoBucket = buckets?.find(bucket => bucket.name === 'video-media');
+
+      if (!videoBucket) {
+        // Create bucket if not exists.
+        const { data: createData, error: createError } = await supabase.storage.createBucket('video-media', {
+          public: true,
+        });
+        if (createError) {
+          toast.error("Failed to create storage bucket. Please contact support.");
+          return false;
+        }
+        videoBucket = createData;
       }
-      
-      const videoBucket = buckets?.find(bucket => bucket.name === 'video-media');
-      console.log('🪣 Video-media bucket exists:', !!videoBucket);
-      
       return !!videoBucket;
-    } catch (error) {
-      console.error('❌ Storage bucket verification failed:', error);
+    } catch (err) {
+      console.error('❌ Bucket check/create failed:', err);
+      toast.error("Storage setup failed. Contact support.");
       return false;
     }
   };
@@ -50,7 +55,8 @@ export function useVideoSave() {
       }
     });
 
-    // For Explore posts, title is optional
+    // For Explore posts, title is optional and type is always 'general'
+    const submitType = formState.video_type === "explore" ? "general" : formState.video_type;
     if (formState.video_type !== "explore" && !formState.title) {
       toast.error("Please provide a title for the video");
       return false;
@@ -74,114 +80,72 @@ export function useVideoSave() {
 
       // Only for uploaded videos (not YouTube)
       if (mediaFile && !isYoutubeLink) {
-        console.log('📤 Starting file upload for:', mediaFile.name);
-        
-        // Verify storage bucket exists
-        const bucketExists = await verifyStorageBucket();
-        if (!bucketExists) {
-          console.error('❌ Storage bucket "video-media" does not exist');
-          toast.error("Storage configuration error. Please contact support.");
-          return false;
-        }
-        
+        // PATCH: ensure (and if needed, create) bucket robustness
+        const bucketExists = await ensureStorageBucket();
+        if (!bucketExists) return false;
+
         const fileExt = mediaFile.name.split('.').pop();
         const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
-        console.log('🗂️ Uploading to storage bucket: video-media, filename:', fileName);
-        
-        // Upload video file to storage with retry logic
+        // Upload logic w/ clear error
         let uploadAttempts = 0;
-        const maxAttempts = 3;
-        let uploadError = null;
         let uploadData = null;
-
-        while (uploadAttempts < maxAttempts && !uploadData) {
+        let uploadError = null;
+        while (uploadAttempts < 3 && !uploadData) {
           uploadAttempts++;
-          console.log(`📤 Upload attempt ${uploadAttempts}/${maxAttempts}`);
-          
           const { error, data } = await supabase.storage
             .from('video-media')
-            .upload(fileName, mediaFile, {
-              cacheControl: '3600',
-              upsert: false
-            });
-
+            .upload(fileName, mediaFile, { cacheControl: '3600', upsert: false });
           if (error) {
             uploadError = error;
-            console.error(`❌ Upload attempt ${uploadAttempts} failed:`, error);
-            if (uploadAttempts < maxAttempts) {
-              console.log('⏳ Retrying upload...');
-              await new Promise(resolve => setTimeout(resolve, 1000 * uploadAttempts));
-            }
+            if (uploadAttempts < 3) await new Promise(r => setTimeout(r, 700 * uploadAttempts));
           } else {
             uploadData = data;
             uploadError = null;
-            console.log('✅ File uploaded successfully:', data);
           }
         }
-
         if (uploadError || !uploadData) {
-          console.error('❌ All upload attempts failed:', uploadError);
-          throw new Error(`Upload failed after ${maxAttempts} attempts: ${uploadError?.message || 'Unknown error'}`);
+          toast.error("Upload failed. Please try a different file or check your connection.");
+          throw new Error(uploadError?.message || "Upload failed");
         }
-
-        videoUrl = supabase.storage
-          .from('video-media')
-          .getPublicUrl(fileName).data.publicUrl;
-
-        console.log('🔗 Generated public URL:', videoUrl);
-
-        // Upload thumbnail if we have it
+        videoUrl = supabase.storage.from('video-media').getPublicUrl(fileName).data.publicUrl;
+        // Upload thumbnail if present
         if (thumbnailFile) {
-          console.log('🖼️ Uploading thumbnail...');
           const thumbName = `thumbnail_${fileName.replace(/\.[^/.]+$/, "")}.jpg`;
-          const { error: thumbErr } = await supabase.storage
-            .from('video-media')
-            .upload(thumbName, thumbnailFile, { upsert: true });
+          const { error: thumbErr } = await supabase.storage.from('video-media').upload(
+            thumbName, thumbnailFile, { upsert: true }
+          );
           if (!thumbErr) {
-            thumbnailUrl = supabase.storage
-              .from('video-media')
-              .getPublicUrl(thumbName).data.publicUrl;
-            console.log('✅ Thumbnail uploaded:', thumbnailUrl);
-          } else {
-            console.warn('⚠️ Thumbnail upload failed:', thumbErr);
+            thumbnailUrl = supabase.storage.from('video-media').getPublicUrl(thumbName).data.publicUrl;
           }
         }
       }
-
       // For YouTube, set thumbnail if missing
       if (isYoutubeLink && !thumbnailUrl) {
         thumbnailUrl = getYouTubeThumbnail(formState.video_url);
       }
-
-      const mappedVideoType = formState.video_type === "explore" ? "general" : formState.video_type;
-
-      // For explore posts, use description as title if title is empty
+      // For explore, use part of description for title if missing
       let title = formState.title;
       if (!title && formState.description && formState.video_type === "explore") {
-        // Use first few words of description as title if missing
         const words = formState.description.split(' ');
         title = words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
       }
-
+      // PATCH: always published for post page (+type mapping)
       const videoData = {
         title: title || "Untitled Post",
         description: formState.description,
         video_url: videoUrl,
         thumbnail_url: thumbnailUrl,
-        status: "published" as "draft" | "published" | "archived", // Always publish for posts
+        status: asDraft ? "draft" : "published",
         creator_id: user.id,
-        video_type: mappedVideoType,
+        video_type: submitType,
         related_article_id: formState.related_article_id,
         show_in_latest: formState.show_in_latest,
         location: formState.location,
         tags: formState.tags
       };
 
-      console.log('💾 Saving video data to database:', videoData);
-
       let result;
-
       if (videoId) {
         const { data, error } = await supabase
           .from('videos')
@@ -189,33 +153,20 @@ export function useVideoSave() {
           .eq('id', videoId)
           .select()
           .single();
-
-        if (error) {
-          console.error('❌ Database update failed:', error);
-          throw error;
-        }
+        if (error) throw error;
         result = data;
-        console.log('✅ Video updated successfully:', result);
       } else {
         const { data, error } = await supabase
           .from('videos')
           .insert(videoData)
           .select()
           .single();
-
-        if (error) {
-          console.error('❌ Database insert failed:', error);
-          throw error;
-        }
+        if (error) throw error;
         result = data;
-        console.log('✅ Video created successfully:', result);
       }
-
       return result;
     } catch (error: any) {
-      console.error("❌ Error saving video:", error);
-      
-      // More specific error messages
+      // More specific error messages for upload, bucket, network, size issues
       if (error.message?.includes('bucket')) {
         toast.error("Storage configuration error. Please try again.");
       } else if (error.message?.includes('network')) {
@@ -225,7 +176,6 @@ export function useVideoSave() {
       } else {
         toast.error(`Failed to save: ${error.message}`);
       }
-      
       return false;
     } finally {
       setIsSaving(false);

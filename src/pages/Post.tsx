@@ -33,7 +33,7 @@ const Post = () => {
     }
   }, [currentUser, isLoadingUser, navigate]);
 
-  // Initialize video form with "general" type (for Explore videos)
+  // Initialize video form with "explore" type (for Explore videos)
   const {
     formState,
     isSaving,
@@ -54,46 +54,27 @@ const Post = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    console.log('🚀 Post submit clicked - validation check:', {
-      hasValidMedia: hasValidMedia(),
-      mediaPreview: !!mediaPreview,
-      isProcessing: mediaProcessing,
-      formState: {
-        description: formState.description,
-        video_url: formState.video_url
-      }
-    });
-    
-    // Check if we have valid media ready for upload
+
     if (!hasValidMedia()) {
       toast.error("Please upload a video or image first");
       return;
     }
-
-    // Validate description for explore posts
     if (!formState.description?.trim()) {
       toast.error("Please add a description for your post");
       return;
     }
-
     setIsProcessing(true);
-    
+
     try {
-      console.log('💾 Starting save process as published...');
-      
-      // Save as published
       const result = await saveVideo(false); // Save as published, not draft
-      
+
       if (result) {
         toast.success("Post created successfully!");
         navigate("/explore");
       } else {
-        console.error('❌ Save video returned false/null');
         toast.error("Failed to create post - please check your connection");
       }
     } catch (error) {
-      console.error("❌ Error creating post:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       toast.error(`Failed to create post: ${errorMessage}`);
     } finally {
@@ -107,43 +88,29 @@ const Post = () => {
 
   // Button state logic
   const isButtonDisabled = isSaving || isProcessing || mediaProcessing || !hasValidMedia();
-  
-  console.log('🔘 Post button state:', {
-    isSaving,
-    isProcessing,
-    mediaProcessing,
-    hasValidMedia: hasValidMedia(),
-    isButtonDisabled,
-    mediaPreview: !!mediaPreview
-  });
 
   return (
-    <div className="min-h-screen bg-background pt-14 pb-20">
-      {/* Header with back button - reduced bottom border */}
-      <header className="flex items-center justify-between px-4 py-2 border-b sticky top-0 bg-background z-10">
+    <div className="min-h-screen bg-background pt-8 pb-16 flex flex-col">
+      {/* Header with back button - reduced bottom border and more compact */}
+      <header className="flex items-center px-4 py-1 border-b sticky top-0 bg-background z-10 gap-2" style={{ minHeight: "48px" }}>
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={goBack}
           className="rounded-full h-10 w-10 touch-manipulation"
+          aria-label="Back"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        
-        <h1 className="text-lg font-semibold">
-          Create New Post
-        </h1>
-        
-        <div className="w-10">
-          {/* Empty div to balance header */}
-        </div>
+        <h1 className="text-base font-semibold flex-1 text-center">Create New Post</h1>
+        <div className="w-10 flex-shrink-0" />
       </header>
 
-      {/* Main content area with reduced top padding */}
-      <main className="px-4 pt-2 pb-4">
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Media upload section with reduced spacing */}
-          <div className="space-y-1">
+      {/* Main content area */}
+      <main className="flex-1 px-2 sm:px-4 pt-2 pb-4 flex flex-col items-center">
+        <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-2">
+          {/* Media upload section - responsive, compact, tight spacing */}
+          <div className="w-full flex justify-center mt-0 mb-2">
             <MediaUploader
               mediaPreview={mediaPreview}
               isYoutubeLink={isYoutubeLink}
@@ -153,52 +120,60 @@ const Post = () => {
               onClearMedia={clearMediaFile}
               compact={true}
             />
-            
-            {!mediaPreview && (
-              <div className="text-center text-xs text-muted-foreground px-2">
-                <p>Upload a video or photo to share</p>
-                <p className="text-[10px] mt-1">Drag & drop • Crop • Edit</p>
-              </div>
-            )}
           </div>
-          
-          {/* Form fields with reduced spacing */}
-          <div className="space-y-2">
-            <div>
-              <Label htmlFor="description" className="text-sm font-medium">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formState.description || ""}
-                onChange={handleInputChange}
-                placeholder="What's on your mind?"
-                className="mt-1 min-h-[120px] touch-manipulation"
-              />
+
+          {!mediaPreview && (
+            <div className="text-center text-xs text-muted-foreground px-2">
+              <p>Upload a video or photo to share</p>
+              <p className="text-[10px] mt-1">Drag & drop • Crop • Edit — Max 50MB</p>
             </div>
+          )}
+
+          {/* Form field: Description */}
+          <div>
+            <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+            <Textarea
+              id="description"
+              name="description"
+              value={formState.description || ""}
+              onChange={handleInputChange}
+              placeholder="What's on your mind?"
+              minLength={2}
+              maxLength={500}
+              required
+              className="mt-1 min-h-[90px] max-h-[240px] touch-manipulation bg-background"
+            />
           </div>
-          
-          {/* Post button */}
-          <div className="pt-2">
+
+          {/* Post button and progress state */}
+          <div className="pt-1">
             <Button 
-              type="submit" 
-              className="w-full py-6 rounded-full flex items-center justify-center gap-2 touch-manipulation"
+              type="submit"
+              className="w-full py-5 rounded-full flex items-center justify-center gap-2 touch-manipulation text-base"
               disabled={isButtonDisabled}
             >
               <UploadIcon className="h-5 w-5" />
               <span>
-                {mediaProcessing ? "Processing..." : 
-                 isProcessing ? "Posting..." : 
-                 isSaving ? "Saving..." : 
+                {mediaProcessing ? "Processing..." :
+                 isProcessing ? "Posting..." :
+                 isSaving ? "Saving..." :
                  "Post"}
               </span>
             </Button>
           </div>
-          
+
+          {/* Show processing progress visually */}
+          {(isProcessing || mediaProcessing) && (
+            <div className="w-full flex justify-center pt-2">
+              <span className="text-xs text-muted-foreground animate-pulse">
+                {isProcessing ? "Finalizing upload..." : "Processing file..."}
+              </span>
+            </div>
+          )}
+
           {/* Debug info in development */}
           {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded">
+            <div className="text-xs text-muted-foreground mt-1 p-1 bg-muted rounded">
               Debug: hasMedia={hasValidMedia().toString()}, processing={mediaProcessing.toString()}, preview={!!mediaPreview}
             </div>
           )}
@@ -209,3 +184,4 @@ const Post = () => {
 };
 
 export default Post;
+
