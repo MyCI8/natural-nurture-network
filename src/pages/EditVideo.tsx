@@ -32,7 +32,7 @@ const EditVideo = () => {
     formState,
     isLoading,
     isSaving,
-    mediaPreview,
+    isProcessing,
     isYoutubeLink,
     articles,
     video,
@@ -133,11 +133,11 @@ const EditVideo = () => {
               <CardContent className="p-0">
                 <VideoDetailsForm 
                   formState={formState}
-                  mediaPreview={mediaPreview}
                   isYoutubeLink={isYoutubeLink}
                   articles={articles}
                   videoId={id}
                   isSaving={isSaving}
+                  isProcessing={isProcessing}
                   handleInputChange={handleFormInputChange}
                   handleMediaUpload={handleMediaUpload}
                   handleVideoLinkChange={handleVideoLinkChange}

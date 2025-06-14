@@ -12,11 +12,11 @@ import { VideoFormState } from "@/hooks/video/useVideoFormState";
 
 interface VideoDetailsFormProps {
   formState: VideoFormState;
-  mediaPreview: string | null;
   isYoutubeLink: boolean;
   articles: { id: string; title: string }[];
   videoId?: string;
   isSaving: boolean;
+  isProcessing?: boolean;
   handleInputChange: (name: string, value: any) => void;
   handleMediaUpload: (file: File) => Promise<void>;
   handleVideoLinkChange: (url: string) => void;
@@ -28,11 +28,11 @@ interface VideoDetailsFormProps {
 
 export function VideoDetailsForm({
   formState,
-  mediaPreview,
   isYoutubeLink,
   articles,
   videoId,
   isSaving,
+  isProcessing = false,
   handleInputChange,
   handleMediaUpload,
   handleVideoLinkChange,
@@ -81,12 +81,12 @@ export function VideoDetailsForm({
 
         <>
           <MediaUploader
-            mediaPreview={mediaPreview}
-            isYoutubeLink={isYoutubeLink}
             videoUrl={formState.video_url}
+            isYoutubeLink={isYoutubeLink}
             onMediaUpload={handleMediaUpload}
             onVideoLinkChange={handleVideoLinkChange}
             onClearMedia={clearMediaFile}
+            isProcessing={isProcessing}
           />
           
           {videoId && formState.video_url && (
@@ -145,7 +145,7 @@ export function VideoDetailsForm({
           type="submit"
           disabled={
             isSaving ||
-            (!formState.video_url && !mediaPreview)
+            !formState.video_url
           }
           className="touch-manipulation"
         >
