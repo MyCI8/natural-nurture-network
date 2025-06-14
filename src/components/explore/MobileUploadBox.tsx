@@ -1,3 +1,4 @@
+
 import React, { useReducer, useRef } from "react";
 import { Upload, Loader2, X } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -75,7 +76,6 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
     }
   };
 
-  // Validate, create preview, and update reducer
   const handleSelectFile = async (file: File) => {
     cleanupPreview();
     // Validate size/type
@@ -99,92 +99,104 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
     dispatch({ type: "SELECT_FILE", file, previewUrl });
   };
 
-  // Single upload handler; could be extended for chunked handling
   const handleUpload = async () => {
     if (!state.file) return;
     dispatch({ type: "START_UPLOAD" });
+    
     try {
-      // Ensure the bucket exists (handle possible RLS error separately)
+      // Check if bucket exists first
       const { data: buckets, error: bucketsErr } = await supabase.storage.listBuckets();
       if (bucketsErr) {
-        dispatch({ type: "FAIL", error: "Storage access error (check permissions)" });
+        console.error("Bucket list error:", bucketsErr);
+        dispatch({ type: "FAIL", error: "Storage access denied. Please contact support." });
         toast({
-          title: "Storage error",
-          description: "Cannot access storage buckets. Please contact support.",
+          title: "Storage Error",
+          description: "Cannot access storage. Admin setup may be required.",
           variant: "destructive",
         });
         return;
       }
-      if (!buckets.some((b: any) => b.name === "video-media")) {
+
+      // Check if video-media bucket exists
+      const videoBucket = buckets?.find((b: any) => b.name === "video-media");
+      if (!videoBucket) {
+        // Try to create bucket, but handle RLS errors gracefully
         const { error: createErr } = await supabase.storage.createBucket("video-media", { public: true });
         if (createErr) {
-          // More explicit handling for RLS errors
-          let msg = "Failed to create storage bucket.";
-          if (String(createErr.message).toLowerCase().includes("rls")) {
-            msg += " Storage Row Level Security (RLS) prevents creating a bucket from the client. Please contact an admin to set up buckets and policies.";
+          console.error("Bucket creation failed:", createErr);
+          let errorMsg = "Storage setup incomplete.";
+          if (createErr.message?.toLowerCase().includes("rls") || createErr.message?.toLowerCase().includes("policy")) {
+            errorMsg = "Storage bucket needs admin setup. Please contact support.";
           }
-          dispatch({ type: "FAIL", error: msg });
+          dispatch({ type: "FAIL", error: errorMsg });
           toast({
-            title: "Storage error",
-            description: msg,
+            title: "Storage Setup Required",
+            description: errorMsg,
             variant: "destructive",
           });
           return;
         }
       }
 
-      // Use UUID for filename to avoid clashing
+      // Generate unique filename
       const ext = state.file.name.split(".").pop();
       const filename = `${crypto.randomUUID()}.${ext}`;
-      let result;
-      // NOTE: Supabase Storage currently does not support 'onUploadProgress'
-      // So, we remove it from the upload options.
-      let lastErrorMsg = "";
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        const { data, error } = await supabase.storage.from("video-media").upload(
-          filename,
-          state.file,
-          {
-            cacheControl: "3600",
-            upsert: false
-            // onUploadProgress removed; not supported by supabase-js v2+
+      
+      // Attempt upload with retry logic
+      let uploadSuccess = false;
+      let lastError = "";
+      
+      for (let attempt = 1; attempt <= 3 && !uploadSuccess; attempt++) {
+        try {
+          dispatch({ type: "PROGRESS", value: Math.min(attempt * 25, 75) });
+          
+          const { data, error } = await supabase.storage
+            .from("video-media")
+            .upload(filename, state.file, {
+              cacheControl: "3600",
+              upsert: false
+            });
+
+          if (error) {
+            lastError = error.message;
+            console.error(`Upload attempt ${attempt} failed:`, error);
+            if (attempt < 3) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            }
+          } else {
+            uploadSuccess = true;
+            dispatch({ type: "PROGRESS", value: 100 });
+            
+            // Get public URL
+            const publicUrl = supabase.storage.from("video-media").getPublicUrl(filename).data.publicUrl;
+            
+            dispatch({ type: "DONE" });
+            onUploadSuccess(publicUrl, filename, state.file);
+            toast({
+              title: "Upload Complete!",
+              description: "Your media is ready to post.",
+            });
           }
-        );
-        if (error) {
-          lastErrorMsg = error.message || "Upload error";
-          if (attempt < 3) {
-            // Retry after short delay
-            await new Promise((r) => setTimeout(r, 300 * attempt));
-            continue;
-          }
-          dispatch({ type: "FAIL", error: lastErrorMsg });
-          toast({
-            title: "Upload failed",
-            description: lastErrorMsg,
-            variant: "destructive",
-          });
-          return;
+        } catch (err: any) {
+          lastError = err.message || "Network error";
+          console.error(`Upload attempt ${attempt} error:`, err);
         }
-        result = data;
-        break;
       }
-      if (!result) {
-        dispatch({ type: "FAIL", error: lastErrorMsg || "Unknown upload error" });
-        return;
+
+      if (!uploadSuccess) {
+        dispatch({ type: "FAIL", error: lastError || "Upload failed after 3 attempts" });
+        toast({
+          title: "Upload Failed",
+          description: "Please check your connection and try again.",
+          variant: "destructive",
+        });
       }
-      dispatch({ type: "DONE" });
-      const publicUrl =
-        supabase.storage.from("video-media").getPublicUrl(filename).data.publicUrl;
-      onUploadSuccess(publicUrl, filename, state.file);
-      toast({ title: "Upload complete", description: "Media ready!" });
+
     } catch (error: any) {
-      dispatch({
-        type: "FAIL",
-        error: error?.message || "Unknown upload failure",
-      });
+      dispatch({ type: "FAIL", error: error?.message || "Unexpected error" });
       toast({
-        title: "Upload failed",
-        description: error?.message,
+        title: "Upload Error",
+        description: error?.message || "Something went wrong.",
         variant: "destructive",
       });
     }
@@ -195,7 +207,6 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
     dispatch({ type: "RESET" });
   };
 
-  // File input + full mobile tap target
   return (
     <div className="flex flex-col items-center px-2 py-4 w-full">
       {state.status === "idle" || state.status === "error" ? (
@@ -251,7 +262,8 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
               )
             ) : null}
           </AspectRatio>
-          {/* Remove button over preview */}
+          
+          {/* Remove button */}
           <Button
             size="icon"
             variant="destructive"
@@ -262,20 +274,20 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
           >
             <X className="h-4 w-4" />
           </Button>
-          {/* Upload Progress/Action */}
-          {/* PATCH: Show Upload button only if status is 'ready' */}
+          
+          {/* Upload button - only show when ready */}
           {state.status === "ready" && (
             <Button
               className="mt-4 w-full rounded-full"
               onClick={handleUpload}
-              // Only disabled if already uploading
-              disabled={state.status === "uploading"}
+              disabled={false}
               type="button"
             >
               Upload
             </Button>
           )}
-          {/* PATCH: Show progress and percent only if uploading */}
+          
+          {/* Progress indicator - only show when uploading */}
           {state.status === "uploading" && (
             <div className="absolute inset-x-0 bottom-6 flex flex-col items-center">
               <Loader2 className="h-5 w-5 animate-spin text-primary mb-2" />
@@ -283,7 +295,8 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
               <span className="text-xs text-muted-foreground mt-1">{state.progress}%</span>
             </div>
           )}
-          {/* PATCH: If upload failed, ensure error persists & UI remains visible */}
+          
+          {/* Error state - show error message when status is error */}
           {state.status === "error" && (
             <div className="absolute inset-x-0 bottom-2 flex flex-col items-center">
               <span className="text-xs text-destructive">
