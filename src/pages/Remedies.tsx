@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
@@ -229,6 +230,7 @@ const Remedies = () => {
           <div key={remedy.id} onClick={() => handleRemedyClick(remedy)}>
             <Card className="x-media-card group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer touch-manipulation active-scale">
               <CardContent className="p-0">
+                {/* Image Container - No overlay, full image display */}
                 <MediaContainer 
                   aspectRatio="auto"
                   imageUrl={remedy.image_url || "/placeholder.svg"}
@@ -238,21 +240,27 @@ const Remedies = () => {
                   <img
                     src={remedy.image_url || "/placeholder.svg"}
                     alt={remedy.name || "Remedy"}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                    style={{
+                      maxHeight: '300px',
+                      minHeight: '200px'
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-white text-xl font-bold mb-2 line-clamp-2">
+                </MediaContainer>
+                
+                {/* Content Below Image */}
+                <div className="p-4">
+                  {/* Title and Description */}
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold text-primary mb-2 line-clamp-2">
                       {remedy.name || "Untitled Remedy"}
                     </h3>
-                    <p className="text-white/90 text-sm line-clamp-2 mb-3">
+                    <p className="text-muted-foreground text-sm line-clamp-2">
                       {remedy.summary || remedy.brief_description || "No description available"}
                     </p>
                   </div>
-                </MediaContainer>
-                
-                {/* Social Actions */}
-                <div className="p-4">
+                  
+                  {/* Social Actions */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <Button
