@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
@@ -309,34 +308,6 @@ const RemedyDetail = () => {
             </div>
           )}
 
-          {/* Precautions & Side Effects */}
-          {(parsedContent.precautionsAndSideEffects || 
-            (remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0)) && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold">Precautions & Side Effects</h2>
-              <div className="space-y-2">
-                {parsedContent.precautionsAndSideEffects ? (
-                  <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
-                    <CardContent className="p-4">
-                      <div 
-                        className="prose max-w-none text-sm text-amber-700 dark:text-amber-300"
-                        dangerouslySetInnerHTML={{ __html: parsedContent.precautionsAndSideEffects }}
-                      />
-                    </CardContent>
-                  </Card>
-                ) : (
-                  remedy.expert_recommendations?.map((recommendation, index) => (
-                    <Card key={index} className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
-                      <CardContent className="p-4">
-                        <p className="text-sm text-amber-700 dark:text-amber-300">{String(recommendation)}</p>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Safety Note */}
           <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
             <CardContent className="p-4">
@@ -344,9 +315,26 @@ const RemedyDetail = () => {
                 <Shield className="h-5 w-5" />
                 Safety Note
               </h3>
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                Always consult with a healthcare professional before trying new remedies, especially if you have existing health conditions or are taking medications.
-              </p>
+              <div className="space-y-2">
+                {(parsedContent.precautionsAndSideEffects || 
+                  (remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0)) && (
+                  <div>
+                    {parsedContent.precautionsAndSideEffects ? (
+                      <div 
+                        className="prose max-w-none text-sm text-amber-700 dark:text-amber-300"
+                        dangerouslySetInnerHTML={{ __html: parsedContent.precautionsAndSideEffects }}
+                      />
+                    ) : (
+                      remedy.expert_recommendations?.map((recommendation, index) => (
+                        <p key={index} className="text-sm text-amber-700 dark:text-amber-300">{String(recommendation)}</p>
+                      ))
+                    )}
+                  </div>
+                )}
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  Always consult with a healthcare professional before trying new remedies, especially if you have existing health conditions or are taking medications.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
