@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -12,7 +11,8 @@ import { UserVideoGrid } from '@/components/profile/UserVideoGrid';
 import { SavedVideos } from '@/components/profile/SavedVideos';
 import { SavedRemedies } from '@/components/profile/SavedRemedies';
 import { UserRemedies } from '@/components/profile/UserRemedies';
-import { SavedTabs } from '@/components/profile/SavedTabs';
+import { AllSavedContent } from '@/components/profile/AllSavedContent';
+import { AllLikedContent } from '@/components/profile/AllLikedContent';
 import type { User } from '@/types/user';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isValidStorageUrl } from '@/utils/imageUtils';
@@ -154,36 +154,25 @@ const UserProfile = () => {
 
         {/* Content Tabs */}
         <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className={`grid w-full ${isOwnProfile ? 'grid-cols-3' : 'grid-cols-2'} dark:bg-muted/10`}>
+          <TabsList className="grid w-full grid-cols-2 dark:bg-muted/10">
             <TabsTrigger value="posts" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
-              <Grid className="w-4 h-4 mr-2" />
-              Posts
+              <Bookmark className="w-4 h-4 mr-2" />
+              Saved
             </TabsTrigger>
             <TabsTrigger value="remedies" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
-              <Leaf className="w-4 h-4 mr-2" />
-              Remedies
+              <Heart className="w-4 h-4 mr-2" />
+              Liked
             </TabsTrigger>
-            {isOwnProfile && (
-              <TabsTrigger value="saved" className="flex items-center py-3 sm:py-2 data-[state=active]:dark:bg-muted/30">
-                <Bookmark className="w-4 h-4 mr-2" />
-                Saved
-              </TabsTrigger>
-            )}
           </TabsList>
           
+          {/* Posts tab: All saved content (videos & remedies) */}
           <TabsContent value="posts" className="mt-4 sm:mt-6">
-            <UserVideoGrid userId={profile.id} />
+            <AllSavedContent userId={profile.id} />
           </TabsContent>
-          
+          {/* Remedies tab: All liked content (videos & remedies) */}
           <TabsContent value="remedies" className="mt-4 sm:mt-6">
-            <UserRemedies userId={profile.id} />
+            <AllLikedContent userId={profile.id} />
           </TabsContent>
-          
-          {isOwnProfile && (
-            <TabsContent value="saved" className="mt-4 sm:mt-6">
-              <SavedTabs userId={profile.id} />
-            </TabsContent>
-          )}
         </Tabs>
       </div>
     </div>
