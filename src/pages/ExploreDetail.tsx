@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +36,9 @@ const ExploreDetail = () => {
   const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { deletePost, isDeleting } = usePostManagement();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [naturalAspectRatio, setNaturalAspectRatio] = useState<number | null>(null);
+  const [videoSize, setVideoSize] = useState<{ width: number; height: number } | null>(null);
 
   useEffect(() => {
     setShowRightSection(true);
@@ -52,6 +54,44 @@ const ExploreDetail = () => {
     // Always navigate back to explore page
     navigate('/explore');
   };
+
+  const handleNaturalAspectRatioChange = useCallback((ratio: number) => {
+    setNaturalAspectRatio(ratio);
+  }, []);
+
+  useLayoutEffect(() => {
+    const calculateSize = () => {
+      if (containerRef.current && naturalAspectRatio) {
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+        const containerAspectRatio = containerWidth / containerHeight;
+
+        let width: number;
+        let height: number;
+
+        if (naturalAspectRatio > containerAspectRatio) {
+          // Fit to width
+          width = containerWidth;
+          height = width / naturalAspectRatio;
+        } else {
+          // Fit to height
+          height = containerHeight;
+          width = height * naturalAspectRatio;
+        }
+        
+        setVideoSize({ width: Math.round(width), height: Math.round(height) });
+      }
+    };
+    
+    // Reset aspect ratio and size when video ID changes
+    setNaturalAspectRatio(null);
+    setVideoSize(null);
+    
+    calculateSize();
+
+    window.addEventListener('resize', calculateSize);
+    return () => window.removeEventListener('resize', calculateSize);
+  }, [id, naturalAspectRatio]);
 
   // Get current user for permission checks
   const { data: currentUser } = useQuery({
@@ -223,17 +263,22 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <div className="flex-1 w-full h-full flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
-          <div className="w-full max-w-3xl bg-black rounded-lg overflow-hidden p-2.5 min-h-[200px] flex items-center justify-center relative">
+        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
+          <div 
+            className="bg-black rounded-lg overflow-hidden flex items-center justify-center relative transition-all duration-300"
+            style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : { visibility: 'hidden' }}
+          >
             <VideoPlayer 
               video={video} 
               autoPlay={true} 
               showControls={false} 
               isFullscreen={false}
-              className="w-full rounded-md overflow-hidden" 
+              className="w-full h-full rounded-md overflow-hidden" 
               objectFit="contain"
-              useAspectRatio={true}
+              useAspectRatio={false}
               onClick={handleClose}
+              onNaturalAspectRatioChange={handleNaturalAspectRatioChange}
+              onTimeUpdate={handleTimeUpdate}
             />
             
             {/* Video progress bar */}

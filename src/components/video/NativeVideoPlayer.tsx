@@ -32,6 +32,7 @@ interface NativeVideoPlayerProps {
   showProgress?: boolean;
   progressValue?: number;
   hideControls?: boolean;
+  onNaturalAspectRatioChange?: (ratio: number) => void;
 }
 
 const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
@@ -56,7 +57,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   onTimeUpdate,
   showProgress = false,
   progressValue,
-  hideControls = false
+  hideControls = false,
+  onNaturalAspectRatioChange,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -86,7 +88,9 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
     if (videoRef.current) {
       const { videoWidth, videoHeight } = videoRef.current;
       if (videoWidth && videoHeight) {
-        setVideoNaturalAspectRatio(videoWidth / videoHeight);
+        const ratio = videoWidth / videoHeight;
+        setVideoNaturalAspectRatio(ratio);
+        onNaturalAspectRatioChange?.(ratio);
       }
     }
   };
@@ -269,9 +273,14 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 alt={video.title || ''} 
                 className="w-full h-full"
                 style={{ objectFit }}
-                onLoad={() => {
+                onLoad={(e) => {
                   console.log("Image loaded successfully:", video.video_url);
                   onInView?.(true);
+                  const img = e.currentTarget;
+                  if (img.naturalWidth && img.naturalHeight) {
+                    const ratio = img.naturalWidth / img.naturalHeight;
+                    onNaturalAspectRatioChange?.(ratio);
+                  }
                 }}
                 onError={(e) => {
                   console.error("Error loading image:", video.video_url, e);
@@ -313,9 +322,14 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 alt={video.title || ''} 
                 className="max-w-full max-h-full"
                 style={{ objectFit }}
-                onLoad={() => {
+                onLoad={(e) => {
                   console.log("Image loaded successfully:", video.video_url);
                   onInView?.(true);
+                   const img = e.currentTarget;
+                  if (img.naturalWidth && img.naturalHeight) {
+                    const ratio = img.naturalWidth / img.naturalHeight;
+                    onNaturalAspectRatioChange?.(ratio);
+                  }
                 }}
                 onError={(e) => {
                   console.error("Error loading image:", video.video_url, e);

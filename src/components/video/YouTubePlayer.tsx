@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { X, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,7 @@ interface YouTubePlayerProps {
   toggleProductLink: (linkId: string) => void;
   useAspectRatio?: boolean;
   feedAspectRatio?: number;
+  onNaturalAspectRatioChange?: (ratio: number) => void;
 }
 
 const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
@@ -36,10 +36,18 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
   onClose,
   toggleProductLink,
   useAspectRatio = true,
-  feedAspectRatio = 4/5
+  feedAspectRatio = 4/5,
+  onNaturalAspectRatioChange,
 }) => {
   const youtubeId = getYouTubeVideoId(video.video_url || '');
   
+  useEffect(() => {
+    if (onNaturalAspectRatioChange) {
+      // Default to 16:9 for YouTube videos
+      onNaturalAspectRatioChange(16 / 9);
+    }
+  }, [onNaturalAspectRatioChange]);
+
   if (!youtubeId) {
     return <div className="p-4 bg-black text-white">Invalid YouTube URL</div>;
   }

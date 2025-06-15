@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo, isImagePost } from './utils/videoPlayerUtils';
@@ -26,6 +25,7 @@ interface VideoPlayerProps {
   showProgress?: boolean;
   progressValue?: number;
   hideControls?: boolean;
+  onNaturalAspectRatioChange?: (ratio: number) => void;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
@@ -47,7 +47,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onTimeUpdate,
   showProgress = false,
   progressValue,
-  hideControls = false
+  hideControls = false,
+  onNaturalAspectRatioChange
 }) => {
   const [isMuted, setIsMuted] = useState(!globalAudioEnabled);
   const [playbackStarted, setPlaybackStarted] = useState(false);
@@ -121,6 +122,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         toggleProductLink={handleToggleProductLink}
         useAspectRatio={useAspectRatio}
         feedAspectRatio={feedAspectRatio}
+        onNaturalAspectRatioChange={onNaturalAspectRatioChange}
       />
     );
   }
@@ -149,6 +151,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       showProgress={showProgress}
       progressValue={progressValue}
       hideControls={hideControls}
+      onNaturalAspectRatioChange={onNaturalAspectRatioChange}
     />
   );
 };
