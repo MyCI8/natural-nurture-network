@@ -61,7 +61,7 @@ const Remedies = () => {
     queryKey: ['remedyLikes', currentUser?.id],
     queryFn: async () => {
       if (!currentUser) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('remedy_likes')
         .select('remedy_id')
         .eq('user_id', currentUser.id);
@@ -70,7 +70,7 @@ const Remedies = () => {
         console.error('Error fetching remedy likes:', error.message);
         return [];
       }
-      return data?.map(like => like.remedy_id) ?? [];
+      return data?.map((like: any) => like.remedy_id) ?? [];
     },
     enabled: !!currentUser,
   });
@@ -81,7 +81,7 @@ const Remedies = () => {
     queryKey: ['savedRemediesList', currentUser?.id], // Unique key for this list
     queryFn: async () => {
       if (!currentUser) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('saved_remedies')
         .select('remedy_id')
         .eq('user_id', currentUser.id);
@@ -90,7 +90,7 @@ const Remedies = () => {
         console.error('Error fetching saved remedies list:', error.message);
         return [];
       }
-      return data?.map(save => save.remedy_id) ?? [];
+      return data?.map((save: any) => save.remedy_id) ?? [];
     },
     enabled: !!currentUser,
   });
@@ -161,14 +161,14 @@ const Remedies = () => {
     
     try {
       if (isLiked) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('remedy_likes')
           .delete()
           .eq('user_id', currentUser.id)
           .eq('remedy_id', remedyId);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('remedy_likes')
           .insert({ user_id: currentUser.id, remedy_id: remedyId });
         if (error) throw error;
@@ -194,7 +194,7 @@ const Remedies = () => {
 
     try {
       if (isSaved) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('saved_remedies')
           .delete()
           .eq('user_id', currentUser.id)
@@ -202,7 +202,7 @@ const Remedies = () => {
         if (error) throw error;
         toast({ title: "Remedy removed from your saved list." });
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('saved_remedies')
           .insert({ user_id: currentUser.id, remedy_id: remedyId });
         if (error) throw error;
@@ -251,7 +251,7 @@ const Remedies = () => {
       return;
     }
 
-    const { error } = await supabase.from('remedy_ratings').upsert(
+    const { error } = await (supabase as any).from('remedy_ratings').upsert(
       {
         remedy_id: remedyToRate.id,
         user_id: currentUser.id,

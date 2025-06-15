@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -22,7 +23,7 @@ export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
     queryKey: ['savedRemedies', userId],
     queryFn: async () => {
       if (!userId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('saved_remedies')
         .select(`
           id,
@@ -82,8 +83,8 @@ export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute top-2 right-2">
-                    <div className="bg-red-500 text-white p-1 rounded-full">
-                      <Heart className="h-3 w-3 fill-white" />
+                    <div className="bg-amber-400 text-black p-1 rounded-full">
+                      <Bookmark className="h-3 w-3 fill-black" />
                     </div>
                   </div>
                 </div>
