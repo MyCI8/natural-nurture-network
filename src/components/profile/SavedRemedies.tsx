@@ -15,10 +15,20 @@ export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
   const { data: savedRemedies, isLoading } = useQuery({
     queryKey: ['savedRemedies', userId],
     queryFn: async () => {
-      // For now, return an empty array since the saved_remedies table doesn't exist yet
-      // This will be updated when the database schema is properly set up
-      return [];
+      const { data, error } = await supabase
+        .from('saved_remedies')
+        .select('id, created_at, remedy:remedies(*)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching saved remedies:", error);
+        throw error;
+      }
+      
+      return data?.filter(item => item.remedy) || [];
     },
+    enabled: !!userId,
   });
 
   if (isLoading) {

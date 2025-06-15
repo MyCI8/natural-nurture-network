@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,8 @@ import { useInfiniteRemedies } from "@/hooks/useInfiniteRemedies";
 import { useInView } from "react-intersection-observer";
 import { Tables } from "@/integrations/supabase/types";
 import RemedyFeed from "@/components/remedies/RemedyFeed";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 type Remedy = Tables<'remedies'>;
 
@@ -21,6 +23,9 @@ const Remedies = () => {
   const navigate = useNavigate();
   const location = useLocation(); // in case it's needed
   const isMobile = useIsMobile();
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -48,6 +53,36 @@ const Remedies = () => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const remedies = data?.pages.flatMap(page => page) ?? [];
+
+  const { data: userRemedyLikesData } = useQuery({
+    queryKey: ['userRemedyLikes', currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      const { data, error } = await supabase
+        .from('remedy_likes')
+        .select('remedy_id')
+        .eq('user_id', currentUser.id);
+      if (error) throw error;
+      return data.map(like => like.remedy_id);
+    },
+    enabled: !!currentUser,
+  });
+  const userRemedyLikes = new Set(userRemedyLikesData);
+
+  const { data: userSavedRemediesData } = useQuery({
+    queryKey: ['userSavedRemedies', currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      const { data, error } = await supabase
+        .from('saved_remedies')
+        .select('remedy_id')
+        .eq('user_id', currentUser.id);
+      if (error) throw error;
+      return data.map(save => save.remedy_id);
+    },
+    enabled: !!currentUser,
+  });
+  const userSavedRemedies = new Set(userSavedRemediesData);
 
   const handleSearchIconClick = () => {
     if (isMobile) {
@@ -101,11 +136,71 @@ const Remedies = () => {
     navigate(`/remedies/${remedy.id}`);
   };
 
+  const handleLike = async (remedyId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!currentUser) {
+      toast({ title: "Please sign in to like remedies.", variant: "destructive" });
+      navigate('/auth');
+      return;
+    }
+
+    const isLiked = userRemedyLikes.has(remedyId);
+    try {
+      if (isLiked) {
+        await supabase
+          .from('remedy_likes')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('remedy_id', remedyId);
+      } else {
+        await supabase
+          .from('remedy_likes')
+          .insert({ user_id: currentUser.id, remedy_id: remedyId });
+      }
+      queryClient.invalidateQueries({ queryKey: ['userRemedyLikes', currentUser.id] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update like. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSave = async (remedyId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Save remedy:", remedyId);
-    // TODO: Implement save functionality
+    if (!currentUser) {
+        toast({ title: "Please sign in to save remedies.", variant: "destructive" });
+        navigate('/auth');
+        return;
+    }
+    
+    const isSaved = userSavedRemedies.has(remedyId);
+    try {
+        if (isSaved) {
+            await supabase
+                .from('saved_remedies')
+                .delete()
+                .eq('user_id', currentUser.id)
+                .eq('remedy_id', remedyId);
+            toast({ title: "Remedy unsaved!" });
+        } else {
+            await supabase
+                .from('saved_remedies')
+                .insert({ user_id: currentUser.id, remedy_id: remedyId });
+            toast({ title: "Remedy saved!" });
+        }
+        queryClient.invalidateQueries({ queryKey: ['userSavedRemedies', currentUser.id] });
+        queryClient.invalidateQueries({ queryKey: ['savedRemedies', currentUser.id] });
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: "Failed to save remedy. Please try again.",
+            variant: "destructive",
+        });
+    }
   };
 
   const handleShare = async (remedy: Remedy, e: React.MouseEvent) => {
@@ -251,6 +346,9 @@ const Remedies = () => {
               <RemedyFeed
                 remedies={remedies}
                 handleRemedyClick={handleRemedyClick}
+                userLikes={userRemedyLikes}
+                userSaves={userSavedRemedies}
+                handleLike={handleLike}
                 handleSave={handleSave}
                 handleShare={handleShare}
                 loadMoreRef={loadMoreRef}
@@ -269,6 +367,9 @@ const Remedies = () => {
             <RemedyFeed
               remedies={remedies}
               handleRemedyClick={handleRemedyClick}
+              userLikes={userRemedyLikes}
+              userSaves={userSavedRemedies}
+              handleLike={handleLike}
               handleSave={handleSave}
               handleShare={handleShare}
               loadMoreRef={loadMoreRef}
