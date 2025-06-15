@@ -20,6 +20,10 @@ type SavedVideo = {
   video: Video;
 };
 
+type MergedSavedItem =
+  | ({ type: 'remedy' } & SavedRemedy)
+  | ({ type: 'video' } & SavedVideo);
+
 interface AllSavedContentProps {
   userId: string;
 }
@@ -76,9 +80,9 @@ export const AllSavedContent = ({ userId }: AllSavedContentProps) => {
   const isLoading = loadingRemedies || loadingVideos;
 
   // Merge & sort both content types by created_at descending
-  const allItems = [
-    ...(savedRemedies?.map(r => ({ ...r, type: 'remedy' })) ?? []),
-    ...(savedVideos?.map(v => ({ ...v, type: 'video' })) ?? []),
+  const allItems: MergedSavedItem[] = [
+    ...(savedRemedies?.map(r => ({ ...r, type: 'remedy' as const })) ?? []),
+    ...(savedVideos?.map(v => ({ ...v, type: 'video' as const })) ?? []),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   if (isLoading) {
@@ -135,7 +139,7 @@ export const AllSavedContent = ({ userId }: AllSavedContentProps) => {
               </CardContent>
             </Card>
           );
-        } else {
+        } else if (item.type === 'video') {
           // Video card
           const video = item.video;
           if (!video) return null;
@@ -167,6 +171,7 @@ export const AllSavedContent = ({ userId }: AllSavedContentProps) => {
             </Card>
           );
         }
+        return null;
       })}
     </div>
   );

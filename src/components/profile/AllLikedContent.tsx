@@ -20,6 +20,10 @@ type LikedVideo = {
   video: Video | null;
 };
 
+type MergedLikedItem =
+  | ({ type: 'remedy' } & LikedRemedy)
+  | ({ type: 'video' } & LikedVideo);
+
 interface AllLikedContentProps {
   userId: string;
 }
@@ -78,9 +82,9 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
   const isLoading = loadingRemedies || loadingVideos;
 
   // Merge & sort both content types by like time
-  const allItems = [
-    ...(likedRemedies?.map(r => ({ ...r, type: 'remedy' })) ?? []),
-    ...(likedVideos?.map(v => ({ ...v, type: 'video' })) ?? []),
+  const allItems: MergedLikedItem[] = [
+    ...(likedRemedies?.map(r => ({ ...r, type: 'remedy' as const })) ?? []),
+    ...(likedVideos?.map(v => ({ ...v, type: 'video' as const })) ?? []),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   if (isLoading) {
@@ -137,7 +141,7 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
               </CardContent>
             </Card>
           );
-        } else {
+        } else if (item.type === 'video') {
           // Video card
           const video = item.video;
           if (!video) return null;
@@ -169,6 +173,7 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
             </Card>
           );
         }
+        return null;
       })}
     </div>
   );
