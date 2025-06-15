@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
-import MediaContainer from "@/components/ui/media-container";
 import { migrateRemedyImages } from "@/utils/remedyImageMigration";
 
 const Remedies = () => {
@@ -213,9 +212,9 @@ const Remedies = () => {
     );
   }
 
-  // Remedy Feed Implementation (New)
+  // Remedy Feed Implementation (Updated)
   const RemedyFeed = () => (
-    <div className="flex flex-col gap-5 px-1 max-w-lg mx-auto w-full">
+    <div className="flex flex-col gap-6 max-w-lg mx-auto w-full">
       {filteredRemedies && filteredRemedies.length > 0 ? (
         filteredRemedies.map((remedy) => (
           <div
@@ -227,40 +226,36 @@ const Remedies = () => {
             role="button"
             aria-label={`View remedy: ${remedy.name}`}
           >
-            {/* Image with overlayed title */}
-            <MediaContainer aspectRatio="auto" className="bg-muted">
-              <div className="relative w-full flex justify-center items-center" style={{ minHeight: 180, maxHeight: 350 }}>
-                <img
-                  src={remedy.image_url || "/placeholder.svg"}
-                  alt={remedy.name || "Remedy"}
-                  className="w-full h-full object-contain rounded-xl"
-                  style={{
-                    background: 'white',
-                    maxHeight: 320,
-                  }}
-                  draggable={false}
-                />
-                {remedy.name && (
-                  // Title (Black, placed at top of image, with subtle shadow for readability)
-                  <div className="absolute top-0 left-0 w-full px-3 pt-4 pb-1 flex items-start">
-                    <span className="text-black font-bold text-xl leading-tight bg-white/75 rounded-xl px-3 py-1 shadow">
-                      {remedy.name}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </MediaContainer>
+            {/* Title */}
+            {remedy.name && (
+              <h3 className="text-black font-bold text-xl leading-tight mb-3 px-2">
+                {remedy.name}
+              </h3>
+            )}
+            
+            {/* Image */}
+            <div className="relative w-full flex justify-center items-center bg-transparent">
+              <img
+                src={remedy.image_url || "/placeholder.svg"}
+                alt={remedy.name || "Remedy"}
+                className="w-full object-contain rounded-xl"
+                style={{
+                  maxHeight: 400,
+                  minHeight: 200,
+                }}
+                draggable={false}
+              />
+            </div>
+            
             {/* Description and social actions */}
-            <div className="flex flex-col gap-2 pt-2 pb-0 px-2">
+            <div className="flex flex-col gap-3 pt-3 px-2">
               {remedy.summary || remedy.brief_description ? (
-                <p
-                  className="text-sm text-muted-foreground leading-snug line-clamp-2"
-                  style={{ margin: 0, padding: 0 }}
-                >
+                <p className="text-sm text-muted-foreground leading-snug line-clamp-3">
                   {remedy.summary || remedy.brief_description}
                 </p>
               ) : null}
-              <div className="flex items-center justify-between pt-1">
+              
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
