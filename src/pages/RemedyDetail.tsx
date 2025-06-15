@@ -21,12 +21,7 @@ const RemedyDetail = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("remedies")
-        .select(`
-          *,
-          experts:remedy_experts(
-            expert:experts(*)
-          )
-        `)
+        .select("*")
         .eq("id", id)
         .single();
 
@@ -89,9 +84,12 @@ const RemedyDetail = () => {
   }
 
   const safeImageUrl = getSafeImageUrl(remedy.image_url);
-  const ingredientsList = remedy.ingredients || [];
-  const healthConcernsList = remedy.health_concerns || [];
-  const relatedLinks = remedy.related_links || [];
+  
+  // Safely handle ingredients array
+  const ingredientsList = Array.isArray(remedy.ingredients) ? remedy.ingredients : [];
+  
+  // Safely handle related links
+  const relatedLinks = Array.isArray(remedy.related_links) ? remedy.related_links : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -159,17 +157,6 @@ const RemedyDetail = () => {
               <Badge variant={remedy.status === 'published' ? 'default' : 'secondary'}>
                 {remedy.status}
               </Badge>
-              {remedy.difficulty_level && (
-                <Badge variant="outline">
-                  {remedy.difficulty_level} difficulty
-                </Badge>
-              )}
-              {remedy.preparation_time && (
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>{remedy.preparation_time}</span>
-                </div>
-              )}
             </div>
 
             {/* Brief Description */}
@@ -200,23 +187,6 @@ const RemedyDetail = () => {
 
           <Separator />
 
-          {/* Health Concerns */}
-          {healthConcernsList.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Helps with
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {healthConcernsList.map((concern, index) => (
-                  <Badge key={index} variant="secondary">
-                    {concern}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Description */}
           {remedy.description && (
             <div className="space-y-3">
@@ -246,17 +216,6 @@ const RemedyDetail = () => {
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* Instructions */}
-          {remedy.instructions && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold">How to prepare</h2>
-              <div 
-                className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: remedy.instructions }}
-              />
-            </div>
           )}
 
           {/* Video Section */}
@@ -305,12 +264,12 @@ const RemedyDetail = () => {
                   <Card key={index} className="border-0 bg-muted/30">
                     <CardContent className="p-3">
                       <a
-                        href={link}
+                        href={String(link)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline text-sm"
                       >
-                        {link}
+                        {String(link)}
                       </a>
                     </CardContent>
                   </Card>
@@ -319,31 +278,18 @@ const RemedyDetail = () => {
             </div>
           )}
 
-          {/* Experts Section */}
-          {remedy.experts && remedy.experts.length > 0 && (
+          {/* Expert Recommendations */}
+          {remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold">Recommended by Experts</h2>
-              <div className="space-y-3">
-                {remedy.experts.map((expertData, index) => {
-                  const expert = expertData.expert;
-                  return (
-                    <Card key={index} className="border-0 bg-muted/30">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={expert.image_url || "/placeholder.svg"}
-                            alt={expert.full_name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                          <div>
-                            <h4 className="font-medium">{expert.full_name}</h4>
-                            <p className="text-sm text-muted-foreground">{expert.specialty}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+              <h2 className="text-lg font-semibold">Expert Recommendations</h2>
+              <div className="space-y-2">
+                {remedy.expert_recommendations.map((recommendation, index) => (
+                  <Card key={index} className="border-0 bg-muted/30">
+                    <CardContent className="p-4">
+                      <p className="text-sm text-muted-foreground">{String(recommendation)}</p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
           )}
