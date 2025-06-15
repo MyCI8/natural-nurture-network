@@ -1,6 +1,7 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -217,42 +218,6 @@ const RemedyDetail = () => {
             </Card>
           )}
 
-          {/* Preparation Method */}
-          {remedy.preparation_method && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <ChefHat className="h-5 w-5" />
-                Preparation Method
-              </h2>
-              <Card className="border-0 bg-muted/30">
-                <CardContent className="p-4">
-                  <div 
-                    className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: remedy.preparation_method }}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Dosage Instructions */}
-          {remedy.dosage_instructions && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Pill className="h-5 w-5" />
-                Dosage Instructions
-              </h2>
-              <Card className="border-0 bg-muted/30">
-                <CardContent className="p-4">
-                  <div 
-                    className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: remedy.dosage_instructions }}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
           {/* Video Section */}
           {remedy.video_url && (
             <div className="space-y-3">
@@ -329,46 +294,11 @@ const RemedyDetail = () => {
             </div>
           )}
 
-          {/* Precautions & Side Effects */}
-          {(remedy.precautions || remedy.side_effects) && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Precautions & Side Effects
-              </h2>
-              <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
-                <CardContent className="p-4 space-y-3">
-                  {remedy.precautions && (
-                    <div>
-                      <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-2">
-                        Precautions
-                      </h4>
-                      <div 
-                        className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: remedy.precautions }}
-                      />
-                    </div>
-                  )}
-                  {remedy.side_effects && (
-                    <div>
-                      <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-2">
-                        Side Effects
-                      </h4>
-                      <div 
-                        className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: remedy.side_effects }}
-                      />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
           {/* Safety Note */}
           <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
             <CardContent className="p-4">
-              <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">
+              <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+                <Shield className="h-5 w-5" />
                 Safety Note
               </h3>
               <p className="text-sm text-amber-700 dark:text-amber-300">
