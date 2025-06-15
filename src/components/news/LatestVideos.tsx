@@ -1,7 +1,6 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Play, Clock } from "lucide-react";
+import { Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,8 +50,8 @@ const LatestVideos = () => {
           <Link to={`/news/videos/${video.id}`} key={video.id}>
             <Card className="group hover:shadow-md transition-all duration-300 border-0 bg-muted/30 hover:bg-muted/50">
               <CardContent className="p-3">
-                <div className="flex gap-3">
-                  <div className="relative w-20 h-14 rounded-lg overflow-hidden bg-muted shrink-0">
+                <div className="flex gap-4 items-center">
+                  <div className="relative w-28 h-18 rounded-lg overflow-hidden bg-muted shrink-0">
                     <AspectRatio ratio={16/9}>
                       <img
                         src={video.thumbnail_url || "/placeholder.svg"}
@@ -65,15 +64,9 @@ const LatestVideos = () => {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                    <h3 className="font-medium text-sm leading-tight line-clamp-3 group-hover:text-primary transition-colors">
                       {video.title}
                     </h3>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(video.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </CardContent>
