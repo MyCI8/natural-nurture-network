@@ -1,10 +1,39 @@
-
 interface ParsedRemedyContent {
   about: string;
   preparationMethod: string;
   dosageInstructions: string;
   precautionsAndSideEffects: string;
 }
+
+const formatContentWithLists = (text: string): string => {
+  if (!text) return '';
+
+  const cleanedText = text.replace(/\*\*/g, '').trim();
+  if (!cleanedText) return '';
+  
+  const blocks = cleanedText.split(/\n\s*\n/); // Split by blank lines
+
+  return blocks.map(block => {
+    const trimmedBlock = block.trim();
+    if (!trimmedBlock) return '';
+
+    const lines = trimmedBlock.split('\n');
+    
+    // Check if all lines in the block are list items
+    const isUnordered = lines.every(line => line.trim().match(/^([*-])\s/));
+    const isOrdered = lines.every(line => line.trim().match(/^\d+\.\s/));
+
+    if (isUnordered) {
+      return `<ul>${lines.map(line => `<li>${line.trim().replace(/^([*-])\s/, '')}</li>`).join('')}</ul>`;
+    }
+    if (isOrdered) {
+      return `<ol>${lines.map(line => `<li>${line.trim().replace(/^\d+\.\s/, '')}</li>`).join('')}</ol>`;
+    }
+
+    // Otherwise, it's a paragraph. Replace newlines with <br> for line breaks within a paragraph.
+    return `<p>${trimmedBlock.replace(/\n/g, '<br />')}</p>`;
+  }).join('');
+};
 
 export const parseRemedyContent = (description: string): ParsedRemedyContent => {
   if (!description) {
@@ -97,9 +126,11 @@ export const parseRemedyContent = (description: string): ParsedRemedyContent => 
 
   // Clean markdown asterisks from all sections
   result.about = result.about.replace(/\*\*/g, '').trim();
-  result.preparationMethod = result.preparationMethod.replace(/\*\*/g, '').trim();
   result.dosageInstructions = result.dosageInstructions.replace(/\*\*/g, '').trim();
   result.precautionsAndSideEffects = result.precautionsAndSideEffects.replace(/\*\*/g, '').trim();
+
+  // Format preparation method with lists and remove asterisks
+  result.preparationMethod = formatContentWithLists(result.preparationMethod);
 
   return result;
 };
