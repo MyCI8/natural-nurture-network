@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -5,19 +6,43 @@ import { Star, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tables } from '@/integrations/supabase/types';
 
 interface SavedRemediesProps {
   userId: string;
 }
 
+type SavedRemedyWithDetails = {
+  id: string;
+  created_at: string;
+  remedies: Tables<'remedies'> | null;
+}
+
 export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
   const { data: savedRemedies, isLoading } = useQuery({
     queryKey: ['savedRemedies', userId],
-    // REVERT: Using a placeholder query to fix build errors.
-    // The original query for 'saved_remedies' table failed due to outdated Supabase types.
     queryFn: async () => {
-      console.warn("Saved remedies feature is temporarily disabled pending Supabase type generation.");
-      return Promise.resolve([]);
+      if (!userId) return [];
+      // NOTE: The 'saved_remedies' table might not be in the auto-generated types.
+      // A type assertion is used to prevent build errors. This assumes the table exists.
+      const { data, error } = await (supabase
+        .from('saved_remedies')
+        .select(`
+          id,
+          created_at,
+          remedies (*)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })) as { data: SavedRemedyWithDetails[] | null; error: any };
+
+      if (error) {
+        console.error("Error fetching saved remedies:", error.message);
+        // This can happen if the 'saved_remedies' table or RLS is missing/misconfigured.
+        return [];
+      }
+      
+      // Filter out any items where the joined remedy is null
+      return data?.filter(sr => sr.remedies) ?? [];
     },
     enabled: !!userId,
   });
@@ -48,41 +73,43 @@ export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {savedRemedies.map((savedRemedy: any) => (
-        <Link to={`/remedies/${savedRemedy.remedy.id}`} key={savedRemedy.id}>
-          <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 h-full">
-            <CardContent className="p-0 h-full">
-              <div className="relative aspect-video overflow-hidden">
-                <img
-                  src={savedRemedy.remedy.image_url || '/placeholder.svg'}
-                  alt={savedRemedy.remedy.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute top-2 right-2">
-                  <div className="bg-red-500 text-white p-1 rounded-full">
-                    <Heart className="h-3 w-3 fill-white" />
+      {savedRemedies.map((savedRemedy) => (
+        savedRemedy.remedies && (
+          <Link to={`/remedies/${savedRemedy.remedies.id}`} key={savedRemedy.id}>
+            <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 h-full">
+              <CardContent className="p-0 h-full">
+                <div className="relative aspect-video overflow-hidden">
+                  <img
+                    src={savedRemedy.remedies.image_url || '/placeholder.svg'}
+                    alt={savedRemedy.remedies.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute top-2 right-2">
+                    <div className="bg-red-500 text-white p-1 rounded-full">
+                      <Heart className="h-3 w-3 fill-white" />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="p-4 space-y-2">
-                <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                  {savedRemedy.remedy.name}
-                </h3>
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {savedRemedy.remedy.summary}
-                </p>
-                <div className="flex items-center gap-1 pt-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span className="text-xs font-medium">4.8</span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    Saved {new Date(savedRemedy.created_at).toLocaleDateString()}
-                  </span>
+                <div className="p-4 space-y-2">
+                  <h3 className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                    {savedRemedy.remedies.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {savedRemedy.remedies.summary}
+                  </p>
+                  <div className="flex items-center gap-1 pt-1">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                    <span className="text-xs font-medium">4.8</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      Saved {new Date(savedRemedy.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
+        )
       ))}
     </div>
   );
