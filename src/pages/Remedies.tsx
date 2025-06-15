@@ -33,7 +33,7 @@ const Remedies = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const { ref: loadMoreRef, inView } = useInView();
-  const [remedyToRate, setRemedyToRate] = useState<Remedy | null>(null);
+  // const [remedyToRate, setRemedyToRate] = useState<Remedy | null>(null);
 
   // Run migration on page load
   useEffect(() => {
@@ -237,96 +237,18 @@ const Remedies = () => {
     }
   };
 
-  const handleOpenRatingModal = (remedy: Remedy) => {
-    if (!currentUser) {
-      toast({ title: "Please sign in to rate remedies.", variant: "destructive" });
-      navigate('/auth');
-      return;
-    }
-    setRemedyToRate(remedy);
-  };
+  // Remove handleOpenRatingModal and handleRatingSubmit
+  // (no need to pass these to RemedyFeed anymore!)
 
-  // ========= Fetch ratings =========
-  // We'll get the ratings for all loaded remedies and store by remedy id.
-  const remedyIds = data?.pages.flatMap(p => p.map((r: any) => r.id)).filter(Boolean) ?? [];
-
-  // Fetch average rating and count per remedy
-  const { data: allRatings } = useQuery({
-    queryKey: ['remedyRatings', remedyIds.join(",")],
-    enabled: remedyIds.length > 0,
-    queryFn: async () => {
-      if (!remedyIds.length) return {};
-      const { data, error } = await supabase
-        .from('remedy_ratings')
-        .select('remedy_id, rating')
-        .in('remedy_id', remedyIds);
-      if (error) throw error;
-      // For each remedy id, calculate avg and count
-      const byId = {};
-      remedyIds.forEach((id: string) => {
-        const ratings = (data || []).filter((r: any) => r.remedy_id === id);
-        if (ratings.length) {
-          const avg = ratings.reduce((a, b) => a + b.rating, 0) / ratings.length;
-          byId[id] = { average: avg, count: ratings.length };
-        } else {
-          byId[id] = { average: 0, count: 0 };
-        }
-      });
-      return byId;
-    }
-  });
-
-  // Fetch this user's ratings for loaded remedies
-  const { data: userRatings } = useQuery({
-    queryKey: ["userRemedyRatings", currentUser?.id, remedyIds.join(",")],
-    enabled: !!currentUser && remedyIds.length > 0,
-    queryFn: async () => {
-      if (!currentUser || !remedyIds.length) return {};
-      const { data, error } = await supabase
-        .from('remedy_ratings')
-        .select('remedy_id, rating')
-        .eq('user_id', currentUser.id)
-        .in('remedy_id', remedyIds);
-      if (error) throw error;
-      // Map: remedyId -> rating
-      const ratings = {};
-      for (const { remedy_id, rating } of data || []) {
-        ratings[remedy_id] = rating;
-      }
-      return ratings;
-    }
-  });
-
-  const handleRatingSubmit = async (rating: number) => {
-    if (!remedyToRate || !currentUser) {
-      toast({ title: "You must be logged in to rate.", variant: "destructive" });
-      return;
-    }
-    const { error } = await (supabase as any).from('remedy_ratings').upsert(
-      {
-        remedy_id: remedyToRate.id,
-        user_id: currentUser.id,
-        rating: rating,
-      },
-      { onConflict: 'user_id,remedy_id' }
-    );
-    if (error) {
-      toast({
-        title: 'Error submitting rating',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Rating submitted!',
-        description: `You gave "${remedyToRate.name}" ${rating} star(s).`,
-      });
-      // Invalidate rating caches so UI refreshes
-      queryClient.invalidateQueries({ queryKey: ['remedyRatings'] });
-      queryClient.invalidateQueries({ queryKey: ['userRemedyRatings'] });
-    }
-    setRemedyToRate(null);
-  };
+  // Remove RemedyRatingModal
+  // {remedyToRate && (
+  //   <RemedyRatingModal
+  //     isOpen={!!remedyToRate}
+  //     onClose={() => setRemedyToRate(null)}
+  //     onSubmit={handleRatingSubmit}
+  //     remedyName={remedyToRate.name || ''}
+  //   />
+  // )}
 
   if (error) {
     console.error('Remedies query error:', error);
@@ -457,13 +379,11 @@ const Remedies = () => {
                 handleLike={handleLike}
                 handleSave={handleSave}
                 handleShare={handleShare}
-                handleOpenRatingModal={handleOpenRatingModal}
                 loadMoreRef={loadMoreRef}
                 isFetchingNextPage={isFetchingNextPage}
                 isLoading={isLoading}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                // NEW!
                 remedyRatings={allRatings ?? {}}
                 userRated={userRatings ?? {}}
               />
@@ -482,28 +402,17 @@ const Remedies = () => {
               handleLike={handleLike}
               handleSave={handleSave}
               handleShare={handleShare}
-              handleOpenRatingModal={handleOpenRatingModal}
               loadMoreRef={loadMoreRef}
               isFetchingNextPage={isFetchingNextPage}
               isLoading={isLoading}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              // NEW!
               remedyRatings={allRatings ?? {}}
               userRated={userRatings ?? {}}
             />
           </div>
         )}
       </div>
-
-      {remedyToRate && (
-        <RemedyRatingModal
-          isOpen={!!remedyToRate}
-          onClose={() => setRemedyToRate(null)}
-          onSubmit={handleRatingSubmit}
-          remedyName={remedyToRate.name || ''}
-        />
-      )}
     </div>
   );
 };

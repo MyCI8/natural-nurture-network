@@ -15,7 +15,6 @@ interface RemedyFeedProps {
   handleLike: (remedyId: string, e: React.MouseEvent) => void;
   handleSave: (remedyId: string, e: React.MouseEvent) => void;
   handleShare: (remedy: Remedy, e: React.MouseEvent) => void;
-  handleOpenRatingModal: (remedy: Remedy) => void;
   loadMoreRef: (node?: Element | null) => void;
   isFetchingNextPage: boolean;
   searchTerm: string;
@@ -33,7 +32,6 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
   handleLike,
   handleSave,
   handleShare,
-  handleOpenRatingModal,
   loadMoreRef,
   isFetchingNextPage,
   searchTerm,
@@ -144,21 +142,6 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                       }}
                     >
                       <Bookmark className={cn("h-4 w-4", isSaved ? "fill-amber-400 text-black" : "")} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex items-center gap-1 !px-2 touch-manipulation"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleOpenRatingModal(remedy);
-                      }}
-                    >
-                      <Star className="h-4 w-4 text-yellow-400" />
-                      <span className="text-xs font-medium">
-                        {userRating ? "Update Rating" : "Rate"}
-                      </span>
                     </Button>
                   </div>
                 </div>
