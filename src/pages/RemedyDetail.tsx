@@ -220,10 +220,7 @@ const RemedyDetail = () => {
           {/* Preparation Method - Using shopping_list field */}
           {remedy.shopping_list && (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <ChefHat className="h-5 w-5" />
-                Preparation Method
-              </h2>
+              <h2 className="text-lg font-semibold">Preparation Method</h2>
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
                   <div 
@@ -238,10 +235,7 @@ const RemedyDetail = () => {
           {/* Dosage Instructions - Using video_description field */}
           {remedy.video_description && (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Pill className="h-5 w-5" />
-                Dosage Instructions
-              </h2>
+              <h2 className="text-lg font-semibold">Dosage Instructions</h2>
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -301,13 +295,10 @@ const RemedyDetail = () => {
             </div>
           )}
 
-          {/* Expert Recommendations with Safety Focus */}
+          {/* Expert Recommendations - Precautions & Side Effects */}
           {remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Expert Recommendations & Precautions
-              </h2>
+              <h2 className="text-lg font-semibold">Precautions & Side Effects</h2>
               <div className="space-y-2">
                 {remedy.expert_recommendations.map((recommendation, index) => (
                   <Card key={index} className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
