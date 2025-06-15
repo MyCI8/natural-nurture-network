@@ -1,25 +1,32 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark } from "lucide-react";
+import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import MediaContainer from "@/components/ui/media-container";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { getSafeImageUrl } from "@/utils/imageValidation";
 
 const RemedyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const { data: remedy, isLoading } = useQuery({
     queryKey: ["remedy", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("remedies")
-        .select("*")
+        .select(`
+          *,
+          experts:remedy_experts(
+            expert:experts(*)
+          )
+        `)
         .eq("id", id)
         .single();
 
@@ -28,6 +35,24 @@ const RemedyDetail = () => {
     },
     enabled: !!id,
   });
+
+  const handleShare = async () => {
+    if (!remedy) return;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: remedy.name,
+          text: remedy.summary || remedy.brief_description,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log("Error sharing:", error);
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -63,6 +88,11 @@ const RemedyDetail = () => {
     );
   }
 
+  const safeImageUrl = getSafeImageUrl(remedy.image_url);
+  const ingredientsList = remedy.ingredients || [];
+  const healthConcernsList = remedy.health_concerns || [];
+  const relatedLinks = remedy.related_links || [];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -84,7 +114,12 @@ const RemedyDetail = () => {
             <Button variant="ghost" size="icon" className="rounded-full touch-manipulation touch-button">
               <Bookmark className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full touch-manipulation touch-button">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full touch-manipulation touch-button"
+              onClick={handleShare}
+            >
               <Share2 className="h-5 w-5" />
             </Button>
           </div>
@@ -92,26 +127,23 @@ const RemedyDetail = () => {
       </div>
 
       {/* Content */}
-      <div className="pb-20">
+      <div className="pb-20 max-w-4xl mx-auto">
         {/* Hero Image */}
         <div className="px-4 pt-4">
-          <MediaContainer 
-            aspectRatio="auto"
-            imageUrl={remedy.image_url || "/placeholder.svg"}
-            imageAlt={remedy.name}
-          >
+          <div className="relative w-full bg-transparent rounded-xl overflow-hidden">
             <img
-              src={remedy.image_url || "/placeholder.svg"}
+              src={safeImageUrl}
               alt={remedy.name}
-              className="w-full h-full object-cover"
+              className="w-full object-contain"
+              style={{ maxHeight: 400, minHeight: 200 }}
             />
-          </MediaContainer>
+          </div>
         </div>
 
         {/* Remedy Info */}
         <div className="p-4 space-y-6">
           {/* Title and basic info */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-start justify-between">
               <h1 className="text-2xl font-bold text-foreground leading-tight">
                 {remedy.name}
@@ -122,80 +154,199 @@ const RemedyDetail = () => {
               </div>
             </div>
             
-            <p className="text-muted-foreground leading-relaxed">
-              {remedy.summary}
-            </p>
+            {/* Status and Quick Info */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={remedy.status === 'published' ? 'default' : 'secondary'}>
+                {remedy.status}
+              </Badge>
+              {remedy.difficulty_level && (
+                <Badge variant="outline">
+                  {remedy.difficulty_level} difficulty
+                </Badge>
+              )}
+              {remedy.preparation_time && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>{remedy.preparation_time}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Brief Description */}
+            {(remedy.summary || remedy.brief_description) && (
+              <p className="text-muted-foreground leading-relaxed">
+                {remedy.summary || remedy.brief_description}
+              </p>
+            )}
 
             {/* Quick stats */}
             <div className="flex items-center gap-4 pt-2">
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>15 min prep</span>
+                <Eye className="h-4 w-4" />
+                <span>{remedy.click_count || 0} views</span>
               </div>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Users className="h-4 w-4" />
                 <span>2.3k tried</span>
               </div>
+              {remedy.created_at && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>{new Date(remedy.created_at).toLocaleDateString()}</span>
+                </div>
+              )}
             </div>
           </div>
 
           <Separator />
 
-          {/* Description */}
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold">About this remedy</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              {remedy.description || "This natural remedy has been used for generations to help with various health concerns. Made with simple, natural ingredients that you likely already have at home."}
-            </p>
-          </div>
-
-          {/* Ingredients Section */}
-          <Card className="border-0 bg-muted/30">
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-3">Ingredients</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Main ingredient</span>
-                  <Badge variant="secondary" className="text-xs">Required</Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Supporting ingredients</span>
-                  <Badge variant="outline" className="text-xs">Optional</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Instructions */}
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold">How to prepare</h2>
+          {/* Health Concerns */}
+          {healthConcernsList.length > 0 && (
             <div className="space-y-3">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-                  1
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Gather all ingredients and ensure they are fresh and clean.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-                  2
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Mix ingredients according to traditional preparation methods.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-                  3
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Apply or consume as directed for best results.
-                </p>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Helps with
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {healthConcernsList.map((concern, index) => (
+                  <Badge key={index} variant="secondary">
+                    {concern}
+                  </Badge>
+                ))}
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Description */}
+          {remedy.description && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold">About this remedy</h2>
+              <div 
+                className="prose max-w-none text-muted-foreground leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: remedy.description }}
+              />
+            </div>
+          )}
+
+          {/* Ingredients Section */}
+          {ingredientsList.length > 0 && (
+            <Card className="border-0 bg-muted/30">
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Leaf className="h-5 w-5" />
+                  Ingredients
+                </h3>
+                <div className="space-y-2">
+                  {ingredientsList.map((ingredient, index) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <span className="text-sm">{ingredient}</span>
+                      <Badge variant="outline" className="text-xs">Natural</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Instructions */}
+          {remedy.instructions && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold">How to prepare</h2>
+              <div 
+                className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: remedy.instructions }}
+              />
+            </div>
+          )}
+
+          {/* Video Section */}
+          {remedy.video_url && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Video className="h-5 w-5" />
+                Video Guide
+              </h2>
+              <Card className="border-0 bg-muted/30">
+                <CardContent className="p-4">
+                  <a
+                    href={remedy.video_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-primary hover:underline"
+                  >
+                    <Video className="h-4 w-4" />
+                    Watch preparation video
+                  </a>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Shopping List */}
+          {remedy.shopping_list && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold">Shopping List</h2>
+              <div 
+                className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: remedy.shopping_list }}
+              />
+            </div>
+          )}
+
+          {/* Related Links */}
+          {relatedLinks.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Link className="h-5 w-5" />
+                Related Links
+              </h2>
+              <div className="space-y-2">
+                {relatedLinks.map((link, index) => (
+                  <Card key={index} className="border-0 bg-muted/30">
+                    <CardContent className="p-3">
+                      <a
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-sm"
+                      >
+                        {link}
+                      </a>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Experts Section */}
+          {remedy.experts && remedy.experts.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold">Recommended by Experts</h2>
+              <div className="space-y-3">
+                {remedy.experts.map((expertData, index) => {
+                  const expert = expertData.expert;
+                  return (
+                    <Card key={index} className="border-0 bg-muted/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={expert.image_url || "/placeholder.svg"}
+                            alt={expert.full_name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="font-medium">{expert.full_name}</h4>
+                            <p className="text-sm text-muted-foreground">{expert.specialty}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Safety Note */}
           <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
