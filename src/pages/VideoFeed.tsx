@@ -1,22 +1,19 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import MobileVideoFeed from '@/components/video/MobileVideoFeed';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
-import VideoPlayer from '@/components/video/VideoPlayer';
 import VideoDialog from '@/components/video/VideoDialog';
-import Comments from '@/components/video/Comments';
 import { Video } from '@/types/video';
-import { useVideoFeed } from '@/hooks/useVideoFeed';
-import { getCdnUrl } from '@/utils/cdnUtils';
-import { isYoutubeVideo } from '@/utils/videoUtils';
 import { useInfiniteVideos } from '@/hooks/useInfiniteVideos';
-import { useInView } from 'react-intersection-observer';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { VariableSizeList as List } from 'react-window';
+import InfiniteLoader from 'react-window-infinite-loader';
+import VideoPost from '@/components/video/VideoPost';
+import { useAuth } from '@/hooks/useAuth';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
@@ -24,8 +21,8 @@ const VideoFeed = () => {
   const queryClient = useQueryClient();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const isMobile = useIsMobile();
-  const { globalAudioEnabled, setGlobalAudioEnabled } = useVideoFeed([]);
-  const { ref: loadMoreRef, inView } = useInView();
+  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
+  const { currentUser } = useAuth();
   
   const handleAudioStateChange = (isMuted: boolean) => {
     setGlobalAudioEnabled(!isMuted);
@@ -40,21 +37,7 @@ const VideoFeed = () => {
     isFetchingNextPage
   } = useInfiniteVideos();
 
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
   const videos = data?.pages.flatMap(page => page) ?? [];
-
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      return session?.user || null;
-    },
-  });
 
   const { data: userLikesArray } = useQuery({
     queryKey: ['userLikes', currentUser?.id],
@@ -71,7 +54,6 @@ const VideoFeed = () => {
     enabled: !!currentUser,
   });
   
-  // Convert array to record for easier lookups
   const userLikes: Record<string, boolean> = {};
   userLikesArray?.forEach(videoId => {
     userLikes[videoId] = true;
@@ -156,6 +138,20 @@ const VideoFeed = () => {
     }
   };
 
+  const listRef = useRef<List | null>(null);
+  const sizeMap = useRef<Record<number, number>>({});
+
+  const setSize = useCallback((index: number, size: number) => {
+    if (sizeMap.current[index] !== size) {
+      sizeMap.current = { ...sizeMap.current, [index]: size + 16 }; // +16 for padding
+      if (listRef.current) {
+        listRef.current.resetAfterIndex(index);
+      }
+    }
+  }, []);
+
+  const getSize = (index: number) => sizeMap.current[index] || 750; // default/estimated size
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen pt-16">
@@ -175,160 +171,69 @@ const VideoFeed = () => {
 
   if (isMobile) {
     return (
-      <>
-        <MobileVideoFeed
-          videos={videos || []}
-          userLikes={userLikes}
-          onLikeToggle={handleLike}
-          currentUser={currentUser}
-          globalAudioEnabled={globalAudioEnabled}
-          onAudioStateChange={handleAudioStateChange}
-        />
-        {hasNextPage && (
-          <div className="flex justify-center p-4">
-            <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-              {isFetchingNextPage ? 'Loading...' : 'Load More'}
-            </Button>
-          </div>
-        )}
-      </>
+      <MobileVideoFeed
+        videos={videos || []}
+        globalAudioEnabled={globalAudioEnabled}
+        onAudioStateChange={handleAudioStateChange}
+        loadMoreItems={fetchNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={!!hasNextPage}
+      />
     );
   }
 
+  const itemCount = hasNextPage ? videos.length + 1 : videos.length;
+  const loadMoreItems = isFetchingNextPage ? () => {} : fetchNextPage;
+  const isItemLoaded = (index: number) => !hasNextPage || index < videos.length;
+
   return (
-    <div className="min-h-screen bg-background pt-16">
-      <div className={`mx-auto px-2 sm:px-4 ${isMobile ? 'max-w-full' : 'max-w-[600px]'}`}>
-        <div className="space-y-4 sm:space-y-6 py-4 sm:py-6">
-          {!videos?.length && !isLoading ? (
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-[#666666] mb-4">No videos available</p>
-            </div>
-          ) : (
-            videos.map((video, index) => {
-              const nextVideo = videos[index + 1];
-              const cdnNextVideoUrl = nextVideo ? getCdnUrl(nextVideo.video_url) : null;
-
-              return (
-              <React.Fragment key={video.id}>
-                {cdnNextVideoUrl && !isYoutubeVideo(cdnNextVideoUrl) && (
-                   <link rel="preload" href={cdnNextVideoUrl} as="video" type="video/mp4" />
-                )}
-                <div 
-                  className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
+    <div className="min-h-screen bg-background pt-16 h-screen overflow-hidden">
+      <main className="mx-auto h-full max-w-[600px]">
+        <AutoSizer>
+          {({ height, width }) => (
+            <InfiniteLoader
+              isItemLoaded={isItemLoaded}
+              itemCount={itemCount}
+              loadMoreItems={loadMoreItems}
+            >
+              {({ onItemsRendered, ref: infiniteLoaderRef }) => (
+                <List
+                  ref={(el) => {
+                    infiniteLoaderRef(el);
+                    listRef.current = el;
+                  }}
+                  height={height}
+                  width={width}
+                  itemCount={itemCount}
+                  itemSize={getSize}
+                  onItemsRendered={onItemsRendered}
                 >
-                  {/* User Info */}
-                  <div 
-                    className="flex items-center space-x-3 p-3 sm:p-4 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (video.profiles?.id) {
-                        navigate(`/users/${video.profiles.id}`);
-                      }
-                    }}
-                  >
-                    <Avatar className="h-8 w-8">
-                      {video.profiles?.avatar_url ? (
-                        <AvatarImage src={getCdnUrl(video.profiles.avatar_url) || ''} alt={video.profiles?.full_name || 'User'} />
-                      ) : (
-                        <AvatarFallback className="bg-[#E8F5E9] text-[#4CAF50]">
-                          {video.profiles?.full_name?.charAt(0) || '?'}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <span className="font-medium hover:text-[#4CAF50] transition-colors">
-                      {video.profiles?.full_name || 'Anonymous User'}
-                    </span>
-                  </div>
-
-                  {/* Video Container */}
-                  <div 
-                    className="w-full relative cursor-pointer" 
-                    onClick={() => handleVideoClick(video)}
-                  >
-                    <VideoPlayer
-                      video={video}
-                      autoPlay
-                      showControls={false}
-                    />
-                  </div>
-
-                  {/* Rearranged action buttons: chat, save, share directly below media */}
-                  <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 pt-3 px-3 sm:px-4">
-                    <Button 
-                      variant="ghost"
-                      size="icon"
-                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
-                    >
-                      <MessageCircle className="h-6 w-6" />
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost"
-                      size="icon"
-                      className={`h-11 w-11 transition-transform hover:scale-110 touch-manipulation ${
-                        userSaves?.includes(video.id) 
-                          ? 'text-[#4CAF50]' 
-                          : 'text-[#666666] hover:text-[#4CAF50]'
-                      }`}
-                      onClick={(e) => handleSave(video.id, e)}
-                    >
-                      <Bookmark 
-                        className="h-6 w-6" 
-                        fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
+                  {({ index, style }) => {
+                    if (!isItemLoaded(index)) {
+                      return <div style={style} className="flex items-center justify-center"><p>Loading...</p></div>;
+                    }
+                    const video = videos[index];
+                    return (
+                      <VideoPost
+                        style={style}
+                        video={video}
+                        currentUser={currentUser}
+                        userLikes={userLikes}
+                        userSaves={userSaves || []}
+                        handleLike={handleLike}
+                        handleSave={handleSave}
+                        handleVideoClick={handleVideoClick}
+                        index={index}
+                        setSize={setSize}
                       />
-                    </Button>
-                    
-                    <Button 
-                      variant="ghost"
-                      size="icon"
-                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
-                    >
-                      <Share2 className="h-6 w-6" />
-                    </Button>
-                  </div>
-
-                  {/* Video Description and Likes */}
-                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                    <p className="text-sm text-[#666666] text-left mb-2">
-                      {video.description?.substring(0, 100)}
-                      {video.description?.length > 100 && '...'}
-                    </p>
-                    
-                    {/* Moved likes count with heart icon to the bottom */}
-                    <div className="mt-2 mb-3 text-sm text-[#666666] flex items-center space-x-2">
-                      <span className="mr-1">{video.likes_count || 0} likes</span>
-                      <Button 
-                        variant="ghost"
-                        size="icon"
-                        className={`h-8 w-8 p-0 transition-transform hover:scale-110 ${
-                          userLikes[video.id] 
-                            ? 'text-red-500' 
-                            : 'text-[#666666] hover:text-[#4CAF50]'
-                        }`}
-                        onClick={() => handleLike(video.id)}
-                      >
-                        <Heart className="h-5 w-5" fill={userLikes[video.id] ? "currentColor" : "none"} />
-                      </Button>
-                      <span className="ml-2">{video.views_count || 0} views</span>
-                    </div>
-
-                    {/* Comments Section */}
-                    <div className="mt-1">
-                      <Comments videoId={video.id} currentUser={currentUser} />
-                    </div>
-                  </div>
-                </div>
-              </React.Fragment>
-            )})
+                    );
+                  }}
+                </List>
+              )}
+            </InfiniteLoader>
           )}
-          <div ref={loadMoreRef} className="h-10" />
-          {isFetchingNextPage && (
-            <div className="text-center py-4">
-              <p className="text-[#666666]">Loading more videos...</p>
-            </div>
-          )}
-        </div>
-      </div>
+        </AutoSizer>
+      </main>
 
       <VideoDialog
         video={selectedVideo}

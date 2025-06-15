@@ -1,100 +1,108 @@
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { Video } from '@/types/video';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 import VideoPlayer from './VideoPlayer';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Swipeable } from '@/components/ui/swipeable';
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList as List } from 'react-window';
 
 interface MobileVideoFeedProps {
-  videos: Video[];
-  userLikes: Record<string, boolean>;
-  onLikeToggle: (videoId: string) => void;
-  currentUser: any;
+  videos: (Video & { profiles: any })[];
   globalAudioEnabled: boolean;
   onAudioStateChange: (isMuted: boolean) => void;
+  loadMoreItems: () => void;
+  isFetchingNextPage: boolean;
+  hasNextPage: boolean;
 }
 
 const MobileVideoFeed: React.FC<MobileVideoFeedProps> = ({
   videos,
-  userLikes,
-  onLikeToggle,
-  currentUser,
   globalAudioEnabled,
   onAudioStateChange,
+  loadMoreItems,
+  isFetchingNextPage,
+  hasNextPage,
 }) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  const itemSize = window.innerHeight * 0.85;
 
-  const handleVideoClick = useCallback((videoId: string) => {
-    setActiveVideoId(prevId => prevId === videoId ? null : videoId);
-  }, []);
+  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    // Request more data when we are near the end of the list
+    useEffect(() => {
+        if (index >= videos.length - 3 && hasNextPage && !isFetchingNextPage) {
+            loadMoreItems();
+        }
+    }, [index, videos.length]);
 
-  const handleSwipe = useCallback((direction: 'up' | 'down', currentVideoId: string) => {
-    const currentIndex = videos.findIndex(v => v.id === currentVideoId);
-    if (currentIndex === -1) return;
-
-    if (direction === 'up' && currentIndex < videos.length - 1) {
-      setActiveVideoId(videos[currentIndex + 1].id);
-    } else if (direction === 'down' && currentIndex > 0) {
-      setActiveVideoId(videos[currentIndex - 1].id);
+    if (index >= videos.length) {
+      return (
+        <div style={style} className="flex items-center justify-center">
+          <p className="text-[#666666]">Loading more...</p>
+        </div>
+      );
     }
-  }, [videos]);
+    
+    const video = videos[index];
 
-  return (
-    <div className="min-h-screen bg-background pt-16">
-      <div className="mx-auto max-w-full">
-        <div className="space-y-4 py-4">
-          {videos.map((video) => (
-            <Swipeable
-              key={video.id}
-              onSwipe={(direction) => {
-                if (activeVideoId === video.id && (direction === 'up' || direction === 'down')) {
-                  handleSwipe(direction, video.id);
-                }
-              }}
-              className={`relative ${
-                activeVideoId === video.id
-                  ? 'fixed top-0 left-0 right-0 z-50 h-[calc(100vh-4rem)] bg-black'
-                  : 'h-[80vh] bg-black rounded-lg overflow-hidden'
-              }`}
-            >
-              <div className="relative w-full h-full" onClick={() => handleVideoClick(video.id)}>
-                <VideoPlayer
-                  video={video}
-                  autoPlay
-                  showControls={false}
-                  globalAudioEnabled={globalAudioEnabled}
-                  onAudioStateChange={onAudioStateChange}
-                  isFullscreen={activeVideoId === video.id}
-                  className="w-full h-full"
-                  useAspectRatio={false}
-                  objectFit="cover"
-                />
-                
-                {/* Creator info overlay */}
-                <div className="absolute bottom-20 left-4 z-20 flex items-center space-x-3">
-                  <Avatar className="h-10 w-10 border-2 border-white">
-                    {video.creator?.avatar_url ? (
-                      <AvatarImage src={video.creator.avatar_url} alt={video.creator?.full_name || ''} />
-                    ) : (
-                      <AvatarFallback>
-                        {video.creator?.full_name?.[0] || '?'}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="text-white">
-                    <div className="font-semibold">{video.creator?.full_name || 'Anonymous'}</div>
-                    <div className="text-sm opacity-90">{video.description}</div>
-                  </div>
-                </div>
+    return (
+      <div style={style}>
+        <div className="h-full p-2">
+          <div
+            className="relative h-full bg-black rounded-lg overflow-hidden touch-manipulation"
+            onClick={() => navigate(`/explore/${video.id}`)}
+          >
+            <VideoPlayer
+              video={video}
+              autoPlay
+              showControls={false}
+              globalAudioEnabled={globalAudioEnabled}
+              onAudioStateChange={onAudioStateChange}
+              isFullscreen={true} // Emulate fullscreen-like appearance in feed
+              className="w-full h-full"
+              useAspectRatio={false}
+              objectFit="cover"
+              hideControls
+            />
+            
+            {/* Creator info overlay */}
+            <div className="absolute bottom-6 left-4 z-20 flex items-center space-x-3 pointer-events-none">
+              <Avatar className="h-10 w-10 border-2 border-white">
+                {video.profiles?.avatar_url ? (
+                  <AvatarImage src={video.profiles.avatar_url} alt={video.profiles?.full_name || ''} />
+                ) : (
+                  <AvatarFallback>
+                    {video.profiles?.full_name?.[0] || '?'}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="text-white">
+                <div className="font-semibold">{video.profiles?.full_name || 'Anonymous'}</div>
+                <div className="text-sm opacity-90 line-clamp-2">{video.description}</div>
               </div>
-            </Swipeable>
-          ))}
+            </div>
+          </div>
         </div>
       </div>
+    );
+  };
+
+  const itemCount = hasNextPage ? videos.length + 1 : videos.length;
+
+  return (
+    <div className="fixed inset-0 top-16 bg-background">
+      <AutoSizer>
+        {({ height, width }) => (
+          <List
+            height={height}
+            width={width}
+            itemCount={itemCount}
+            itemSize={itemSize}
+          >
+            {Row}
+          </List>
+        )}
+      </AutoSizer>
     </div>
   );
 };
