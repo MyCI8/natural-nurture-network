@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +15,8 @@ import { Video } from '@/types/video';
 import { useVideoFeed } from '@/hooks/useVideoFeed';
 import { getCdnUrl } from '@/utils/cdnUtils';
 import { isYoutubeVideo } from '@/utils/videoUtils';
+import { useInfiniteVideos } from '@/hooks/useInfiniteVideos';
+import { useInView } from 'react-intersection-observer';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
@@ -24,31 +25,28 @@ const VideoFeed = () => {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const isMobile = useIsMobile();
   const { globalAudioEnabled, setGlobalAudioEnabled } = useVideoFeed([]);
+  const { ref: loadMoreRef, inView } = useInView();
   
   const handleAudioStateChange = (isMuted: boolean) => {
     setGlobalAudioEnabled(!isMuted);
   };
 
-  const { data: videos, isLoading, error } = useQuery({
-    queryKey: ['videos'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('videos')
-        .select(`
-          *,
-          profiles:creator_id (
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('status', 'published')
-        .order('created_at', { ascending: false });
+  const { 
+    data, 
+    isLoading, 
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteVideos();
 
-      if (error) throw error;
-      return data as (Video & { profiles: { id: string; full_name: string; avatar_url: string | null } })[];
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  });
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const videos = data?.pages.flatMap(page => page) ?? [];
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -177,14 +175,23 @@ const VideoFeed = () => {
 
   if (isMobile) {
     return (
-      <MobileVideoFeed
-        videos={videos || []}
-        userLikes={userLikes}
-        onLikeToggle={handleLike}
-        currentUser={currentUser}
-        globalAudioEnabled={globalAudioEnabled}
-        onAudioStateChange={handleAudioStateChange}
-      />
+      <>
+        <MobileVideoFeed
+          videos={videos || []}
+          userLikes={userLikes}
+          onLikeToggle={handleLike}
+          currentUser={currentUser}
+          globalAudioEnabled={globalAudioEnabled}
+          onAudioStateChange={handleAudioStateChange}
+        />
+        {hasNextPage && (
+          <div className="flex justify-center p-4">
+            <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+              {isFetchingNextPage ? 'Loading...' : 'Load More'}
+            </Button>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -192,7 +199,7 @@ const VideoFeed = () => {
     <div className="min-h-screen bg-background pt-16">
       <div className={`mx-auto px-2 sm:px-4 ${isMobile ? 'max-w-full' : 'max-w-[600px]'}`}>
         <div className="space-y-4 sm:space-y-6 py-4 sm:py-6">
-          {!videos?.length ? (
+          {!videos?.length && !isLoading ? (
             <div className="text-center py-8 sm:py-12">
               <p className="text-[#666666] mb-4">No videos available</p>
             </div>
@@ -313,6 +320,12 @@ const VideoFeed = () => {
                 </div>
               </React.Fragment>
             )})
+          )}
+          <div ref={loadMoreRef} className="h-10" />
+          {isFetchingNextPage && (
+            <div className="text-center py-4">
+              <p className="text-[#666666]">Loading more videos...</p>
+            </div>
           )}
         </div>
       </div>

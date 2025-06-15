@@ -10,6 +10,11 @@ import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
 import { migrateRemedyImages } from "@/utils/remedyImageMigration";
+import { useInfiniteRemedies } from "@/hooks/useInfiniteRemedies";
+import { useInView } from "react-intersection-observer";
+import { Tables } from "@/integrations/supabase/types";
+
+type Remedy = Tables<'remedies'>;
 
 const Remedies = () => {
   const navigate = useNavigate();
@@ -19,81 +24,29 @@ const Remedies = () => {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const { ref: loadMoreRef, inView } = useInView();
 
   // Run migration on page load
   useEffect(() => {
     migrateRemedyImages();
   }, []);
   
-  const { data: remedies, isLoading, error } = useQuery({
-    queryKey: ["remedies"],
-    queryFn: async () => {
-      console.log('Fetching remedies...');
-      
-      // Fetch all remedies (both published and draft) to debug the issue
-      const { data, error } = await supabase
-        .from("remedies")
-        .select("*")
-        .in("status", ["published", "draft"]) // Include both published and draft
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error('Error fetching remedies:', error);
-        throw error;
-      }
-      
-      console.log('Fetched remedies count:', data?.length || 0);
-      console.log('Remedies data:', data);
-      
-      // Log remedy statuses and images for debugging
-      if (data) {
-        const statusCounts = data.reduce((acc, remedy) => {
-          acc[remedy.status] = (acc[remedy.status] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
-        console.log('Remedy status breakdown:', statusCounts);
-        
-        // Check specific remedies we're having issues with
-        const parasiteRemedy = data.find(r => r.name?.includes('Parasite Cleanse'));
-        const mitochondriaRemedy = data.find(r => r.name?.includes('mitochondria'));
-        
-        if (parasiteRemedy) {
-          console.log('Parasite Cleanse remedy:', {
-            name: parasiteRemedy.name,
-            image_url: parasiteRemedy.image_url,
-            status: parasiteRemedy.status
-          });
-        }
-        
-        if (mitochondriaRemedy) {
-          console.log('Mitochondria remedy:', {
-            name: mitochondriaRemedy.name,
-            image_url: mitochondriaRemedy.image_url,
-            status: mitochondriaRemedy.status
-          });
-        }
-      }
-      
-      return data || [];
-    },
-  });
-
-  const filteredRemedies = remedies?.filter(remedy => {
-    // Ensure remedy has required fields
-    if (!remedy.name) {
-      console.warn('Remedy missing name:', remedy);
-      return false;
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteRemedies(searchTerm);
+  
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-    
-    const searchText = searchTerm.toLowerCase();
-    const name = (remedy.name || '').toLowerCase();
-    const summary = (remedy.summary || '').toLowerCase();
-    const briefDescription = (remedy.brief_description || '').toLowerCase();
-    
-    return name.includes(searchText) || 
-           summary.includes(searchText) || 
-           briefDescription.includes(searchText);
-  });
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const remedies = data?.pages.flatMap(page => page) ?? [];
 
   const handleSearchIconClick = () => {
     if (isMobile) {
@@ -143,7 +96,7 @@ const Remedies = () => {
   }, [isSearchExpanded, isMobile]);
 
   // Instead of modal: navigate directly to the remedy page
-  const handleRemedyClick = (remedy: any) => {
+  const handleRemedyClick = (remedy: Remedy) => {
     navigate(`/remedies/${remedy.id}`);
   };
 
@@ -154,7 +107,7 @@ const Remedies = () => {
     // TODO: Implement save functionality
   };
 
-  const handleShare = async (remedy: any, e: React.MouseEvent) => {
+  const handleShare = async (remedy: Remedy, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -215,8 +168,8 @@ const Remedies = () => {
   // Remedy Feed Implementation (Updated)
   const RemedyFeed = () => (
     <div className="flex flex-col gap-6 max-w-lg mx-auto w-full">
-      {filteredRemedies && filteredRemedies.length > 0 ? (
-        filteredRemedies.map((remedy) => (
+      {remedies && remedies.length > 0 ? (
+        remedies.map((remedy) => (
           <div
             key={remedy.id}
             tabIndex={0}
@@ -326,7 +279,7 @@ const Remedies = () => {
               <p className="text-muted-foreground">
                 {searchTerm 
                   ? `No remedies match "${searchTerm}"`
-                  : remedies && remedies.length === 0 
+                  : remedies && remedies.length === 0 && !isLoading
                     ? "No remedies are available. Try creating your first remedy!"
                     : "No remedies match your search"
                 }
@@ -344,6 +297,12 @@ const Remedies = () => {
           </div>
         </div>
       )}
+       <div ref={loadMoreRef} className="h-10" />
+        {isFetchingNextPage && (
+          <div className="text-center py-4">
+            <p className="text-muted-foreground">Loading more remedies...</p>
+          </div>
+        )}
     </div>
   );
 
