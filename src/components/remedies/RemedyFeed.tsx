@@ -23,6 +23,7 @@ interface RemedyFeedProps {
   isLoading: boolean;
   remedyRatings?: Record<string, { average: number; count: number }>;
   userRated?: Record<string, number>;
+  onOpenRatingModal: (remedy: Remedy) => void;
 }
 
 const RemedyFeed: React.FC<RemedyFeedProps> = ({
@@ -40,6 +41,7 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
   isLoading,
   remedyRatings = {},
   userRated = {},
+  onOpenRatingModal,
 }) => {
   return (
     <div className="flex flex-col gap-6 max-w-lg mx-auto w-full">
@@ -144,6 +146,11 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                       count={ratingData.count}
                       userRating={userRating}
                       size={18}
+                      onClick={e => {
+                        e.stopPropagation();
+                        onOpenRatingModal(remedy);
+                      }}
+                      tabIndex={0}
                     />
                   </div>
                 </div>
@@ -191,4 +198,3 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
 };
 
 export default RemedyFeed;
-

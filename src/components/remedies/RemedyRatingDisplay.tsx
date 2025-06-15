@@ -8,18 +8,32 @@ interface RemedyRatingDisplayProps {
   count?: number;
   userRating?: number;
   size?: number; // pixel size (default 18)
+  onClick?: (e: React.MouseEvent) => void;
+  tabIndex?: number;
 }
 export const RemedyRatingDisplay: React.FC<RemedyRatingDisplayProps> = ({
   average = 0,
   count = 0,
   userRating,
   size = 18,
+  onClick,
+  tabIndex,
 }) => {
   // For stars: highlight user's rating if present, otherwise average (to the nearest 0.5).
   const filledStars = userRating ?? Math.round(average * 2) / 2;
 
   return (
-    <div className="flex items-center gap-1">
+    <div
+      className={cn(
+        "flex items-center gap-1",
+        onClick ? "cursor-pointer hover:scale-105 transition-transform active:scale-95 focus:outline-none" : ""
+      )}
+      tabIndex={tabIndex ?? (onClick ? 0 : -1)}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      aria-label={onClick ? "Rate this remedy" : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { onClick(e as any); }} : undefined}
+    >
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}

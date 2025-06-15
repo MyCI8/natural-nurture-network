@@ -33,7 +33,7 @@ const Remedies = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const { ref: loadMoreRef, inView } = useInView();
-  // const [remedyToRate, setRemedyToRate] = useState<Remedy | null>(null);
+  const [remedyToRate, setRemedyToRate] = useState<Remedy | null>(null);
 
   // Run migration on page load
   useEffect(() => {
@@ -237,18 +237,91 @@ const Remedies = () => {
     }
   };
 
-  // Remove handleOpenRatingModal and handleRatingSubmit
-  // (no need to pass these to RemedyFeed anymore!)
+  // Add: remedy ratings fetching
+  const { data: allRatings, refetch: refetchRatings } = useQuery({
+    queryKey: ['remedyRatings'],
+    queryFn: async () => {
+      // fetch all remedy ratings: id, remedy_id, rating, user_id
+      const { data, error } = await (supabase as any)
+        .from('remedy_ratings')
+        .select('remedy_id, rating, user_id');
+      if (error) {
+        console.error(error);
+        return [];
+      }
+      return data;
+    }
+  });
 
-  // Remove RemedyRatingModal
-  // {remedyToRate && (
-  //   <RemedyRatingModal
-  //     isOpen={!!remedyToRate}
-  //     onClose={() => setRemedyToRate(null)}
-  //     onSubmit={handleRatingSubmit}
-  //     remedyName={remedyToRate.name || ''}
-  //   />
-  // )}
+  // Build remedies rating aggregation and per-user rating
+  const remedyRatings: Record<string, { average: number; count: number }> = {};
+  const userRated: Record<string, number> = {};
+  if (allRatings && Array.isArray(allRatings)) {
+    const byRemedy: Record<string, number[]> = {};
+    allRatings.forEach((r: any) => {
+      if (!byRemedy[r.remedy_id]) byRemedy[r.remedy_id] = [];
+      byRemedy[r.remedy_id].push(Number(r.rating));
+    });
+    Object.entries(byRemedy).forEach(([remedyId, ratings]) => {
+      remedyRatings[remedyId] = {
+        average: ratings.reduce((a, b) => a + b, 0) / ratings.length,
+        count: ratings.length,
+      };
+    });
+    // currentUser from useAuth
+    if (currentUser) {
+      allRatings.forEach((r: any) => {
+        if (r.user_id === currentUser.id) {
+          userRated[r.remedy_id] = r.rating;
+        }
+      });
+    }
+  }
+
+  // Handler: open rating modal for a remedy
+  const handleOpenRatingModal = (remedy: Remedy) => {
+    setRemedyToRate(remedy);
+  };
+
+  // Handler: submit the rating
+  const handleRatingSubmit = async (rating: number) => {
+    if (!remedyToRate || !currentUser) return;
+    // Check if user already rated this remedy
+    const { data: existing, error: findError } = await (supabase as any)
+      .from('remedy_ratings')
+      .select('*')
+      .eq('remedy_id', remedyToRate.id)
+      .eq('user_id', currentUser.id)
+      .maybeSingle();
+
+    let upsertResult;
+    if (existing) {
+      // update
+      upsertResult = await (supabase as any)
+        .from('remedy_ratings')
+        .update({ rating, updated_at: new Date().toISOString() })
+        .eq('remedy_id', remedyToRate.id)
+        .eq('user_id', currentUser.id);
+    } else {
+      // insert
+      upsertResult = await (supabase as any)
+        .from('remedy_ratings')
+        .insert({
+          remedy_id: remedyToRate.id,
+          user_id: currentUser.id,
+          rating,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+    }
+    if (upsertResult?.error) {
+      toast({ title: "Could not save rating", variant: "destructive" });
+    } else {
+      toast({ title: "Thank you for your rating!" });
+      refetchRatings();
+    }
+    setRemedyToRate(null);
+  };
 
   if (error) {
     console.error('Remedies query error:', error);
@@ -288,9 +361,6 @@ const Remedies = () => {
       </div>
     );
   }
-
-  // Remedy Feed Implementation (Updated)
-  // The RemedyFeed component has been extracted to its own file.
 
   return (
     <div className="min-h-screen bg-background">
@@ -384,6 +454,9 @@ const Remedies = () => {
                 isLoading={isLoading}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
+                remedyRatings={remedyRatings}
+                userRated={userRated}
+                onOpenRatingModal={handleOpenRatingModal}
               />
             </TabsContent>
             <TabsContent value="popular" className="pt-3">
@@ -405,10 +478,23 @@ const Remedies = () => {
               isLoading={isLoading}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
+              remedyRatings={remedyRatings}
+              userRated={userRated}
+              onOpenRatingModal={handleOpenRatingModal}
             />
           </div>
         )}
       </div>
+      {/* Rating Modal */}
+      {remedyToRate && (
+        <RemedyRatingModal
+          isOpen={!!remedyToRate}
+          onClose={() => setRemedyToRate(null)}
+          onSubmit={handleRatingSubmit}
+          remedyName={remedyToRate.name || ''}
+          initialRating={userRated[remedyToRate.id] || 0}
+        />
+      )}
     </div>
   );
 };
