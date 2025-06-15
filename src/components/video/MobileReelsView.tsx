@@ -1,13 +1,13 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Video } from '@/types/video';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { ChevronDown, Heart, MessageCircle, Share2, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLayout } from '@/contexts/LayoutContext';
-import { useMobileSwipe } from '@/hooks/useMobileSwipe'; // <-- use new swipe hook!
+import { useMobileSwipe } from '@/hooks/useMobileSwipe';
 
 interface MobileReelsViewProps {
   currentId: string;
@@ -33,8 +33,12 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   const [swipeProgress, setSwipeProgress] = useState(0); // 0 to 1
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeVideoIndex, setActiveVideoIndex] = useState(currentIndex);
+  const [audioEnabled, setAudioEnabled] = useState(globalAudioEnabled);
 
-  // Get current video from videos array
+  // --- KEY: force VideoPlayer re-mount for Chrome mobile autoplay ---
+  const [videoKey, setVideoKey] = useState(0);
+
+  // Get current/prev/next video
   const currentVideo = videos[activeVideoIndex] || videos[0];
   const prevVideo = videos[activeVideoIndex - 1];
   const nextVideo = videos[activeVideoIndex + 1];
@@ -46,19 +50,19 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
     }));
   };
 
-  // Handle robust, cross-browser vertical swipes
+  // --- SWIPE HANDLERS ---
   const swipeHandlers = useMobileSwipe({
     onSwipe: (direction) => {
       if (direction === 'up' && activeVideoIndex < videos.length - 1) {
         setActiveVideoIndex(idx => {
           const newIndex = idx + 1;
-          // Update history for SPA navigation
           const nextVideo = videos[newIndex];
           if (nextVideo) {
             window.history.replaceState({}, '', `/explore/${nextVideo.id}`);
           }
           return newIndex;
         });
+        setVideoKey(k => k + 1); // re-mount
       }
       if (direction === 'down' && activeVideoIndex > 0) {
         setActiveVideoIndex(idx => {
@@ -69,8 +73,8 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
           }
           return newIndex;
         });
+        setVideoKey(k => k + 1); // re-mount
       }
-      // reset swipe transition state
       setSwipingDirection(null);
       setSwipeProgress(0);
     },
@@ -79,10 +83,23 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
       setSwipeProgress(progress);
     },
     verticalOnly: true,
-    thresholdPx: 72, // More forgiving for big screens
+    thresholdPx: 72,
   });
 
-  // Enable reels mode on mount, disable on unmount
+  // For mute toggle in UI, and propagate to parent/globalAudioEnabled
+  const handleMuteToggle = useCallback(() => {
+    setAudioEnabled((val) => {
+      const newValue = !val;
+      onAudioStateChange(!newValue); // the callback expects isMuted!
+      return newValue;
+    });
+  }, [onAudioStateChange]);
+
+  // Update local audioEnabled when globalAudioEnabled changes
+  useEffect(() => {
+    setAudioEnabled(globalAudioEnabled);
+  }, [globalAudioEnabled]);
+
   useEffect(() => {
     setIsInReelsMode(true);
     return () => { setIsInReelsMode(false); };
@@ -131,7 +148,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
     return {};
   };
 
-  // Prevent scroll on mobile when swiping
+  // --- Prevent scroll on mobile when swiping ---
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -145,6 +162,11 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
       return () => el.removeEventListener('touchmove', preventScroll);
     }
   }, [swipingDirection]);
+
+  // --- Fix autoplay after swipe for Chrome mobile ---
+  useEffect(() => {
+    setVideoKey(k => k + 1);
+  }, [activeVideoIndex]);
 
   return (
     <div
@@ -196,14 +218,15 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
             style={getTransformStyle('current')}
           >
             <VideoPlayer 
+              key={videoKey}
               video={currentVideo} 
               productLinks={[]} 
               autoPlay={true} 
               showControls={false}
-              globalAudioEnabled={globalAudioEnabled}
-              onAudioStateChange={onAudioStateChange}
+              globalAudioEnabled={audioEnabled}
+              onAudioStateChange={isMuted => setAudioEnabled(!isMuted)}
               isFullscreen={true}
-              className="w-full h-full" 
+              className="w-full h-full"
               objectFit="contain"
               useAspectRatio={false}
               showProgress={true}
@@ -227,7 +250,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
               globalAudioEnabled={false}
               onAudioStateChange={() => {}}
               isFullscreen={true}
-              className="w-full h-full" 
+              className="w-full h-full"
               objectFit="contain"
               useAspectRatio={false}
               showProgress={false}
@@ -254,7 +277,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
       
       {/* Video info overlay */}
       {currentVideo && (
-        <div className="absolute bottom-28 left-4 right-16 z-20 pointer-events-none">
+        <div className="absolute bottom-28 left-4 right-20 z-20 pointer-events-none">
           <div className="flex items-start space-x-3">
             <Avatar className="h-10 w-10 border-2 border-white">
               {currentVideo.creator?.avatar_url ? (
@@ -279,7 +302,8 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
       
       {/* Action buttons */}
       {currentVideo && (
-        <div className="absolute right-4 bottom-28 flex flex-col gap-6 items-center z-20">
+        <div className="absolute right-4 bottom-28 flex flex-col gap-6 items-center z-20 pointer-events-auto">
+          {/* Like */}
           <Button
             variant="ghost"
             size="icon"
@@ -292,6 +316,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
             <Heart className={cn("h-6 w-6", likedVideos[currentVideo.id] && "fill-current")} />
           </Button>
           
+          {/* Comment */}
           <Button
             variant="ghost"
             size="icon"
@@ -300,12 +325,31 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
             <MessageCircle className="h-6 w-6" />
           </Button>
           
+          {/* Share */}
           <Button
             variant="ghost"
             size="icon"
             className="bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12"
           >
             <Share2 className="h-6 w-6" />
+          </Button>
+
+          {/* Audio (Mute/Unmute) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={audioEnabled ? "Mute" : "Unmute"}
+            onClick={handleMuteToggle}
+            className={cn(
+              "bg-black/30 hover:bg-black/50 text-white rounded-full w-12 h-12",
+              audioEnabled ? "" : "opacity-70"
+            )}
+          >
+            {audioEnabled ? (
+              <Volume2 className="h-6 w-6" />
+            ) : (
+              <VolumeX className="h-6 w-6" />
+            )}
           </Button>
         </div>
       )}
@@ -314,4 +358,3 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
 };
 
 export default MobileReelsView;
-
