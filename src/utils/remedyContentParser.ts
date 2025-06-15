@@ -1,3 +1,4 @@
+
 interface ParsedRemedyContent {
   about: string;
   preparationMethod: string;
@@ -10,29 +11,65 @@ const formatContentWithLists = (text: string): string => {
 
   const cleanedText = text.replace(/\*\*/g, '').trim();
   if (!cleanedText) return '';
+
+  const lines = cleanedText.split('\n');
+  let html = '';
+  let inList: 'ol' | 'ul' | null = null;
+  let paragraphContent: string[] = [];
+
+  const flushParagraph = () => {
+    if (paragraphContent.length > 0) {
+      html += `<p>${paragraphContent.join('<br />')}</p>`;
+      paragraphContent = [];
+    }
+  };
   
-  const blocks = cleanedText.split(/\n\s*\n/); // Split by blank lines
-
-  return blocks.map(block => {
-    const trimmedBlock = block.trim();
-    if (!trimmedBlock) return '';
-
-    const lines = trimmedBlock.split('\n');
-    
-    // Check if all lines in the block are list items
-    const isUnordered = lines.every(line => line.trim().match(/^([*-])\s/));
-    const isOrdered = lines.every(line => line.trim().match(/^\d+\.\s/));
-
-    if (isUnordered) {
-      return `<ul>${lines.map(line => `<li>${line.trim().replace(/^([*-])\s/, '')}</li>`).join('')}</ul>`;
+  const closeList = () => {
+    if (inList) {
+      html += `</${inList}>`;
+      inList = null;
     }
-    if (isOrdered) {
-      return `<ol>${lines.map(line => `<li>${line.trim().replace(/^\d+\.\s/, '')}</li>`).join('')}</ol>`;
+  };
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    if (!trimmedLine) { // Blank line acts as a separator
+      flushParagraph();
+      closeList();
+      continue;
     }
 
-    // Otherwise, it's a paragraph. Replace newlines with <br> for line breaks within a paragraph.
-    return `<p>${trimmedBlock.replace(/\n/g, '<br />')}</p>`;
-  }).join('');
+    const isOrderedItem = trimmedLine.match(/^\d+\.\s/);
+    const isUnorderedItem = trimmedLine.match(/^([*-])\s/);
+
+    if (isOrderedItem) {
+      flushParagraph();
+      if (inList !== 'ol') {
+        closeList();
+        html += '<ol>';
+        inList = 'ol';
+      }
+      html += `<li>${trimmedLine.replace(/^\d+\.\s/, '')}</li>`;
+    } else if (isUnorderedItem) {
+      flushParagraph();
+      if (inList !== 'ul') {
+        closeList();
+        html += '<ul>';
+        inList = 'ul';
+      }
+      html += `<li>${trimmedLine.replace(/^([*-])\s/, '')}</li>`;
+    } else { // It's a paragraph line
+      closeList();
+      paragraphContent.push(trimmedLine);
+    }
+  }
+  
+  // Flush any remaining content at the end of the text
+  flushParagraph();
+  closeList();
+
+  return html;
 };
 
 export const parseRemedyContent = (description: string): ParsedRemedyContent => {
