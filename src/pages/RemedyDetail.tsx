@@ -1,5 +1,3 @@
-
-
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
@@ -237,6 +235,23 @@ const RemedyDetail = () => {
             </div>
           )}
 
+          {/* Dosage Instructions - Using video_description field */}
+          {remedy.video_description && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Pill className="h-5 w-5" />
+                Dosage Instructions
+              </h2>
+              <Card className="border-0 bg-muted/30">
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {remedy.video_description}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Video Section */}
           {remedy.video_url && (
             <div className="space-y-3">
@@ -255,18 +270,6 @@ const RemedyDetail = () => {
                     <Video className="h-4 w-4" />
                     Watch preparation video
                   </a>
-                  {/* Dosage Instructions - Using video_description if available */}
-                  {remedy.video_description && (
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <h4 className="font-medium mb-2 flex items-center gap-2">
-                        <Pill className="h-4 w-4" />
-                        Usage Instructions
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {remedy.video_description}
-                      </p>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </div>
@@ -336,4 +339,3 @@ const RemedyDetail = () => {
 };
 
 export default RemedyDetail;
-
