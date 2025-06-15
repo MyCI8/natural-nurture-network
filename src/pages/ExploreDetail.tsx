@@ -56,42 +56,45 @@ const ExploreDetail = () => {
   };
 
   const handleNaturalAspectRatioChange = useCallback((ratio: number) => {
-    setNaturalAspectRatio(ratio);
-  }, []);
+    // Check for a valid, new ratio to prevent unnecessary re-renders
+    if (ratio > 0 && ratio !== naturalAspectRatio) {
+      setNaturalAspectRatio(ratio);
+    }
+  }, [naturalAspectRatio]);
 
   useLayoutEffect(() => {
     const calculateSize = () => {
-      if (containerRef.current && naturalAspectRatio) {
+      if (containerRef.current) {
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
+
+        // Use naturalAspectRatio if available, otherwise fallback to 16:9.
+        // This ensures the container is always visible and can load the video metadata.
+        const ar = naturalAspectRatio || 16 / 9;
         const containerAspectRatio = containerWidth / containerHeight;
 
         let width: number;
         let height: number;
 
-        if (naturalAspectRatio > containerAspectRatio) {
-          // Fit to width
+        if (ar > containerAspectRatio) {
+          // Fit to width if video is wider than the container's aspect ratio
           width = containerWidth;
-          height = width / naturalAspectRatio;
+          height = width / ar;
         } else {
-          // Fit to height
+          // Fit to height if video is taller or same aspect ratio
           height = containerHeight;
-          width = height * naturalAspectRatio;
+          width = height * ar;
         }
         
         setVideoSize({ width: Math.round(width), height: Math.round(height) });
       }
     };
     
-    // Reset aspect ratio and size when video ID changes
-    setNaturalAspectRatio(null);
-    setVideoSize(null);
-    
     calculateSize();
 
     window.addEventListener('resize', calculateSize);
     return () => window.removeEventListener('resize', calculateSize);
-  }, [id, naturalAspectRatio]);
+  }, [naturalAspectRatio]); // Re-calculates when the natural aspect ratio is found.
 
   // Get current user for permission checks
   const { data: currentUser } = useQuery({
@@ -220,6 +223,7 @@ const ExploreDetail = () => {
     // Reset progress when video changes
     setProgress(0);
     setIsLoading(true);
+    setNaturalAspectRatio(null); // This is key to triggering a resize with fallback
   }, [id]);
 
   if (isVideoLoading) {
@@ -266,7 +270,7 @@ const ExploreDetail = () => {
         <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
           <div 
             className="bg-black rounded-lg overflow-hidden flex items-center justify-center relative transition-all duration-300"
-            style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : { visibility: 'hidden' }}
+            style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : {}}
           >
             <VideoPlayer 
               video={video} 
