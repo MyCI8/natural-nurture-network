@@ -1,4 +1,3 @@
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -12,7 +11,7 @@ import FontFamily from '@tiptap/extension-font-family';
 import { ToolbarButtons } from "./text-editor/toolbar-buttons";
 import { FontControls } from "./text-editor/font-controls";
 import { fontFamilies, editorClasses } from "./text-editor/constants";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface TextEditorProps {
   content: string;
@@ -27,6 +26,8 @@ const TextEditor = ({
   className,
   maxHeight = "250px" 
 }: TextEditorProps) => {
+  const [isFocused, setIsFocused] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -70,7 +71,16 @@ const TextEditor = ({
         class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none ${className || ''} p-4`,
       },
     },
-    // These are valid top-level properties
+    onFocus: () => {
+      setIsFocused(true);
+    },
+    onBlur: () => {
+      // We use a small timeout to allow toolbar buttons to be clicked
+      // without the editor losing focus and hiding the toolbar prematurely.
+      setTimeout(() => {
+        setIsFocused(false);
+      }, 200);
+    },
     editable: true,
     injectCSS: true,
   });
@@ -94,21 +104,23 @@ const TextEditor = ({
 
   return (
     <div className="border rounded-lg flex flex-col">
-      <div className="border-b p-2 flex flex-wrap gap-1 items-center justify-start overflow-x-auto">
-        <FontControls editor={editor} fontFamilies={fontFamilies} />
-        <ToolbarButtons 
-          editor={editor} 
-          addImage={() => {
-            const url = window.prompt('Enter image URL');
-            if (url) {
-              editor.chain().focus().setImage({ src: url }).run();
-            }
-          }} 
-          addTable={() => {
-            editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-          }} 
-        />
-      </div>
+      {isFocused && (
+        <div className="border-b p-2 flex flex-wrap gap-1 items-center justify-start overflow-x-auto">
+          <FontControls editor={editor} fontFamilies={fontFamilies} />
+          <ToolbarButtons 
+            editor={editor} 
+            addImage={() => {
+              const url = window.prompt('Enter image URL');
+              if (url) {
+                editor.chain().focus().setImage({ src: url }).run();
+              }
+            }} 
+            addTable={() => {
+              editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+            }} 
+          />
+        </div>
+      )}
       <div 
         className="overflow-y-auto"
         style={{ maxHeight }}
