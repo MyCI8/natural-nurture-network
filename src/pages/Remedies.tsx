@@ -1,11 +1,8 @@
-
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,19 +10,17 @@ import { useState, useRef, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PopularRemedies from "@/components/remedies/PopularRemedies";
 import MediaContainer from "@/components/ui/media-container";
-import RemedyModal from "@/components/remedies/RemedyModal";
 import { migrateRemedyImages } from "@/utils/remedyImageMigration";
 
 const Remedies = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // in case it's needed
   const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRemedy, setSelectedRemedy] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // Run migration on page load
   useEffect(() => {
     migrateRemedyImages();
@@ -148,14 +143,9 @@ const Remedies = () => {
     }
   }, [isSearchExpanded, isMobile]);
 
+  // Instead of modal: navigate directly to the remedy page
   const handleRemedyClick = (remedy: any) => {
-    setSelectedRemedy(remedy);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedRemedy(null);
+    navigate(`/remedies/${remedy.id}`);
   };
 
   const handleSave = async (remedyId: string, e: React.MouseEvent) => {
@@ -214,106 +204,120 @@ const Remedies = () => {
         </div>
         
         {/* Content Skeleton */}
-        <div className="p-4 space-y-6">
+        <div className="px-2 space-y-6">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-64 w-full rounded-xl" />
+            <Skeleton key={i} className="h-80 w-full rounded-xl" />
           ))}
         </div>
       </div>
     );
   }
 
+  // Remedy Feed Implementation (New)
   const RemedyFeed = () => (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-5 px-1 max-w-lg mx-auto w-full">
       {filteredRemedies && filteredRemedies.length > 0 ? (
         filteredRemedies.map((remedy) => (
-          <div key={remedy.id} onClick={() => handleRemedyClick(remedy)}>
-            <Card className="x-media-card group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer touch-manipulation active-scale">
-              <CardContent className="p-0">
-                {/* Image Container - No overlay, full image display */}
-                <MediaContainer 
-                  aspectRatio="auto"
-                  imageUrl={remedy.image_url || "/placeholder.svg"}
-                  imageAlt={remedy.name || "Remedy"}
-                  className="bg-muted"
-                >
-                  <img
-                    src={remedy.image_url || "/placeholder.svg"}
-                    alt={remedy.name || "Remedy"}
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                    style={{
-                      maxHeight: '300px',
-                      minHeight: '200px'
-                    }}
-                  />
-                </MediaContainer>
-                
-                {/* Content Below Image */}
-                <div className="p-4">
-                  {/* Title and Description */}
-                  <div className="mb-4">
-                    <h3 className="text-xl font-bold text-primary mb-2 line-clamp-2">
-                      {remedy.name || "Untitled Remedy"}
-                    </h3>
-                    <p className="text-muted-foreground text-sm line-clamp-2">
-                      {remedy.summary || remedy.brief_description || "No description available"}
-                    </p>
+          <div
+            key={remedy.id}
+            tabIndex={0}
+            className="group touch-manipulation select-none outline-none transition-all duration-200"
+            style={{ WebkitTapHighlightColor: "transparent" }}
+            onClick={() => handleRemedyClick(remedy)}
+            role="button"
+            aria-label={`View remedy: ${remedy.name}`}
+          >
+            {/* Image with overlayed title */}
+            <MediaContainer aspectRatio="auto" className="bg-muted">
+              <div className="relative w-full flex justify-center items-center" style={{ minHeight: 180, maxHeight: 350 }}>
+                <img
+                  src={remedy.image_url || "/placeholder.svg"}
+                  alt={remedy.name || "Remedy"}
+                  className="w-full h-full object-contain rounded-xl"
+                  style={{
+                    background: 'white',
+                    maxHeight: 320,
+                  }}
+                  draggable={false}
+                />
+                {remedy.name && (
+                  // Title (Black, placed at top of image, with subtle shadow for readability)
+                  <div className="absolute top-0 left-0 w-full px-3 pt-4 pb-1 flex items-start">
+                    <span className="text-black font-bold text-xl leading-tight bg-white/75 rounded-xl px-3 py-1 shadow">
+                      {remedy.name}
+                    </span>
                   </div>
-                  
-                  {/* Social Actions */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2 hover:bg-red-50 hover:text-red-500"
-                        onClick={(e) => handleSave(remedy.id, e)}
-                      >
-                        <Heart className="h-4 w-4" />
-                        <span className="text-sm">2.3k</span>
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                        <span className="text-sm">156</span>
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2"
-                        onClick={(e) => handleShare(remedy, e)}
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => handleSave(remedy.id, e)}
-                      >
-                        <Bookmark className="h-4 w-4" />
-                      </Button>
-                      
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">4.8</span>
-                      </div>
-                    </div>
+                )}
+              </div>
+            </MediaContainer>
+            {/* Description and social actions */}
+            <div className="flex flex-col gap-2 pt-2 pb-0 px-2">
+              {remedy.summary || remedy.brief_description ? (
+                <p
+                  className="text-sm text-muted-foreground leading-snug line-clamp-2"
+                  style={{ margin: 0, padding: 0 }}
+                >
+                  {remedy.summary || remedy.brief_description}
+                </p>
+              ) : null}
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 !px-2 hover:text-red-500"
+                    onClick={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSave(remedy.id, e);
+                    }}
+                  >
+                    <Heart className="h-4 w-4" />
+                    <span className="text-xs">2.3k</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 !px-2"
+                    onClick={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span className="text-xs">156</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 !px-2"
+                    onClick={e => {
+                      handleShare(remedy, e);
+                    }}
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="!px-2"
+                    onClick={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSave(remedy.id, e);
+                    }}
+                  >
+                    <Bookmark className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-xs font-medium">4.8</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         ))
       ) : (
@@ -353,9 +357,7 @@ const Remedies = () => {
       {/* Sticky Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b z-10">
         <div className="p-4">
-          {/* Single Header Row */}
           <div className="flex items-center justify-between">
-            {/* Left Section: Back Button (mobile) + Title + Filter */}
             <div className="flex items-center gap-3">
               {isMobile && (
                 <Button 
@@ -367,17 +369,14 @@ const Remedies = () => {
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
               )}
-              <h1 className="text-xl font-bold">Natural Remedies</h1>
+              <h1 className="text-xl font-bold text-black">Natural Remedies</h1>
               <Button variant="ghost" size="icon" className="rounded-full touch-manipulation">
                 <Filter className="h-5 w-5" />
               </Button>
             </div>
-            
-            {/* Right Section: Search */}
             <div className="flex items-center">
               {isMobile ? (
                 <div className="flex items-center">
-                  {/* Mobile Search Icon/Input */}
                   <div 
                     ref={searchContainerRef}
                     className="relative flex items-center"
@@ -423,39 +422,27 @@ const Remedies = () => {
           </div>
         </div>
       </div>
-
-      {/* Content */}
-      <div className="pb-20">
+      {/* Remedy Feed */}
+      <div className="flex flex-col w-full items-center">
         {isMobile ? (
           <Tabs defaultValue="remedies" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mx-4 mt-4">
+            <TabsList className="grid w-full grid-cols-2 mx-2 mt-4">
               <TabsTrigger value="remedies">Remedies</TabsTrigger>
               <TabsTrigger value="popular">Popular</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="remedies" className="p-4 mt-4">
+            <TabsContent value="remedies" className="pt-3">
               <RemedyFeed />
             </TabsContent>
-            
-            <TabsContent value="popular" className="p-4 mt-4">
+            <TabsContent value="popular" className="pt-3">
               <PopularRemedies />
             </TabsContent>
           </Tabs>
         ) : (
-          <div className="p-4">
+          <div className="pt-6 pb-10 w-full">
             <RemedyFeed />
           </div>
         )}
       </div>
-
-      {/* Remedy Modal */}
-      <RemedyModal
-        remedy={selectedRemedy}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSave}
-        onShare={handleShare}
-      />
     </div>
   );
 };
