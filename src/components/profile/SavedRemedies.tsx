@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -23,26 +22,23 @@ export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
     queryKey: ['savedRemedies', userId],
     queryFn: async () => {
       if (!userId) return [];
-      // NOTE: The 'saved_remedies' table might not be in the auto-generated types.
-      // A type assertion is used to prevent build errors. This assumes the table exists.
-      const { data, error } = await (supabase
-        .from('saved_remedies' as any)
+      const { data, error } = await supabase
+        .from('saved_remedies')
         .select(`
           id,
           created_at,
           remedies (*)
         `)
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })) as { data: SavedRemedyWithDetails[] | null; error: any };
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error("Error fetching saved remedies:", error.message);
-        // This can happen if the 'saved_remedies' table or RLS is missing/misconfigured.
         return [];
       }
       
       // Filter out any items where the joined remedy is null
-      return data?.filter(sr => sr.remedies) ?? [];
+      return (data as SavedRemedyWithDetails[])?.filter(sr => sr.remedies) ?? [];
     },
     enabled: !!userId,
   });

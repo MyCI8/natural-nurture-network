@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Search, Filter, Heart, Star, MessageCircle, Share2, Bookmark } from "lucide-react";
+import { ArrowLeft, Search, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { Tables } from "@/integrations/supabase/types";
 import RemedyFeed from "@/components/remedies/RemedyFeed";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import RemedyRatingModal from "@/components/remedies/RemedyRatingModal";
 
 type Remedy = Tables<'remedies'>;
 
@@ -31,6 +32,7 @@ const Remedies = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const { ref: loadMoreRef, inView } = useInView();
+  const [remedyToRate, setRemedyToRate] = useState<Remedy | null>(null);
 
   // Run migration on page load
   useEffect(() => {
@@ -59,11 +61,10 @@ const Remedies = () => {
     queryKey: ['remedyLikes', currentUser?.id],
     queryFn: async () => {
       if (!currentUser) return [];
-      // NOTE: Using a type assertion because 'remedy_likes' may not be in generated types.
-      const { data, error } = await (supabase
-        .from('remedy_likes' as any)
+      const { data, error } = await supabase
+        .from('remedy_likes')
         .select('remedy_id')
-        .eq('user_id', currentUser.id)) as { data: { remedy_id: string }[] | null, error: any };
+        .eq('user_id', currentUser.id);
 
       if (error) {
         console.error('Error fetching remedy likes:', error.message);
@@ -80,11 +81,10 @@ const Remedies = () => {
     queryKey: ['savedRemediesList', currentUser?.id], // Unique key for this list
     queryFn: async () => {
       if (!currentUser) return [];
-      // NOTE: Using a type assertion because 'saved_remedies' may not be in generated types.
-      const { data, error } = await (supabase
-        .from('saved_remedies' as any)
+      const { data, error } = await supabase
+        .from('saved_remedies')
         .select('remedy_id')
-        .eq('user_id', currentUser.id)) as { data: { remedy_id: string }[] | null, error: any };
+        .eq('user_id', currentUser.id);
       
       if (error) {
         console.error('Error fetching saved remedies list:', error.message);
@@ -161,16 +161,16 @@ const Remedies = () => {
     
     try {
       if (isLiked) {
-        const { error } = await (supabase
-          .from('remedy_likes' as any)
+        const { error } = await supabase
+          .from('remedy_likes')
           .delete()
           .eq('user_id', currentUser.id)
-          .eq('remedy_id', remedyId)) as { error: any };
+          .eq('remedy_id', remedyId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase
-          .from('remedy_likes' as any)
-          .insert({ user_id: currentUser.id, remedy_id: remedyId })) as { error: any };
+        const { error } = await supabase
+          .from('remedy_likes')
+          .insert({ user_id: currentUser.id, remedy_id: remedyId });
         if (error) throw error;
       }
 
@@ -194,17 +194,17 @@ const Remedies = () => {
 
     try {
       if (isSaved) {
-        const { error } = await (supabase
-          .from('saved_remedies' as any)
+        const { error } = await supabase
+          .from('saved_remedies')
           .delete()
           .eq('user_id', currentUser.id)
-          .eq('remedy_id', remedyId)) as { error: any };
+          .eq('remedy_id', remedyId);
         if (error) throw error;
         toast({ title: "Remedy removed from your saved list." });
       } else {
-        const { error } = await (supabase
-          .from('saved_remedies' as any)
-          .insert({ user_id: currentUser.id, remedy_id: remedyId })) as { error: any };
+        const { error } = await supabase
+          .from('saved_remedies')
+          .insert({ user_id: currentUser.id, remedy_id: remedyId });
         if (error) throw error;
         toast({ title: "Remedy saved!", description: "You can find it in your profile." });
       }
@@ -234,6 +234,48 @@ const Remedies = () => {
     } else {
       navigator.clipboard.writeText(`${window.location.origin}/remedies/${remedy.id}`);
     }
+  };
+
+  const handleOpenRatingModal = (remedy: Remedy) => {
+    if (!currentUser) {
+      toast({ title: "Please sign in to rate remedies.", variant: "destructive" });
+      navigate('/auth');
+      return;
+    }
+    setRemedyToRate(remedy);
+  };
+
+  const handleRatingSubmit = async (rating: number) => {
+    if (!remedyToRate || !currentUser) {
+      toast({ title: "You must be logged in to rate.", variant: "destructive" });
+      return;
+    }
+
+    const { error } = await supabase.from('remedy_ratings').upsert(
+      {
+        remedy_id: remedyToRate.id,
+        user_id: currentUser.id,
+        rating: rating,
+      },
+      { onConflict: 'user_id,remedy_id' }
+    );
+
+    if (error) {
+      toast({
+        title: 'Error submitting rating',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Rating submitted!',
+        description: `You gave "${remedyToRate.name}" ${rating} star(s).`,
+      });
+      // Optionally, invalidate queries to update average rating display
+      // queryClient.invalidateQueries({ queryKey: ['remedyRatings', remedyToRate.id] });
+    }
+
+    setRemedyToRate(null);
   };
 
   if (error) {
@@ -365,6 +407,7 @@ const Remedies = () => {
                 handleLike={handleLike}
                 handleSave={handleSave}
                 handleShare={handleShare}
+                handleOpenRatingModal={handleOpenRatingModal}
                 loadMoreRef={loadMoreRef}
                 isFetchingNextPage={isFetchingNextPage}
                 isLoading={isLoading}
@@ -386,6 +429,7 @@ const Remedies = () => {
               handleLike={handleLike}
               handleSave={handleSave}
               handleShare={handleShare}
+              handleOpenRatingModal={handleOpenRatingModal}
               loadMoreRef={loadMoreRef}
               isFetchingNextPage={isFetchingNextPage}
               isLoading={isLoading}
@@ -395,6 +439,15 @@ const Remedies = () => {
           </div>
         )}
       </div>
+
+      {remedyToRate && (
+        <RemedyRatingModal
+          isOpen={!!remedyToRate}
+          onClose={() => setRemedyToRate(null)}
+          onSubmit={handleRatingSubmit}
+          remedyName={remedyToRate.name || ''}
+        />
+      )}
     </div>
   );
 };

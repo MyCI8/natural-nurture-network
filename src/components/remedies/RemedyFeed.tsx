@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, Bookmark, Star, Search } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
+import { cn } from '@/lib/utils';
 
 type Remedy = Tables<'remedies'>;
 
@@ -13,6 +14,7 @@ interface RemedyFeedProps {
   handleLike: (remedyId: string, e: React.MouseEvent) => void;
   handleSave: (remedyId: string, e: React.MouseEvent) => void;
   handleShare: (remedy: Remedy, e: React.MouseEvent) => void;
+  handleOpenRatingModal: (remedy: Remedy) => void;
   loadMoreRef: (node?: Element | null) => void;
   isFetchingNextPage: boolean;
   searchTerm: string;
@@ -28,6 +30,7 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
   handleLike,
   handleSave,
   handleShare,
+  handleOpenRatingModal,
   loadMoreRef,
   isFetchingNextPage,
   searchTerm,
@@ -91,7 +94,6 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                       }}
                     >
                       <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                      <span className="text-xs">2.3k</span>
                     </Button>
                     <Button
                       variant="ghost"
@@ -103,7 +105,6 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                       }}
                     >
                       <MessageCircle className="h-4 w-4" />
-                      <span className="text-xs">156</span>
                     </Button>
                     <Button
                       variant="ghost"
@@ -120,17 +121,26 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="!px-2"
+                      className="!px-2 touch-manipulation"
                       onClick={e => {
                         handleSave(remedy.id, e);
                       }}
                     >
-                      <Bookmark className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                      <Bookmark className={cn("h-4 w-4", isSaved ? "fill-amber-400 text-black" : "")} />
                     </Button>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs font-medium">4.8</span>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-1 !px-2 touch-manipulation"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleOpenRatingModal(remedy);
+                      }}
+                    >
+                      <Star className="h-4 w-4 text-yellow-400" />
+                      <span className="text-xs font-medium">Rate</span>
+                    </Button>
                   </div>
                 </div>
               </div>

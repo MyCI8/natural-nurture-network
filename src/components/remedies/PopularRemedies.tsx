@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Star, TrendingUp } from "lucide-react";
@@ -83,8 +82,6 @@ const PopularRemedies = () => {
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs font-medium">4.8</span>
-                      <span className="text-xs text-muted-foreground ml-1">2.3k saves</span>
                     </div>
                   </div>
                 </div>
