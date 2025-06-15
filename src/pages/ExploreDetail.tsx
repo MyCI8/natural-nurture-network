@@ -65,11 +65,12 @@ const ExploreDetail = () => {
   useLayoutEffect(() => {
     const calculateSize = () => {
       if (containerRef.current) {
-        const containerWidth = containerRef.current.clientWidth;
-        const containerHeight = containerRef.current.clientHeight;
+        // Leave a small, consistent gap around the video for aesthetics.
+        const gap = 32; // 16px on each side
+        const containerWidth = containerRef.current.clientWidth - gap;
+        const containerHeight = containerRef.current.clientHeight - gap;
 
         // Use naturalAspectRatio if available, otherwise fallback to 16:9.
-        // This ensures the container is always visible and can load the video metadata.
         const ar = naturalAspectRatio || 16 / 9;
         const containerAspectRatio = containerWidth / containerHeight;
 
@@ -267,7 +268,7 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative py-2 px-2 md:py-4 md:px-4">
+        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative">
           <div 
             className="bg-black rounded-lg overflow-hidden flex items-center justify-center relative transition-all duration-300"
             style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : {}}
