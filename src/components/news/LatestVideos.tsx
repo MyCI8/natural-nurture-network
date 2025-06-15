@@ -31,9 +31,19 @@ const LatestVideos = () => {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-5 w-32" />
         </div>
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-24 w-full" />
-        ))}
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-3 bg-muted/30 rounded-lg">
+              <div className="space-y-3">
+                <Skeleton className="w-full aspect-[16/9] rounded-lg" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -50,25 +60,21 @@ const LatestVideos = () => {
           <Link to={`/news/videos/${video.id}`} key={video.id}>
             <Card className="group hover:shadow-md transition-all duration-300 border-0 bg-muted/30 hover:bg-muted/50">
               <CardContent className="p-3">
-                <div className="flex gap-4 items-center">
-                  <div className="relative w-28 h-18 rounded-lg overflow-hidden bg-muted shrink-0">
-                    <AspectRatio ratio={16/9}>
-                      <img
-                        src={video.thumbnail_url || "/placeholder.svg"}
-                        alt={video.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </AspectRatio>
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                      <Play className="h-4 w-4 text-white fill-white" />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm leading-tight line-clamp-3 group-hover:text-primary transition-colors">
-                      {video.title}
-                    </h3>
+                <div className="relative w-full rounded-lg overflow-hidden bg-muted mb-3">
+                  <AspectRatio ratio={16/9}>
+                    <img
+                      src={video.thumbnail_url || "/placeholder.svg"}
+                      alt={video.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </AspectRatio>
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                    <Play className="h-6 w-6 text-white fill-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </div>
+                <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                  {video.title}
+                </h3>
               </CardContent>
             </Card>
           </Link>
