@@ -1,7 +1,8 @@
 
+
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video } from "lucide-react";
+import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -218,6 +219,24 @@ const RemedyDetail = () => {
             </Card>
           )}
 
+          {/* Preparation Method - Using shopping_list field */}
+          {remedy.shopping_list && (
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <ChefHat className="h-5 w-5" />
+                Preparation Method
+              </h2>
+              <Card className="border-0 bg-muted/30">
+                <CardContent className="p-4">
+                  <div 
+                    className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: remedy.shopping_list }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Video Section */}
           {remedy.video_url && (
             <div className="space-y-3">
@@ -236,19 +255,20 @@ const RemedyDetail = () => {
                     <Video className="h-4 w-4" />
                     Watch preparation video
                   </a>
+                  {/* Dosage Instructions - Using video_description if available */}
+                  {remedy.video_description && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        <Pill className="h-4 w-4" />
+                        Usage Instructions
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {remedy.video_description}
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            </div>
-          )}
-
-          {/* Shopping List */}
-          {remedy.shopping_list && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold">Shopping List</h2>
-              <div 
-                className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: remedy.shopping_list }}
-              />
             </div>
           )}
 
@@ -278,15 +298,18 @@ const RemedyDetail = () => {
             </div>
           )}
 
-          {/* Expert Recommendations */}
+          {/* Expert Recommendations with Safety Focus */}
           {remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0 && (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold">Expert Recommendations</h2>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Expert Recommendations & Precautions
+              </h2>
               <div className="space-y-2">
                 {remedy.expert_recommendations.map((recommendation, index) => (
-                  <Card key={index} className="border-0 bg-muted/30">
+                  <Card key={index} className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
                     <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">{String(recommendation)}</p>
+                      <p className="text-sm text-amber-700 dark:text-amber-300">{String(recommendation)}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -313,3 +336,4 @@ const RemedyDetail = () => {
 };
 
 export default RemedyDetail;
+
