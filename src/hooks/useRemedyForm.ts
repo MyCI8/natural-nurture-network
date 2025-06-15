@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
@@ -5,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { migrateRemedyImages, filterImagesForSaving } from "@/utils/remedyImageMigration";
 import { healthConcerns } from "@/components/admin/remedies/form/HealthConcernsData";
-import { parseRemedyContent } from "@/utils/remedyContentParser";
+import { parseRemedyContent, formatContentWithLists } from "@/utils/remedyContentParser";
 
 interface ImageData {
   file?: File;
@@ -125,10 +126,10 @@ export const useRemedyForm = () => {
       setFormData({
         name: remedy.name || "",
         summary: remedy.summary || remedy.brief_description || "",
-        description: parsed.about,
-        preparation_method: parsed.preparationMethod,
-        dosage_instructions: parsed.dosageInstructions,
-        precautions_side_effects: parsed.precautionsAndSideEffects,
+        description: formatContentWithLists(parsed.about),
+        preparation_method: formatContentWithLists(parsed.preparationMethod),
+        dosage_instructions: formatContentWithLists(parsed.dosageInstructions),
+        precautions_side_effects: formatContentWithLists(parsed.precautionsAndSideEffects),
         ingredients: remedy.ingredients || [],
         health_concerns: allHealthConcerns,
         status: remedy.status as "draft" | "published" || "draft",

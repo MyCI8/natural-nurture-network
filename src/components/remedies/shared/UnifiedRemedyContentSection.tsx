@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import TextEditor from '@/components/ui/text-editor';
 
 interface UnifiedRemedyContentSectionProps {
   formData: {
@@ -18,62 +18,50 @@ export const UnifiedRemedyContentSection = ({
   onChange 
 }: UnifiedRemedyContentSectionProps) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <h3 className="text-lg font-semibold">Content</h3>
       
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="description" className="text-sm font-medium">
           Detailed Description
         </Label>
-        <Textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => onChange('description', e.target.value)}
-          placeholder="Explain the benefits and how this remedy works..."
-          className="mt-1 min-h-[120px] touch-manipulation bg-background"
-          rows={6}
+        <TextEditor
+          content={formData.description}
+          onChange={(content) => onChange('description', content)}
+          maxHeight="200px"
         />
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="preparation" className="text-sm font-medium">
           Preparation Method
         </Label>
-        <Textarea
-          id="preparation"
-          value={formData.preparation_method || ''}
-          onChange={(e) => onChange('preparation_method', e.target.value)}
-          placeholder="Step-by-step instructions on how to prepare this remedy..."
-          className="mt-1 min-h-[100px] touch-manipulation bg-background"
-          rows={5}
+        <TextEditor
+          content={formData.preparation_method || ''}
+          onChange={(content) => onChange('preparation_method', content)}
+          maxHeight="150px"
         />
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="dosage" className="text-sm font-medium">
           Dosage Instructions
         </Label>
-        <Textarea
-          id="dosage"
-          value={formData.dosage_instructions || ''}
-          onChange={(e) => onChange('dosage_instructions', e.target.value)}
-          placeholder="How much and how often to use this remedy..."
-          className="mt-1 min-h-[80px] touch-manipulation bg-background"
-          rows={4}
+        <TextEditor
+          content={formData.dosage_instructions || ''}
+          onChange={(content) => onChange('dosage_instructions', content)}
+          maxHeight="120px"
         />
       </div>
 
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="precautions" className="text-sm font-medium">
           Precautions & Side Effects
         </Label>
-        <Textarea
-          id="precautions"
-          value={formData.precautions_side_effects || ''}
-          onChange={(e) => onChange('precautions_side_effects', e.target.value)}
-          placeholder="Important safety information, contraindications, and potential side effects..."
-          className="mt-1 min-h-[100px] touch-manipulation bg-background"
-          rows={5}
+        <TextEditor
+          content={formData.precautions_side_effects || ''}
+          onChange={(content) => onChange('precautions_side_effects', content)}
+          maxHeight="150px"
         />
       </div>
     </div>
