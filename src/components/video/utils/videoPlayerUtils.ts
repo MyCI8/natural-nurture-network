@@ -1,4 +1,6 @@
 
+import { getCdnUrl } from '@/utils/cdnUtils';
+
 /**
  * Check if URL is YouTube video
  */
@@ -73,7 +75,7 @@ export const getYouTubeVideoId = (url: string): string | null => {
  * Get thumbnail URL for a video
  */
 export const getThumbnailUrl = (video: { thumbnail_url?: string | null; video_url: string }): string | null => {
-  if (video.thumbnail_url) return video.thumbnail_url;
+  if (video.thumbnail_url) return getCdnUrl(video.thumbnail_url);
   
   if (isYoutubeVideo(video.video_url)) {
     const videoId = getYouTubeVideoId(video.video_url);
@@ -83,7 +85,7 @@ export const getThumbnailUrl = (video: { thumbnail_url?: string | null; video_ur
   }
   
   if (isImagePost(video.video_url)) {
-    return video.video_url;
+    return getCdnUrl(video.video_url);
   }
   
   return null;

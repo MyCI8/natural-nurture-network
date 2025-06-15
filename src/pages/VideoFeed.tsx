@@ -14,6 +14,8 @@ import VideoDialog from '@/components/video/VideoDialog';
 import Comments from '@/components/video/Comments';
 import { Video } from '@/types/video';
 import { useVideoFeed } from '@/hooks/useVideoFeed';
+import { getCdnUrl } from '@/utils/cdnUtils';
+import { isYoutubeVideo } from '@/utils/videoUtils';
 
 const VideoFeed = () => {
   const navigate = useNavigate();
@@ -195,114 +197,122 @@ const VideoFeed = () => {
               <p className="text-[#666666] mb-4">No videos available</p>
             </div>
           ) : (
-            videos.map((video) => (
-              <div 
-                key={video.id} 
-                className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
-              >
-                {/* User Info */}
-                <div 
-                  className="flex items-center space-x-3 p-3 sm:p-4 cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (video.profiles?.id) {
-                      navigate(`/users/${video.profiles.id}`);
-                    }
-                  }}
-                >
-                  <Avatar className="h-8 w-8">
-                    {video.profiles?.avatar_url ? (
-                      <AvatarImage src={video.profiles.avatar_url} alt={video.profiles?.full_name || 'User'} />
-                    ) : (
-                      <AvatarFallback className="bg-[#E8F5E9] text-[#4CAF50]">
-                        {video.profiles?.full_name?.charAt(0) || '?'}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <span className="font-medium hover:text-[#4CAF50] transition-colors">
-                    {video.profiles?.full_name || 'Anonymous User'}
-                  </span>
-                </div>
+            videos.map((video, index) => {
+              const nextVideo = videos[index + 1];
+              const cdnNextVideoUrl = nextVideo ? getCdnUrl(nextVideo.video_url) : null;
 
-                {/* Video Container */}
+              return (
+              <React.Fragment key={video.id}>
+                {cdnNextVideoUrl && !isYoutubeVideo(cdnNextVideoUrl) && (
+                   <link rel="preload" href={cdnNextVideoUrl} as="video" type="video/mp4" />
+                )}
                 <div 
-                  className="w-full relative cursor-pointer" 
-                  onClick={() => handleVideoClick(video)}
+                  className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800"
                 >
-                  <VideoPlayer
-                    video={video}
-                    autoPlay
-                    showControls={false}
-                  />
-                </div>
+                  {/* User Info */}
+                  <div 
+                    className="flex items-center space-x-3 p-3 sm:p-4 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (video.profiles?.id) {
+                        navigate(`/users/${video.profiles.id}`);
+                      }
+                    }}
+                  >
+                    <Avatar className="h-8 w-8">
+                      {video.profiles?.avatar_url ? (
+                        <AvatarImage src={getCdnUrl(video.profiles.avatar_url) || ''} alt={video.profiles?.full_name || 'User'} />
+                      ) : (
+                        <AvatarFallback className="bg-[#E8F5E9] text-[#4CAF50]">
+                          {video.profiles?.full_name?.charAt(0) || '?'}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <span className="font-medium hover:text-[#4CAF50] transition-colors">
+                      {video.profiles?.full_name || 'Anonymous User'}
+                    </span>
+                  </div>
 
-                {/* Rearranged action buttons: chat, save, share directly below media */}
-                <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 pt-3 px-3 sm:px-4">
-                  <Button 
-                    variant="ghost"
-                    size="icon"
-                    className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
+                  {/* Video Container */}
+                  <div 
+                    className="w-full relative cursor-pointer" 
+                    onClick={() => handleVideoClick(video)}
                   >
-                    <MessageCircle className="h-6 w-6" />
-                  </Button>
-                  
-                  <Button 
-                    variant="ghost"
-                    size="icon"
-                    className={`h-11 w-11 transition-transform hover:scale-110 touch-manipulation ${
-                      userSaves?.includes(video.id) 
-                        ? 'text-[#4CAF50]' 
-                        : 'text-[#666666] hover:text-[#4CAF50]'
-                    }`}
-                    onClick={(e) => handleSave(video.id, e)}
-                  >
-                    <Bookmark 
-                      className="h-6 w-6" 
-                      fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
+                    <VideoPlayer
+                      video={video}
+                      autoPlay
+                      showControls={false}
                     />
-                  </Button>
-                  
-                  <Button 
-                    variant="ghost"
-                    size="icon"
-                    className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
-                  >
-                    <Share2 className="h-6 w-6" />
-                  </Button>
-                </div>
+                  </div>
 
-                {/* Video Description and Likes */}
-                <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                  <p className="text-sm text-[#666666] text-left mb-2">
-                    {video.description?.substring(0, 100)}
-                    {video.description?.length > 100 && '...'}
-                  </p>
-                  
-                  {/* Moved likes count with heart icon to the bottom */}
-                  <div className="mt-2 mb-3 text-sm text-[#666666] flex items-center space-x-2">
-                    <span className="mr-1">{video.likes_count || 0} likes</span>
+                  {/* Rearranged action buttons: chat, save, share directly below media */}
+                  <div className="flex items-center justify-around sm:justify-start sm:space-x-4 mb-3 pt-3 px-3 sm:px-4">
                     <Button 
                       variant="ghost"
                       size="icon"
-                      className={`h-8 w-8 p-0 transition-transform hover:scale-110 ${
-                        userLikes[video.id] 
-                          ? 'text-red-500' 
+                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
+                    >
+                      <MessageCircle className="h-6 w-6" />
+                    </Button>
+                    
+                    <Button 
+                      variant="ghost"
+                      size="icon"
+                      className={`h-11 w-11 transition-transform hover:scale-110 touch-manipulation ${
+                        userSaves?.includes(video.id) 
+                          ? 'text-[#4CAF50]' 
                           : 'text-[#666666] hover:text-[#4CAF50]'
                       }`}
-                      onClick={() => handleLike(video.id)}
+                      onClick={(e) => handleSave(video.id, e)}
                     >
-                      <Heart className="h-5 w-5" fill={userLikes[video.id] ? "currentColor" : "none"} />
+                      <Bookmark 
+                        className="h-6 w-6" 
+                        fill={userSaves?.includes(video.id) ? "currentColor" : "none"}
+                      />
                     </Button>
-                    <span className="ml-2">{video.views_count || 0} views</span>
+                    
+                    <Button 
+                      variant="ghost"
+                      size="icon"
+                      className="h-11 w-11 text-[#666666] hover:text-[#4CAF50] transition-transform hover:scale-110 touch-manipulation"
+                    >
+                      <Share2 className="h-6 w-6" />
+                    </Button>
                   </div>
 
-                  {/* Comments Section */}
-                  <div className="mt-1">
-                    <Comments videoId={video.id} currentUser={currentUser} />
+                  {/* Video Description and Likes */}
+                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                    <p className="text-sm text-[#666666] text-left mb-2">
+                      {video.description?.substring(0, 100)}
+                      {video.description?.length > 100 && '...'}
+                    </p>
+                    
+                    {/* Moved likes count with heart icon to the bottom */}
+                    <div className="mt-2 mb-3 text-sm text-[#666666] flex items-center space-x-2">
+                      <span className="mr-1">{video.likes_count || 0} likes</span>
+                      <Button 
+                        variant="ghost"
+                        size="icon"
+                        className={`h-8 w-8 p-0 transition-transform hover:scale-110 ${
+                          userLikes[video.id] 
+                            ? 'text-red-500' 
+                            : 'text-[#666666] hover:text-[#4CAF50]'
+                        }`}
+                        onClick={() => handleLike(video.id)}
+                      >
+                        <Heart className="h-5 w-5" fill={userLikes[video.id] ? "currentColor" : "none"} />
+                      </Button>
+                      <span className="ml-2">{video.views_count || 0} views</span>
+                    </div>
+
+                    {/* Comments Section */}
+                    <div className="mt-1">
+                      <Comments videoId={video.id} currentUser={currentUser} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              </React.Fragment>
+            )})
           )}
         </div>
       </div>

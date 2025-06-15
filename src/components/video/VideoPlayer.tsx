@@ -4,6 +4,7 @@ import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo, isImagePost } from './utils/videoPlayerUtils';
 import YouTubePlayer from './YouTubePlayer';
 import NativeVideoPlayer from './NativeVideoPlayer';
+import { getCdnUrl } from '@/utils/cdnUtils';
 
 interface VideoPlayerProps {
   video: Video;
@@ -52,8 +53,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [playbackStarted, setPlaybackStarted] = useState(false);
   const [localVisibleProductLink, setLocalVisibleProductLink] = useState<string | null>(null);
   
+  const cdnVideoUrl = getCdnUrl(video.video_url);
+
   // Check if this is an image post
-  const isImage = isImagePost(video.video_url);
+  const isImage = isImagePost(cdnVideoUrl || '');
   
   // Effect to handle mute state changes based on global audio setting
   useEffect(() => {
@@ -102,10 +105,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   // Render the appropriate player based on video type
-  if (isYoutubeVideo(video.video_url)) {
+  if (isYoutubeVideo(cdnVideoUrl || '')) {
     return (
       <YouTubePlayer
-        video={video}
+        video={{ ...video, video_url: cdnVideoUrl }}
         productLinks={activeProductLinks}
         autoPlay={autoPlay}
         isMuted={isMuted}
@@ -124,7 +127,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   return (
     <NativeVideoPlayer
-      video={video}
+      video={{ ...video, video_url: cdnVideoUrl }}
       productLinks={activeProductLinks}
       autoPlay={autoPlay && !isImage} // Don't autoplay images
       isMuted={isMuted}
