@@ -61,7 +61,7 @@ const Remedies = () => {
       if (!currentUser) return [];
       // NOTE: Using a type assertion because 'remedy_likes' may not be in generated types.
       const { data, error } = await (supabase
-        .from('remedy_likes')
+        .from('remedy_likes' as any)
         .select('remedy_id')
         .eq('user_id', currentUser.id)) as { data: { remedy_id: string }[] | null, error: any };
 
@@ -82,7 +82,7 @@ const Remedies = () => {
       if (!currentUser) return [];
       // NOTE: Using a type assertion because 'saved_remedies' may not be in generated types.
       const { data, error } = await (supabase
-        .from('saved_remedies')
+        .from('saved_remedies' as any)
         .select('remedy_id')
         .eq('user_id', currentUser.id)) as { data: { remedy_id: string }[] | null, error: any };
       
@@ -162,14 +162,14 @@ const Remedies = () => {
     try {
       if (isLiked) {
         const { error } = await (supabase
-          .from('remedy_likes')
+          .from('remedy_likes' as any)
           .delete()
           .eq('user_id', currentUser.id)
           .eq('remedy_id', remedyId)) as { error: any };
         if (error) throw error;
       } else {
         const { error } = await (supabase
-          .from('remedy_likes')
+          .from('remedy_likes' as any)
           .insert({ user_id: currentUser.id, remedy_id: remedyId })) as { error: any };
         if (error) throw error;
       }
@@ -185,9 +185,9 @@ const Remedies = () => {
     e.preventDefault();
     e.stopPropagation();
     if (!currentUser) {
-        toast({ title: "Please sign in to save remedies.", variant: "destructive" });
-        navigate('/auth');
-        return;
+      toast({ title: "Please sign in to save remedies.", variant: "destructive" });
+      navigate('/auth');
+      return;
     }
     
     const isSaved = userSavedRemedies.has(remedyId);
@@ -195,7 +195,7 @@ const Remedies = () => {
     try {
       if (isSaved) {
         const { error } = await (supabase
-          .from('saved_remedies')
+          .from('saved_remedies' as any)
           .delete()
           .eq('user_id', currentUser.id)
           .eq('remedy_id', remedyId)) as { error: any };
@@ -203,7 +203,7 @@ const Remedies = () => {
         toast({ title: "Remedy removed from your saved list." });
       } else {
         const { error } = await (supabase
-          .from('saved_remedies')
+          .from('saved_remedies' as any)
           .insert({ user_id: currentUser.id, remedy_id: remedyId })) as { error: any };
         if (error) throw error;
         toast({ title: "Remedy saved!", description: "You can find it in your profile." });

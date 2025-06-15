@@ -26,7 +26,7 @@ export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
       // NOTE: The 'saved_remedies' table might not be in the auto-generated types.
       // A type assertion is used to prevent build errors. This assumes the table exists.
       const { data, error } = await (supabase
-        .from('saved_remedies')
+        .from('saved_remedies' as any)
         .select(`
           id,
           created_at,
