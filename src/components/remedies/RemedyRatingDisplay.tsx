@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,6 +9,7 @@ interface RemedyRatingDisplayProps {
   size?: number; // pixel size (default 18)
   onClick?: (e: React.MouseEvent) => void;
   tabIndex?: number;
+  simplified?: boolean;
 }
 export const RemedyRatingDisplay: React.FC<RemedyRatingDisplayProps> = ({
   average = 0,
@@ -18,9 +18,39 @@ export const RemedyRatingDisplay: React.FC<RemedyRatingDisplayProps> = ({
   size = 18,
   onClick,
   tabIndex,
+  simplified = false,
 }) => {
   // For stars: highlight user's rating if present, otherwise average (to the nearest 0.5).
   const filledStars = userRating ?? Math.round(average * 2) / 2;
+
+  if (simplified) {
+    // Only one star (filled if rating exists), and average shown. No count or "Your rating".
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-1",
+          onClick ? "cursor-pointer hover:scale-105 transition-transform active:scale-95 focus:outline-none" : ""
+        )}
+        tabIndex={tabIndex ?? (onClick ? 0 : -1)}
+        onClick={onClick}
+        role={onClick ? "button" : undefined}
+        aria-label={onClick ? "Rate this remedy" : undefined}
+        onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { onClick(e as any); }} : undefined}
+      >
+        <Star
+          size={size}
+          className={cn(
+            average > 0 ? "text-yellow-400 fill-yellow-300" : "text-gray-300",
+            "transition-colors"
+          )}
+          aria-label={average > 0 ? "filled star" : "empty star"}
+        />
+        <span className="ml-1 text-xs text-muted-foreground font-medium">
+          {average > 0 ? average.toFixed(1) : "—"}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div

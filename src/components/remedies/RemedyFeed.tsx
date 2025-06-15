@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, Bookmark, Search } from "lucide-react";
@@ -151,6 +150,7 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                         onOpenRatingModal(remedy);
                       }}
                       tabIndex={0}
+                      simplified={true} // <--- Only show one star and rating number
                     />
                   </div>
                 </div>
