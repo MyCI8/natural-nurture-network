@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
@@ -9,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getSafeImageUrl } from "@/utils/imageValidation";
+import { parseRemedyContent } from "@/utils/remedyContentParser";
 
 const RemedyDetail = () => {
   const { id } = useParams();
@@ -89,6 +91,9 @@ const RemedyDetail = () => {
   
   // Safely handle related links
   const relatedLinks = Array.isArray(remedy.related_links) ? remedy.related_links : [];
+
+  // Parse the description to extract different sections
+  const parsedContent = parseRemedyContent(remedy.description || '');
 
   return (
     <div className="min-h-screen bg-background">
@@ -186,13 +191,13 @@ const RemedyDetail = () => {
 
           <Separator />
 
-          {/* Description */}
-          {remedy.description && (
+          {/* About this remedy - Only show if there's content */}
+          {parsedContent.about && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">About this remedy</h2>
               <div 
                 className="prose max-w-none text-muted-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: remedy.description }}
+                dangerouslySetInnerHTML={{ __html: parsedContent.about }}
               />
             </div>
           )}
@@ -217,30 +222,39 @@ const RemedyDetail = () => {
             </Card>
           )}
 
-          {/* Preparation Method - Using shopping_list field */}
-          {remedy.shopping_list && (
+          {/* Preparation Method */}
+          {(parsedContent.preparationMethod || remedy.shopping_list) && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">Preparation Method</h2>
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
                   <div 
                     className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: remedy.shopping_list }}
+                    dangerouslySetInnerHTML={{ 
+                      __html: parsedContent.preparationMethod || remedy.shopping_list 
+                    }}
                   />
                 </CardContent>
               </Card>
             </div>
           )}
 
-          {/* Dosage Instructions - Using video_description field */}
-          {remedy.video_description && (
+          {/* Dosage Instructions */}
+          {(parsedContent.dosageInstructions || remedy.video_description) && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">Dosage Instructions</h2>
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {remedy.video_description}
-                  </p>
+                  {parsedContent.dosageInstructions ? (
+                    <div 
+                      className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: parsedContent.dosageInstructions }}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {remedy.video_description}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -295,18 +309,30 @@ const RemedyDetail = () => {
             </div>
           )}
 
-          {/* Expert Recommendations - Precautions & Side Effects */}
-          {remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0 && (
+          {/* Precautions & Side Effects */}
+          {(parsedContent.precautionsAndSideEffects || 
+            (remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0)) && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">Precautions & Side Effects</h2>
               <div className="space-y-2">
-                {remedy.expert_recommendations.map((recommendation, index) => (
-                  <Card key={index} className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
+                {parsedContent.precautionsAndSideEffects ? (
+                  <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
                     <CardContent className="p-4">
-                      <p className="text-sm text-amber-700 dark:text-amber-300">{String(recommendation)}</p>
+                      <div 
+                        className="prose max-w-none text-sm text-amber-700 dark:text-amber-300"
+                        dangerouslySetInnerHTML={{ __html: parsedContent.precautionsAndSideEffects }}
+                      />
                     </CardContent>
                   </Card>
-                ))}
+                ) : (
+                  remedy.expert_recommendations?.map((recommendation, index) => (
+                    <Card key={index} className="border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900">
+                      <CardContent className="p-4">
+                        <p className="text-sm text-amber-700 dark:text-amber-300">{String(recommendation)}</p>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           )}
