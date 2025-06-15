@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Video } from '@/types/video';
 import { useNavigate } from 'react-router-dom';
 import VideoPlayer from './VideoPlayer';
@@ -33,7 +33,7 @@ const MobileVideoFeed: React.FC<MobileVideoFeedProps> = ({
         if (index >= videos.length - 3 && hasNextPage && !isFetchingNextPage) {
             loadMoreItems();
         }
-    }, [index, videos.length]);
+    }, [index, videos.length, hasNextPage, isFetchingNextPage, loadMoreItems]);
 
     if (index >= videos.length) {
       return (

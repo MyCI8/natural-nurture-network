@@ -1,9 +1,10 @@
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import MobileVideoFeed from '@/components/video/MobileVideoFeed';
 import { Button } from '@/components/ui/button';
 import VideoDialog from '@/components/video/VideoDialog';
