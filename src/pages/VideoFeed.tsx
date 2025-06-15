@@ -184,7 +184,13 @@ const VideoFeed = () => {
   }
 
   const itemCount = hasNextPage ? videos.length + 1 : videos.length;
-  const loadMoreItems = isFetchingNextPage ? () => {} : fetchNextPage;
+
+  const loadMoreItems = useCallback((startIndex: number, stopIndex: number) => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  
   const isItemLoaded = (index: number) => !hasNextPage || index < videos.length;
 
   return (
