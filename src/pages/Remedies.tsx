@@ -17,6 +17,7 @@ import RemedyFeed from "@/components/remedies/RemedyFeed";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import RemedyRatingModal from "@/components/remedies/RemedyRatingModal";
+import RemedyRatingDisplay from "@/components/remedies/RemedyRatingDisplay";
 
 type Remedy = Tables<'remedies'>;
 
@@ -245,12 +246,62 @@ const Remedies = () => {
     setRemedyToRate(remedy);
   };
 
+  // ========= Fetch ratings =========
+  // We'll get the ratings for all loaded remedies and store by remedy id.
+  const remedyIds = data?.pages.flatMap(p => p.map((r: any) => r.id)).filter(Boolean) ?? [];
+
+  // Fetch average rating and count per remedy
+  const { data: allRatings } = useQuery({
+    queryKey: ['remedyRatings', remedyIds.join(",")],
+    enabled: remedyIds.length > 0,
+    queryFn: async () => {
+      if (!remedyIds.length) return {};
+      const { data, error } = await supabase
+        .from('remedy_ratings')
+        .select('remedy_id, rating')
+        .in('remedy_id', remedyIds);
+      if (error) throw error;
+      // For each remedy id, calculate avg and count
+      const byId = {};
+      remedyIds.forEach((id: string) => {
+        const ratings = (data || []).filter((r: any) => r.remedy_id === id);
+        if (ratings.length) {
+          const avg = ratings.reduce((a, b) => a + b.rating, 0) / ratings.length;
+          byId[id] = { average: avg, count: ratings.length };
+        } else {
+          byId[id] = { average: 0, count: 0 };
+        }
+      });
+      return byId;
+    }
+  });
+
+  // Fetch this user's ratings for loaded remedies
+  const { data: userRatings } = useQuery({
+    queryKey: ["userRemedyRatings", currentUser?.id, remedyIds.join(",")],
+    enabled: !!currentUser && remedyIds.length > 0,
+    queryFn: async () => {
+      if (!currentUser || !remedyIds.length) return {};
+      const { data, error } = await supabase
+        .from('remedy_ratings')
+        .select('remedy_id, rating')
+        .eq('user_id', currentUser.id)
+        .in('remedy_id', remedyIds);
+      if (error) throw error;
+      // Map: remedyId -> rating
+      const ratings = {};
+      for (const { remedy_id, rating } of data || []) {
+        ratings[remedy_id] = rating;
+      }
+      return ratings;
+    }
+  });
+
   const handleRatingSubmit = async (rating: number) => {
     if (!remedyToRate || !currentUser) {
       toast({ title: "You must be logged in to rate.", variant: "destructive" });
       return;
     }
-
     const { error } = await (supabase as any).from('remedy_ratings').upsert(
       {
         remedy_id: remedyToRate.id,
@@ -259,7 +310,6 @@ const Remedies = () => {
       },
       { onConflict: 'user_id,remedy_id' }
     );
-
     if (error) {
       toast({
         title: 'Error submitting rating',
@@ -271,10 +321,10 @@ const Remedies = () => {
         title: 'Rating submitted!',
         description: `You gave "${remedyToRate.name}" ${rating} star(s).`,
       });
-      // Optionally, invalidate queries to update average rating display
-      // queryClient.invalidateQueries({ queryKey: ['remedyRatings', remedyToRate.id] });
+      // Invalidate rating caches so UI refreshes
+      queryClient.invalidateQueries({ queryKey: ['remedyRatings'] });
+      queryClient.invalidateQueries({ queryKey: ['userRemedyRatings'] });
     }
-
     setRemedyToRate(null);
   };
 
@@ -413,6 +463,9 @@ const Remedies = () => {
                 isLoading={isLoading}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
+                // NEW!
+                remedyRatings={allRatings ?? {}}
+                userRated={userRatings ?? {}}
               />
             </TabsContent>
             <TabsContent value="popular" className="pt-3">
@@ -435,6 +488,9 @@ const Remedies = () => {
               isLoading={isLoading}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
+              // NEW!
+              remedyRatings={allRatings ?? {}}
+              userRated={userRatings ?? {}}
             />
           </div>
         )}

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, Bookmark, Star, Search } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { cn } from '@/lib/utils';
+import RemedyRatingDisplay from "./RemedyRatingDisplay";
 
 type Remedy = Tables<'remedies'>;
 
@@ -20,6 +21,8 @@ interface RemedyFeedProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
+  remedyRatings?: Record<string, { average: number; count: number }>; // remedyId -> { average, count }
+  userRated?: Record<string, number>; // remedyId -> userRating
 }
 
 const RemedyFeed: React.FC<RemedyFeedProps> = ({
@@ -36,6 +39,8 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
   searchTerm,
   setSearchTerm,
   isLoading,
+  remedyRatings = {},
+  userRated = {},
 }) => {
   return (
     <div className="flex flex-col gap-6 max-w-lg mx-auto w-full">
@@ -43,6 +48,8 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
         remedies.map((remedy) => {
           const isLiked = userLikes.has(remedy.id);
           const isSaved = userSaves.has(remedy.id);
+          const ratingData = remedyRatings[remedy.id] || { average: 0, count: 0 };
+          const userRating = userRated[remedy.id] || undefined;
 
           return (
             <div
@@ -72,6 +79,16 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                     minHeight: 200,
                   }}
                   draggable={false}
+                />
+              </div>
+              
+              {/* --- RATING DISPLAY --- */}
+              <div className="flex items-center justify-start mt-2 ml-2">
+                <RemedyRatingDisplay
+                  average={ratingData.average}
+                  count={ratingData.count}
+                  userRating={userRating}
+                  size={18}
                 />
               </div>
               
@@ -139,7 +156,9 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                       }}
                     >
                       <Star className="h-4 w-4 text-yellow-400" />
-                      <span className="text-xs font-medium">Rate</span>
+                      <span className="text-xs font-medium">
+                        {userRating ? "Update Rating" : "Rate"}
+                      </span>
                     </Button>
                   </div>
                 </div>
