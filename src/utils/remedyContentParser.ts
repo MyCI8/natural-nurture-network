@@ -95,5 +95,11 @@ export const parseRemedyContent = (description: string): ParsedRemedyContent => 
     });
   }
 
+  // Clean markdown asterisks from all sections
+  result.about = result.about.replace(/\*\*/g, '').trim();
+  result.preparationMethod = result.preparationMethod.replace(/\*\*/g, '').trim();
+  result.dosageInstructions = result.dosageInstructions.replace(/\*\*/g, '').trim();
+  result.precautionsAndSideEffects = result.precautionsAndSideEffects.replace(/\*\*/g, '').trim();
+
   return result;
 };
