@@ -1,4 +1,3 @@
-
 interface ParsedRemedyContent {
   about: string;
   preparationMethod: string;
@@ -6,7 +5,7 @@ interface ParsedRemedyContent {
   precautionsAndSideEffects: string;
 }
 
-const formatContentWithLists = (text: string): string => {
+export const formatContentWithLists = (text: string): string => {
   if (!text) return '';
 
   const cleanedText = text.replace(/\*\*/g, '').trim();
@@ -163,11 +162,9 @@ export const parseRemedyContent = (description: string): ParsedRemedyContent => 
 
   // Clean markdown asterisks from all sections
   result.about = result.about.replace(/\*\*/g, '').trim();
+  result.preparationMethod = result.preparationMethod.replace(/\*\*/g, '').trim();
   result.dosageInstructions = result.dosageInstructions.replace(/\*\*/g, '').trim();
   result.precautionsAndSideEffects = result.precautionsAndSideEffects.replace(/\*\*/g, '').trim();
-
-  // Format preparation method with lists and remove asterisks
-  result.preparationMethod = formatContentWithLists(result.preparationMethod);
 
   return result;
 };

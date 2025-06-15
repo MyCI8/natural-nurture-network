@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
@@ -6,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { migrateRemedyImages, filterImagesForSaving } from "@/utils/remedyImageMigration";
 import { healthConcerns } from "@/components/admin/remedies/form/HealthConcernsData";
+import { parseRemedyContent } from "@/utils/remedyContentParser";
 
 interface ImageData {
   file?: File;
@@ -101,29 +101,8 @@ export const useRemedyForm = () => {
       console.log('Loading remedy data:', remedy);
       console.log('Pending suggestions:', pendingSuggestions);
       
-      // Parse content fields if they exist in the description (backwards compatibility)
-      let description = remedy.description || "";
-      let preparation_method = "";
-      let dosage_instructions = "";
-      let precautions_side_effects = "";
+      const parsed = parseRemedyContent(remedy.description || "");
       
-      // Try to parse structured content from description
-      if (description.includes('**')) {
-        const sections = description.split('\n\n**');
-        
-        sections.forEach((section, index) => {
-          if (index === 0) {
-            description = section;
-          } else if (section.startsWith('Preparation Method:')) {
-            preparation_method = section.replace('Preparation Method:**\n', '').replace('Preparation Method:', '').trim();
-          } else if (section.startsWith('Dosage Instructions:')) {
-            dosage_instructions = section.replace('Dosage Instructions:**\n', '').replace('Dosage Instructions:', '').trim();
-          } else if (section.startsWith('Precautions & Side Effects:')) {
-            precautions_side_effects = section.replace('Precautions & Side Effects:**\n', '').replace('Precautions & Side Effects:', '').trim();
-          }
-        });
-      }
-
       // Get all stored health concerns from database
       const storedConcerns = remedy.symptoms || [];
       
@@ -146,10 +125,10 @@ export const useRemedyForm = () => {
       setFormData({
         name: remedy.name || "",
         summary: remedy.summary || remedy.brief_description || "",
-        description: description,
-        preparation_method: preparation_method,
-        dosage_instructions: dosage_instructions,
-        precautions_side_effects: precautions_side_effects,
+        description: parsed.about,
+        preparation_method: parsed.preparationMethod,
+        dosage_instructions: parsed.dosageInstructions,
+        precautions_side_effects: parsed.precautionsAndSideEffects,
         ingredients: remedy.ingredients || [],
         health_concerns: allHealthConcerns,
         status: remedy.status as "draft" | "published" || "draft",

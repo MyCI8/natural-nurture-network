@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getSafeImageUrl } from "@/utils/imageValidation";
-import { parseRemedyContent } from "@/utils/remedyContentParser";
+import { parseRemedyContent, formatContentWithLists } from "@/utils/remedyContentParser";
 
 const RemedyDetail = () => {
   const { id } = useParams();
@@ -196,7 +196,7 @@ const RemedyDetail = () => {
               <h2 className="text-lg font-semibold">About this remedy</h2>
               <div 
                 className="prose max-w-none text-muted-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: parsedContent.about }}
+                dangerouslySetInnerHTML={{ __html: formatContentWithLists(parsedContent.about) }}
               />
             </div>
           )}
@@ -230,7 +230,7 @@ const RemedyDetail = () => {
                   <div 
                     className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
                     dangerouslySetInnerHTML={{ 
-                      __html: parsedContent.preparationMethod || remedy.shopping_list 
+                      __html: parsedContent.preparationMethod ? formatContentWithLists(parsedContent.preparationMethod) : (remedy.shopping_list || '')
                     }}
                   />
                 </CardContent>
@@ -247,7 +247,7 @@ const RemedyDetail = () => {
                   {parsedContent.dosageInstructions ? (
                     <div 
                       className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: parsedContent.dosageInstructions }}
+                      dangerouslySetInnerHTML={{ __html: formatContentWithLists(parsedContent.dosageInstructions) }}
                     />
                   ) : (
                     <p className="text-sm text-muted-foreground leading-relaxed">
@@ -322,7 +322,7 @@ const RemedyDetail = () => {
                     {parsedContent.precautionsAndSideEffects ? (
                       <div 
                         className="prose max-w-none text-sm text-amber-700 dark:text-amber-300"
-                        dangerouslySetInnerHTML={{ __html: parsedContent.precautionsAndSideEffects }}
+                        dangerouslySetInnerHTML={{ __html: formatContentWithLists(parsedContent.precautionsAndSideEffects) }}
                       />
                     ) : (
                       remedy.expert_recommendations?.map((recommendation, index) => (
