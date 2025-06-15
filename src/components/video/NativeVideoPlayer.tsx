@@ -276,7 +276,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 onLoad={(e) => {
                   console.log("Image loaded successfully:", video.video_url);
                   onInView?.(true);
-                  const img = e.currentTarget;
+                   const img = e.currentTarget;
                   if (img.naturalWidth && img.naturalHeight) {
                     const ratio = img.naturalWidth / img.naturalHeight;
                     onNaturalAspectRatioChange?.(ratio);

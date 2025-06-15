@@ -65,8 +65,8 @@ const ExploreDetail = () => {
   useLayoutEffect(() => {
     const calculateSize = () => {
       if (containerRef.current) {
-        // Leave a small, consistent gap around the video for aesthetics.
-        const gap = 32; // 16px on each side
+        // Leave a very small gap to avoid touching screen edges.
+        const gap = 8; // 4px on each side
         const containerWidth = containerRef.current.clientWidth - gap;
         const containerHeight = containerRef.current.clientHeight - gap;
 
@@ -86,6 +86,10 @@ const ExploreDetail = () => {
           height = containerHeight;
           width = height * ar;
         }
+        
+        // Apply 10% safety reduction to prevent scrollbars
+        width *= 0.9;
+        height *= 0.9;
         
         setVideoSize({ width: Math.round(width), height: Math.round(height) });
       }
@@ -270,7 +274,7 @@ const ExploreDetail = () => {
         
         <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative">
           <div 
-            className="bg-black rounded-lg overflow-hidden flex items-center justify-center relative transition-all duration-300"
+            className="bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300"
             style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : {}}
           >
             <VideoPlayer 
@@ -278,8 +282,8 @@ const ExploreDetail = () => {
               autoPlay={true} 
               showControls={false} 
               isFullscreen={false}
-              className="w-full h-full rounded-md overflow-hidden" 
-              objectFit="contain"
+              className="w-full h-full overflow-hidden" 
+              objectFit="cover"
               useAspectRatio={false}
               onClick={handleClose}
               onNaturalAspectRatioChange={handleNaturalAspectRatioChange}
