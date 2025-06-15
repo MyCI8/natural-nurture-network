@@ -320,7 +320,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
               <img 
                 src={video.video_url || ''} 
                 alt={video.title || ''} 
-                className="max-w-full max-h-full"
+                className="w-full h-full"
                 style={{ objectFit }}
                 onLoad={(e) => {
                   console.log("Image loaded successfully:", video.video_url);
@@ -343,7 +343,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
                 loop
                 playsInline
                 disableRemotePlayback={true}
-                className="max-w-full max-h-full"
+                className="w-full h-full"
                 style={{ objectFit }}
                 onTimeUpdate={handleTimeUpdate}
                 onWaiting={handleWaiting}

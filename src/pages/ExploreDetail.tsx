@@ -65,10 +65,10 @@ const ExploreDetail = () => {
   useLayoutEffect(() => {
     const calculateSize = () => {
       if (containerRef.current) {
-        // Leave a very small gap to avoid touching screen edges.
-        const gap = 8; // 4px on each side
-        const containerWidth = containerRef.current.clientWidth - gap;
-        const containerHeight = containerRef.current.clientHeight - gap;
+        // We want the video to fill as much space as possible, with a tiny margin.
+        const safetyFactor = 0.98;
+        const containerWidth = containerRef.current.clientWidth * safetyFactor;
+        const containerHeight = containerRef.current.clientHeight * safetyFactor;
 
         // Use naturalAspectRatio if available, otherwise fallback to 16:9.
         const ar = naturalAspectRatio || 16 / 9;
@@ -86,10 +86,6 @@ const ExploreDetail = () => {
           height = containerHeight;
           width = height * ar;
         }
-        
-        // Apply 10% safety reduction to prevent scrollbars
-        width *= 0.9;
-        height *= 0.9;
         
         setVideoSize({ width: Math.round(width), height: Math.round(height) });
       }
