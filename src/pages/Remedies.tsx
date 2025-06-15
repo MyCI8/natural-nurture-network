@@ -384,8 +384,6 @@ const Remedies = () => {
                 isLoading={isLoading}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                remedyRatings={allRatings ?? {}}
-                userRated={userRatings ?? {}}
               />
             </TabsContent>
             <TabsContent value="popular" className="pt-3">
@@ -407,8 +405,6 @@ const Remedies = () => {
               isLoading={isLoading}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              remedyRatings={allRatings ?? {}}
-              userRated={userRatings ?? {}}
             />
           </div>
         )}
