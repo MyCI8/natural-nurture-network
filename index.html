@@ -3,16 +3,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>natural-nurture-network</title>
-    <meta name="description" content="BetterTogether Project" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Natural Nurture Network</title>
+    <meta name="description" content="Discover, share, and learn about effective natural remedies, backed by community experiences. Your wellness journey starts here." />
     <meta name="author" content="BetterTogether" />
+    <meta name="theme-color" content="#FFFFFF" />
+    <!-- Apple PWA tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Natural Nurture Network" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- Manifest for app icons and PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <!-- Favicon (replace with app icon in next step if needed) -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <!-- Open Graph for social sharing -->
+    <meta property="og:title" content="Natural Nurture Network" />
+    <meta property="og:description" content="Discover and share effective natural remedies, backed by real experiences." />
     <meta property="og:image" content="/og-image.png" />
+    <meta property="og:type" content="website" />
+    <!-- Twitter card for richer share previews -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Natural Nurture Network" />
+    <meta name="twitter:description" content="Discover and share effective natural remedies, backed by real experiences." />
+    <meta name="twitter:image" content="/og-image.png" />
   </head>
-
   <body>
     <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <!-- Removed gptengineer.js script (not needed for mobile/PWA/app store) -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
