@@ -46,7 +46,8 @@ const Explore = () => {
   const [productCardOverlayAnimatingFor, setProductCardOverlayAnimatingFor] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteTargetVideoId, setDeleteTargetVideoId] = useState<string | null>(null);
-  
+  const [userSaves, setUserSaves] = useState<Record<string, boolean>>({});
+
   const { deletePost, isDeleting } = usePostManagement();
 
   const handleToggleProductLink = (videoId: string, linkId: string) => {
@@ -77,6 +78,28 @@ const Explore = () => {
     };
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    const fetchSaves = async () => {
+      if (!currentUser) {
+        setUserSaves({});
+        return;
+      }
+      const { data, error } = await supabase
+        .from('saved_posts')
+        .select('video_id')
+        .eq('user_id', currentUser.id);
+
+      if (!error && data) {
+        const savesMap = data.reduce((acc: Record<string, boolean>, row: any) => {
+          acc[row.video_id] = true;
+          return acc;
+        }, {});
+        setUserSaves(savesMap);
+      }
+    };
+    fetchSaves();
+  }, [currentUser]);
 
   const {
     data: videos = [],
@@ -349,6 +372,55 @@ const Explore = () => {
     return allProductLinks.filter(link => link.video_id === videoId);
   };
 
+  const handleSave = async (videoId: string) => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save videos"
+      });
+      return;
+    }
+    const isSaved = !!userSaves[videoId];
+    // Optimistically update UI
+    setUserSaves((prev) => ({ ...prev, [videoId]: !isSaved }));
+
+    try {
+      if (isSaved) {
+        const { error } = await supabase
+          .from('saved_posts')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('video_id', videoId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('saved_posts')
+          .insert({ user_id: currentUser.id, video_id: videoId });
+        if (error) throw error;
+      }
+      // Sync after change
+      const { data, error: syncErr } = await supabase
+        .from('saved_posts')
+        .select('video_id')
+        .eq('user_id', currentUser.id);
+      if (!syncErr && data) {
+        const savesMap = data.reduce((acc: Record<string, boolean>, row: any) => {
+          acc[row.video_id] = true;
+          return acc;
+        }, {});
+        setUserSaves(savesMap);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Save Error",
+        description: error?.message ?? "Failed to update save status.",
+        variant: "destructive"
+      });
+      // Rollback UI if error
+      setUserSaves((prev) => ({ ...prev, [videoId]: isSaved }));
+    }
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen dark:text-dm-text">Loading...</div>;
   }
@@ -522,9 +594,24 @@ const Explore = () => {
                     <MessageCircle className="h-6 w-6" />
                   </Button>
 
+                  {/* Save/Bookmark Button */}
                   <Button variant="ghost" size="icon"
-                    className="p-0 hover:bg-transparent text-black dark:text-dm-text touch-manipulation">
-                    <Bookmark className="h-6 w-6" />
+                    className={`p-0 hover:bg-transparent touch-manipulation 
+                      ${userSaves[video.id] 
+                        ? 'text-amber-400' 
+                        : 'text-black dark:text-dm-text'}
+                    `}
+                    aria-label={userSaves[video.id] ? "Unsave video" : "Save video"}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleSave(video.id);
+                    }}
+                  >
+                    <Bookmark
+                      className="h-6 w-6"
+                      fill={userSaves[video.id] ? "currentColor" : "none"}
+                      stroke="currentColor"
+                    />
                   </Button>
 
                   <Button variant="ghost" size="icon"
