@@ -1,13 +1,17 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import { Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import VideoModal from "@/components/video/VideoModal";
+import { Video } from "@/types/video";
 
 const LatestVideos = () => {
-  const { data: videos, isLoading } = useQuery({
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+
+  const { data: videos, isLoading } = useQuery<(Video & { profiles: any })[]>({
     queryKey: ["latest-news-videos"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -57,11 +61,15 @@ const LatestVideos = () => {
 
       <div className="space-y-3">
         {videos?.map((video) => (
-          <Link to={`/news/videos/${video.id}`} key={video.id}>
+          <div
+            key={video.id}
+            onClick={() => setSelectedVideo(video)}
+            className="cursor-pointer"
+          >
             <Card className="group hover:shadow-md transition-all duration-300 border-0 bg-muted/30 hover:bg-muted/50">
               <CardContent className="p-3">
                 <div className="relative w-full rounded-lg overflow-hidden bg-muted mb-3">
-                  <AspectRatio ratio={16/9}>
+                  <AspectRatio ratio={16 / 9}>
                     <img
                       src={video.thumbnail_url || "/placeholder.svg"}
                       alt={video.title}
@@ -77,9 +85,15 @@ const LatestVideos = () => {
                 </h3>
               </CardContent>
             </Card>
-          </Link>
+          </div>
         ))}
       </div>
+
+      <VideoModal
+        video={selectedVideo}
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
+      />
     </div>
   );
 };
