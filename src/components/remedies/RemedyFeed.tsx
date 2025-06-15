@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, Bookmark, Star, Search } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, Search } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { cn } from '@/lib/utils';
 import RemedyRatingDisplay from "./RemedyRatingDisplay";
@@ -20,8 +21,8 @@ interface RemedyFeedProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
-  remedyRatings?: Record<string, { average: number; count: number }>; // remedyId -> { average, count }
-  userRated?: Record<string, number>; // remedyId -> userRating
+  remedyRatings?: Record<string, { average: number; count: number }>;
+  userRated?: Record<string, number>;
 }
 
 const RemedyFeed: React.FC<RemedyFeedProps> = ({
@@ -79,27 +80,18 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                   draggable={false}
                 />
               </div>
-              
-              {/* --- RATING DISPLAY --- */}
-              <div className="flex items-center justify-start mt-2 ml-2">
-                <RemedyRatingDisplay
-                  average={ratingData.average}
-                  count={ratingData.count}
-                  userRating={userRating}
-                  size={18}
-                />
-              </div>
-              
-              {/* Description and social actions */}
+
+              {/* --- Description and social actions + rating --- */}
               <div className="flex flex-col gap-3 pt-3 px-2">
                 {remedy.summary || remedy.brief_description ? (
                   <p className="text-sm text-muted-foreground leading-snug line-clamp-3">
                     {remedy.summary || remedy.brief_description}
                   </p>
                 ) : null}
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+
+                <div className="flex items-center justify-between w-full gap-2">
+                  {/* Social actions row */}
+                  <div className="flex items-center gap-2 min-w-0">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -110,6 +102,7 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                     >
                       <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
                     </Button>
+                    
                     <Button
                       variant="ghost"
                       size="sm"
@@ -121,6 +114,7 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                     >
                       <MessageCircle className="h-4 w-4" />
                     </Button>
+                    
                     <Button
                       variant="ghost"
                       size="sm"
@@ -131,8 +125,7 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                     >
                       <Share2 className="h-4 w-4" />
                     </Button>
-                  </div>
-                  <div className="flex items-center gap-2">
+                    
                     <Button
                       variant="ghost"
                       size="sm"
@@ -143,6 +136,15 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
                     >
                       <Bookmark className={cn("h-4 w-4", isSaved ? "fill-amber-400 text-black" : "")} />
                     </Button>
+                  </div>
+                  {/* Moved rating to the right of actions */}
+                  <div className="flex-shrink-0 pl-2">
+                    <RemedyRatingDisplay
+                      average={ratingData.average}
+                      count={ratingData.count}
+                      userRating={userRating}
+                      size={18}
+                    />
                   </div>
                 </div>
               </div>
@@ -178,14 +180,15 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
           </div>
         </div>
       )}
-       <div ref={loadMoreRef} className="h-10" />
-        {isFetchingNextPage && (
-          <div className="text-center py-4">
-            <p className="text-muted-foreground">Loading more remedies...</p>
-          </div>
-        )}
+      <div ref={loadMoreRef} className="h-10" />
+      {isFetchingNextPage && (
+        <div className="text-center py-4">
+          <p className="text-muted-foreground">Loading more remedies...</p>
+        </div>
+      )}
     </div>
   );
 };
 
 export default RemedyFeed;
+
