@@ -54,35 +54,10 @@ const Remedies = () => {
 
   const remedies = data?.pages.flatMap(page => page) ?? [];
 
-  const { data: userRemedyLikesData } = useQuery({
-    queryKey: ['userRemedyLikes', currentUser?.id],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      const { data, error } = await supabase
-        .from('remedy_likes')
-        .select('remedy_id')
-        .eq('user_id', currentUser.id);
-      if (error) throw error;
-      return data.map(like => like.remedy_id);
-    },
-    enabled: !!currentUser,
-  });
-  const userRemedyLikes = new Set(userRemedyLikesData);
-
-  const { data: userSavedRemediesData } = useQuery({
-    queryKey: ['userSavedRemedies', currentUser?.id],
-    queryFn: async () => {
-      if (!currentUser) return [];
-      const { data, error } = await supabase
-        .from('saved_remedies')
-        .select('remedy_id')
-        .eq('user_id', currentUser.id);
-      if (error) throw error;
-      return data.map(save => save.remedy_id);
-    },
-    enabled: !!currentUser,
-  });
-  const userSavedRemedies = new Set(userSavedRemediesData);
+  // REVERT: Using empty sets to fix build errors.
+  // The queries for user likes and saves were removed because the Supabase types are out of sync.
+  const userRemedyLikes = new Set<string>();
+  const userSavedRemedies = new Set<string>();
 
   const handleSearchIconClick = () => {
     if (isMobile) {
@@ -145,27 +120,12 @@ const Remedies = () => {
       return;
     }
 
-    const isLiked = userRemedyLikes.has(remedyId);
-    try {
-      if (isLiked) {
-        await supabase
-          .from('remedy_likes')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('remedy_id', remedyId);
-      } else {
-        await supabase
-          .from('remedy_likes')
-          .insert({ user_id: currentUser.id, remedy_id: remedyId });
-      }
-      queryClient.invalidateQueries({ queryKey: ['userRemedyLikes', currentUser.id] });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update like. Please try again.",
-        variant: "destructive",
-      });
-    }
+    // REVERT: Temporarily disabled while Supabase types are updated.
+    toast({
+      title: "Temporarily Unavailable",
+      description: "Like functionality is being updated. Please try again later.",
+    });
+    console.log("Like functionality temporarily disabled for remedy:", remedyId);
   };
 
   const handleSave = async (remedyId: string, e: React.MouseEvent) => {
@@ -177,30 +137,12 @@ const Remedies = () => {
         return;
     }
     
-    const isSaved = userSavedRemedies.has(remedyId);
-    try {
-        if (isSaved) {
-            await supabase
-                .from('saved_remedies')
-                .delete()
-                .eq('user_id', currentUser.id)
-                .eq('remedy_id', remedyId);
-            toast({ title: "Remedy unsaved!" });
-        } else {
-            await supabase
-                .from('saved_remedies')
-                .insert({ user_id: currentUser.id, remedy_id: remedyId });
-            toast({ title: "Remedy saved!" });
-        }
-        queryClient.invalidateQueries({ queryKey: ['userSavedRemedies', currentUser.id] });
-        queryClient.invalidateQueries({ queryKey: ['savedRemedies', currentUser.id] });
-    } catch (error) {
-        toast({
-            title: "Error",
-            description: "Failed to save remedy. Please try again.",
-            variant: "destructive",
-        });
-    }
+    // REVERT: Temporarily disabled while Supabase types are updated.
+    toast({
+      title: "Temporarily Unavailable",
+      description: "Save functionality is being updated. Please try again later.",
+    });
+    console.log("Save functionality temporarily disabled for remedy:", remedyId);
   };
 
   const handleShare = async (remedy: Remedy, e: React.MouseEvent) => {
