@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Play } from "lucide-react";
@@ -11,7 +12,7 @@ import { Video } from "@/types/video";
 const LatestVideos = () => {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
-  const { data: videos, isLoading } = useQuery<(Video & { profiles: any })[]>({
+  const { data: videos, isLoading } = useQuery<Video[]>({
     queryKey: ["latest-news-videos"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -24,7 +25,7 @@ const LatestVideos = () => {
         .limit(6);
 
       if (error) throw error;
-      return data;
+      return data as Video[];
     },
   });
 
