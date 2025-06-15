@@ -279,7 +279,7 @@ const ExploreDetail = () => {
               showControls={false} 
               isFullscreen={false}
               className="w-full h-full overflow-hidden" 
-              objectFit="cover"
+              objectFit="contain"
               useAspectRatio={false}
               onClick={handleClose}
               onNaturalAspectRatioChange={handleNaturalAspectRatioChange}
