@@ -277,6 +277,36 @@ export type Database = {
         }
         Relationships: []
       }
+      health_concern_suggestions: {
+        Row: {
+          concern_name: string
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          suggested_by: string | null
+        }
+        Insert: {
+          concern_name: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          suggested_by?: string | null
+        }
+        Update: {
+          concern_name?: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          suggested_by?: string | null
+        }
+        Relationships: []
+      }
       ingredients: {
         Row: {
           brief_description: string | null
@@ -564,6 +594,70 @@ export type Database = {
         }
         Relationships: []
       }
+      remedy_likes: {
+        Row: {
+          created_at: string
+          id: string
+          remedy_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          remedy_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          remedy_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remedy_likes_remedy_id_fkey"
+            columns: ["remedy_id"]
+            isOneToOne: false
+            referencedRelation: "remedies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remedy_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+          remedy_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+          remedy_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+          remedy_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remedy_ratings_remedy_id_fkey"
+            columns: ["remedy_id"]
+            isOneToOne: false
+            referencedRelation: "remedies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_settings: {
         Row: {
           created_at: string
@@ -620,6 +714,35 @@ export type Database = {
             columns: ["video_id"]
             isOneToOne: false
             referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_remedies: {
+        Row: {
+          created_at: string
+          id: string
+          remedy_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          remedy_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          remedy_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_remedies_remedy_id_fkey"
+            columns: ["remedy_id"]
+            isOneToOne: false
+            referencedRelation: "remedies"
             referencedColumns: ["id"]
           },
         ]
