@@ -352,14 +352,16 @@ const RemedyDetail = () => {
                         allowHtml={true}
                       />
                     ) : (
-                      expertRecommendationsList.map((recommendation, index) => (
-                        <SafeContent 
-                          key={index}
-                          content={recommendation}
-                          className="text-sm text-amber-700 dark:text-amber-300"
-                          allowHtml={false}
-                        />
-                      ))
+                      <div className="space-y-1">
+                        {expertRecommendationsList.map((recommendation, index) => (
+                          <SafeContent 
+                            key={index}
+                            content={recommendation}
+                            className="text-sm text-amber-700 dark:text-amber-300"
+                            allowHtml={false}
+                          />
+                        ))}
+                      </div>
                     )}
                   </div>
                 )}
