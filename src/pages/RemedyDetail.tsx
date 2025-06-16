@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
@@ -52,18 +51,26 @@ const RemedyDetail = () => {
   };
 
   // Helper function to safely convert expert recommendations to strings
-  const formatExpertRecommendations = (recommendations: any[]): string[] => {
-    if (!Array.isArray(recommendations)) return [];
+  const formatExpertRecommendations = (recommendations: any): string[] => {
+    if (!recommendations) return [];
     
-    return recommendations.map(rec => {
+    // If it's not an array, convert it to an array first
+    const recArray = Array.isArray(recommendations) ? recommendations : [recommendations];
+    
+    return recArray.map((rec: any) => {
       if (typeof rec === 'string') return rec;
-      if (typeof rec === 'number') return rec.toString();
+      if (typeof rec === 'number') return String(rec);
       if (typeof rec === 'boolean') return rec ? 'Yes' : 'No';
-      if (typeof rec === 'object' && rec !== null) {
-        return JSON.stringify(rec);
+      if (rec === null || rec === undefined) return '';
+      if (typeof rec === 'object') {
+        try {
+          return JSON.stringify(rec);
+        } catch {
+          return String(rec);
+        }
       }
       return String(rec);
-    });
+    }).filter(item => item.length > 0); // Remove empty strings
   };
 
   if (isLoading) {
@@ -112,9 +119,7 @@ const RemedyDetail = () => {
   const parsedContent = parseRemedyContent(remedy.description || '');
 
   // Safely format expert recommendations
-  const expertRecommendationsList = remedy.expert_recommendations 
-    ? formatExpertRecommendations(remedy.expert_recommendations) 
-    : [];
+  const expertRecommendationsList = formatExpertRecommendations(remedy.expert_recommendations);
 
   return (
     <div className="min-h-screen bg-background">
