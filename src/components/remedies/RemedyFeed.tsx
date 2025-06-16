@@ -4,6 +4,7 @@ import { Heart, MessageCircle, Share2, Bookmark, Search } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { cn } from '@/lib/utils';
 import RemedyRatingDisplay from "./RemedyRatingDisplay";
+import SafeContent from "@/components/ui/safe-content";
 
 type Remedy = Tables<'remedies'>;
 
@@ -85,9 +86,11 @@ const RemedyFeed: React.FC<RemedyFeedProps> = ({
               {/* --- Description and social actions + rating --- */}
               <div className="flex flex-col gap-3 pt-3 px-2">
                 {remedy.summary || remedy.brief_description ? (
-                  <p className="text-sm text-muted-foreground leading-snug line-clamp-3">
-                    {remedy.summary || remedy.brief_description}
-                  </p>
+                  <SafeContent 
+                    content={remedy.summary || remedy.brief_description || ''}
+                    className="text-sm text-muted-foreground leading-snug line-clamp-3"
+                    allowHtml={false}
+                  />
                 ) : null}
 
                 <div className="flex items-center justify-between w-full gap-2">
