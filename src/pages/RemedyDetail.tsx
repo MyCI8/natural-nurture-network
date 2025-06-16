@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
@@ -10,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getSafeImageUrl } from "@/utils/imageValidation";
 import { parseRemedyContent, formatContentWithLists } from "@/utils/remedyContentParser";
+import SafeContent from "@/components/ui/safe-content";
 
 const RemedyDetail = () => {
   const { id } = useParams();
@@ -47,6 +49,21 @@ const RemedyDetail = () => {
     } else {
       navigator.clipboard.writeText(window.location.href);
     }
+  };
+
+  // Helper function to safely convert expert recommendations to strings
+  const formatExpertRecommendations = (recommendations: any[]): string[] => {
+    if (!Array.isArray(recommendations)) return [];
+    
+    return recommendations.map(rec => {
+      if (typeof rec === 'string') return rec;
+      if (typeof rec === 'number') return rec.toString();
+      if (typeof rec === 'boolean') return rec ? 'Yes' : 'No';
+      if (typeof rec === 'object' && rec !== null) {
+        return JSON.stringify(rec);
+      }
+      return String(rec);
+    });
   };
 
   if (isLoading) {
@@ -93,6 +110,11 @@ const RemedyDetail = () => {
 
   // Parse the description to extract different sections
   const parsedContent = parseRemedyContent(remedy.description || '');
+
+  // Safely format expert recommendations
+  const expertRecommendationsList = remedy.expert_recommendations 
+    ? formatExpertRecommendations(remedy.expert_recommendations) 
+    : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -164,9 +186,11 @@ const RemedyDetail = () => {
 
             {/* Brief Description */}
             {(remedy.summary || remedy.brief_description) && (
-              <p className="text-muted-foreground leading-relaxed">
-                {remedy.summary || remedy.brief_description}
-              </p>
+              <SafeContent 
+                content={remedy.summary || remedy.brief_description || ''}
+                className="text-muted-foreground leading-relaxed"
+                allowHtml={false}
+              />
             )}
 
             {/* Quick stats */}
@@ -194,9 +218,10 @@ const RemedyDetail = () => {
           {parsedContent.about && (
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">About this remedy</h2>
-              <div 
+              <SafeContent 
+                content={formatContentWithLists(parsedContent.about)}
                 className="prose max-w-none text-muted-foreground leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: formatContentWithLists(parsedContent.about) }}
+                allowHtml={true}
               />
             </div>
           )}
@@ -227,11 +252,10 @@ const RemedyDetail = () => {
               <h2 className="text-lg font-semibold">Preparation Method</h2>
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
-                  <div 
+                  <SafeContent 
+                    content={parsedContent.preparationMethod ? formatContentWithLists(parsedContent.preparationMethod) : (remedy.shopping_list || '')}
                     className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                    dangerouslySetInnerHTML={{ 
-                      __html: parsedContent.preparationMethod ? formatContentWithLists(parsedContent.preparationMethod) : (remedy.shopping_list || '')
-                    }}
+                    allowHtml={true}
                   />
                 </CardContent>
               </Card>
@@ -245,14 +269,17 @@ const RemedyDetail = () => {
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
                   {parsedContent.dosageInstructions ? (
-                    <div 
+                    <SafeContent 
+                      content={formatContentWithLists(parsedContent.dosageInstructions)}
                       className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: formatContentWithLists(parsedContent.dosageInstructions) }}
+                      allowHtml={true}
                     />
                   ) : (
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {remedy.video_description}
-                    </p>
+                    <SafeContent 
+                      content={remedy.video_description || ''}
+                      className="text-sm text-muted-foreground leading-relaxed"
+                      allowHtml={false}
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -316,17 +343,22 @@ const RemedyDetail = () => {
                 Safety Note
               </h3>
               <div className="space-y-2">
-                {(parsedContent.precautionsAndSideEffects || 
-                  (remedy.expert_recommendations && Array.isArray(remedy.expert_recommendations) && remedy.expert_recommendations.length > 0)) && (
+                {(parsedContent.precautionsAndSideEffects || expertRecommendationsList.length > 0) && (
                   <div>
                     {parsedContent.precautionsAndSideEffects ? (
-                      <div 
+                      <SafeContent 
+                        content={formatContentWithLists(parsedContent.precautionsAndSideEffects)}
                         className="prose max-w-none text-sm text-amber-700 dark:text-amber-300"
-                        dangerouslySetInnerHTML={{ __html: formatContentWithLists(parsedContent.precautionsAndSideEffects) }}
+                        allowHtml={true}
                       />
                     ) : (
-                      remedy.expert_recommendations?.map((recommendation, index) => (
-                        <p key={index} className="text-sm text-amber-700 dark:text-amber-300">{String(recommendation)}</p>
+                      expertRecommendationsList.map((recommendation, index) => (
+                        <SafeContent 
+                          key={index}
+                          content={recommendation}
+                          className="text-sm text-amber-700 dark:text-amber-300"
+                          allowHtml={false}
+                        />
                       ))
                     )}
                   </div>
