@@ -51,26 +51,50 @@ const RemedyDetail = () => {
   };
 
   // Helper function to safely convert expert recommendations to strings
-  const formatExpertRecommendations = (recommendations: any): string[] => {
-    if (!recommendations) return [];
+  const formatExpertRecommendations = (recommendations: any): string => {
+    if (!recommendations) return '';
     
-    // If it's not an array, convert it to an array first
-    const recArray = Array.isArray(recommendations) ? recommendations : [recommendations];
-    
-    return recArray.map((rec: any) => {
-      if (typeof rec === 'string') return rec;
-      if (typeof rec === 'number') return String(rec);
-      if (typeof rec === 'boolean') return rec ? 'Yes' : 'No';
-      if (rec === null || rec === undefined) return '';
-      if (typeof rec === 'object') {
+    try {
+      // If it's already a string, return it
+      if (typeof recommendations === 'string') return recommendations;
+      
+      // If it's an array, join the string elements
+      if (Array.isArray(recommendations)) {
+        return recommendations
+          .map((rec: any) => {
+            if (typeof rec === 'string') return rec;
+            if (typeof rec === 'number') return String(rec);
+            if (typeof rec === 'boolean') return rec ? 'Yes' : 'No';
+            if (rec === null || rec === undefined) return '';
+            if (typeof rec === 'object') {
+              try {
+                return JSON.stringify(rec);
+              } catch {
+                return String(rec);
+              }
+            }
+            return String(rec);
+          })
+          .filter(item => item.length > 0)
+          .join(', ');
+      }
+      
+      // For other types, convert to string
+      if (typeof recommendations === 'number') return String(recommendations);
+      if (typeof recommendations === 'boolean') return recommendations ? 'Yes' : 'No';
+      if (typeof recommendations === 'object') {
         try {
-          return JSON.stringify(rec);
+          return JSON.stringify(recommendations);
         } catch {
-          return String(rec);
+          return String(recommendations);
         }
       }
-      return String(rec);
-    }).filter(item => item.length > 0); // Remove empty strings
+      
+      return String(recommendations);
+    } catch (error) {
+      console.warn('Error formatting expert recommendations:', error);
+      return '';
+    }
   };
 
   if (isLoading) {
@@ -119,7 +143,7 @@ const RemedyDetail = () => {
   const parsedContent = parseRemedyContent(remedy.description || '');
 
   // Safely format expert recommendations
-  const expertRecommendationsList = formatExpertRecommendations(remedy.expert_recommendations);
+  const expertRecommendationsText = formatExpertRecommendations(remedy.expert_recommendations);
 
   return (
     <div className="min-h-screen bg-background">
@@ -348,7 +372,7 @@ const RemedyDetail = () => {
                 Safety Note
               </h3>
               <div className="space-y-2">
-                {(parsedContent.precautionsAndSideEffects || expertRecommendationsList.length > 0) && (
+                {(parsedContent.precautionsAndSideEffects || expertRecommendationsText) && (
                   <div>
                     {parsedContent.precautionsAndSideEffects ? (
                       <SafeContent 
@@ -356,18 +380,13 @@ const RemedyDetail = () => {
                         className="prose max-w-none text-sm text-amber-700 dark:text-amber-300"
                         allowHtml={true}
                       />
-                    ) : (
-                      <div className="space-y-1">
-                        {expertRecommendationsList.map((recommendation, index) => (
-                          <SafeContent 
-                            key={index}
-                            content={recommendation}
-                            className="text-sm text-amber-700 dark:text-amber-300"
-                            allowHtml={false}
-                          />
-                        ))}
-                      </div>
-                    )}
+                    ) : expertRecommendationsText ? (
+                      <SafeContent 
+                        content={expertRecommendationsText}
+                        className="text-sm text-amber-700 dark:text-amber-300"
+                        allowHtml={false}
+                      />
+                    ) : null}
                   </div>
                 )}
                 <p className="text-sm text-amber-700 dark:text-amber-300">

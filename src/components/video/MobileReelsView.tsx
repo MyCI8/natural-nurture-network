@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Video } from '@/types/video';
 import { useLayout } from '@/contexts/LayoutContext';
-import MobileReelsContainer from './MobileReelsContainer';
+import SmoothReelsContainer from './SmoothReelsContainer';
 
 interface MobileReelsViewProps {
   currentId: string;
@@ -61,7 +61,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   }, [activeVideoIndex, videos]);
 
   return (
-    <MobileReelsContainer
+    <SmoothReelsContainer
       currentId={currentId}
       videos={videos}
       currentIndex={activeVideoIndex}
