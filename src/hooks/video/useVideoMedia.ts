@@ -1,5 +1,7 @@
 
 import { useState } from "react";
+import { MediaType, isValidMediaFile } from "@/utils/mediaUtils";
+import { useMediaProcessing } from "./useMediaProcessing";
 
 // Utility to extract first frame from video file and return a File (jpeg)
 export async function generateThumbnailFromVideoFile(file: File): Promise<File> {
@@ -86,38 +88,34 @@ export async function generateThumbnailFromImageFile(file: File): Promise<File> 
 
 export function useVideoMedia() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaType, setMediaType] = useState<MediaType>('unknown');
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const { processMediaFile, isProcessing, error } = useMediaProcessing();
   
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string }> => {
     console.log('Media upload started:', file.name);
     
-    setIsProcessing(true);
-    
     try {
-      // Store the actual file object
+      // Validate and process the file
+      const result = await processMediaFile(file);
+      
+      // Store the actual file object and type
       setMediaFile(file);
-      
-      // Create preview URL for display
-      const previewUrl = URL.createObjectURL(file);
-      console.log('Preview URL created:', previewUrl);
-      
+      setMediaType(result.type);
       setIsYoutubeLink(false);
       
-      // Wait a bit to ensure state is propagated
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      setIsProcessing(false);
+      console.log('Media processed:', result);
       
       // Generate thumbnail in background
       setTimeout(async () => {
         try {
           let thumbnail: File | null = null;
           
-          if (file.type.startsWith('video/')) {
+          if (result.type === 'video') {
             thumbnail = await generateThumbnailFromVideoFile(file);
-          } else if (file.type.startsWith('image/')) {
+          } else if (result.type === 'image') {
             thumbnail = await generateThumbnailFromImageFile(file);
           }
           
@@ -131,13 +129,13 @@ export function useVideoMedia() {
       }, 300);
 
       console.log('Media upload completed successfully');
-      return { filename: file.name, previewUrl };
+      return { filename: file.name, previewUrl: result.url };
       
     } catch (error) {
       console.error('Media upload failed:', error);
       setMediaFile(null);
+      setMediaType('unknown');
       setThumbnailFile(null);
-      setIsProcessing(false);
       throw error;
     }
   };
@@ -145,18 +143,20 @@ export function useVideoMedia() {
   const handleVideoLinkChange = (url: string) => {
     console.log('Video link changed:', url);
     
-    setIsYoutubeLink(url.includes('youtube.com') || url.includes('youtu.be'));
+    const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+    setIsYoutubeLink(isYouTube);
     setMediaFile(null);
     setThumbnailFile(null);
+    setMediaType(isYouTube ? 'youtube' : 'unknown');
   };
 
   const clearMediaFile = () => {
     console.log('Clearing all media');
     
     setMediaFile(null);
+    setMediaType('unknown');
     setThumbnailFile(null);
     setIsYoutubeLink(false);
-    setIsProcessing(false);
   };
 
   const getYouTubeThumbnail = (url: string): string | null => {
@@ -187,9 +187,11 @@ export function useVideoMedia() {
 
   return {
     mediaFile,
+    mediaType,
     thumbnailFile,
     isYoutubeLink,
     isProcessing,
+    error,
     handleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile,

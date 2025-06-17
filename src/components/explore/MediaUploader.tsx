@@ -55,7 +55,7 @@ export function MediaUploader({
   if (hasValidMedia) {
     return (
       <MediaPreviewCard
-        videoUrl={videoUrl}
+        mediaUrl={videoUrl}
         isYoutubeLink={isYoutubeLink}
         onClearMedia={onClearMedia}
         onMediaUpdate={handleMediaUpdate}

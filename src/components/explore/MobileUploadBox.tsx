@@ -1,9 +1,10 @@
 
 import React, { useReducer, useRef } from "react";
 import { Upload, X } from "lucide-react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { MediaContainer } from "@/components/media/MediaContainer";
+import { isValidMediaFile } from "@/utils/mediaUtils";
 
 type State = {
   file: File | null;
@@ -64,11 +65,11 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
   const handleSelectFile = async (file: File) => {
     cleanupPreview();
     
-    // Validate file type
-    if (!file.type.startsWith("video/") && !file.type.startsWith("image/")) {
-      const error = "Invalid file type - must be video or image";
-      dispatch({ type: "FAIL", error });
-      toast.error(error);
+    // Use the new validation system
+    const validation = isValidMediaFile(file);
+    if (!validation.isValid) {
+      dispatch({ type: "FAIL", error: validation.error || 'Invalid file type' });
+      toast.error(validation.error || 'Invalid file type');
       return;
     }
     
@@ -134,27 +135,16 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
         </div>
       ) : (
         <div className="relative w-full max-w-xs">
-          <AspectRatio ratio={4 / 3} className="rounded-lg bg-black/80 overflow-hidden">
-            {state.previewUrl ? (
-              state.file?.type.startsWith("video/") ? (
-                <video
-                  src={state.previewUrl}
-                  className="w-full h-full object-contain"
-                  controls
-                  preload="metadata"
-                  tabIndex={-1}
-                />
-              ) : (
-                <img
-                  src={state.previewUrl}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                  draggable={false}
-                  tabIndex={-1}
-                />
-              )
-            ) : null}
-          </AspectRatio>
+          <div className="rounded-lg bg-black/80 overflow-hidden">
+            <MediaContainer
+              src={state.previewUrl || ''}
+              alt="Media preview"
+              maxWidth={320}
+              maxHeight={240}
+              preserveAspectRatio={true}
+              objectFit="contain"
+            />
+          </div>
           
           <Button
             size="icon"

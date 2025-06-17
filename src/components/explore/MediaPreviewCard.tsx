@@ -1,13 +1,14 @@
 
 import { useState } from "react";
-import { Trash2, Edit, Play, Pause, RotateCw, Crop } from "lucide-react";
+import { Trash2, Edit, Play, Pause, RotateCw, Crop, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { MediaContainer } from "@/components/media/MediaContainer";
+import { getMediaInfo } from "@/utils/mediaUtils";
 import { VideoEditModal } from "./VideoEditModal";
 import { ImageCropModal } from "@/components/ui/image-crop-modal";
 
 interface MediaPreviewCardProps {
-  videoUrl: string;
+  mediaUrl: string;
   isYoutubeLink: boolean;
   onClearMedia: () => void;
   onMediaUpdate?: (url: string) => void;
@@ -15,7 +16,7 @@ interface MediaPreviewCardProps {
 }
 
 export function MediaPreviewCard({
-  videoUrl,
+  mediaUrl,
   isYoutubeLink,
   onClearMedia,
   onMediaUpdate,
@@ -24,37 +25,20 @@ export function MediaPreviewCard({
   const [showVideoEditModal, setShowVideoEditModal] = useState(false);
   const [showImageCropModal, setShowImageCropModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
 
-  // Better media type detection
-  const isVideo = isYoutubeLink ? false : (
-    videoUrl.includes('video') || 
-    videoUrl.includes('.mp4') || 
-    videoUrl.includes('.mov') || 
-    videoUrl.includes('.webm') ||
-    videoUrl.includes('.avi') ||
-    videoUrl.startsWith('blob:') // Blob URLs are likely videos from our upload
-  );
-  
-  const isImage = !isVideo && !isYoutubeLink && (
-    videoUrl.includes('.jpg') || 
-    videoUrl.includes('.jpeg') || 
-    videoUrl.includes('.png') || 
-    videoUrl.includes('.gif') || 
-    videoUrl.includes('.webp') ||
-    videoUrl.includes('image')
-  );
+  const mediaInfo = getMediaInfo(mediaUrl);
 
   console.log('MediaPreviewCard render:', {
-    videoUrl,
-    isVideo,
-    isImage,
+    mediaUrl,
+    mediaInfo,
     isYoutubeLink
   });
 
   const handleEdit = () => {
-    if (isVideo && !isYoutubeLink) {
+    if (mediaInfo.isVideo && !isYoutubeLink) {
       setShowVideoEditModal(true);
-    } else if (isImage) {
+    } else if (mediaInfo.isImage) {
       setShowImageCropModal(true);
     }
   };
@@ -69,84 +53,69 @@ export function MediaPreviewCard({
     setShowImageCropModal(false);
   };
 
-  // Responsive sizing: max-w at 48 for mobile, 72 for desktop, 4:3 aspect in compact
-  const containerClass = compact
-    ? "w-full max-w-[288px] sm:max-w-[384px] mx-auto"    // 48, 72 as px
-    : "w-full max-w-sm mx-auto";
-  const aspect = compact ? 4 / 3 : 9 / 16;
+  const handlePlayPause = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const video = e.currentTarget.parentElement?.parentElement?.querySelector('video');
+    if (video) {
+      if (isPlaying) {
+        video.pause();
+      } else {
+        video.play();
+      }
+    }
+  };
+
+  // Responsive sizing: dynamic based on media aspect ratio
+  const getContainerClass = () => {
+    if (compact) {
+      return "w-full max-w-[288px] sm:max-w-[384px] mx-auto";
+    }
+    return "w-full max-w-sm mx-auto";
+  };
+
+  const getMaxDimensions = () => {
+    if (compact) {
+      return { maxWidth: 384, maxHeight: 400 };
+    }
+    return { maxWidth: 400, maxHeight: 600 };
+  };
 
   return (
     <>
       <div className="relative group">
-        {/* Responsive preview */}
-        <div className={containerClass}>
-          <AspectRatio ratio={aspect} className="bg-muted overflow-hidden rounded-lg">
-            {isVideo && !isYoutubeLink ? (
-              <video
-                src={videoUrl}
-                className="w-full h-full object-contain"
-                controls={false}
-                muted
-                loop
-                autoPlay={false}
-                preload="metadata"
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onLoadedData={() => console.log('Video loaded successfully')}
-                onError={(e) => console.error('Video error:', e)}
-                style={{ background: "#0a0a0a" }}
-              />
-            ) : isImage ? (
-              <img
-                src={videoUrl}
-                alt="Media preview"
-                className="w-full h-full object-contain"
-                onLoad={() => console.log('Image loaded successfully')}
-                onError={(e) => console.error('Image error:', e)}
-                style={{ background: "#0a0a0a" }}
-              />
-            ) : (
-              // YouTube preview
-              <div className="relative w-full h-full">
-                <img
-                  src={videoUrl}
-                  alt="YouTube preview"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                  <Play className={`${compact ? 'h-8 w-8' : 'h-12 w-12'} text-white`} />
-                </div>
-              </div>
-            )}
-          </AspectRatio>
+        {/* Dynamic media preview */}
+        <div className={getContainerClass()}>
+          <MediaContainer
+            src={mediaUrl}
+            alt="Media preview"
+            className="rounded-lg bg-black"
+            {...getMaxDimensions()}
+            preserveAspectRatio={true}
+            showControls={false}
+            autoPlay={false}
+            muted={true}
+            onLoad={setDimensions}
+            onError={(error) => console.error('Media error:', error)}
+            objectFit="contain"
+          />
         </div>
 
         {/* Media Controls Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-lg">
           {/* Play/Pause for videos */}
-          {isVideo && !isYoutubeLink && (
+          {mediaInfo.isVideo && !isYoutubeLink && (
             <Button
               variant="secondary"
               size="sm"
               className="touch-manipulation"
-              onClick={(e) => {
-                e.stopPropagation();
-                const video = e.currentTarget.parentElement?.parentElement?.querySelector('video');
-                if (video) {
-                  if (isPlaying) {
-                    video.pause();
-                  } else {
-                    video.play();
-                  }
-                }
-              }}
+              onClick={handlePlayPause}
             >
               {isPlaying ? <Pause className="h-3 w-3 mr-1" /> : <Play className="h-3 w-3 mr-1" />}
               {isPlaying ? 'Pause' : 'Play'}
             </Button>
           )}
 
-          {/* Edit button */}
+          {/* Edit/Crop button */}
           {!isYoutubeLink && (
             <Button
               variant="secondary"
@@ -157,8 +126,24 @@ export function MediaPreviewCard({
                 handleEdit();
               }}
             >
-              {isImage ? <Crop className="h-3 w-3 mr-1" /> : <Edit className="h-3 w-3 mr-1" />}
-              {isImage ? 'Crop' : 'Edit'}
+              {mediaInfo.isImage ? <Crop className="h-3 w-3 mr-1" /> : <Edit className="h-3 w-3 mr-1" />}
+              {mediaInfo.isImage ? 'Crop' : 'Edit'}
+            </Button>
+          )}
+
+          {/* Fullscreen for images */}
+          {mediaInfo.isImage && (
+            <Button
+              variant="secondary"
+              size="sm"
+              className="touch-manipulation"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Implement fullscreen view
+              }}
+            >
+              <Maximize2 className="h-3 w-3 mr-1" />
+              View
             </Button>
           )}
 
@@ -176,13 +161,20 @@ export function MediaPreviewCard({
             Remove
           </Button>
         </div>
+
+        {/* Dimensions info for debugging */}
+        {dimensions && (
+          <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+            {dimensions.width} × {dimensions.height}
+          </div>
+        )}
       </div>
 
       {/* Video Edit Modal */}
       <VideoEditModal
         isOpen={showVideoEditModal}
         onClose={() => setShowVideoEditModal(false)}
-        videoSrc={videoUrl}
+        videoSrc={mediaUrl}
         onSave={handleVideoEdit}
       />
 
@@ -190,7 +182,7 @@ export function MediaPreviewCard({
       <ImageCropModal
         isOpen={showImageCropModal}
         onClose={() => setShowImageCropModal(false)}
-        imageSrc={videoUrl}
+        imageSrc={mediaUrl}
         onCropComplete={handleImageCrop}
       />
     </>
