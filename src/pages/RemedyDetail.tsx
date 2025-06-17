@@ -63,7 +63,7 @@ const RemedyDetail = () => {
         return recommendations
           .map((rec: any) => {
             if (typeof rec === 'string') return rec;
-            if (typeof rec === 'number') return String(rec);
+            if (typeof rec === 'number') return rec.toString();
             if (typeof rec === 'boolean') return rec ? 'Yes' : 'No';
             if (rec === null || rec === undefined) return '';
             if (typeof rec === 'object') {
@@ -75,12 +75,12 @@ const RemedyDetail = () => {
             }
             return String(rec);
           })
-          .filter(item => item.length > 0)
+          .filter((item: string) => item.length > 0)
           .join(', ');
       }
       
       // For other types, convert to string
-      if (typeof recommendations === 'number') return String(recommendations);
+      if (typeof recommendations === 'number') return recommendations.toString();
       if (typeof recommendations === 'boolean') return recommendations ? 'Yes' : 'No';
       if (typeof recommendations === 'object') {
         try {
@@ -266,7 +266,7 @@ const RemedyDetail = () => {
                 <div className="space-y-2">
                   {ingredientsList.map((ingredient, index) => (
                     <div key={index} className="flex justify-between items-center">
-                      <span className="text-sm">{ingredient}</span>
+                      <span className="text-sm">{String(ingredient)}</span>
                       <Badge variant="outline" className="text-xs">Natural</Badge>
                     </div>
                   ))}
@@ -282,7 +282,7 @@ const RemedyDetail = () => {
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
                   <SafeContent 
-                    content={parsedContent.preparationMethod ? formatContentWithLists(parsedContent.preparationMethod) : (remedy.shopping_list || '')}
+                    content={parsedContent.preparationMethod ? formatContentWithLists(parsedContent.preparationMethod) : String(remedy.shopping_list || '')}
                     className="prose max-w-none text-sm text-muted-foreground leading-relaxed"
                     allowHtml={true}
                   />
@@ -305,7 +305,7 @@ const RemedyDetail = () => {
                     />
                   ) : (
                     <SafeContent 
-                      content={remedy.video_description || ''}
+                      content={String(remedy.video_description || '')}
                       className="text-sm text-muted-foreground leading-relaxed"
                       allowHtml={false}
                     />
@@ -325,7 +325,7 @@ const RemedyDetail = () => {
               <Card className="border-0 bg-muted/30">
                 <CardContent className="p-4">
                   <a
-                    href={remedy.video_url}
+                    href={String(remedy.video_url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-primary hover:underline"
