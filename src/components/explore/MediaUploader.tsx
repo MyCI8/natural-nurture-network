@@ -12,6 +12,7 @@ interface MediaUploaderProps {
   onClearMedia: () => void;
   compact?: boolean;
   isProcessing?: boolean;
+  mediaType?: 'video' | 'image' | 'youtube' | 'unknown';
 }
 
 export function MediaUploader({
@@ -21,7 +22,8 @@ export function MediaUploader({
   onVideoLinkChange,
   onClearMedia,
   compact = false,
-  isProcessing = false
+  isProcessing = false,
+  mediaType
 }: MediaUploaderProps) {
 
   // Check if we have valid media to show
@@ -37,7 +39,8 @@ export function MediaUploader({
     videoUrl,
     hasValidMedia,
     isProcessing,
-    isYoutubeLink
+    isYoutubeLink,
+    mediaType
   });
 
   if (isProcessing) {
@@ -60,6 +63,7 @@ export function MediaUploader({
         onClearMedia={onClearMedia}
         onMediaUpdate={handleMediaUpdate}
         compact={compact}
+        mediaType={mediaType}
       />
     );
   }

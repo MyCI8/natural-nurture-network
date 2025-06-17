@@ -13,6 +13,7 @@ interface MediaPreviewCardProps {
   onClearMedia: () => void;
   onMediaUpdate?: (url: string) => void;
   compact?: boolean;
+  mediaType?: 'video' | 'image' | 'youtube' | 'unknown';
 }
 
 export function MediaPreviewCard({
@@ -20,19 +21,22 @@ export function MediaPreviewCard({
   isYoutubeLink,
   onClearMedia,
   onMediaUpdate,
-  compact = false
+  compact = false,
+  mediaType
 }: MediaPreviewCardProps) {
   const [showVideoEditModal, setShowVideoEditModal] = useState(false);
   const [showImageCropModal, setShowImageCropModal] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
 
-  const mediaInfo = getMediaInfo(mediaUrl);
+  // Use the passed mediaType for blob URLs, fallback to detection for regular URLs
+  const mediaInfo = getMediaInfo(mediaUrl, mediaType);
 
   console.log('MediaPreviewCard render:', {
     mediaUrl,
     mediaInfo,
-    isYoutubeLink
+    isYoutubeLink,
+    passedMediaType: mediaType
   });
 
   const handleEdit = () => {

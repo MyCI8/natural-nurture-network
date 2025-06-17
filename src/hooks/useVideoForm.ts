@@ -35,13 +35,17 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     clearMediaFile: originalClearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    hasValidMedia
+    hasValidMedia,
+    getCurrentMediaType
   } = useVideoMedia();
   
   const {
     isSaving,
     saveVideo: save
   } = useVideoSave();
+
+  // Store the current media type for form state
+  const [currentMediaType, setCurrentMediaType] = useState<string>('unknown');
 
   // Enhanced media upload that syncs with form state
   const handleMediaUpload = async (file: File) => {
@@ -51,8 +55,9 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       if (mediaData && mediaData.previewUrl) {
         console.log('Setting video_url to:', mediaData.previewUrl);
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
+        setCurrentMediaType(mediaData.mediaType);
         toast.success("Media ready for preview", {
-          description: `Your ${file.type.startsWith('video/') ? 'video' : 'image'} has been processed.`,
+          description: `Your ${mediaData.mediaType} has been processed.`,
         });
       }
     } catch (error) {
@@ -70,10 +75,13 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     handleInputChange({ target: { name: 'video_url', value: url } });
     
     if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+      setCurrentMediaType('youtube');
       const thumbnailUrl = getYouTubeThumbnail(url);
       if (thumbnailUrl) {
         handleInputChange({ target: { name: 'thumbnail_url', value: thumbnailUrl } });
       }
+    } else {
+      setCurrentMediaType('unknown');
     }
   };
 
@@ -83,6 +91,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     originalClearMediaFile();
     handleInputChange({ target: { name: 'video_url', value: '' } });
     handleInputChange({ target: { name: 'thumbnail_url', value: '' } });
+    setCurrentMediaType('unknown');
   };
 
   // Initialize form state when video is loaded
@@ -92,6 +101,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       
       if (video.video_url && (video.video_url.includes('youtube.com') || video.video_url.includes('youtu.be'))) {
         setIsYoutubeLink(true);
+        setCurrentMediaType('youtube');
       }
     }
   }, [video, initializeFormFromVideo, setIsYoutubeLink]);
@@ -114,7 +124,8 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     console.log('hasValidMedia check:', {
       hasFormUrl,
       hasMediaFile,
-      formStateVideoUrl: formState.video_url
+      formStateVideoUrl: formState.video_url,
+      currentMediaType
     });
     return hasFormUrl || hasMediaFile;
   };
@@ -134,6 +145,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     handleVideoLinkChange,
     clearMediaFile,
     saveVideo,
-    hasValidMedia: hasValidMediaCheck
+    hasValidMedia: hasValidMediaCheck,
+    getCurrentMediaType: () => currentMediaType || getCurrentMediaType()
   };
 }

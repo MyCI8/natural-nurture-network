@@ -43,7 +43,8 @@ const Post = () => {
     handleVideoLinkChange,
     clearMediaFile,
     saveVideo,
-    hasValidMedia
+    hasValidMedia,
+    getCurrentMediaType
   } = useVideoForm(undefined, "explore");
 
   const goBack = () => {
@@ -56,7 +57,8 @@ const Post = () => {
     console.log('Form submit - checking media:', {
       hasValidMedia: hasValidMedia(),
       formStateVideoUrl: formState.video_url,
-      description: formState.description
+      description: formState.description,
+      currentMediaType: getCurrentMediaType()
     });
     
     if (!hasValidMedia()) {
@@ -119,6 +121,7 @@ const Post = () => {
                 onClearMedia={clearMediaFile}
                 compact={false}
                 isProcessing={mediaProcessing}
+                mediaType={getCurrentMediaType() as any}
               />
             </div>
           </div>

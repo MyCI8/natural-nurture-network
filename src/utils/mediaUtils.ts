@@ -40,20 +40,16 @@ export const detectMediaType = (url: string): MediaType => {
     return 'image';
   }
   
-  // Check for blob URLs (uploaded files)
-  if (lowerUrl.startsWith('blob:')) {
-    // We'll need to check the file type separately for blob URLs
-    return 'unknown';
-  }
-  
+  // For blob URLs, we can't determine the type from the URL alone
+  // This will be handled by storing the type during upload
   return 'unknown';
 };
 
 /**
- * Get media info from URL
+ * Get media info from URL with optional type override
  */
-export const getMediaInfo = (url: string): MediaInfo => {
-  const type = detectMediaType(url);
+export const getMediaInfo = (url: string, knownType?: MediaType): MediaInfo => {
+  const type = knownType || detectMediaType(url);
   
   return {
     type,

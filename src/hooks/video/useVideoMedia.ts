@@ -91,10 +91,12 @@ export function useVideoMedia() {
   const [mediaType, setMediaType] = useState<MediaType>('unknown');
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
+  // Store the actual media type for blob URLs
+  const [currentMediaType, setCurrentMediaType] = useState<MediaType>('unknown');
   
   const { processMediaFile, isProcessing, error } = useMediaProcessing();
   
-  const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string }> => {
+  const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string; mediaType: MediaType }> => {
     console.log('Media upload started:', file.name);
     
     try {
@@ -104,6 +106,7 @@ export function useVideoMedia() {
       // Store the actual file object and type
       setMediaFile(file);
       setMediaType(result.type);
+      setCurrentMediaType(result.type); // Store the actual type for blob URLs
       setIsYoutubeLink(false);
       
       console.log('Media processed:', result);
@@ -129,12 +132,13 @@ export function useVideoMedia() {
       }, 300);
 
       console.log('Media upload completed successfully');
-      return { filename: file.name, previewUrl: result.url };
+      return { filename: file.name, previewUrl: result.url, mediaType: result.type };
       
     } catch (error) {
       console.error('Media upload failed:', error);
       setMediaFile(null);
       setMediaType('unknown');
+      setCurrentMediaType('unknown');
       setThumbnailFile(null);
       throw error;
     }
@@ -148,6 +152,7 @@ export function useVideoMedia() {
     setMediaFile(null);
     setThumbnailFile(null);
     setMediaType(isYouTube ? 'youtube' : 'unknown');
+    setCurrentMediaType(isYouTube ? 'youtube' : 'unknown');
   };
 
   const clearMediaFile = () => {
@@ -155,6 +160,7 @@ export function useVideoMedia() {
     
     setMediaFile(null);
     setMediaType('unknown');
+    setCurrentMediaType('unknown');
     setThumbnailFile(null);
     setIsYoutubeLink(false);
   };
@@ -185,6 +191,11 @@ export function useVideoMedia() {
     return (hasFile || hasYouTube) && !isProcessing;
   };
 
+  // Get the current media type for blob URLs
+  const getCurrentMediaType = () => {
+    return currentMediaType;
+  };
+
   return {
     mediaFile,
     mediaType,
@@ -197,6 +208,7 @@ export function useVideoMedia() {
     clearMediaFile,
     getYouTubeThumbnail,
     setIsYoutubeLink,
-    hasValidMedia
+    hasValidMedia,
+    getCurrentMediaType
   };
 }
