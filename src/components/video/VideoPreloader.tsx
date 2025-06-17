@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Video } from '@/types/video';
 
 interface VideoPreloaderProps {
@@ -13,12 +13,18 @@ interface VideoElement extends HTMLVideoElement {
   _preloadIndex?: number;
 }
 
-const VideoPreloader: React.FC<VideoPreloaderProps> = ({
+interface VideoPreloaderRef {
+  getPreloadedVideo: (index: number) => VideoElement | null;
+  preloadVideo: (index: number) => void;
+  cleanupVideo: (index: number) => void;
+}
+
+const VideoPreloader = forwardRef<VideoPreloaderRef, VideoPreloaderProps>(({
   videos,
   currentIndex,
   onVideoReady,
   preloadRadius = 2
-}) => {
+}, ref) => {
   const videoPoolRef = useRef<Map<number, VideoElement>>(new Map());
   const loadingRef = useRef<Set<number>>(new Set());
 
@@ -118,14 +124,16 @@ const VideoPreloader: React.FC<VideoPreloaderProps> = ({
   }, [cleanupVideo]);
 
   // Expose methods via ref
-  React.useImperativeHandle(onVideoReady, () => ({
+  useImperativeHandle(ref, () => ({
     getPreloadedVideo,
     preloadVideo,
     cleanupVideo
   }), [getPreloadedVideo, preloadVideo, cleanupVideo]);
 
   return null; // This component doesn't render anything
-};
+});
+
+VideoPreloader.displayName = 'VideoPreloader';
 
 export default VideoPreloader;
-export type { VideoElement };
+export type { VideoElement, VideoPreloaderRef };

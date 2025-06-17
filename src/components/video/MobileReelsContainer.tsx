@@ -123,6 +123,21 @@ const MobileReelsContainer: React.FC<MobileReelsContainerProps> = ({
     setAudioEnabled(globalAudioEnabled);
   }, [globalAudioEnabled]);
 
+  // Convert native touch events to React touch events
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const nativeEvent = e.nativeEvent;
+    swipeHandlers.onTouchStart(nativeEvent);
+  }, [swipeHandlers]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    const nativeEvent = e.nativeEvent;
+    swipeHandlers.onTouchMove(nativeEvent);
+  }, [swipeHandlers]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    swipeHandlers.onTouchEnd();
+  }, [swipeHandlers]);
+
   // Prevent default touch behaviors for smooth experience
   useEffect(() => {
     const preventDefault = (e: TouchEvent) => {
@@ -165,7 +180,9 @@ const MobileReelsContainer: React.FC<MobileReelsContainerProps> = ({
         ref={containerRef}
         className="relative w-full h-full"
         style={{ touchAction: 'pan-y' }}
-        {...swipeHandlers}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Previous video */}
         {prevVideo && (
