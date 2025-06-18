@@ -141,16 +141,16 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
                           !field.value && "text-muted-foreground"
                         )}
                       >
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
                         {field.value ? (
-                          format(field.value, "PPP")
+                          format(field.value, "MMMM dd, yyyy")
                         ) : (
-                          <span>Pick a date</span>
+                          <span>Select your date of birth</span>
                         )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-background solid-dropdown" align="start">
+                  <PopoverContent className="w-auto p-0 bg-background" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -159,8 +159,11 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
                         date > new Date() || date < new Date("1900-01-01")
                       }
                       initialFocus
-                      className="p-3 pointer-events-auto touch-manipulation"
+                      defaultMonth={field.value || new Date(1990, 0, 1)}
                       captionLayout="dropdown"
+                      fromYear={1900}
+                      toYear={new Date().getFullYear()}
+                      className="p-3 pointer-events-auto touch-manipulation"
                     />
                   </PopoverContent>
                 </Popover>
@@ -202,6 +205,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
         <Button 
           type="submit"
           disabled={loading}
+          className="touch-manipulation min-h-[44px]"
         >
           {loading ? "Saving..." : "Save Changes"}
         </Button>
