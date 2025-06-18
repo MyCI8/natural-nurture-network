@@ -1,16 +1,12 @@
-
 import React from "react";
 import { useForm } from "react-hook-form";
-import { User, Mail, UserCheck, CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { User, Mail, UserCheck } from "lucide-react";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProfileImageUpload } from "@/components/profile/ProfileImageUpload";
 import { ProfileFormValues } from "@/hooks/use-profile-form";
 
@@ -33,6 +29,42 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   onSubmit,
   loading
 }) => {
+  // Generate arrays for dropdowns
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const months = [
+    { value: 0, label: "January" },
+    { value: 1, label: "February" },
+    { value: 2, label: "March" },
+    { value: 3, label: "April" },
+    { value: 4, label: "May" },
+    { value: 5, label: "June" },
+    { value: 6, label: "July" },
+    { value: 7, label: "August" },
+    { value: 8, label: "September" },
+    { value: 9, label: "October" },
+    { value: 10, label: "November" },
+    { value: 11, label: "December" }
+  ];
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+
+  // Get current date values
+  const currentDate = form.watch("dob");
+  const currentDay = currentDate?.getDate();
+  const currentMonth = currentDate?.getMonth();
+  const currentYear = currentDate?.getFullYear();
+
+  // Handle date component changes
+  const updateDate = (day?: number, month?: number, year?: number) => {
+    const newDay = day ?? currentDay ?? 1;
+    const newMonth = month ?? currentMonth ?? 0;
+    const newYear = year ?? currentYear ?? 1990;
+    
+    // Create new date and set it
+    const newDate = new Date(newYear, newMonth, newDay);
+    form.setValue("dob", newDate);
+  };
+
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="flex flex-col md:flex-row gap-8">
@@ -131,42 +163,64 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
             render={({ field }) => (
               <FormItem className="text-left">
                 <FormLabel>Date of Birth</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full pl-3 text-left font-normal touch-manipulation min-h-[44px]",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                        {field.value ? (
-                          format(field.value, "MMMM dd, yyyy")
-                        ) : (
-                          <span>Select your date of birth</span>
-                        )}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-background" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                      defaultMonth={field.value || new Date(1990, 0, 1)}
-                      captionLayout="dropdown"
-                      fromYear={1900}
-                      toYear={new Date().getFullYear()}
-                      className="p-3 pointer-events-auto touch-manipulation"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Day Selector */}
+                  <div>
+                    <Select
+                      value={currentDay ? currentDay.toString() : ""}
+                      onValueChange={(value) => updateDate(parseInt(value), currentMonth, currentYear)}
+                    >
+                      <SelectTrigger className="touch-manipulation min-h-[44px]">
+                        <SelectValue placeholder="DD" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 overflow-auto">
+                        {days.map((day) => (
+                          <SelectItem key={day} value={day.toString()}>
+                            {day.toString().padStart(2, '0')}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Month Selector */}
+                  <div>
+                    <Select
+                      value={currentMonth !== undefined ? currentMonth.toString() : ""}
+                      onValueChange={(value) => updateDate(currentDay, parseInt(value), currentYear)}
+                    >
+                      <SelectTrigger className="touch-manipulation min-h-[44px]">
+                        <SelectValue placeholder="MM" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 overflow-auto">
+                        {months.map((month) => (
+                          <SelectItem key={month.value} value={month.value.toString()}>
+                            {month.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Year Selector */}
+                  <div>
+                    <Select
+                      value={currentYear ? currentYear.toString() : ""}
+                      onValueChange={(value) => updateDate(currentDay, currentMonth, parseInt(value))}
+                    >
+                      <SelectTrigger className="touch-manipulation min-h-[44px]">
+                        <SelectValue placeholder="YYYY" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 overflow-auto">
+                        {years.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <FormDescription>
                   Your date of birth is used for age verification and personalized experiences.
                 </FormDescription>
