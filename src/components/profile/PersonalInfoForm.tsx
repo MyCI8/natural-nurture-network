@@ -45,8 +45,8 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
     { value: 10, label: "November" },
     { value: 11, label: "December" }
   ];
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+  const currentYearForRange = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYearForRange - i);
 
   // Get current date values
   const currentDate = form.watch("dob");
