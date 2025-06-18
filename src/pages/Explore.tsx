@@ -421,6 +421,13 @@ const Explore = () => {
     }
   };
 
+  const getMediaInfo = (url: string) => {
+    const mediaType = url.split('.').pop()?.toLowerCase();
+    return {
+      isImage: mediaType === 'jpg' || mediaType === 'jpeg' || mediaType === 'png' || mediaType === 'gif',
+    };
+  };
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen dark:text-dm-text">Loading...</div>;
   }
@@ -434,6 +441,10 @@ const Explore = () => {
           const isAnimatingOut = productCardOverlayAnimatingFor === video.id && !isProductCardOpen;
           const firstProductLink = productLinks[0];
           const hasProductLinks = productLinks.length > 0;
+          
+          // Detect if this is an image post
+          const mediaInfo = getMediaInfo(video.video_url || '');
+          const isImagePost = mediaInfo.isImage;
 
           return (
             <Swipeable
@@ -481,25 +492,39 @@ const Explore = () => {
               </div>
 
               <div
-                className="instagram-video-container relative"
-                style={{
-                  aspectRatio: '4/5',
-                  position: 'relative'
-                }}
+                className={cn(
+                  "instagram-video-container relative",
+                  isImagePost ? "dynamic-height" : ""
+                )}
+                style={
+                  isImagePost 
+                    ? { aspectRatio: 'auto', maxHeight: '600px' }
+                    : { aspectRatio: '4/5', position: 'relative' }
+                }
                 onClick={() => handleNavigateToVideo(video.id)}
               >
-                <VideoPlayer
-                  video={video}
-                  autoPlay
-                  showControls={false}
-                  globalAudioEnabled={globalAudioEnabled}
-                  onAudioStateChange={handleAudioStateChange}
-                  onClick={() => handleNavigateToVideo(video.id)}
-                  className="w-full h-full"
-                  productLinks={productLinks}
-                  visibleProductLink={visibleProductLinkByVideo[video.id] || null}
-                  toggleProductLink={(linkId) => handleToggleProductLink(video.id, linkId)}
-                />
+                {isImagePost ? (
+                  <img
+                    src={video.video_url}
+                    alt={video.description || ''}
+                    className="w-full h-auto object-contain rounded-lg"
+                    style={{ maxHeight: '600px' }}
+                    draggable={false}
+                  />
+                ) : (
+                  <VideoPlayer
+                    video={video}
+                    autoPlay
+                    showControls={false}
+                    globalAudioEnabled={globalAudioEnabled}
+                    onAudioStateChange={handleAudioStateChange}
+                    onClick={() => handleNavigateToVideo(video.id)}
+                    className="w-full h-full"
+                    productLinks={productLinks}
+                    visibleProductLink={visibleProductLinkByVideo[video.id] || null}
+                    toggleProductLink={(linkId) => handleToggleProductLink(video.id, linkId)}
+                  />
+                )}
 
                 {(isProductCardOpen || isAnimatingOut) && firstProductLink && (
                   <div

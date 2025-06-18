@@ -102,6 +102,36 @@ export const calculateContainerDimensions = (
 };
 
 /**
+ * Calculate optimal display dimensions for feed
+ */
+export const calculateFeedDimensions = (
+  naturalWidth: number,
+  naturalHeight: number,
+  feedWidth: number = 400
+) => {
+  const aspectRatio = naturalWidth / naturalHeight;
+  
+  // For images in the feed
+  if (aspectRatio > 1) {
+    // Landscape images - limit height more
+    const maxHeight = 400;
+    return {
+      width: feedWidth,
+      height: Math.min(feedWidth / aspectRatio, maxHeight),
+      aspectRatio
+    };
+  } else {
+    // Portrait images - limit height but allow more space
+    const maxHeight = 600;
+    return {
+      width: feedWidth,
+      height: Math.min(feedWidth / aspectRatio, maxHeight),
+      aspectRatio
+    };
+  }
+};
+
+/**
  * Check if media needs special handling
  */
 export const requiresSpecialHandling = (mediaInfo: MediaInfo): boolean => {
@@ -151,4 +181,11 @@ export const isValidMediaFile = (file: File): { isValid: boolean; type: MediaTyp
     type: 'unknown', 
     error: `Unsupported file type: ${file.type}. Please upload a video (MP4, WebM, OGG) or image (JPEG, PNG, GIF, WebP).` 
   };
+};
+
+/**
+ * Check if media should use dynamic sizing in feed
+ */
+export const shouldUseDynamicSizing = (mediaInfo: MediaInfo): boolean => {
+  return mediaInfo.isImage;
 };
