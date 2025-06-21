@@ -9,11 +9,14 @@ export const useHeaderVisibility = () => {
   const [isHomePage, setIsHomePage] = useState(false);
   const [initialHideComplete, setInitialHideComplete] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   // Determine if we're on the homepage
   useEffect(() => {
     const path = location.pathname;
     setIsHomePage(path === '/' || path === '/home');
+    setInitialLoad(true);
+    setUserInteracted(false);
   }, [location]);
   
   // Initialize visibility based on page
@@ -23,18 +26,20 @@ export const useHeaderVisibility = () => {
       
       const timer = setTimeout(() => {
         setInitialHideComplete(true);
-      }, 3000);
+        setInitialLoad(false);
+      }, 100); // Reduced timeout to prevent interference
       
       return () => clearTimeout(timer);
     } else {
       setVisible(true);
       setInitialHideComplete(true);
+      setInitialLoad(false);
     }
   }, [isHomePage]);
   
   // Handle scroll-based visibility
   useEffect(() => {
-    if (!initialHideComplete) return;
+    if (!initialHideComplete || initialLoad) return;
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -58,11 +63,11 @@ export const useHeaderVisibility = () => {
     
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY, isHomePage, initialHideComplete]);
+  }, [lastScrollY, isHomePage, initialHideComplete, initialLoad]);
 
   // Handle touch interactions for visibility
   useEffect(() => {
-    if (!isHomePage) return;
+    if (!isHomePage || initialLoad) return;
 
     const handleUserInteraction = () => {
       setUserInteracted(true);
@@ -80,14 +85,14 @@ export const useHeaderVisibility = () => {
     };
 
     // Add event listeners
-    document.addEventListener('touchstart', handleUserInteraction);
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
     document.addEventListener('click', handleUserInteraction);
 
     return () => {
       document.removeEventListener('touchstart', handleUserInteraction);
       document.removeEventListener('click', handleUserInteraction);
     };
-  }, [isHomePage]);
+  }, [isHomePage, initialLoad]);
 
   return { visible, isHomePage };
 };

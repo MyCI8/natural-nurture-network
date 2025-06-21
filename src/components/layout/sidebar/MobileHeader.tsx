@@ -20,31 +20,37 @@ export const MobileHeader = ({
   const [isHomePage, setIsHomePage] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   // Determine if we're on the homepage
   useEffect(() => {
     const path = location.pathname;
     setIsHomePage(path === '/' || path === '/home');
+    setInitialLoad(true);
+    setUserInteracted(false);
   }, [location]);
 
-  // Handle touch interactions and scrolling
+  // Handle initial visibility and scroll behavior
   useEffect(() => {
     if (!isHomePage) {
       setVisible(true);
+      setInitialLoad(false);
       return;
     }
 
+    // For homepage, start hidden and show based on user interaction
     const handleScroll = () => {
-      if (window.scrollY > 100) {
+      if (!initialLoad && window.scrollY > 100) {
         setVisible(true);
-      } else if (!userInteracted) {
+      } else if (!userInteracted && window.scrollY <= 100) {
         setVisible(false);
       }
     };
 
-    const handleTouchStart = () => {
+    const handleUserInteraction = () => {
       setUserInteracted(true);
       setVisible(true);
+      setInitialLoad(false);
       
       // Hide again after 3 seconds if at the top of the page
       if (window.scrollY < 100) {
@@ -57,20 +63,23 @@ export const MobileHeader = ({
       }
     };
 
-    // Initialize visibility
-    setVisible(window.scrollY > 100);
+    // Initialize visibility based on scroll position
+    if (initialLoad) {
+      setVisible(window.scrollY > 100);
+      setTimeout(() => setInitialLoad(false), 100);
+    }
 
     // Add event listeners
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('click', handleTouchStart);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    document.addEventListener('click', handleUserInteraction);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('click', handleTouchStart);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
     };
-  }, [isHomePage, userInteracted]);
+  }, [isHomePage, userInteracted, initialLoad]);
 
   // Combine the visibility logic
   const shouldShowHeader = showMobileHeader && visible;
@@ -80,6 +89,7 @@ export const MobileHeader = ({
       className={`fixed top-0 left-0 right-0 h-14 bg-background border-b z-50 transition-transform duration-300 ease-in-out ${
         shouldShowHeader ? 'translate-y-0' : '-translate-y-full'
       }`}
+      style={{ willChange: 'transform' }} // Optimize for animations
     >
       <div className="h-full flex items-center justify-between px-4 max-w-7xl mx-auto">
         <Button 

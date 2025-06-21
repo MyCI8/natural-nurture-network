@@ -50,6 +50,9 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
   useEffect(() => {
     const path = location.pathname;
     
+    // Store current scroll position before layout changes
+    const currentScrollY = window.scrollY;
+    
     // Set layout mode and right section visibility based on route and screen size
     if (path === '/news' || path.startsWith('/news/')) {
       setLayoutMode('three-column');
@@ -128,6 +131,14 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     if (isMobile) {
       setShowRightSection(false);
     }
+
+    // Restore scroll position after layout changes to prevent unwanted scrolling
+    // Use requestAnimationFrame to ensure DOM updates are complete
+    requestAnimationFrame(() => {
+      if (currentScrollY > 0) {
+        window.scrollTo(0, currentScrollY);
+      }
+    });
   }, [location, isMobile, isTablet, breakpoint]);
   
   return (

@@ -9,6 +9,9 @@ import { useEffect } from "react";
 const Index = () => {
   // Enable smooth scrolling and proper touch handling on mobile
   useEffect(() => {
+    // Ensure page starts at the top
+    window.scrollTo(0, 0);
+    
     // Enable momentum scrolling on iOS
     document.documentElement.style.setProperty(
       '--webkit-overflow-scrolling', 'touch'
@@ -33,8 +36,6 @@ const Index = () => {
         }
       }
     };
-    
-    // Removed dark-mode-transition class to disable transitions
     
     addSwipeArea();
     window.addEventListener('resize', addSwipeArea);

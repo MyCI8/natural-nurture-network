@@ -29,6 +29,7 @@ export const MobileNav = ({ showMobileNav }: MobileNavProps) => {
   const [isHomePage, setIsHomePage] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   // Get navigation items (without admin for mobile nav)
   const navigationItems = getNavigationItems(false);
@@ -45,26 +46,30 @@ export const MobileNav = ({ showMobileNav }: MobileNavProps) => {
   useEffect(() => {
     const path = location.pathname;
     setIsHomePage(path === '/' || path === '/home');
+    setInitialLoad(true);
+    setUserInteracted(false);
   }, [location]);
 
-  // Handle touch interactions and scrolling
+  // Handle initial visibility and scroll behavior
   useEffect(() => {
     if (!isHomePage) {
       setVisible(true);
+      setInitialLoad(false);
       return;
     }
 
     const handleScroll = () => {
-      if (window.scrollY > 100) {
+      if (!initialLoad && window.scrollY > 100) {
         setVisible(true);
-      } else if (!userInteracted) {
+      } else if (!userInteracted && window.scrollY <= 100) {
         setVisible(false);
       }
     };
 
-    const handleTouchStart = () => {
+    const handleUserInteraction = () => {
       setUserInteracted(true);
       setVisible(true);
+      setInitialLoad(false);
       
       // Hide again after 3 seconds if at the top of the page
       if (window.scrollY < 100) {
@@ -77,20 +82,23 @@ export const MobileNav = ({ showMobileNav }: MobileNavProps) => {
       }
     };
 
-    // Initialize visibility
-    setVisible(window.scrollY > 100);
+    // Initialize visibility based on scroll position
+    if (initialLoad) {
+      setVisible(window.scrollY > 100);
+      setTimeout(() => setInitialLoad(false), 100);
+    }
 
     // Add event listeners
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('click', handleTouchStart);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
+    document.addEventListener('click', handleUserInteraction);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('click', handleTouchStart);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
     };
-  }, [isHomePage, userInteracted]);
+  }, [isHomePage, userInteracted, initialLoad]);
 
   // Context-aware post handler
   const handlePost = () => {
@@ -124,6 +132,7 @@ export const MobileNav = ({ showMobileNav }: MobileNavProps) => {
       className={`fixed bottom-0 left-0 right-0 h-16 z-50 border-t transition-transform duration-300 ${
         shouldShowNav ? 'translate-y-0' : 'translate-y-full'
       } dark:bg-[#1A1F2C] bg-white`}
+      style={{ willChange: 'transform' }} // Optimize for animations
     >
       <div className="h-full flex items-center justify-around px-4 max-w-7xl mx-auto">
         {navigationItems.map((item) => (
