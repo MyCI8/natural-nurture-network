@@ -25,9 +25,9 @@ const defaultContext: LayoutContextProps = {
   setLayoutMode: () => {},
   setShowRightSection: () => {},
   setIsInReelsMode: () => {},
-  contentWidth: 'px-4',
-  contentMaxWidth: 'max-w-3xl',
-  isFullWidth: false
+  contentWidth: 'px-0',
+  contentMaxWidth: 'max-w-full',
+  isFullWidth: true
 };
 
 const LayoutContext = createContext<LayoutContextProps>(defaultContext);
@@ -38,9 +38,9 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('default');
   const [showRightSection, setShowRightSection] = useState(false);
   const [isInReelsMode, setIsInReelsMode] = useState(false);
-  const [contentWidth, setContentWidth] = useState('px-4');
-  const [contentMaxWidth, setContentMaxWidth] = useState('max-w-3xl');
-  const [isFullWidth, setIsFullWidth] = useState(false);
+  const [contentWidth, setContentWidth] = useState('px-0');
+  const [contentMaxWidth, setContentMaxWidth] = useState('max-w-full');
+  const [isFullWidth, setIsFullWidth] = useState(true);
   const location = useLocation();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
@@ -57,9 +57,9 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     if (path === '/news' || path.startsWith('/news/')) {
       setLayoutMode('three-column');
       setShowRightSection(!isMobile);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-2 sm:px-4');
+      setContentWidth(isMobile ? 'px-0' : 'px-2 sm:px-4');
       setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
-      setIsFullWidth(false);
+      setIsFullWidth(isMobile);
     }
     else if (path === '/remedies/create') {
       // Special case for remedy creation - full width, no constraints
@@ -72,23 +72,23 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     else if (path === '/remedies' || path.startsWith('/remedies/')) {
       setLayoutMode('three-column');
       setShowRightSection(!isMobile);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-2 sm:px-4');
-      setContentMaxWidth('max-w-2xl');
-      setIsFullWidth(false);
+      setContentWidth(isMobile ? 'px-0' : 'px-2 sm:px-4');
+      setContentMaxWidth(isMobile ? 'max-w-full' : 'max-w-2xl');
+      setIsFullWidth(isMobile);
     }
     else if (path.startsWith('/explore/')) {
       setLayoutMode('three-column');
       setShowRightSection(!isMobile);
-      setContentWidth(isMobile ? 'p-0' : 'p-0 sm:px-2');
+      setContentWidth('p-0');
       setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
-      setIsFullWidth(isMobile);
+      setIsFullWidth(true);
     }
     else if (path.startsWith('/symptoms/')) {
       setLayoutMode('three-column');
       setShowRightSection(!isMobile);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-2 sm:px-4');
+      setContentWidth(isMobile ? 'px-0' : 'px-2 sm:px-4');
       setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
-      setIsFullWidth(false);
+      setIsFullWidth(isMobile);
     }
     else if (path.startsWith('/admin')) {
       setLayoutMode('wide');
@@ -107,24 +107,24 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
     else if (path === '/' || path === '/home') {
       setLayoutMode('default');
       setShowRightSection(false);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4');
-      setContentMaxWidth('max-w-6xl');
-      setIsFullWidth(false);
+      setContentWidth('px-0');
+      setContentMaxWidth('max-w-full');
+      setIsFullWidth(true);
     }
     else if (path.startsWith('/users/')) {
       setLayoutMode('default');
       setShowRightSection(false);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4');
+      setContentWidth(isMobile ? 'px-0' : 'px-4');
       setContentMaxWidth(isMobile ? 'max-w-full' : 'max-w-4xl');
       setIsFullWidth(isMobile);
     }
     else {
-      // Default for other pages
+      // Default for other pages - edge-to-edge on mobile
       setLayoutMode('default');
       setShowRightSection(false);
-      setContentWidth(isMobile ? 'px-3 sm:px-4' : 'px-4');
-      setContentMaxWidth('max-w-5xl');
-      setIsFullWidth(false);
+      setContentWidth(isMobile ? 'px-0' : 'px-4');
+      setContentMaxWidth(isMobile ? 'max-w-full' : 'max-w-5xl');
+      setIsFullWidth(isMobile);
     }
 
     // On mobile, always hide the right section regardless of the route

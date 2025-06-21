@@ -41,8 +41,8 @@ const RemediesSection = () => {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-white w-full">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map(i => (
@@ -57,8 +57,8 @@ const RemediesSection = () => {
   if (error) {
     console.error('RemediesSection: Query error:', error);
     return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-white w-full">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
           <div className="text-center py-8 text-muted-foreground">
             Error loading remedies. Please try again later.
@@ -69,8 +69,8 @@ const RemediesSection = () => {
   }
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 bg-white w-full">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {remedies.map((remedy) => {

@@ -97,24 +97,6 @@ const Remedies = () => {
   });
   const userSavedRemedies = new Set<string>(userSavesData);
 
-  const handleSearchIconClick = () => {
-    if (isMobile) {
-      setIsSearchExpanded(!isSearchExpanded);
-      if (!isSearchExpanded) {
-        setTimeout(() => {
-          searchInputRef.current?.focus();
-        }, 150);
-      }
-    }
-  };
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' && isMobile) {
-      setIsSearchExpanded(false);
-      setSearchTerm("");
-    }
-  };
-
   // Click-away logic for mobile search
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -340,7 +322,7 @@ const Remedies = () => {
       <div className="min-h-screen bg-background">
         {/* Header Skeleton */}
         <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b z-10">
-          <div className="p-4">
+          <div className="px-2 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 rounded-full" />
@@ -353,7 +335,7 @@ const Remedies = () => {
         </div>
         
         {/* Content Skeleton */}
-        <div className="px-2 space-y-6">
+        <div className="space-y-6">
           {[1, 2, 3, 4].map((i) => (
             <Skeleton key={i} className="h-80 w-full rounded-xl" />
           ))}
@@ -366,7 +348,7 @@ const Remedies = () => {
     <div className="min-h-screen bg-background">
       {/* Sticky Header */}
       <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b z-10">
-        <div className="p-4">
+        <div className="px-2 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {isMobile && (
@@ -436,7 +418,7 @@ const Remedies = () => {
       <div className="flex flex-col w-full items-center">
         {isMobile ? (
           <Tabs defaultValue="remedies" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mx-2 mt-4">
+            <TabsList className="grid w-full grid-cols-2 mt-4">
               <TabsTrigger value="remedies">Remedies</TabsTrigger>
               <TabsTrigger value="popular">Popular</TabsTrigger>
             </TabsList>
