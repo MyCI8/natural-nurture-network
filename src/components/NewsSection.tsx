@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,8 +104,9 @@ const NewsSection = () => {
           <div className="space-y-6 md:col-span-8">
             <h2 className="text-xl font-semibold mb-6 text-primary">Latest News</h2>
             {newsItems?.map((item, index) => (
-              <Link to={`/news/${item.id}`} key={item.id} className="touch-manipulation">
-                <Card className="group overflow-hidden border-0 bg-card/50 hover:bg-card/80 transition-all duration-300 backdrop-blur-sm">
+              <Link to={`/news/${item.id}`} key={item.id} className="touch-manipulation block">
+                <Card className="group overflow-hidden border-0 bg-card/50 hover:bg-card/80 transition-all duration-300 backdrop-blur-sm 
+                               md:rounded-xl sm:mx-0 -mx-4 sm:-mx-0">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
                       <div className="w-full md:w-1/3">
