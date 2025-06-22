@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,9 +51,9 @@ const NewsSection = () => {
   if (isLoading) {
     return (
       <section className="py-8 sm:py-12 bg-gradient-to-b from-background to-secondary/5">
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1400px] mx-auto px-0 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <div className="space-y-4 md:col-span-8">
+            <div className="space-y-4 md:col-span-8 px-4 sm:px-0">
               <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left text-[#1A1F2C] dark:text-dm-text">Latest News</h2>
               {[1, 2].map(i => (
                 <Card key={i} className="overflow-hidden shadow-sm dark:border-dm-mist dark:bg-dm-foreground">
@@ -75,7 +74,7 @@ const NewsSection = () => {
               ))}
             </div>
             
-            <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0 md:col-span-4">
+            <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0 md:col-span-4 px-4 sm:px-0">
               <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left text-[#1A1F2C] dark:text-dm-text">Latest Videos</h3>
               <div className="grid grid-cols-1 gap-4">
                 {[1, 2].map(i => (
@@ -99,14 +98,14 @@ const NewsSection = () => {
 
   return (
     <section className="py-8 sm:py-12 bg-gradient-to-b from-background to-secondary/5">
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1400px] mx-auto px-0 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-          <div className="space-y-6 md:col-span-8">
+          <div className="space-y-6 md:col-span-8 px-4 sm:px-0">
             <h2 className="text-xl font-semibold mb-6 text-primary">Latest News</h2>
             {newsItems?.map((item, index) => (
               <Link to={`/news/${item.id}`} key={item.id} className="touch-manipulation block">
                 <Card className="group overflow-hidden border-0 bg-card/50 hover:bg-card/80 transition-all duration-300 backdrop-blur-sm 
-                               md:rounded-xl sm:mx-0 -mx-4 sm:-mx-0">
+                               md:rounded-xl">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
                       <div className="w-full md:w-1/3">
@@ -137,7 +136,7 @@ const NewsSection = () => {
             ))}
           </div>
 
-          <div className="space-y-6 mt-6 md:mt-0 md:col-span-4">
+          <div className="space-y-6 mt-6 md:mt-0 md:col-span-4 px-4 sm:px-0">
             <h3 className="text-xl font-semibold mb-6 text-primary">Latest Videos</h3>
             <div className="grid grid-cols-1 gap-4">
               {videos?.map((video) => (
