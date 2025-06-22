@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Search, Filter } from "lucide-react";
@@ -96,6 +97,24 @@ const Remedies = () => {
     enabled: !!currentUser,
   });
   const userSavedRemedies = new Set<string>(userSavesData);
+
+  // Add missing function definitions
+  const handleSearchIconClick = () => {
+    setIsSearchExpanded(true);
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 100);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setIsSearchExpanded(false);
+      setSearchTerm("");
+    } else if (e.key === 'Enter') {
+      // Search is handled by the searchTerm state change
+      searchInputRef.current?.blur();
+    }
+  };
 
   // Click-away logic for mobile search
   useEffect(() => {
@@ -418,7 +437,7 @@ const Remedies = () => {
       <div className="flex flex-col w-full items-center">
         {isMobile ? (
           <Tabs defaultValue="remedies" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mt-4">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="remedies">Remedies</TabsTrigger>
               <TabsTrigger value="popular">Popular</TabsTrigger>
             </TabsList>
