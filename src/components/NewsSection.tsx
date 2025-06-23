@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,12 +52,12 @@ const NewsSection = () => {
   if (isLoading) {
     return (
       <section className="py-8 sm:py-12 bg-gradient-to-b from-background to-secondary/5">
-        <div className="w-full max-w-[1400px] mx-auto px-0 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1400px] mx-auto px-2 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             <div className="space-y-4 md:col-span-8 px-0 sm:px-0">
-              <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left text-[#1A1F2C] dark:text-dm-text px-4 sm:px-0">Latest News</h2>
+              <h2 className="text-sm font-bold mb-3 sm:mb-4 text-left text-[#1A1F2C] dark:text-dm-text px-2 sm:px-0">Latest News</h2>
               {[1, 2].map(i => (
-                <Card key={i} className="overflow-hidden shadow-sm dark:border-dm-mist dark:bg-dm-foreground mx-0">
+                <Card key={i} className="overflow-hidden shadow-sm dark:border-dm-mist dark:bg-dm-foreground mx-2 sm:mx-0">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
                       <div className="w-full md:w-1/3">
@@ -75,8 +76,8 @@ const NewsSection = () => {
             </div>
             
             <div className="space-y-3 sm:space-y-4 mt-6 md:mt-0 md:col-span-4 px-0 sm:px-0">
-              <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left text-[#1A1F2C] dark:text-dm-text px-4 sm:px-0">Latest Videos</h3>
-              <div className="grid grid-cols-1 gap-4 px-4 sm:px-0">
+              <h3 className="text-sm font-bold mb-3 sm:mb-4 text-left text-[#1A1F2C] dark:text-dm-text px-2 sm:px-0">Latest Videos</h3>
+              <div className="grid grid-cols-1 gap-4 px-2 sm:px-0">
                 {[1, 2].map(i => (
                   <Card key={i} className="overflow-hidden shadow-sm dark:border-dm-mist dark:bg-dm-foreground">
                     <CardContent className="p-0">
@@ -98,14 +99,14 @@ const NewsSection = () => {
 
   return (
     <section className="py-8 sm:py-12 bg-gradient-to-b from-background to-secondary/5">
-      <div className="w-full max-w-[1400px] mx-auto px-0 sm:px-6 lg:px-8">
+      <div className="w-full max-w-[1400px] mx-auto px-2 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           <div className="space-y-6 md:col-span-8 px-0 sm:px-0">
-            <h2 className="text-xl font-semibold mb-6 text-primary px-4 sm:px-0">Latest News</h2>
+            <h2 className="text-xl font-semibold mb-6 text-primary px-2 sm:px-0">Latest News</h2>
             {newsItems?.map((item, index) => (
               <Link to={`/news/${item.id}`} key={item.id} className="touch-manipulation block">
                 <Card className="group overflow-hidden border-0 bg-card/50 hover:bg-card/80 transition-all duration-300 backdrop-blur-sm 
-                               md:rounded-xl mx-0">
+                               md:rounded-xl mx-2 sm:mx-0">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center">
                       <div className="w-full md:w-1/3">
@@ -137,8 +138,8 @@ const NewsSection = () => {
           </div>
 
           <div className="space-y-6 mt-6 md:mt-0 md:col-span-4 px-0 sm:px-0">
-            <h3 className="text-xl font-semibold mb-6 text-primary px-4 sm:px-0">Latest Videos</h3>
-            <div className="grid grid-cols-1 gap-4 px-4 sm:px-0">
+            <h3 className="text-xl font-semibold mb-6 text-primary px-2 sm:px-0">Latest Videos</h3>
+            <div className="grid grid-cols-1 gap-4 px-2 sm:px-0">
               {videos?.map((video) => (
                 <Link to={`/news/videos/${video.id}`} key={video.id} className="touch-manipulation">
                   <Card className="group overflow-hidden border-0 bg-card/50 hover:bg-card/80 transition-all duration-300 backdrop-blur-sm">
