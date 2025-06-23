@@ -1,8 +1,10 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Youtube, Linkedin, Twitter, Instagram, Globe } from "lucide-react";
 import { ExpertRemediesSection } from "@/components/experts/ExpertRemediesSection";
+import { ExpertNewsSection } from "@/components/experts/ExpertNewsSection";
 import { ExpertMediaSection } from "@/components/experts/ExpertMediaSection";
 import { RelatedExpertsSection } from "@/components/experts/RelatedExpertsSection";
 import { Json } from "@/integrations/supabase/types";
@@ -153,6 +155,9 @@ const ExpertProfile = () => {
 
       {/* Recommended Remedies Section */}
       <ExpertRemediesSection expertId={expert.id} />
+
+      {/* Related News Articles Section */}
+      <ExpertNewsSection expertId={expert.id} />
 
       {/* Media & Interviews Section */}
       <ExpertMediaSection mediaLinks={expert.media_links} />
