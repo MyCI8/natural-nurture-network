@@ -38,6 +38,7 @@ const Post = () => {
     isSaving,
     isProcessing: mediaProcessing,
     isYoutubeLink,
+    error: mediaError,
     handleInputChange,
     handleMediaUpload,
     handleVideoLinkChange,
@@ -58,8 +59,14 @@ const Post = () => {
       hasValidMedia: hasValidMedia(),
       formStateVideoUrl: formState.video_url,
       description: formState.description,
-      currentMediaType: getCurrentMediaType()
+      currentMediaType: getCurrentMediaType(),
+      mediaError
     });
+    
+    if (mediaError) {
+      toast.error("Please fix the media error before posting");
+      return;
+    }
     
     if (!hasValidMedia()) {
       toast.error("Please select a video or image first");
@@ -79,6 +86,7 @@ const Post = () => {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      console.error('Save video error:', error);
       toast.error(`Failed to create post: ${errorMessage}`);
     }
   };
@@ -87,8 +95,8 @@ const Post = () => {
     return <VideoLoadingState />;
   }
 
-  // Button state logic
-  const isButtonDisabled = isSaving || mediaProcessing || !hasValidMedia();
+  // Button state logic - disabled if processing, has errors, or invalid media
+  const isButtonDisabled = isSaving || mediaProcessing || !hasValidMedia() || !!mediaError;
 
   return (
     <div className="min-h-screen bg-background pt-8 pb-16 flex flex-col">
@@ -122,6 +130,7 @@ const Post = () => {
                 compact={false}
                 isProcessing={mediaProcessing}
                 mediaType={getCurrentMediaType() as any}
+                error={mediaError}
               />
             </div>
           </div>

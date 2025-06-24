@@ -91,61 +91,77 @@ export function useVideoMedia() {
   const [mediaType, setMediaType] = useState<MediaType>('unknown');
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
-  // Store the actual media type for blob URLs
   const [currentMediaType, setCurrentMediaType] = useState<MediaType>('unknown');
+  const [processingError, setProcessingError] = useState<string | null>(null);
   
   const { processMediaFile, isProcessing, error } = useMediaProcessing();
   
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string; mediaType: MediaType }> => {
-    console.log('Media upload started:', file.name);
+    console.log('Media upload started:', file.name, 'size:', file.size);
+    setProcessingError(null);
     
     try {
+      // Basic file size check (50MB limit)
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxSize) {
+        throw new Error('File size too large. Please select a file smaller than 50MB.');
+      }
+
       // Validate and process the file
       const result = await processMediaFile(file);
       
       // Store the actual file object and type
       setMediaFile(file);
       setMediaType(result.type);
-      setCurrentMediaType(result.type); // Store the actual type for blob URLs
+      setCurrentMediaType(result.type);
       setIsYoutubeLink(false);
       
-      console.log('Media processed:', result);
+      console.log('Media processed successfully:', result);
       
-      // Generate thumbnail in background
-      setTimeout(async () => {
-        try {
-          let thumbnail: File | null = null;
-          
-          if (result.type === 'video') {
-            thumbnail = await generateThumbnailFromVideoFile(file);
-          } else if (result.type === 'image') {
-            thumbnail = await generateThumbnailFromImageFile(file);
-          }
-          
-          if (thumbnail) {
-            setThumbnailFile(thumbnail);
-            console.log('Thumbnail generated successfully');
-          }
-        } catch (err) {
-          console.warn('Thumbnail generation failed:', err);
-        }
-      }, 300);
+      // Generate thumbnail in background (non-blocking)
+      generateThumbnailInBackground(file, result.type);
 
-      console.log('Media upload completed successfully');
       return { filename: file.name, previewUrl: result.url, mediaType: result.type };
       
     } catch (error) {
-      console.error('Media upload failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process media';
+      console.error('Media upload failed:', errorMessage);
+      setProcessingError(errorMessage);
+      
+      // Clean up on error
       setMediaFile(null);
       setMediaType('unknown');
       setCurrentMediaType('unknown');
       setThumbnailFile(null);
-      throw error;
+      
+      throw new Error(errorMessage);
+    }
+  };
+
+  const generateThumbnailInBackground = async (file: File, type: MediaType) => {
+    try {
+      console.log('Starting background thumbnail generation...');
+      let thumbnail: File | null = null;
+      
+      if (type === 'video') {
+        thumbnail = await generateThumbnailFromVideoFile(file);
+      } else if (type === 'image') {
+        thumbnail = await generateThumbnailFromImageFile(file);
+      }
+      
+      if (thumbnail) {
+        setThumbnailFile(thumbnail);
+        console.log('Thumbnail generated successfully in background');
+      }
+    } catch (err) {
+      console.warn('Background thumbnail generation failed (non-critical):', err);
+      // Don't throw error as this is background operation
     }
   };
 
   const handleVideoLinkChange = (url: string) => {
     console.log('Video link changed:', url);
+    setProcessingError(null);
     
     const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
     setIsYoutubeLink(isYouTube);
@@ -157,6 +173,18 @@ export function useVideoMedia() {
 
   const clearMediaFile = () => {
     console.log('Clearing all media');
+    setProcessingError(null);
+    
+    // Clean up blob URLs if any
+    if (mediaFile) {
+      try {
+        // This helps with memory cleanup
+        const objectUrl = URL.createObjectURL(mediaFile);
+        URL.revokeObjectURL(objectUrl);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+    }
     
     setMediaFile(null);
     setMediaType('unknown');
@@ -188,12 +216,18 @@ export function useVideoMedia() {
   const hasValidMedia = () => {
     const hasFile = mediaFile !== null;
     const hasYouTube = isYoutubeLink;
-    return (hasFile || hasYouTube) && !isProcessing;
+    const notProcessing = !isProcessing;
+    const noErrors = !error && !processingError;
+    
+    return (hasFile || hasYouTube) && notProcessing && noErrors;
   };
 
-  // Get the current media type for blob URLs
   const getCurrentMediaType = () => {
     return currentMediaType;
+  };
+
+  const getProcessingError = () => {
+    return processingError || error;
   };
 
   return {
@@ -202,7 +236,7 @@ export function useVideoMedia() {
     thumbnailFile,
     isYoutubeLink,
     isProcessing,
-    error,
+    error: getProcessingError(),
     handleMediaUpload,
     handleVideoLinkChange,
     clearMediaFile,

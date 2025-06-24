@@ -2,7 +2,8 @@
 import { useMemo } from "react";
 import { EnhancedMediaUploader } from "./EnhancedMediaUploader";
 import { MediaPreviewCard } from "./MediaPreviewCard";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MediaUploaderProps {
   videoUrl: string;
@@ -13,6 +14,7 @@ interface MediaUploaderProps {
   compact?: boolean;
   isProcessing?: boolean;
   mediaType?: 'video' | 'image' | 'youtube' | 'unknown';
+  error?: string | null;
 }
 
 export function MediaUploader({
@@ -23,10 +25,10 @@ export function MediaUploader({
   onClearMedia,
   compact = false,
   isProcessing = false,
-  mediaType
+  mediaType,
+  error
 }: MediaUploaderProps) {
 
-  // Check if we have valid media to show
   const hasValidMedia = useMemo(() => {
     return Boolean(videoUrl && videoUrl.length > 0);
   }, [videoUrl]);
@@ -40,21 +42,47 @@ export function MediaUploader({
     hasValidMedia,
     isProcessing,
     isYoutubeLink,
-    mediaType
+    mediaType,
+    error
   });
 
+  // Show error state
+  if (error && !isProcessing) {
+    return (
+      <div className="space-y-4">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+          </AlertDescription>
+        </Alert>
+        <EnhancedMediaUploader
+          onMediaUpload={onMediaUpload}
+          onVideoLinkChange={onVideoLinkChange}
+          compact={compact}
+          maxSizeMB={50}
+          acceptedTypes={["video/*", "image/*"]}
+        />
+      </div>
+    );
+  }
+
+  // Show processing state
   if (isProcessing) {
     return (
       <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
         <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
         <div className="space-y-2">
           <p className="text-sm font-medium">Processing media...</p>
-          <p className="text-xs text-muted-foreground">Please wait a moment.</p>
+          <p className="text-xs text-muted-foreground">
+            This may take a moment for larger files.
+          </p>
         </div>
       </div>
     );
   }
 
+  // Show media preview if we have valid media
   if (hasValidMedia) {
     return (
       <MediaPreviewCard
@@ -68,6 +96,7 @@ export function MediaUploader({
     );
   }
   
+  // Show upload interface
   return (
     <EnhancedMediaUploader
       onMediaUpload={onMediaUpload}

@@ -14,28 +14,43 @@ export function useMediaProcessing() {
   const [error, setError] = useState<string | null>(null);
 
   const processMediaFile = async (file: File): Promise<MediaProcessingResult> => {
+    console.log('Starting media processing for file:', file.name, 'size:', file.size);
     setIsProcessing(true);
     setError(null);
 
     try {
-      // Validate file type
+      // Validate file type first
       const validation = isValidMediaFile(file);
       if (!validation.isValid) {
         throw new Error(validation.error || 'Invalid file type');
       }
 
+      console.log('File validation passed, type:', validation.type);
+
       // Create blob URL for preview
       const url = URL.createObjectURL(file);
+      console.log('Created blob URL:', url);
       
-      // Get dimensions for images
+      // Get dimensions with timeout
       let dimensions: { width: number; height: number } | undefined;
       
-      if (validation.type === 'image') {
-        dimensions = await getImageDimensions(file);
-      } else if (validation.type === 'video') {
-        dimensions = await getVideoDimensions(file);
+      try {
+        if (validation.type === 'image') {
+          console.log('Getting image dimensions...');
+          dimensions = await getImageDimensionsWithTimeout(file);
+          console.log('Image dimensions:', dimensions);
+        } else if (validation.type === 'video') {
+          console.log('Getting video dimensions...');
+          dimensions = await getVideoDimensionsWithTimeout(file);
+          console.log('Video dimensions:', dimensions);
+        }
+      } catch (dimensionError) {
+        console.warn('Failed to get dimensions, using defaults:', dimensionError);
+        // Use default dimensions if calculation fails
+        dimensions = { width: 800, height: 600 };
       }
 
+      console.log('Media processing completed successfully');
       return {
         url,
         type: validation.type,
@@ -44,6 +59,7 @@ export function useMediaProcessing() {
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to process media';
+      console.error('Media processing error:', errorMessage, err);
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -61,34 +77,85 @@ export function useMediaProcessing() {
   };
 }
 
-// Helper function to get image dimensions
-function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+// Helper function to get image dimensions with timeout
+function getImageDimensionsWithTimeout(file: File, timeoutMs: number = 5000): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    let timeoutId: NodeJS.Timeout;
+    let blobUrl = '';
+
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+
+    // Set up timeout
+    timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error('Image dimension calculation timed out'));
+    }, timeoutMs);
+
     img.onload = () => {
+      console.log('Image loaded successfully, dimensions:', img.naturalWidth, 'x', img.naturalHeight);
+      cleanup();
       resolve({ width: img.naturalWidth, height: img.naturalHeight });
-      URL.revokeObjectURL(img.src);
     };
-    img.onerror = () => {
+
+    img.onerror = (error) => {
+      console.error('Failed to load image for dimension calculation:', error);
+      cleanup();
       reject(new Error('Failed to load image'));
-      URL.revokeObjectURL(img.src);
     };
-    img.src = URL.createObjectURL(file);
+
+    try {
+      blobUrl = URL.createObjectURL(file);
+      img.src = blobUrl;
+    } catch (error) {
+      cleanup();
+      reject(new Error('Failed to create image URL'));
+    }
   });
 }
 
-// Helper function to get video dimensions
-function getVideoDimensions(file: File): Promise<{ width: number; height: number }> {
+// Helper function to get video dimensions with timeout
+function getVideoDimensionsWithTimeout(file: File, timeoutMs: number = 5000): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
+    let timeoutId: NodeJS.Timeout;
+    let blobUrl = '';
+
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      video.remove();
+    };
+
+    // Set up timeout
+    timeoutId = setTimeout(() => {
+      cleanup();
+      reject(new Error('Video dimension calculation timed out'));
+    }, timeoutMs);
+
     video.onloadedmetadata = () => {
+      console.log('Video metadata loaded, dimensions:', video.videoWidth, 'x', video.videoHeight);
+      cleanup();
       resolve({ width: video.videoWidth, height: video.videoHeight });
-      URL.revokeObjectURL(video.src);
     };
-    video.onerror = () => {
+
+    video.onerror = (error) => {
+      console.error('Failed to load video for dimension calculation:', error);
+      cleanup();
       reject(new Error('Failed to load video'));
-      URL.revokeObjectURL(video.src);
     };
-    video.src = URL.createObjectURL(file);
+
+    try {
+      video.preload = 'metadata';
+      video.muted = true;
+      blobUrl = URL.createObjectURL(file);
+      video.src = blobUrl;
+    } catch (error) {
+      cleanup();
+      reject(new Error('Failed to create video URL'));
+    }
   });
 }
