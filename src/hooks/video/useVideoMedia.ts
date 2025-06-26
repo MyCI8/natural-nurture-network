@@ -116,11 +116,12 @@ export function useVideoMedia() {
       setCurrentMediaType(result.type);
       setIsYoutubeLink(false);
       
-      console.log('Media processed successfully:', result);
+      console.log('Media processed successfully - clearing processing state:', result);
       
       // Generate thumbnail in background (non-blocking)
       generateThumbnailInBackground(file, result.type);
 
+      // Return success data - processing should be cleared by useMediaProcessing
       return { filename: file.name, previewUrl: result.url, mediaType: result.type };
       
     } catch (error) {
@@ -218,6 +219,16 @@ export function useVideoMedia() {
     const hasYouTube = isYoutubeLink;
     const notProcessing = !isProcessing;
     const noErrors = !error && !processingError;
+    
+    console.log('hasValidMedia check:', {
+      hasFile,
+      hasYouTube,
+      notProcessing,
+      noErrors,
+      isProcessing,
+      error,
+      processingError
+    });
     
     return (hasFile || hasYouTube) && notProcessing && noErrors;
   };

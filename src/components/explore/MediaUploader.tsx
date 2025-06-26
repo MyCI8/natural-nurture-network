@@ -46,8 +46,8 @@ export function MediaUploader({
     error
   });
 
-  // Show error state
-  if (error && !isProcessing) {
+  // Show error state (but still allow retry)
+  if (error && !isProcessing && !hasValidMedia) {
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
@@ -67,8 +67,8 @@ export function MediaUploader({
     );
   }
 
-  // Show processing state
-  if (isProcessing) {
+  // Show processing state ONLY when actively processing and no valid media yet
+  if (isProcessing && !hasValidMedia) {
     return (
       <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
         <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
@@ -82,7 +82,7 @@ export function MediaUploader({
     );
   }
 
-  // Show media preview if we have valid media
+  // Show media preview if we have valid media (even if there's an error after processing)
   if (hasValidMedia) {
     return (
       <MediaPreviewCard
@@ -96,7 +96,7 @@ export function MediaUploader({
     );
   }
   
-  // Show upload interface
+  // Show upload interface (default state)
   return (
     <EnhancedMediaUploader
       onMediaUpload={onMediaUpload}

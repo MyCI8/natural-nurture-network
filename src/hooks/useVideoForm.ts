@@ -57,8 +57,10 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
         console.log('Setting video_url to:', mediaData.previewUrl);
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
         setCurrentMediaType(mediaData.mediaType);
+        
+        // Success feedback
         toast.success("Media ready for preview", {
-          description: `Your ${mediaData.mediaType} has been processed.`,
+          description: `Your ${mediaData.mediaType} has been processed successfully.`,
         });
       }
     } catch (error) {
@@ -126,7 +128,8 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       hasFormUrl,
       hasMediaFile,
       formStateVideoUrl: formState.video_url,
-      currentMediaType
+      currentMediaType,
+      isProcessing
     });
     return hasFormUrl || hasMediaFile;
   };
