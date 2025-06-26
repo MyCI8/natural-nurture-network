@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MediaType, isValidMediaFile } from '@/utils/mediaUtils';
 
 interface MediaProcessingResult {
@@ -12,11 +12,28 @@ interface MediaProcessingResult {
 export function useMediaProcessing() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const processingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const processMediaFile = async (file: File): Promise<MediaProcessingResult> => {
     console.log('Starting media processing for file:', file.name, 'size:', file.size);
     setIsProcessing(true);
     setError(null);
+
+    // Set timeout to prevent infinite processing
+    processingTimeoutRef.current = setTimeout(() => {
+      console.warn('Media processing timeout reached');
+      setIsProcessing(false);
+      setError('Processing timeout - please try again');
+    }, 30000); // 30 second timeout
 
     try {
       // Validate file type first
@@ -50,7 +67,15 @@ export function useMediaProcessing() {
         dimensions = { width: 800, height: 600 };
       }
 
-      console.log('Media processing completed successfully');
+      // Clear timeout and processing state IMMEDIATELY on success
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+        processingTimeoutRef.current = null;
+      }
+      
+      console.log('Media processing completed successfully - clearing processing state');
+      setIsProcessing(false); // Clear immediately before returning
+      
       return {
         url,
         type: validation.type,
@@ -60,10 +85,16 @@ export function useMediaProcessing() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to process media';
       console.error('Media processing error:', errorMessage, err);
+      
+      // Clear timeout on error
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+        processingTimeoutRef.current = null;
+      }
+      
+      setIsProcessing(false);
       setError(errorMessage);
       throw new Error(errorMessage);
-    } finally {
-      setIsProcessing(false);
     }
   };
 

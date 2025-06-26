@@ -46,8 +46,37 @@ export function MediaUploader({
     error
   });
 
-  // Show error state (but still allow retry)
-  if (error && !isProcessing && !hasValidMedia) {
+  // PRIORITY 1: Show media preview if we have valid media (regardless of processing state)
+  if (hasValidMedia) {
+    return (
+      <MediaPreviewCard
+        mediaUrl={videoUrl}
+        isYoutubeLink={isYoutubeLink}
+        onClearMedia={onClearMedia}
+        onMediaUpdate={handleMediaUpdate}
+        compact={compact}
+        mediaType={mediaType}
+      />
+    );
+  }
+
+  // PRIORITY 2: Show processing state ONLY when actively processing and no valid media
+  if (isProcessing) {
+    return (
+      <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
+        <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Processing media...</p>
+          <p className="text-xs text-muted-foreground">
+            This may take a moment for larger files.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // PRIORITY 3: Show error state (but still allow retry)
+  if (error) {
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
@@ -66,37 +95,8 @@ export function MediaUploader({
       </div>
     );
   }
-
-  // Show processing state ONLY when actively processing and no valid media yet
-  if (isProcessing && !hasValidMedia) {
-    return (
-      <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
-        <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Processing media...</p>
-          <p className="text-xs text-muted-foreground">
-            This may take a moment for larger files.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show media preview if we have valid media (even if there's an error after processing)
-  if (hasValidMedia) {
-    return (
-      <MediaPreviewCard
-        mediaUrl={videoUrl}
-        isYoutubeLink={isYoutubeLink}
-        onClearMedia={onClearMedia}
-        onMediaUpdate={handleMediaUpdate}
-        compact={compact}
-        mediaType={mediaType}
-      />
-    );
-  }
   
-  // Show upload interface (default state)
+  // PRIORITY 4: Show upload interface (default state)
   return (
     <EnhancedMediaUploader
       onMediaUpload={onMediaUpload}

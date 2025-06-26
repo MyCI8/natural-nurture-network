@@ -110,18 +110,18 @@ export function useVideoMedia() {
       // Validate and process the file
       const result = await processMediaFile(file);
       
-      // Store the actual file object and type
+      // Store the actual file object and type IMMEDIATELY
       setMediaFile(file);
       setMediaType(result.type);
       setCurrentMediaType(result.type);
       setIsYoutubeLink(false);
       
-      console.log('Media processed successfully - clearing processing state:', result);
+      console.log('Media processed successfully - all states updated:', result);
       
       // Generate thumbnail in background (non-blocking)
       generateThumbnailInBackground(file, result.type);
 
-      // Return success data - processing should be cleared by useMediaProcessing
+      // Return success data - processing state should already be cleared by useMediaProcessing
       return { filename: file.name, previewUrl: result.url, mediaType: result.type };
       
     } catch (error) {
@@ -215,22 +215,23 @@ export function useVideoMedia() {
   };
 
   const hasValidMedia = () => {
+    // Simplified logic: check if we have actual media content
     const hasFile = mediaFile !== null;
     const hasYouTube = isYoutubeLink;
-    const notProcessing = !isProcessing;
-    const noErrors = !error && !processingError;
+    
+    // Don't wait for processing to complete if we already have media
+    const result = hasFile || hasYouTube;
     
     console.log('hasValidMedia check:', {
       hasFile,
       hasYouTube,
-      notProcessing,
-      noErrors,
+      result,
       isProcessing,
       error,
       processingError
     });
     
-    return (hasFile || hasYouTube) && notProcessing && noErrors;
+    return result;
   };
 
   const getCurrentMediaType = () => {
