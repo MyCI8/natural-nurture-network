@@ -1,12 +1,12 @@
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { EnhancedMediaUploader } from "./EnhancedMediaUploader";
 import { MediaPreviewCard } from "./MediaPreviewCard";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MediaUploaderProps {
-  mediaUrl: string; // Now expects mediaUrl directly from useVideoMedia
+  mediaUrl: string;
   isYoutubeLink: boolean;
   onMediaUpload: (file: File) => Promise<void>;
   onVideoLinkChange: (url: string) => void;
@@ -29,14 +29,87 @@ export function MediaUploader({
   error
 }: MediaUploaderProps) {
   
-  const hasValidMedia = useMemo(() => {
-    return Boolean(mediaUrl && mediaUrl.length > 0);
-  }, [mediaUrl]);
+  // Local state for immediate preview
+  const [localPreview, setLocalPreview] = useState<{
+    url: string;
+    type: 'video' | 'image' | 'youtube' | 'unknown';
+    isYoutube: boolean;
+  } | null>(null);
 
-  console.log('🎨 MediaUploader state:', {
-    hasValidMedia,
+  // Enhanced media upload with immediate local preview
+  const handleMediaUploadWithPreview = async (file: File) => {
+    try {
+      // Create immediate preview
+      const previewUrl = URL.createObjectURL(file);
+      const fileType = file.type.startsWith('video/') ? 'video' : 'image';
+      
+      setLocalPreview({
+        url: previewUrl,
+        type: fileType,
+        isYoutube: false
+      });
+
+      // Process upload in background
+      await onMediaUpload(file);
+      
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setLocalPreview(null);
+      throw error;
+    }
+  };
+
+  // Enhanced video link change with immediate preview
+  const handleVideoLinkChangeWithPreview = (url: string) => {
+    if (url.trim()) {
+      const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+      setLocalPreview({
+        url,
+        type: isYouTube ? 'youtube' : 'unknown',
+        isYoutube: isYouTube
+      });
+    } else {
+      setLocalPreview(null);
+    }
+    
+    onVideoLinkChange(url);
+  };
+
+  // Enhanced clear with local state cleanup
+  const handleClearWithPreview = () => {
+    if (localPreview?.url.startsWith('blob:')) {
+      URL.revokeObjectURL(localPreview.url);
+    }
+    setLocalPreview(null);
+    onClearMedia();
+  };
+
+  // Determine what to show: local preview takes priority, then external mediaUrl
+  const currentPreview = useMemo(() => {
+    if (localPreview) {
+      return {
+        url: localPreview.url,
+        type: localPreview.type,
+        isYoutube: localPreview.isYoutube
+      };
+    }
+    
+    if (mediaUrl) {
+      return {
+        url: mediaUrl,
+        type: mediaType || 'unknown',
+        isYoutube: isYoutubeLink
+      };
+    }
+    
+    return null;
+  }, [localPreview, mediaUrl, mediaType, isYoutubeLink]);
+
+  console.log('🎨 MediaUploader render:', {
+    hasPreview: !!currentPreview,
     isProcessing,
     error: !!error,
+    localPreview: !!localPreview,
     mediaUrl: mediaUrl?.substring(0, 30) + '...'
   });
 
@@ -49,8 +122,8 @@ export function MediaUploader({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
         <EnhancedMediaUploader
-          onMediaUpload={onMediaUpload}
-          onVideoLinkChange={onVideoLinkChange}
+          onMediaUpload={handleMediaUploadWithPreview}
+          onVideoLinkChange={handleVideoLinkChangeWithPreview}
           compact={compact}
           maxSizeMB={50}
           acceptedTypes={["video/*", "image/*"]}
@@ -59,8 +132,8 @@ export function MediaUploader({
     );
   }
 
-  // Show processing state
-  if (isProcessing) {
+  // Show processing state only if no preview exists
+  if (isProcessing && !currentPreview) {
     return (
       <div className="text-center p-8 border-2 border-dashed rounded-lg">
         <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary mb-4" />
@@ -69,16 +142,16 @@ export function MediaUploader({
     );
   }
 
-  // Show preview if we have valid media
-  if (hasValidMedia) {
+  // Show preview if we have any media (local or external)
+  if (currentPreview) {
     return (
       <MediaPreviewCard
-        mediaUrl={mediaUrl}
-        isYoutubeLink={isYoutubeLink}
-        onClearMedia={onClearMedia}
-        onMediaUpdate={(url) => onVideoLinkChange(url)}
+        mediaUrl={currentPreview.url}
+        isYoutubeLink={currentPreview.isYoutube}
+        onClearMedia={handleClearWithPreview}
+        onMediaUpdate={(url) => handleVideoLinkChangeWithPreview(url)}
         compact={compact}
-        mediaType={mediaType}
+        mediaType={currentPreview.type}
       />
     );
   }
@@ -86,8 +159,8 @@ export function MediaUploader({
   // Default: show upload interface
   return (
     <EnhancedMediaUploader
-      onMediaUpload={onMediaUpload}
-      onVideoLinkChange={onVideoLinkChange}
+      onMediaUpload={handleMediaUploadWithPreview}
+      onVideoLinkChange={handleVideoLinkChangeWithPreview}
       compact={compact}
       maxSizeMB={50}
       acceptedTypes={["video/*", "image/*"]}

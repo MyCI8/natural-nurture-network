@@ -45,31 +45,27 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     saveVideo: save
   } = useVideoSave();
 
-  // Enhanced media upload that syncs with form state
+  // Simplified media upload - no complex state sync
   const handleMediaUpload = async (file: File) => {
     console.log('🎯 useVideoForm handleMediaUpload called with:', file.name);
     
     try {
       const mediaData = await originalHandleMediaUpload(file);
       if (mediaData && mediaData.previewUrl) {
-        console.log('✅ Media processed successfully, syncing form state:', mediaData.previewUrl);
+        console.log('✅ Media processed successfully:', mediaData.previewUrl);
         
-        // Update form state to stay in sync
+        // Simple form state update
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
         
-        toast.success("Media ready for preview", {
-          description: `Your ${mediaData.mediaType} has been processed successfully.`,
-        });
+        toast.success("Media uploaded successfully!");
       }
     } catch (error) {
       console.error('❌ Media upload failed:', error);
-      toast.error("Upload failed", {
-        description: "There was an error processing your media.",
-      });
+      toast.error("Upload failed. Please try again.");
     }
   };
 
-  // Enhanced video link change that syncs with form state
+  // Simplified video link change
   const handleVideoLinkChange = (url: string) => {
     console.log('🔗 useVideoForm handleVideoLinkChange called with:', url);
     originalHandleVideoLinkChange(url);
@@ -83,7 +79,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     }
   };
 
-  // Enhanced clear that syncs with form state
+  // Simplified clear
   const clearMediaFile = () => {
     console.log('🧹 useVideoForm clearMediaFile called');
     originalClearMediaFile();
@@ -107,25 +103,24 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
       videoId, 
       formState, 
       mediaFile,
-      null, // thumbnailFile removed - no longer used
+      null,
       isYoutubeLink, 
       getYouTubeThumbnail, 
       asDraft
     );
   };
 
-  // Simplified media validation - rely primarily on useVideoMedia
+  // Simplified validation - just check if we have media
   const hasValidMedia = () => {
-    const result = originalHasValidMedia();
+    const hasMedia = Boolean(mediaUrl || formState.video_url);
     
     console.log('🔍 useVideoForm hasValidMedia check:', {
-      mediaHookResult: result,
+      hasMedia,
       mediaUrl: mediaUrl?.substring(0, 50) + '...',
-      isProcessing,
-      timestamp: new Date().toISOString()
+      formStateUrl: formState.video_url?.substring(0, 50) + '...'
     });
     
-    return result;
+    return hasMedia;
   };
 
   return {
@@ -137,7 +132,6 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     articles,
     video,
     error: mediaError,
-    // Expose media state directly for components to use
     mediaUrl,
     mediaFile,
     fetchVideo,

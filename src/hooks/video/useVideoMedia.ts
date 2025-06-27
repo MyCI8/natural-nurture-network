@@ -20,15 +20,15 @@ export function useVideoMedia() {
         throw new Error('File size too large. Please select a file smaller than 50MB.');
       }
 
-      // Process file - this is now fast and reliable
+      // Process file
       const result = await processMediaFile(file);
       
-      console.log('✅ Processing complete, updating states:', {
+      console.log('✅ Processing complete:', {
         url: result.url.substring(0, 50) + '...',
         type: result.type
       });
       
-      // Update all states atomically
+      // Update states
       setMediaFile(file);
       setMediaType(result.type);
       setMediaUrl(result.url);
@@ -93,18 +93,12 @@ export function useVideoMedia() {
 
   // Simplified validation
   const hasValidMedia = () => {
-    const hasFile = Boolean(mediaFile && mediaUrl);
-    const hasYouTube = isYoutubeLink && mediaUrl.length > 0;
-    const hasUrl = mediaUrl.length > 0;
-    
-    const result = hasFile || hasYouTube || hasUrl;
+    const result = Boolean(mediaUrl || mediaFile);
     
     console.log('🔍 hasValidMedia:', {
-      hasFile,
-      hasYouTube,
-      hasUrl,
       result,
-      mediaUrl: mediaUrl.substring(0, 30) + '...'
+      hasUrl: Boolean(mediaUrl),
+      hasFile: Boolean(mediaFile)
     });
     
     return result;
