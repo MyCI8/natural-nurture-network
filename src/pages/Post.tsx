@@ -39,7 +39,7 @@ const Post = () => {
     isProcessing: mediaProcessing,
     isYoutubeLink,
     error: mediaError,
-    mediaUrl, // Use mediaUrl directly from useVideoMedia
+    mediaUrl,
     handleInputChange,
     handleMediaUpload,
     handleVideoLinkChange,
@@ -117,23 +117,24 @@ const Post = () => {
       </header>
 
       {/* Main content area */}
-      <main className="flex-1 px-2 sm:px-4 pt-2 pb-4 flex flex-col items-center">
-        <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-2">
-          {/* Media Uploader - now uses mediaUrl directly */}
-          <div className="w-full flex justify-center mt-0 mb-2">
-            <div className="w-full">
-              <MediaUploader
-                mediaUrl={mediaUrl || ""} // Use mediaUrl from useVideoMedia directly
-                isYoutubeLink={isYoutubeLink}
-                onMediaUpload={handleMediaUpload}
-                onVideoLinkChange={handleVideoLinkChange}
-                onClearMedia={clearMediaFile}
-                compact={false}
-                isProcessing={mediaProcessing}
-                mediaType={getCurrentMediaType() as any}
-                error={mediaError}
-              />
-            </div>
+      <main className="flex-1 px-2 sm:px-4 pt-4 pb-4 flex flex-col items-center">
+        <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-4">
+          {/* Media Uploader - positioned prominently at the top */}
+          <div className="w-full">
+            <Label className="text-sm font-medium mb-2 block">
+              Media
+            </Label>
+            <MediaUploader
+              mediaUrl={mediaUrl || ""}
+              isYoutubeLink={isYoutubeLink}
+              onMediaUpload={handleMediaUpload}
+              onVideoLinkChange={handleVideoLinkChange}
+              onClearMedia={clearMediaFile}
+              compact={false}
+              isProcessing={mediaProcessing}
+              mediaType={getCurrentMediaType() as any}
+              error={mediaError}
+            />
           </div>
 
           {/* Form field: Description */}
@@ -155,10 +156,10 @@ const Post = () => {
           </div>
 
           {/* Post button and progress state */}
-          <div className="pt-1">
+          <div className="pt-2">
             <Button
               type="submit"
-              className="w-full py-5 rounded-full flex items-center justify-center gap-2 touch-manipulation text-base"
+              className="w-full py-5 rounded-full flex items-center justify-center gap-2 touch-manipulation text-base bg-green-600 hover:bg-green-700"
               disabled={isButtonDisabled}
             >
               <UploadIcon className="h-5 w-5" />
