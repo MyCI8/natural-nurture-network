@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MediaType, isValidMediaFile } from "@/utils/mediaUtils";
 import { useMediaProcessing } from "./useMediaProcessing";
@@ -90,14 +91,12 @@ export function useVideoMedia() {
   const [mediaType, setMediaType] = useState<MediaType>('unknown');
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
-  const [currentMediaType, setCurrentMediaType] = useState<MediaType>('unknown');
-  const [processingError, setProcessingError] = useState<string | null>(null);
+  const [mediaUrl, setMediaUrl] = useState<string>('');
   
   const { processMediaFile, isProcessing, error } = useMediaProcessing();
   
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string; mediaType: MediaType }> => {
     console.log('Media upload started:', file.name, 'size:', file.size);
-    setProcessingError(null);
     
     try {
       // Basic file size check (50MB limit)
@@ -109,13 +108,17 @@ export function useVideoMedia() {
       // Validate and process the file
       const result = await processMediaFile(file);
       
-      // Store the actual file object and type IMMEDIATELY
+      // Update ALL states immediately upon successful processing
       setMediaFile(file);
       setMediaType(result.type);
-      setCurrentMediaType(result.type);
+      setMediaUrl(result.url);
       setIsYoutubeLink(false);
       
-      console.log('Media processed successfully - all states updated:', result);
+      console.log('Media processed - states updated immediately:', {
+        hasFile: true,
+        type: result.type,
+        url: result.url
+      });
       
       // Generate thumbnail in background (non-blocking)
       generateThumbnailInBackground(file, result.type);
@@ -126,14 +129,9 @@ export function useVideoMedia() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to process media';
       console.error('Media upload failed:', errorMessage);
-      setProcessingError(errorMessage);
       
       // Clean up on error
-      setMediaFile(null);
-      setMediaType('unknown');
-      setCurrentMediaType('unknown');
-      setThumbnailFile(null);
-      
+      clearAllStates();
       throw new Error(errorMessage);
     }
   };
@@ -160,19 +158,25 @@ export function useVideoMedia() {
 
   const handleVideoLinkChange = (url: string) => {
     console.log('Video link changed:', url);
-    setProcessingError(null);
     
     const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+    
+    // Update all states immediately
     setIsYoutubeLink(isYouTube);
+    setMediaUrl(url);
     setMediaFile(null);
     setThumbnailFile(null);
     setMediaType(isYouTube ? 'youtube' : 'unknown');
-    setCurrentMediaType(isYouTube ? 'youtube' : 'unknown');
+    
+    console.log('Video link states updated:', {
+      isYouTube,
+      hasUrl: !!url,
+      mediaType: isYouTube ? 'youtube' : 'unknown'
+    });
   };
 
-  const clearMediaFile = () => {
-    console.log('Clearing all media');
-    setProcessingError(null);
+  const clearAllStates = () => {
+    console.log('Clearing all media states');
     
     // Clean up blob URLs if any
     if (mediaFile) {
@@ -186,9 +190,9 @@ export function useVideoMedia() {
     
     setMediaFile(null);
     setMediaType('unknown');
-    setCurrentMediaType('unknown');
     setThumbnailFile(null);
     setIsYoutubeLink(false);
+    setMediaUrl('');
   };
 
   const getYouTubeThumbnail = (url: string): string | null => {
@@ -211,30 +215,27 @@ export function useVideoMedia() {
     return null;
   };
 
+  // Simplified validation - just check if we have valid media
   const hasValidMedia = () => {
     const hasFile = mediaFile !== null;
-    const hasYouTube = isYoutubeLink;
+    const hasYouTube = isYoutubeLink && mediaUrl.length > 0;
+    const hasUrl = mediaUrl.length > 0;
     
-    const result = hasFile || hasYouTube;
+    const result = hasFile || hasYouTube || hasUrl;
     
     console.log('hasValidMedia check:', {
       hasFile,
       hasYouTube,
+      hasUrl,
       result,
-      isProcessing,
-      error,
-      processingError
+      isProcessing
     });
     
     return result;
   };
 
   const getCurrentMediaType = () => {
-    return currentMediaType;
-  };
-
-  const getProcessingError = () => {
-    return processingError || error;
+    return mediaType;
   };
 
   return {
@@ -242,11 +243,12 @@ export function useVideoMedia() {
     mediaType,
     thumbnailFile,
     isYoutubeLink,
+    mediaUrl,
     isProcessing,
-    error: getProcessingError(),
+    error,
     handleMediaUpload,
     handleVideoLinkChange,
-    clearMediaFile,
+    clearMediaFile: clearAllStates,
     getYouTubeThumbnail,
     setIsYoutubeLink,
     hasValidMedia,
