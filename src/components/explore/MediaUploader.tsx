@@ -1,5 +1,5 @@
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo } from "react";
 import { EnhancedMediaUploader } from "./EnhancedMediaUploader";
 import { MediaPreviewCard } from "./MediaPreviewCard";
 import { Loader2, AlertCircle } from "lucide-react";
@@ -28,56 +28,10 @@ export function MediaUploader({
   mediaType,
   error
 }: MediaUploaderProps) {
-  const [showPreview, setShowPreview] = useState(false);
-  const [debugState, setDebugState] = useState<any>({});
-
+  
   const hasValidMedia = useMemo(() => {
     return Boolean(videoUrl && videoUrl.length > 0);
   }, [videoUrl]);
-
-  // Add debug logging with timestamp
-  useEffect(() => {
-    const currentState = {
-      timestamp: new Date().toISOString(),
-      videoUrl: videoUrl?.substring(0, 50) + '...',
-      hasValidMedia,
-      isProcessing,
-      isYoutubeLink,
-      mediaType,
-      error: error?.substring(0, 100),
-      showPreview
-    };
-    
-    setDebugState(currentState);
-    console.log('📊 MediaUploader state update:', currentState);
-  }, [videoUrl, hasValidMedia, isProcessing, isYoutubeLink, mediaType, error, showPreview]);
-
-  // Implement delayed preview display to ensure state propagation
-  useEffect(() => {
-    if (hasValidMedia && !isProcessing) {
-      // Small delay to ensure all states are synchronized
-      const timer = setTimeout(() => {
-        console.log('⏰ Enabling preview display after state sync delay');
-        setShowPreview(true);
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    } else {
-      setShowPreview(false);
-    }
-  }, [hasValidMedia, isProcessing]);
-
-  // Failsafe mechanism - force preview after 2 seconds if we have valid media
-  useEffect(() => {
-    if (isProcessing && hasValidMedia) {
-      const failsafeTimer = setTimeout(() => {
-        console.log('🚨 Failsafe triggered - forcing preview display');
-        setShowPreview(true);
-      }, 2000);
-      
-      return () => clearTimeout(failsafeTimer);
-    }
-  }, [isProcessing, hasValidMedia]);
 
   const handleMediaUpdate = (newUrl: string) => {
     onVideoLinkChange(newUrl);
@@ -86,9 +40,8 @@ export function MediaUploader({
   console.log('🎨 MediaUploader render decision:', {
     error: !!error,
     hasValidMedia,
-    showPreview,
     isProcessing,
-    decision: error ? 'ERROR' : (hasValidMedia && showPreview) ? 'PREVIEW' : isProcessing ? 'PROCESSING' : 'UPLOAD'
+    decision: error ? 'ERROR' : isProcessing ? 'PROCESSING' : hasValidMedia ? 'PREVIEW' : 'UPLOAD'
   });
 
   // PRIORITY 1: Show error state (but allow retry)
@@ -112,21 +65,7 @@ export function MediaUploader({
     );
   }
 
-  // PRIORITY 2: Show media preview if we have valid media AND preview is enabled
-  if (hasValidMedia && showPreview) {
-    return (
-      <MediaPreviewCard
-        mediaUrl={videoUrl}
-        isYoutubeLink={isYoutubeLink}
-        onClearMedia={onClearMedia}
-        onMediaUpdate={handleMediaUpdate}
-        compact={compact}
-        mediaType={mediaType}
-      />
-    );
-  }
-
-  // PRIORITY 3: Show processing state
+  // PRIORITY 2: Show processing state
   if (isProcessing) {
     return (
       <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
@@ -138,6 +77,20 @@ export function MediaUploader({
           </p>
         </div>
       </div>
+    );
+  }
+
+  // PRIORITY 3: Show media preview if we have valid media
+  if (hasValidMedia) {
+    return (
+      <MediaPreviewCard
+        mediaUrl={videoUrl}
+        isYoutubeLink={isYoutubeLink}
+        onClearMedia={onClearMedia}
+        onMediaUpdate={handleMediaUpdate}
+        compact={compact}
+        mediaType={mediaType}
+      />
     );
   }
   

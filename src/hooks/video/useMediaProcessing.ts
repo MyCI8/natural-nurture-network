@@ -72,7 +72,9 @@ export function useMediaProcessing() {
         processingTimeoutRef.current = null;
       }
       
-      console.log('✅ Media processing completed successfully');
+      // CRITICAL FIX: Clear processing state on successful completion
+      console.log('✅ Media processing completed successfully - clearing isProcessing state');
+      setIsProcessing(false);
       
       return {
         url,
@@ -98,18 +100,11 @@ export function useMediaProcessing() {
 
   const clearError = () => setError(null);
 
-  // Expose method to clear processing state (to be called by parent)
-  const clearProcessing = () => {
-    console.log('🔄 Clearing processing state externally');
-    setIsProcessing(false);
-  };
-
   return {
     processMediaFile,
     isProcessing,
     error,
-    clearError,
-    clearProcessing
+    clearError
   };
 }
 

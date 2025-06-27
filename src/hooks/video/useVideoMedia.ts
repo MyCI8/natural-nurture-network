@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MediaType, isValidMediaFile } from "@/utils/mediaUtils";
 import { useMediaProcessing } from "./useMediaProcessing";
@@ -93,7 +92,7 @@ export function useVideoMedia() {
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   const [mediaUrl, setMediaUrl] = useState<string>('');
   
-  const { processMediaFile, isProcessing, error, clearProcessing } = useMediaProcessing();
+  const { processMediaFile, isProcessing, error } = useMediaProcessing();
   
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string; mediaType: MediaType }> => {
     console.log('🚀 Media upload started:', file.name, 'size:', file.size);
@@ -105,24 +104,19 @@ export function useVideoMedia() {
         throw new Error('File size too large. Please select a file smaller than 50MB.');
       }
 
-      // Process the file (this will set isProcessing to true)
+      // Process the file - useMediaProcessing now handles clearing isProcessing
       const result = await processMediaFile(file);
       
-      // ATOMIC STATE UPDATE - Update ALL states at once
-      console.log('⚡ Processing completed - updating all states atomically');
+      console.log('⚡ Processing completed - updating states atomically');
       setMediaFile(file);
       setMediaType(result.type);
       setMediaUrl(result.url);
       setIsYoutubeLink(false);
       
-      // Clear processing state AFTER all other states are updated
-      clearProcessing();
-      
       console.log('✅ All states updated successfully:', {
         hasFile: true,
         type: result.type,
-        url: result.url,
-        processingCleared: true
+        url: result.url
       });
       
       // Generate thumbnail in background (non-blocking)
@@ -198,7 +192,6 @@ export function useVideoMedia() {
     setThumbnailFile(null);
     setIsYoutubeLink(false);
     setMediaUrl('');
-    clearProcessing();
   };
 
   const getYouTubeThumbnail = (url: string): string | null => {
