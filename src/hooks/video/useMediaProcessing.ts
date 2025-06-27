@@ -23,15 +23,14 @@ export function useMediaProcessing() {
     };
   }, []);
 
-  const processMediaFile = async (file: File): Promise<MediaProcessingResult> => {
-    console.log('Starting media processing for file:', file.name, 'size:', file.size);
+  const processMediaFile = async (file: File): Promise<MediaProcessingResult> {
+    console.log('🔄 Starting media processing for file:', file.name, 'size:', file.size);
     setIsProcessing(true);
     setError(null);
 
     // Set timeout to prevent infinite processing
     processingTimeoutRef.current = setTimeout(() => {
-      console.warn('Media processing timeout reached');
-      setIsProcessing(false);
+      console.warn('⚠️ Media processing timeout reached');
       setError('Processing timeout - please try again');
     }, 30000); // 30 second timeout
 
@@ -42,39 +41,41 @@ export function useMediaProcessing() {
         throw new Error(validation.error || 'Invalid file type');
       }
 
-      console.log('File validation passed, type:', validation.type);
+      console.log('✅ File validation passed, type:', validation.type);
 
       // Create blob URL for preview
       const url = URL.createObjectURL(file);
-      console.log('Created blob URL:', url);
+      console.log('🔗 Created blob URL:', url);
       
       // Get dimensions with timeout
       let dimensions: { width: number; height: number } | undefined;
       
       try {
         if (validation.type === 'image') {
-          console.log('Getting image dimensions...');
+          console.log('📐 Getting image dimensions...');
           dimensions = await getImageDimensionsWithTimeout(file);
-          console.log('Image dimensions:', dimensions);
+          console.log('📐 Image dimensions:', dimensions);
         } else if (validation.type === 'video') {
-          console.log('Getting video dimensions...');
+          console.log('📐 Getting video dimensions...');
           dimensions = await getVideoDimensionsWithTimeout(file);
-          console.log('Video dimensions:', dimensions);
+          console.log('📐 Video dimensions:', dimensions);
         }
       } catch (dimensionError) {
-        console.warn('Failed to get dimensions, using defaults:', dimensionError);
+        console.warn('⚠️ Failed to get dimensions, using defaults:', dimensionError);
         // Use default dimensions if calculation fails
         dimensions = { width: 800, height: 600 };
       }
 
-      // Clear timeout and processing state IMMEDIATELY on success
+      // Clear timeout on success
       if (processingTimeoutRef.current) {
         clearTimeout(processingTimeoutRef.current);
         processingTimeoutRef.current = null;
       }
       
-      console.log('Media processing completed successfully - clearing processing state');
-      setIsProcessing(false); // Clear immediately before returning
+      console.log('✅ Media processing completed successfully - returning result without clearing processing state');
+      
+      // NOTE: We don't call setIsProcessing(false) here anymore
+      // Let the calling component (useVideoMedia) handle state management
       
       return {
         url,
@@ -84,7 +85,7 @@ export function useMediaProcessing() {
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to process media';
-      console.error('Media processing error:', errorMessage, err);
+      console.error('❌ Media processing error:', errorMessage, err);
       
       // Clear timeout on error
       if (processingTimeoutRef.current) {
@@ -100,11 +101,18 @@ export function useMediaProcessing() {
 
   const clearError = () => setError(null);
 
+  // Expose method to clear processing state (to be called by parent)
+  const clearProcessing = () => {
+    console.log('🔄 Clearing processing state externally');
+    setIsProcessing(false);
+  };
+
   return {
     processMediaFile,
     isProcessing,
     error,
-    clearError
+    clearError,
+    clearProcessing
   };
 }
 

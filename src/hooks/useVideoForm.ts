@@ -48,21 +48,23 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced media upload that syncs with form state
   const handleMediaUpload = async (file: File) => {
-    console.log('handleMediaUpload called with:', file.name);
+    console.log('🎯 useVideoForm handleMediaUpload called with:', file.name);
     
     try {
       const mediaData = await originalHandleMediaUpload(file);
       if (mediaData && mediaData.previewUrl) {
-        console.log('Setting video_url to:', mediaData.previewUrl);
+        console.log('✅ Media processed successfully, updating form state:', mediaData.previewUrl);
+        
+        // Update form state immediately
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
         
-        // Show success toast immediately after successful processing
+        // Show success toast
         toast.success("Media ready for preview", {
           description: `Your ${mediaData.mediaType} has been processed successfully.`,
         });
       }
     } catch (error) {
-      console.error('Media upload failed:', error);
+      console.error('❌ Media upload failed:', error);
       toast.error("Upload failed", {
         description: "There was an error processing your media.",
       });
@@ -71,7 +73,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced video link change that syncs with form state
   const handleVideoLinkChange = (url: string) => {
-    console.log('handleVideoLinkChange called with:', url);
+    console.log('🔗 useVideoForm handleVideoLinkChange called with:', url);
     originalHandleVideoLinkChange(url);
     handleInputChange({ target: { name: 'video_url', value: url } });
     
@@ -85,7 +87,7 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
 
   // Enhanced clear that syncs with form state
   const clearMediaFile = () => {
-    console.log('clearMediaFile called');
+    console.log('🧹 useVideoForm clearMediaFile called');
     originalClearMediaFile();
     handleInputChange({ target: { name: 'video_url', value: '' } });
     handleInputChange({ target: { name: 'thumbnail_url', value: '' } });
@@ -114,19 +116,20 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     );
   };
 
-  // Simplified media validation - use the hook's validation directly
+  // Simplified media validation using the hook's validation
   const hasValidMedia = () => {
     const hookHasMedia = originalHasValidMedia();
     const formHasUrl = Boolean(formState.video_url && formState.video_url.length > 0);
     
     const result = hookHasMedia || formHasUrl;
     
-    console.log('useVideoForm hasValidMedia check:', {
+    console.log('🔍 useVideoForm hasValidMedia check:', {
       hookHasMedia,
       formHasUrl,
       result,
-      formStateVideoUrl: formState.video_url,
-      isProcessing
+      formStateVideoUrl: formState.video_url?.substring(0, 50) + '...',
+      isProcessing,
+      timestamp: new Date().toISOString()
     });
     
     return result;
