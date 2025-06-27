@@ -4,6 +4,7 @@ import { EnhancedMediaUploader } from "./EnhancedMediaUploader";
 import { MediaPreviewCard } from "./MediaPreviewCard";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MediaType } from "@/utils/mediaUtils";
 
 interface MediaUploaderProps {
   mediaUrl: string;
@@ -13,7 +14,7 @@ interface MediaUploaderProps {
   onClearMedia: () => void;
   compact?: boolean;
   isProcessing?: boolean;
-  mediaType?: 'video' | 'image' | 'youtube' | 'unknown';
+  mediaType?: MediaType;
   error?: string | null;
 }
 
@@ -29,10 +30,10 @@ export function MediaUploader({
   error
 }: MediaUploaderProps) {
   
-  // Local state for immediate preview - this is the key fix
+  // Local state for immediate preview
   const [localPreview, setLocalPreview] = useState<{
     url: string;
-    type: 'video' | 'image' | 'youtube' | 'unknown';
+    type: MediaType;
     isYoutube: boolean;
   } | null>(null);
 
@@ -54,9 +55,9 @@ export function MediaUploader({
     try {
       // Create immediate preview URL
       const previewUrl = URL.createObjectURL(file);
-      const fileType = file.type.startsWith('video/') ? 'video' : 'image';
+      const fileType: MediaType = file.type.startsWith('video/') ? 'video' : 'image';
       
-      // Set local preview immediately - this should show the preview right away
+      // Set local preview immediately
       const preview = {
         url: previewUrl,
         type: fileType,
@@ -71,7 +72,6 @@ export function MediaUploader({
       
     } catch (error) {
       console.error('❌ Upload failed:', error);
-      // Clear local preview on error
       setLocalPreview(null);
       throw error;
     }
@@ -83,9 +83,11 @@ export function MediaUploader({
     
     if (url.trim()) {
       const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+      const linkType: MediaType = isYouTube ? 'youtube' : 'unknown';
+      
       const preview = {
         url,
-        type: isYouTube ? 'youtube' : 'unknown',
+        type: linkType,
         isYoutube: isYouTube
       };
       
@@ -110,15 +112,13 @@ export function MediaUploader({
     onClearMedia();
   };
 
-  // Simplified preview logic - local preview takes absolute priority
+  // Priority: Local preview first, then external
   const currentPreview = useMemo(() => {
-    // Priority 1: Local preview (just uploaded/linked)
     if (localPreview) {
       console.log('🖼️ Showing local preview:', localPreview.url.substring(0, 50));
       return localPreview;
     }
     
-    // Priority 2: External media URL (from props)
     if (mediaUrl) {
       console.log('🖼️ Showing external preview:', mediaUrl.substring(0, 50));
       return {
