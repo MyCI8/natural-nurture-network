@@ -33,26 +33,20 @@ export function MediaUploader({
     return Boolean(videoUrl && videoUrl.length > 0);
   }, [videoUrl]);
 
-  const handleMediaUpdate = (newUrl: string) => {
-    onVideoLinkChange(newUrl);
-  };
-
-  console.log('🎨 MediaUploader render decision:', {
-    error: !!error,
+  console.log('🎨 MediaUploader state:', {
     hasValidMedia,
     isProcessing,
-    decision: error ? 'ERROR' : isProcessing ? 'PROCESSING' : hasValidMedia ? 'PREVIEW' : 'UPLOAD'
+    error: !!error,
+    videoUrl: videoUrl?.substring(0, 30) + '...'
   });
 
-  // PRIORITY 1: Show error state (but allow retry)
+  // Show error with retry option
   if (error) {
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error}
-          </AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
         <EnhancedMediaUploader
           onMediaUpload={onMediaUpload}
@@ -65,36 +59,31 @@ export function MediaUploader({
     );
   }
 
-  // PRIORITY 2: Show processing state
+  // Show processing state
   if (isProcessing) {
     return (
-      <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
-        <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Processing media...</p>
-          <p className="text-xs text-muted-foreground">
-            This may take a moment for larger files.
-          </p>
-        </div>
+      <div className="text-center p-8 border-2 border-dashed rounded-lg">
+        <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary mb-4" />
+        <p className="text-sm font-medium">Processing media...</p>
       </div>
     );
   }
 
-  // PRIORITY 3: Show media preview if we have valid media
+  // Show preview if we have valid media
   if (hasValidMedia) {
     return (
       <MediaPreviewCard
         mediaUrl={videoUrl}
         isYoutubeLink={isYoutubeLink}
         onClearMedia={onClearMedia}
-        onMediaUpdate={handleMediaUpdate}
+        onMediaUpdate={(url) => onVideoLinkChange(url)}
         compact={compact}
         mediaType={mediaType}
       />
     );
   }
   
-  // PRIORITY 4: Show upload interface (default state)
+  // Default: show upload interface
   return (
     <EnhancedMediaUploader
       onMediaUpload={onMediaUpload}
