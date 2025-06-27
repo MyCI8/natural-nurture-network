@@ -39,6 +39,7 @@ const Post = () => {
     isProcessing: mediaProcessing,
     isYoutubeLink,
     error: mediaError,
+    mediaUrl, // Use mediaUrl directly from useVideoMedia
     handleInputChange,
     handleMediaUpload,
     handleVideoLinkChange,
@@ -57,7 +58,7 @@ const Post = () => {
     
     console.log('Form submit - checking media:', {
       hasValidMedia: hasValidMedia(),
-      formStateVideoUrl: formState.video_url,
+      mediaUrl: mediaUrl,
       description: formState.description,
       currentMediaType: getCurrentMediaType(),
       mediaError
@@ -118,11 +119,11 @@ const Post = () => {
       {/* Main content area */}
       <main className="flex-1 px-2 sm:px-4 pt-2 pb-4 flex flex-col items-center">
         <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto flex flex-col gap-2">
-          {/* Media Uploader */}
+          {/* Media Uploader - now uses mediaUrl directly */}
           <div className="w-full flex justify-center mt-0 mb-2">
             <div className="w-full">
               <MediaUploader
-                videoUrl={formState.video_url || ""}
+                mediaUrl={mediaUrl || ""} // Use mediaUrl from useVideoMedia directly
                 isYoutubeLink={isYoutubeLink}
                 onMediaUpload={handleMediaUpload}
                 onVideoLinkChange={handleVideoLinkChange}

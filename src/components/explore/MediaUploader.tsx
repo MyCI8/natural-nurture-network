@@ -6,7 +6,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MediaUploaderProps {
-  videoUrl: string;
+  mediaUrl: string; // Now expects mediaUrl directly from useVideoMedia
   isYoutubeLink: boolean;
   onMediaUpload: (file: File) => Promise<void>;
   onVideoLinkChange: (url: string) => void;
@@ -18,7 +18,7 @@ interface MediaUploaderProps {
 }
 
 export function MediaUploader({
-  videoUrl,
+  mediaUrl,
   isYoutubeLink,
   onMediaUpload,
   onVideoLinkChange,
@@ -30,14 +30,14 @@ export function MediaUploader({
 }: MediaUploaderProps) {
   
   const hasValidMedia = useMemo(() => {
-    return Boolean(videoUrl && videoUrl.length > 0);
-  }, [videoUrl]);
+    return Boolean(mediaUrl && mediaUrl.length > 0);
+  }, [mediaUrl]);
 
   console.log('🎨 MediaUploader state:', {
     hasValidMedia,
     isProcessing,
     error: !!error,
-    videoUrl: videoUrl?.substring(0, 30) + '...'
+    mediaUrl: mediaUrl?.substring(0, 30) + '...'
   });
 
   // Show error with retry option
@@ -73,7 +73,7 @@ export function MediaUploader({
   if (hasValidMedia) {
     return (
       <MediaPreviewCard
-        mediaUrl={videoUrl}
+        mediaUrl={mediaUrl}
         isYoutubeLink={isYoutubeLink}
         onClearMedia={onClearMedia}
         onMediaUpdate={(url) => onVideoLinkChange(url)}

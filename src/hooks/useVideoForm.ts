@@ -52,12 +52,11 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     try {
       const mediaData = await originalHandleMediaUpload(file);
       if (mediaData && mediaData.previewUrl) {
-        console.log('✅ Media processed successfully, updating form state:', mediaData.previewUrl);
+        console.log('✅ Media processed successfully, syncing form state:', mediaData.previewUrl);
         
-        // Update form state immediately
+        // Update form state to stay in sync
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
         
-        // Show success toast
         toast.success("Media ready for preview", {
           description: `Your ${mediaData.mediaType} has been processed successfully.`,
         });
@@ -115,18 +114,13 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     );
   };
 
-  // Simplified media validation using the hook's validation
+  // Simplified media validation - rely primarily on useVideoMedia
   const hasValidMedia = () => {
-    const hookHasMedia = originalHasValidMedia();
-    const formHasUrl = Boolean(formState.video_url && formState.video_url.length > 0);
-    
-    const result = hookHasMedia || formHasUrl;
+    const result = originalHasValidMedia();
     
     console.log('🔍 useVideoForm hasValidMedia check:', {
-      hookHasMedia,
-      formHasUrl,
-      result,
-      formStateVideoUrl: formState.video_url?.substring(0, 50) + '...',
+      mediaHookResult: result,
+      mediaUrl: mediaUrl?.substring(0, 50) + '...',
       isProcessing,
       timestamp: new Date().toISOString()
     });
@@ -143,6 +137,9 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
     articles,
     video,
     error: mediaError,
+    // Expose media state directly for components to use
+    mediaUrl,
+    mediaFile,
     fetchVideo,
     fetchArticles,
     handleInputChange,
