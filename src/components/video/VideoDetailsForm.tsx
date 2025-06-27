@@ -81,7 +81,7 @@ export function VideoDetailsForm({
 
         <>
           <MediaUploader
-            videoUrl={formState.video_url}
+            mediaUrl={formState.video_url}
             isYoutubeLink={isYoutubeLink}
             onMediaUpload={handleMediaUpload}
             onVideoLinkChange={handleVideoLinkChange}
