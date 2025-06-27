@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { MediaType, isValidMediaFile } from '@/utils/mediaUtils';
 
@@ -23,7 +22,7 @@ export function useMediaProcessing() {
     };
   }, []);
 
-  const processMediaFile = async (file: File): Promise<MediaProcessingResult> {
+  const processMediaFile = async (file: File): Promise<MediaProcessingResult> => {
     console.log('🔄 Starting media processing for file:', file.name, 'size:', file.size);
     setIsProcessing(true);
     setError(null);
@@ -32,6 +31,7 @@ export function useMediaProcessing() {
     processingTimeoutRef.current = setTimeout(() => {
       console.warn('⚠️ Media processing timeout reached');
       setError('Processing timeout - please try again');
+      setIsProcessing(false);
     }, 30000); // 30 second timeout
 
     try {
@@ -72,10 +72,7 @@ export function useMediaProcessing() {
         processingTimeoutRef.current = null;
       }
       
-      console.log('✅ Media processing completed successfully - returning result without clearing processing state');
-      
-      // NOTE: We don't call setIsProcessing(false) here anymore
-      // Let the calling component (useVideoMedia) handle state management
+      console.log('✅ Media processing completed successfully');
       
       return {
         url,
