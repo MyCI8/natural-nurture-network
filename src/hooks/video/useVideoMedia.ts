@@ -93,12 +93,14 @@ export function useVideoMedia() {
   const [isYoutubeLink, setIsYoutubeLink] = useState(false);
   const [currentMediaType, setCurrentMediaType] = useState<MediaType>('unknown');
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const [localProcessing, setLocalProcessing] = useState(false);
   
   const { processMediaFile, isProcessing, error } = useMediaProcessing();
   
   const handleMediaUpload = async (file: File): Promise<{ filename: string; previewUrl: string; mediaType: MediaType }> => {
     console.log('Media upload started:', file.name, 'size:', file.size);
     setProcessingError(null);
+    setLocalProcessing(true);
     
     try {
       // Basic file size check (50MB limit)
@@ -110,24 +112,28 @@ export function useVideoMedia() {
       // Validate and process the file
       const result = await processMediaFile(file);
       
-      // Store the actual file object and type IMMEDIATELY
+      // Store the actual file object and type IMMEDIATELY and SYNCHRONOUSLY
       setMediaFile(file);
       setMediaType(result.type);
       setCurrentMediaType(result.type);
       setIsYoutubeLink(false);
+      
+      // CRITICAL: Clear processing state immediately
+      setLocalProcessing(false);
       
       console.log('Media processed successfully - all states updated:', result);
       
       // Generate thumbnail in background (non-blocking)
       generateThumbnailInBackground(file, result.type);
 
-      // Return success data - processing state should already be cleared by useMediaProcessing
+      // Return success data
       return { filename: file.name, previewUrl: result.url, mediaType: result.type };
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to process media';
       console.error('Media upload failed:', errorMessage);
       setProcessingError(errorMessage);
+      setLocalProcessing(false);
       
       // Clean up on error
       setMediaFile(null);
@@ -175,6 +181,7 @@ export function useVideoMedia() {
   const clearMediaFile = () => {
     console.log('Clearing all media');
     setProcessingError(null);
+    setLocalProcessing(false);
     
     // Clean up blob URLs if any
     if (mediaFile) {
@@ -215,18 +222,17 @@ export function useVideoMedia() {
   };
 
   const hasValidMedia = () => {
-    // Simplified logic: check if we have actual media content
+    // Simplified and reliable logic
     const hasFile = mediaFile !== null;
     const hasYouTube = isYoutubeLink;
     
-    // Don't wait for processing to complete if we already have media
     const result = hasFile || hasYouTube;
     
     console.log('hasValidMedia check:', {
       hasFile,
       hasYouTube,
       result,
-      isProcessing,
+      isProcessing: isProcessing || localProcessing,
       error,
       processingError
     });
@@ -242,12 +248,17 @@ export function useVideoMedia() {
     return processingError || error;
   };
 
+  // Combined processing state for external use
+  const getCombinedProcessingState = () => {
+    return isProcessing || localProcessing;
+  };
+
   return {
     mediaFile,
     mediaType,
     thumbnailFile,
     isYoutubeLink,
-    isProcessing,
+    isProcessing: getCombinedProcessingState(),
     error: getProcessingError(),
     handleMediaUpload,
     handleVideoLinkChange,

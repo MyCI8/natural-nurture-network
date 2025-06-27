@@ -58,10 +58,13 @@ export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explo
         handleInputChange({ target: { name: 'video_url', value: mediaData.previewUrl } });
         setCurrentMediaType(mediaData.mediaType);
         
-        // Success feedback
-        toast.success("Media ready for preview", {
-          description: `Your ${mediaData.mediaType} has been processed successfully.`,
-        });
+        // CRITICAL: Only show success toast after everything is complete
+        // Use setTimeout to ensure state has propagated
+        setTimeout(() => {
+          toast.success("Media ready for preview", {
+            description: `Your ${mediaData.mediaType} has been processed successfully.`,
+          });
+        }, 100);
       }
     } catch (error) {
       console.error('Media upload failed:', error);
