@@ -28,9 +28,8 @@ export function MediaUploader({
   mediaType,
   error
 }: MediaUploaderProps) {
-  // State recovery mechanism
   const [processingTimeout, setProcessingTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [forceShowPreview, setForceShowPreview] = useState(false);
+  const [forceShowUploader, setForceShowUploader] = useState(false);
 
   const hasValidMedia = useMemo(() => {
     return Boolean(videoUrl && videoUrl.length > 0);
@@ -40,14 +39,13 @@ export function MediaUploader({
     onVideoLinkChange(newUrl);
   };
 
-  // Timeout protection: if processing for too long, force show preview
+  // Clear processing timeout after 3 seconds to prevent infinite loading
   useEffect(() => {
-    if (isProcessing && hasValidMedia) {
-      // If we have valid media but are still processing, set a timeout
+    if (isProcessing) {
       const timeout = setTimeout(() => {
-        console.warn('Processing timeout reached, forcing preview display');
-        setForceShowPreview(true);
-      }, 5000); // 5 second timeout
+        console.warn('Processing timeout reached, forcing uploader display');
+        setForceShowUploader(true);
+      }, 3000); // 3 second timeout
       
       setProcessingTimeout(timeout);
       
@@ -56,14 +54,13 @@ export function MediaUploader({
         setProcessingTimeout(null);
       };
     } else {
-      // Clear timeout and reset force flag when not processing
       if (processingTimeout) {
         clearTimeout(processingTimeout);
         setProcessingTimeout(null);
       }
-      setForceShowPreview(false);
+      setForceShowUploader(false);
     }
-  }, [isProcessing, hasValidMedia]);
+  }, [isProcessing]);
 
   console.log('MediaUploader render:', {
     videoUrl,
@@ -72,11 +69,11 @@ export function MediaUploader({
     isYoutubeLink,
     mediaType,
     error,
-    forceShowPreview
+    forceShowUploader
   });
 
-  // PRIORITY 1: Show media preview if we have valid media OR if forced due to timeout
-  if (hasValidMedia && (!isProcessing || forceShowPreview)) {
+  // PRIORITY 1: Show media preview if we have valid media AND not processing
+  if (hasValidMedia && !isProcessing) {
     return (
       <MediaPreviewCard
         mediaUrl={videoUrl}
@@ -89,15 +86,13 @@ export function MediaUploader({
     );
   }
 
-  // PRIORITY 2: Show processing state ONLY when actively processing and no valid media OR processing with valid media (but not timed out)
-  if (isProcessing && !forceShowPreview) {
+  // PRIORITY 2: Show processing state only when actively processing and no timeout
+  if (isProcessing && !forceShowUploader) {
     return (
       <div className="text-center space-y-4 p-8 border-2 border-dashed rounded-lg">
         <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
         <div className="space-y-2">
-          <p className="text-sm font-medium">
-            {hasValidMedia ? 'Finalizing...' : 'Processing media...'}
-          </p>
+          <p className="text-sm font-medium">Processing media...</p>
           <p className="text-xs text-muted-foreground">
             This may take a moment for larger files.
           </p>
@@ -106,7 +101,7 @@ export function MediaUploader({
     );
   }
 
-  // PRIORITY 3: Show error state (but still allow retry)
+  // PRIORITY 3: Show error state (but allow retry)
   if (error) {
     return (
       <div className="space-y-4">
