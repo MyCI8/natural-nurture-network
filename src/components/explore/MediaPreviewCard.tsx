@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Trash2, Edit, Play, Pause, RotateCw, Crop, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,7 @@ export function MediaPreviewCard({
   const mediaInfo = getMediaInfo(mediaUrl, mediaType);
 
   console.log('MediaPreviewCard render:', {
-    mediaUrl,
+    mediaUrl: mediaUrl.substring(0, 50) + '...',
     mediaInfo,
     isYoutubeLink,
     passedMediaType: mediaType
@@ -101,6 +100,7 @@ export function MediaPreviewCard({
             onLoad={setDimensions}
             onError={(error) => console.error('Media error:', error)}
             objectFit="contain"
+            mediaType={mediaType} // Pass the mediaType prop down
           />
         </div>
 

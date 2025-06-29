@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { MediaInfo, getMediaInfo, calculateContainerDimensions } from '@/utils/mediaUtils';
+import { MediaInfo, getMediaInfo, calculateContainerDimensions, MediaType } from '@/utils/mediaUtils';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +18,7 @@ interface MediaContainerProps {
   onClick?: () => void;
   objectFit?: 'contain' | 'cover' | 'fill';
   preserveAspectRatio?: boolean;
+  mediaType?: MediaType; // Add this prop to override auto-detection
 }
 
 export const MediaContainer: React.FC<MediaContainerProps> = ({
@@ -35,21 +35,25 @@ export const MediaContainer: React.FC<MediaContainerProps> = ({
   onError,
   onClick,
   objectFit = 'contain',
-  preserveAspectRatio = true
+  preserveAspectRatio = true,
+  mediaType // Use this for blob URLs where detection fails
 }) => {
-  const [mediaInfo, setMediaInfo] = useState<MediaInfo>(() => getMediaInfo(src));
+  // Use provided mediaType or fallback to detection
+  const [mediaInfo, setMediaInfo] = useState<MediaInfo>(() => 
+    getMediaInfo(src, mediaType)
+  );
   const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const mediaRef = useRef<HTMLVideoElement | HTMLImageElement>(null);
 
-  // Update media info when src changes
+  // Update media info when src or mediaType changes
   useEffect(() => {
-    setMediaInfo(getMediaInfo(src));
+    setMediaInfo(getMediaInfo(src, mediaType));
     setDimensions(null);
     setIsLoading(true);
     setError(null);
-  }, [src]);
+  }, [src, mediaType]);
 
   const handleMediaLoad = () => {
     setIsLoading(false);
