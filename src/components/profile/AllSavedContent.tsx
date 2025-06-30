@@ -144,6 +144,29 @@ export const AllSavedContent = ({ userId }: AllSavedContentProps) => {
     return null;
   };
 
+  // Helper function to determine if item should show text overlay
+  const shouldShowTextOverlay = (item: MergedSavedItem) => {
+    if (item.type === "remedy") {
+      return true; // Always show text for remedies
+    }
+    
+    // Show text for news videos only
+    return item.video.video_type === "news";
+  };
+
+  // Helper function to get overlay text
+  const getOverlayText = (item: MergedSavedItem) => {
+    if (item.type === "remedy") {
+      return item.remedies?.name || "";
+    }
+    
+    if (item.type === "video" && item.video.video_type === "news") {
+      return item.video.title || "";
+    }
+    
+    return "";
+  };
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-3 gap-1">
@@ -186,12 +209,31 @@ export const AllSavedContent = ({ userId }: AllSavedContentProps) => {
             className="w-full h-full object-cover rounded-sm"
           />
           
-          {/* Media type indicator - only show on hover */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 rounded-sm flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              {getMediaTypeIcon(item)}
+          {/* Media type indicator - only show on hover for videos without text overlay */}
+          {!shouldShowTextOverlay(item) && (
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 rounded-sm flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                {getMediaTypeIcon(item)}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Text overlay for News and Remedies */}
+          {shouldShowTextOverlay(item) && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-sm">
+              <div className="absolute bottom-0 left-0 right-0 p-2">
+                <h4 className="text-white text-xs font-medium line-clamp-2 leading-tight">
+                  {getOverlayText(item)}
+                </h4>
+              </div>
+              {/* Media type indicator for videos with text overlay */}
+              {item.type === "video" && (
+                <div className="absolute top-2 right-2 opacity-80">
+                  {getMediaTypeIcon(item)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>
