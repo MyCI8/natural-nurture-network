@@ -1,110 +1,100 @@
 
-import React, { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import RemedyImageCard from './remedies/RemedyImageCard';
-import { OptimizedImage } from '@/components/ui/optimized-image';
+import { useRemedies, updateRemedyClickCount } from "./remedies/useRemedies";
+import RemedyCard from "./remedies/RemedyCard";
+import { getSafeImageUrl, ensureRemedyImagesBucket } from "@/utils/imageValidation";
+import { migrateRemedyImages, validateRemedyImages } from "@/utils/remedyImageMigration";
+import { useEffect } from "react";
 
-interface RemediesSectionProps {
-  inNewsSection?: boolean;
-}
+const RemediesSection = () => {
+  const { data: remedies = [], isLoading, error } = useRemedies();
 
-const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false }) => {
-  const { data: remedies, isLoading, error } = useQuery({
-    queryKey: ['latest-remedies-optimized'],
-    queryFn: async () => {
-      console.log('RemediesSection: Fetching latest remedies...');
-      const { data, error } = await supabase
-        .from('remedies')
-        .select('id, name, summary, image_url, status, created_at')
-        .eq('status', 'published')
-        .order('created_at', { ascending: false })
-        .limit(4);
-      
-      if (error) {
-        console.error('RemediesSection: Error fetching remedies:', error);
-        throw error;
-      }
-      
-      console.log('RemediesSection: Remedies fetched:', data?.length || 0);
-      return data;
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+  // Run migration and validation on component mount
+  useEffect(() => {
+    const initializeRemedyImages = async () => {
+      await ensureRemedyImagesBucket();
+      await migrateRemedyImages();
+      await validateRemedyImages();
+    };
+    
+    initializeRemedyImages();
+  }, []);
+
+  // STANDARDIZED: Only use image_url field for all remedies
+  console.log('RemediesSection remedies:', remedies?.length || 0);
+  remedies?.forEach((remedy, index) => {
+    const safeImageUrl = getSafeImageUrl(remedy.image_url);
+    console.log(`Main RemediesSection - Remedy ${index + 1} (${remedy.name}):`, {
+      id: remedy.id,
+      image_url: remedy.image_url,
+      safe_image_url: safeImageUrl,
+      status: remedy.status,
+      is_valid_http: remedy.image_url?.startsWith('http') || false
+    });
   });
+
+  const handleRemedyClick = async (remedyId: string) => {
+    const remedy = remedies.find(r => r.id === remedyId);
+    if (remedy) {
+      await updateRemedyClickCount(remedyId, remedy.click_count || 0);
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className={inNewsSection ? 'pt-6 sm:pt-8' : 'py-6 sm:py-8 lg:py-12'}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-semibold mb-6 text-primary text-center md:text-left">
-            Natural Remedies
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-9">
+      <section className="py-16 bg-white w-full">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+          <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="space-y-3">
-                <div className="aspect-[16/9] bg-muted animate-pulse rounded-2xl" />
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted animate-pulse rounded" />
-                  <div className="h-3 bg-muted animate-pulse rounded w-3/4" />
-                </div>
-              </div>
+              <div key={i} className="bg-muted animate-pulse rounded-lg h-64" />
             ))}
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   if (error) {
     console.error('RemediesSection: Query error:', error);
     return (
-      <div className={`${inNewsSection ? 'pt-6 sm:pt-8' : 'py-6 sm:py-8 lg:py-12'}`}>
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 bg-white w-full">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+          <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
           <div className="text-center py-8 text-muted-foreground">
             Error loading remedies. Please try again later.
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <section className={inNewsSection ? 'pt-6 sm:pt-8' : 'py-6 sm:py-8 lg:py-12'}>
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-xl font-semibold mb-6 text-primary text-center md:text-left">
-          Natural Remedies
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-9 w-full">
-          {remedies?.map((remedy) => (
-            <div 
-              key={remedy.id}
-              className="cursor-pointer group"
-              onClick={() => window.location.assign(`/remedies/${remedy.id}`)}
-            >
-              <div className="space-y-3">
-                <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
-                  <OptimizedImage
-                    src={remedy.image_url || "/placeholder.svg"}
-                    alt={remedy.name}
-                    width={400}
-                    height={225}
-                    className="w-full h-full group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="font-medium text-sm line-clamp-2 leading-tight">
-                    {remedy.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {remedy.summary}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-          {(!remedies || remedies.length === 0) && (
+    <section className="py-16 bg-white w-full">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {remedies.map((remedy) => {
+            // STANDARDIZED: Only use image_url field
+            const safeImageUrl = getSafeImageUrl(remedy.image_url);
+            
+            console.log(`RemediesSection rendering ${remedy.name} with image:`, {
+              original: remedy.image_url,
+              safe: safeImageUrl,
+              is_placeholder: safeImageUrl === "/placeholder.svg"
+            });
+            
+            return (
+              <RemedyCard
+                key={remedy.id}
+                id={remedy.id}
+                name={remedy.name}
+                summary={remedy.summary}
+                imageUrl={safeImageUrl}
+                onClick={handleRemedyClick}
+              />
+            );
+          })}
+          {remedies.length === 0 && (
             <div className="col-span-full text-center py-8 text-muted-foreground">
               No remedies available
             </div>
