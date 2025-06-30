@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { Plus, Trash2, RefreshCw } from "lucide-react";
+import { SimpleUrlPreview } from "@/components/ui/SimpleUrlPreview";
+import { useUrlPreview } from "@/hooks/useUrlPreview";
+import { isValidUrl } from "@/utils/urlDetection";
 
 interface RelatedLink {
   title: string;
@@ -18,27 +19,81 @@ interface RelatedLinksSectionProps {
   setRelatedLinks: (links: RelatedLink[]) => void;
 }
 
+const LinkPreviewItem = ({ 
+  link, 
+  index, 
+  onUpdate, 
+  onRemove 
+}: { 
+  link: RelatedLink; 
+  index: number; 
+  onUpdate: (index: number, field: keyof RelatedLink, value: string) => void;
+  onRemove: (index: number) => void;
+}) => {
+  const { preview, loading, refetch } = useUrlPreview(link.url);
+
+  const handleRefresh = () => {
+    if (preview) {
+      onUpdate(index, 'title', preview.title);
+      onUpdate(index, 'thumbnail_url', preview.thumbnailUrl);
+    }
+    refetch();
+  };
+
+  return (
+    <div className="space-y-3 p-4 border rounded-lg">
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <Label>URL</Label>
+          <Input
+            value={link.url}
+            onChange={(e) => onUpdate(index, "url", e.target.value)}
+            placeholder="https://..."
+          />
+        </div>
+        <div className="flex-1">
+          <Label>Title</Label>
+          <div className="flex gap-2">
+            <Input
+              value={link.title}
+              onChange={(e) => onUpdate(index, "title", e.target.value)}
+              placeholder="Link title"
+            />
+            {isValidUrl(link.url) && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </Button>
+            )}
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onRemove(index)}
+          className="mt-6"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      {isValidUrl(link.url) && (
+        <div className="mt-3">
+          <SimpleUrlPreview url={link.url} />
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const RelatedLinksSection = ({
   relatedLinks,
   setRelatedLinks,
 }: RelatedLinksSectionProps) => {
-  const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const fetchLinkPreview = async (url: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('link-preview', {
-        body: { url }
-      });
-
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error fetching link preview:', error);
-      return null;
-    }
-  };
-
   const addLink = () => {
     setRelatedLinks([...relatedLinks, { title: "", url: "" }]);
   };
@@ -47,45 +102,10 @@ export const RelatedLinksSection = ({
     setRelatedLinks(relatedLinks.filter((_, i) => i !== index));
   };
 
-  const updateLink = async (index: number, field: keyof RelatedLink, value: string) => {
+  const updateLink = (index: number, field: keyof RelatedLink, value: string) => {
     const newLinks = [...relatedLinks];
     newLinks[index] = { ...newLinks[index], [field]: value };
-
-    // If URL field is updated and is a valid URL, fetch preview
-    if (field === 'url' && value && isValidUrl(value)) {
-      setIsProcessing(true);
-      try {
-        const preview = await fetchLinkPreview(value);
-        if (preview) {
-          newLinks[index] = {
-            ...newLinks[index],
-            title: preview.title || newLinks[index].title,
-            thumbnail_url: preview.thumbnailUrl
-          };
-          console.log('Updated link with preview:', newLinks[index]);
-        }
-      } catch (error) {
-        console.error('Error updating link preview:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch link preview",
-          variant: "destructive",
-        });
-      } finally {
-        setIsProcessing(false);
-      }
-    }
-    
     setRelatedLinks(newLinks);
-  };
-
-  const isValidUrl = (string: string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
   };
 
   return (
@@ -98,57 +118,17 @@ export const RelatedLinksSection = ({
         </Button>
       </div>
       
-      {relatedLinks.map((link, index) => (
-        <div key={index} className="flex gap-4 items-start">
-          <div className="flex-shrink-0 w-24 h-24 bg-primary/10 rounded overflow-hidden">
-            {link.thumbnail_url && (
-              <img
-                src={link.thumbnail_url}
-                alt=""
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  target.nextElementSibling?.classList.remove('hidden');
-                }}
-              />
-            )}
-            <div className={`w-full h-full flex items-center justify-center ${link.thumbnail_url ? 'hidden' : ''}`}>
-              <img
-                src="/placeholder.svg"
-                alt=""
-                className="w-12 h-12 opacity-50"
-              />
-            </div>
-          </div>
-          <div className="flex-1 space-y-2">
-            <Label>Title</Label>
-            <Input
-              value={link.title}
-              onChange={(e) => updateLink(index, "title", e.target.value)}
-              placeholder="Link title"
-            />
-          </div>
-          <div className="flex-1 space-y-2">
-            <Label>URL</Label>
-            <Input
-              value={link.url}
-              onChange={(e) => updateLink(index, "url", e.target.value)}
-              placeholder="https://..."
-              className={isProcessing ? "opacity-50" : ""}
-            />
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="mt-8"
-            onClick={() => removeLink(index)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
+      <div className="space-y-4">
+        {relatedLinks.map((link, index) => (
+          <LinkPreviewItem
+            key={index}
+            link={link}
+            index={index}
+            onUpdate={updateLink}
+            onRemove={removeLink}
+          />
+        ))}
+      </div>
     </div>
   );
 };
