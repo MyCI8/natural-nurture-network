@@ -1,13 +1,12 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, Play, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Video } from '@/types/video';
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tables } from '@/integrations/supabase/types';
+import { isYoutubeVideo, isImagePost } from '@/utils/videoUtils';
 
 type LikedRemedy = {
   id: string;
@@ -87,10 +86,74 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
     ...(likedVideos?.map(v => ({ ...v, type: 'video' as const })) ?? []),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  // Helper function to get the correct thumbnail URL
+  const getThumbnailUrl = (item: MergedLikedItem) => {
+    if (item.type === "remedy") {
+      return item.remedy?.image_url || "/placeholder.svg";
+    }
+
+    const video = item.video;
+    if (!video) return "/placeholder.svg";
+    
+    // For image posts, use video_url as the image source
+    if (isImagePost(video.video_url || '')) {
+      return video.video_url || "/placeholder.svg";
+    }
+    
+    // For YouTube videos, generate thumbnail
+    if (isYoutubeVideo(video.video_url || '')) {
+      const getYouTubeThumbnail = (url: string): string => {
+        try {
+          let videoId = "";
+          if (url.includes("youtube.com/watch")) {
+            const urlParams = new URLSearchParams(new URL(url).search);
+            videoId = urlParams.get("v") || "";
+          } else if (url.includes("youtu.be/")) {
+            videoId = url.split("youtu.be/")[1].split("?")[0];
+          }
+          
+          if (videoId) {
+            return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+          }
+        } catch (error) {
+          console.error("Error parsing YouTube URL:", error);
+        }
+        return "/placeholder.svg";
+      };
+      
+      return getYouTubeThumbnail(video.video_url || '');
+    }
+    
+    // For regular videos, use thumbnail_url if available, otherwise fallback
+    return video.thumbnail_url || "/placeholder.svg";
+  };
+
+  // Helper function to get media type icon
+  const getMediaTypeIcon = (item: MergedLikedItem) => {
+    if (item.type === "remedy") {
+      return null; // No icon for remedies
+    }
+
+    const video = item.video;
+    if (!video) return null;
+    
+    if (isImagePost(video.video_url || '')) {
+      return <ImageIcon className="h-4 w-4 text-white" />;
+    }
+    
+    if (isYoutubeVideo(video.video_url || '') || video.video_url?.includes('.mp4')) {
+      return <Play className="h-4 w-4 text-white" />;
+    }
+    
+    return null;
+  };
+
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-        {[1,2,3,4].map(i => <Skeleton key={i} className="h-48 w-full rounded-xl" />)}
+      <div className="grid grid-cols-3 gap-1">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <Skeleton key={i} className="aspect-square w-full rounded-sm" />
+        ))}
       </div>
     );
   }
@@ -108,73 +171,33 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-      {allItems.map((item) => {
-        if (item.type === 'remedy') {
-          // Remedy card
-          const remedy = item.remedy;
-          if (!remedy) return null;
-          return (
-            <Card
-              key={item.id}
-              className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 h-full cursor-pointer"
-              onClick={() => navigate(`/remedies/${remedy.id}`)}
-            >
-              <CardContent className="p-0 h-full">
-                <div className="relative aspect-video overflow-hidden">
-                  <img
-                    src={remedy.image_url || '/placeholder.svg'}
-                    alt={remedy.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-2 left-2 bg-red-500 p-1 rounded-full">
-                    <Heart className="h-3 w-3 fill-white text-white" />
-                  </div>
-                </div>
-                <div className="p-2 space-y-1">
-                  <div className="flex items-center gap-1 text-[12px] font-medium">
-                    Remedy
-                  </div>
-                  <div className="font-semibold text-xs line-clamp-2 group-hover:text-primary">{remedy.name}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2">{remedy.summary}</div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        } else if (item.type === 'video') {
-          // Video card
-          const video = item.video;
-          if (!video) return null;
-          return (
-            <Card
-              key={item.id}
-              className="group overflow-hidden border-0 shadow-sm hover:shadow-md transition-all duration-300 h-full cursor-pointer"
-              onClick={() => navigate(`/videos/${video.id}`)}
-            >
-              <CardContent className="p-0 h-full">
-                <div className="relative aspect-video overflow-hidden">
-                  <img
-                    src={video.thumbnail_url || '/placeholder.svg'}
-                    alt={video.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-2 left-2 bg-primary p-1 rounded-full">
-                    <Heart className="h-3 w-3 fill-white text-white" />
-                  </div>
-                </div>
-                <div className="p-2 space-y-1">
-                  <div className="flex items-center gap-1 text-[12px] font-medium">
-                    Video
-                  </div>
-                  <div className="font-semibold text-xs line-clamp-2 group-hover:text-primary">{video.title}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2">{video.description}</div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        }
-        return null;
-      })}
+    <div className="grid grid-cols-3 gap-1">
+      {allItems.map((item) => (
+        <div
+          key={item.id}
+          className="relative aspect-square cursor-pointer group"
+          onClick={() => {
+            if (item.type === "video") {
+              navigate(`/videos/${item.video?.id}`);
+            } else {
+              navigate(`/remedies/${item.remedy?.id}`);
+            }
+          }}
+        >
+          <img
+            src={getThumbnailUrl(item)}
+            alt={item.type === "video" ? item.video?.title : item.remedy?.name}
+            className="w-full h-full object-cover rounded-sm"
+          />
+          
+          {/* Media type indicator - only show on hover */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 rounded-sm flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              {getMediaTypeIcon(item)}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
