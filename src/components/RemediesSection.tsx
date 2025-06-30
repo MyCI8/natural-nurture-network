@@ -1,36 +1,14 @@
 
-import { useRemedies, updateRemedyClickCount } from "./remedies/useRemedies";
-import RemedyCard from "./remedies/RemedyCard";
-import { getSafeImageUrl, ensureRemedyImagesBucket } from "@/utils/imageValidation";
-import { migrateRemedyImages, validateRemedyImages } from "@/utils/remedyImageMigration";
-import { useEffect } from "react";
+import { useOptimizedRemedies } from "@/hooks/useOptimizedRemedies";
+import OptimizedRemedyCard from "./remedies/OptimizedRemedyCard";
+import { updateRemedyClickCount } from "./remedies/useRemedies";
 
 const RemediesSection = () => {
-  const { data: remedies = [], isLoading, error } = useRemedies();
-
-  // Run migration and validation on component mount
-  useEffect(() => {
-    const initializeRemedyImages = async () => {
-      await ensureRemedyImagesBucket();
-      await migrateRemedyImages();
-      await validateRemedyImages();
-    };
-    
-    initializeRemedyImages();
-  }, []);
-
-  // STANDARDIZED: Only use image_url field for all remedies
-  console.log('RemediesSection remedies:', remedies?.length || 0);
-  remedies?.forEach((remedy, index) => {
-    const safeImageUrl = getSafeImageUrl(remedy.image_url);
-    console.log(`Main RemediesSection - Remedy ${index + 1} (${remedy.name}):`, {
-      id: remedy.id,
-      image_url: remedy.image_url,
-      safe_image_url: safeImageUrl,
-      status: remedy.status,
-      is_valid_http: remedy.image_url?.startsWith('http') || false
-    });
-  });
+  const { 
+    remedies, 
+    isLoading, 
+    error 
+  } = useOptimizedRemedies();
 
   const handleRemedyClick = async (remedyId: string) => {
     const remedy = remedies.find(r => r.id === remedyId);
@@ -44,9 +22,11 @@ const RemediesSection = () => {
       <section className="py-16 bg-white w-full">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="bg-muted animate-pulse rounded-lg h-64" />
+              <div key={i} className="bg-muted animate-pulse rounded-lg aspect-[4/3] w-full h-[170px] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-border/50" />
+              </div>
             ))}
           </div>
         </div>
@@ -72,28 +52,17 @@ const RemediesSection = () => {
     <section className="py-16 bg-white w-full">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <h2 className="text-3xl font-bold text-text mb-12 text-center">Natural Remedies</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {remedies.map((remedy) => {
-            // STANDARDIZED: Only use image_url field
-            const safeImageUrl = getSafeImageUrl(remedy.image_url);
-            
-            console.log(`RemediesSection rendering ${remedy.name} with image:`, {
-              original: remedy.image_url,
-              safe: safeImageUrl,
-              is_placeholder: safeImageUrl === "/placeholder.svg"
-            });
-            
-            return (
-              <RemedyCard
-                key={remedy.id}
-                id={remedy.id}
-                name={remedy.name}
-                summary={remedy.summary}
-                imageUrl={safeImageUrl}
-                onClick={handleRemedyClick}
-              />
-            );
-          })}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          {remedies.map((remedy) => (
+            <OptimizedRemedyCard
+              key={remedy.id}
+              id={remedy.id}
+              name={remedy.name}
+              summary={remedy.summary}
+              imageUrl={remedy.image_url || "/placeholder.svg"}
+              onClick={handleRemedyClick}
+            />
+          ))}
           {remedies.length === 0 && (
             <div className="col-span-full text-center py-8 text-muted-foreground">
               No remedies available
