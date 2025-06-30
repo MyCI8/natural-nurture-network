@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -26,10 +27,7 @@ const Experts = () => {
     queryFn: async () => {
       let query = supabase
         .from("experts")
-        .select(`
-          *,
-          expert_remedies(count)
-        `);
+        .select("*");
 
       if (searchQuery) {
         query = query.or(`full_name.ilike.%${searchQuery}%,field_of_expertise.ilike.%${searchQuery}%`);
@@ -41,13 +39,33 @@ const Experts = () => {
 
       if (sortBy === "name") {
         query = query.order("full_name");
-      } else {
-        query = query.order("expert_remedies(count)", { ascending: false });
       }
 
-      const { data, error } = await query;
+      const { data: expertsData, error } = await query;
       if (error) throw error;
-      return data;
+
+      // Get remedy counts for each expert
+      const expertsWithCounts = await Promise.all(
+        (expertsData || []).map(async (expert) => {
+          const { count } = await supabase
+            .from("remedies")
+            .select("id", { count: "exact" })
+            .contains("expert_recommendations", [expert.id])
+            .eq("status", "published");
+
+          return {
+            ...expert,
+            remedies_count: count || 0,
+          };
+        })
+      );
+
+      // Sort by remedies count if needed
+      if (sortBy === "remedies") {
+        expertsWithCounts.sort((a, b) => b.remedies_count - a.remedies_count);
+      }
+
+      return expertsWithCounts;
     },
   });
 
@@ -63,8 +81,6 @@ const Experts = () => {
       return [...new Set(data.map(e => e.field_of_expertise))].filter(Boolean);
     },
   });
-
-  console.log("Experts data:", experts);
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -172,7 +188,7 @@ const Experts = () => {
                         {expert.field_of_expertise || "Alternative Medicine"}
                       </p>
                       <p className="text-primary text-sm mt-1 font-medium">
-                        {expert.expert_remedies?.[0]?.count || 0} remedies
+                        {expert.remedies_count} remedies
                       </p>
                     </div>
                   </div>

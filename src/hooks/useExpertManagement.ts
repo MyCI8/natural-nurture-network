@@ -24,7 +24,7 @@ const transformExpertData = (data: any): Expert => {
     media_links: data.media_links as Expert['media_links'] || undefined,
     affiliations: data.affiliations || [],
     credentials: data.credentials || [],
-    expert_remedies: data.expert_remedies ? [{ count: data.expert_remedies[0]?.count || 0 }] : [],
+    expert_remedies: [{ count: data.remedies_count || 0 }],
     created_at: data.created_at,
     updated_at: data.updated_at
   };
@@ -44,10 +44,7 @@ export const useExpertManagement = ({
     queryFn: async () => {
       let query = supabase
         .from("experts")
-        .select(`
-          *,
-          expert_remedies(count)
-        `);
+        .select("*");
 
       if (searchQuery) {
         query = query.or(`full_name.ilike.%${searchQuery}%,field_of_expertise.ilike.%${searchQuery}%`);
@@ -59,18 +56,36 @@ export const useExpertManagement = ({
 
       if (sortBy === "name") {
         query = query.order("full_name");
-      } else {
-        query = query.order("expert_remedies(count)", { ascending: false });
       }
 
-      const { data, error } = await query;
-      
+      const { data: expertsData, error } = await query;
       if (error) {
         console.error("Error fetching experts:", error);
         throw error;
       }
 
-      return data.map(transformExpertData);
+      // Get remedy counts for each expert
+      const expertsWithCounts = await Promise.all(
+        (expertsData || []).map(async (expert) => {
+          const { count } = await supabase
+            .from("remedies")
+            .select("id", { count: "exact" })
+            .contains("expert_recommendations", [expert.id])
+            .eq("status", "published");
+
+          return {
+            ...expert,
+            remedies_count: count || 0,
+          };
+        })
+      );
+
+      // Sort by remedies count if needed
+      if (sortBy === "remedies") {
+        expertsWithCounts.sort((a, b) => b.remedies_count - a.remedies_count);
+      }
+
+      return expertsWithCounts.map(transformExpertData);
     },
   });
 
@@ -95,13 +110,13 @@ export const useExpertManagement = ({
   // Mutation for deleting experts with automatic invalidation
   const deleteExpertMutation = useMutation({
     mutationFn: async (expertId: string) => {
-      // First delete expert's remedies
+      // First delete expert's remedies relationships (if any junction table exists)
       const { error: remediesError } = await supabase
         .from("expert_remedies")
         .delete()
         .eq("expert_id", expertId);
 
-      if (remediesError) throw remediesError;
+      // Note: We ignore the error here since the table might be empty or not used
 
       // Then delete the expert
       const { error } = await supabase

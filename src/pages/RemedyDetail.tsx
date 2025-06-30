@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
@@ -11,6 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getSafeImageUrl } from "@/utils/imageValidation";
 import { parseRemedyContent, formatContentWithLists } from "@/utils/remedyContentParser";
 import SafeContent from "@/components/ui/safe-content";
+import { RelatedExperts } from "@/components/remedies/RelatedExperts";
 
 const RemedyDetail = () => {
   const { id } = useParams();
@@ -138,6 +140,9 @@ const RemedyDetail = () => {
   
   // Safely handle related links
   const relatedLinks = Array.isArray(remedy.related_links) ? remedy.related_links : [];
+
+  // Safely handle expert recommendations (array of UUIDs)
+  const expertRecommendations = Array.isArray(remedy.expert_recommendations) ? remedy.expert_recommendations : [];
 
   // Parse the description to extract different sections
   const parsedContent = parseRemedyContent(remedy.description || '');
@@ -313,6 +318,14 @@ const RemedyDetail = () => {
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {/* Related Experts Section */}
+          {expertRecommendations.length > 0 && (
+            <>
+              <Separator />
+              <RelatedExperts expertIds={expertRecommendations} />
+            </>
           )}
 
           {/* Video Section */}

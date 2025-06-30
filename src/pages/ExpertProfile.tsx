@@ -7,6 +7,7 @@ import { ExpertRemediesSection } from "@/components/experts/ExpertRemediesSectio
 import { ExpertNewsSection } from "@/components/experts/ExpertNewsSection";
 import { ExpertMediaSection } from "@/components/experts/ExpertMediaSection";
 import { RelatedExpertsSection } from "@/components/experts/RelatedExpertsSection";
+import { useExpertStats } from "@/hooks/useExpertStats";
 import { Json } from "@/integrations/supabase/types";
 
 interface SocialMedia {
@@ -44,17 +45,7 @@ const ExpertProfile = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("experts")
-        .select(`
-          *,
-          expert_remedies(
-            remedies(
-              id,
-              name,
-              summary,
-              image_url
-            )
-          )
-        `)
+        .select("*")
         .eq("id", id)
         .single();
 
@@ -81,6 +72,8 @@ const ExpertProfile = () => {
       return expertData;
     },
   });
+
+  const { data: stats } = useExpertStats(id || "");
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -112,7 +105,20 @@ const ExpertProfile = () => {
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl font-bold mb-4">{expert.full_name}</h1>
               <p className="text-lg text-text-light mb-4">{expert.title}</p>
-              <p className="text-primary font-medium mb-6">{expert.field_of_expertise}</p>
+              <p className="text-primary font-medium mb-2">{expert.field_of_expertise}</p>
+              
+              {/* Stats */}
+              <div className="flex gap-6 justify-center md:justify-start mb-6">
+                <div className="text-center">
+                  <div className="font-semibold text-lg">{stats?.remediesCount || 0}</div>
+                  <div className="text-sm text-muted-foreground">Remedies</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-lg">{stats?.newsCount || 0}</div>
+                  <div className="text-sm text-muted-foreground">News</div>
+                </div>
+              </div>
+              
               <div className="flex gap-4 justify-center md:justify-start">
                 {Object.entries(socialMediaIcons).map(([platform, { Icon, url }]) => (
                   url && (

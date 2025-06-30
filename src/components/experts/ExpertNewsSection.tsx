@@ -34,7 +34,7 @@ export const ExpertNewsSection = ({ expertId }: ExpertNewsSectionProps) => {
   return (
     <section className="bg-background py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-8">Related News Articles</h2>
+        <h2 className="text-2xl font-bold mb-8">Related News ({articles.length})</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((article) => (
             <Card
