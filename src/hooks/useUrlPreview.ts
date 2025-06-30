@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UrlPreviewData {
@@ -10,47 +11,53 @@ interface UrlPreviewData {
 }
 
 export const useUrlPreview = (url: string) => {
-  const [preview, setPreview] = useState<UrlPreviewData | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPreview = async (targetUrl: string) => {
-    if (!targetUrl) return;
+  const { data: preview, isLoading, refetch } = useQuery({
+    queryKey: ['url-preview', url],
+    queryFn: async (): Promise<UrlPreviewData | null> => {
+      if (!url) return null;
 
-    setLoading(true);
-    setError(null);
+      setError(null);
 
-    try {
-      const { data, error } = await supabase.functions.invoke('link-preview', {
-        body: { url: targetUrl }
-      });
+      try {
+        const { data, error } = await supabase.functions.invoke('link-preview', {
+          body: { url }
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setPreview({
-        title: data.title || 'Untitled',
-        description: data.description || '',
-        thumbnailUrl: data.thumbnailUrl || '',
-        price: data.price
-      });
-    } catch (err) {
-      console.error('Error fetching preview:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch preview');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (url) {
-      fetchPreview(url);
-    }
-  }, [url]);
+        return {
+          title: data.title || 'Untitled',
+          description: data.description || '',
+          thumbnailUrl: data.thumbnailUrl || '',
+          price: data.price
+        };
+      } catch (err) {
+        console.error('Error fetching preview:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch preview';
+        setError(errorMessage);
+        return null;
+      }
+    },
+    enabled: Boolean(url),
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    gcTime: 24 * 60 * 60 * 1000, // 24 hours
+    retry: (failureCount, error) => {
+      // Don't retry bot-blocked sites
+      if (error?.message?.includes('bot detection') || 
+          error?.message?.includes('Cloudflare')) {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
+  });
 
   return {
     preview,
-    loading,
+    loading: isLoading,
     error,
-    refetch: () => fetchPreview(url)
+    refetch: () => refetch()
   };
 };

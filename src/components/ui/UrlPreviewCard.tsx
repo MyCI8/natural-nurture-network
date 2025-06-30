@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { useUrlPreview } from '@/hooks/useUrlPreview';
+import { Button } from '@/components/ui/button';
 
 interface UrlPreviewCardProps {
   url: string;
@@ -12,53 +13,13 @@ interface UrlPreviewCardProps {
   showPrice?: boolean;
 }
 
-interface FullPreviewData {
-  title: string;
-  description: string;
-  thumbnailUrl: string;
-  price?: number;
-}
-
 export const UrlPreviewCard: React.FC<UrlPreviewCardProps> = ({ 
   url, 
   className = "",
   showDescription = true,
   showPrice = true
 }) => {
-  const [preview, setPreview] = useState<FullPreviewData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (!url) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchPreview = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('link-preview', {
-          body: { url }
-        });
-
-        if (error) throw error;
-
-        setPreview({
-          title: data.title || 'Untitled',
-          description: data.description || '',
-          thumbnailUrl: data.thumbnailUrl || '',
-          price: data.price
-        });
-      } catch (err) {
-        console.error('Error fetching preview:', err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPreview();
-  }, [url]);
+  const { preview, loading, error, refetch } = useUrlPreview(url);
 
   if (loading) {
     return (
@@ -73,7 +34,45 @@ export const UrlPreviewCard: React.FC<UrlPreviewCardProps> = ({
     );
   }
 
-  if (error || !preview) {
+  if (error) {
+    const isBotBlocked = error.includes('bot detection') || error.includes('Cloudflare');
+    
+    return (
+      <Card className={`${className} border-red-200 dark:border-red-800`}>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 flex-1">
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <div>
+                <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                  {isBotBlocked ? 'Site blocks automated requests' : 'Preview unavailable'}
+                </p>
+                <a 
+                  href={url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  Visit link manually
+                </a>
+              </div>
+            </div>
+            {!isBotBlocked && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => refetch()}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!preview) {
     return (
       <Card className={`${className}`}>
         <CardContent className="p-6">

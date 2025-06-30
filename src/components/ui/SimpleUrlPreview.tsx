@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { useUrlPreview } from '@/hooks/useUrlPreview';
+import { Button } from '@/components/ui/button';
 
 interface SimpleUrlPreviewProps {
   url: string;
@@ -10,63 +11,60 @@ interface SimpleUrlPreviewProps {
   showUrl?: boolean;
 }
 
-interface PreviewData {
-  title: string;
-  thumbnailUrl: string;
-}
-
 export const SimpleUrlPreview: React.FC<SimpleUrlPreviewProps> = ({ 
   url, 
   className = "",
   showUrl = true 
 }) => {
-  const [preview, setPreview] = useState<PreviewData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (!url) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchPreview = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('link-preview', {
-          body: { url }
-        });
-
-        if (error) throw error;
-
-        if (data?.title || data?.thumbnailUrl) {
-          setPreview({
-            title: data.title || 'Untitled',
-            thumbnailUrl: data.thumbnailUrl || ''
-          });
-        } else {
-          setError(true);
-        }
-      } catch (err) {
-        console.error('Error fetching preview:', err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPreview();
-  }, [url]);
+  const { preview, loading, error, refetch } = useUrlPreview(url);
 
   if (loading) {
     return (
-      <div className={`flex items-center gap-2 p-3 border rounded-lg ${className}`}>
-        <Loader2 className="h-4 w-4 animate-spin" />
+      <div className={`flex items-center gap-2 p-3 border rounded-lg bg-muted/30 ${className}`}>
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         <span className="text-sm text-muted-foreground">Loading preview...</span>
       </div>
     );
   }
 
-  if (error || !preview) {
+  if (error) {
+    const isBotBlocked = error.includes('bot detection') || error.includes('Cloudflare');
+    
+    return (
+      <div className={`p-3 border rounded-lg bg-red-50 dark:bg-red-950/20 ${className}`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-red-700 dark:text-red-400 font-medium">
+                {isBotBlocked ? 'Site blocks automated requests' : 'Preview unavailable'}
+              </p>
+              <a 
+                href={url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground hover:text-primary truncate block"
+              >
+                {url}
+              </a>
+            </div>
+          </div>
+          {!isBotBlocked && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetch()}
+              className="flex-shrink-0 h-6 w-6 p-0"
+            >
+              <RefreshCw className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!preview) {
     return (
       <a 
         href={url} 
@@ -74,7 +72,7 @@ export const SimpleUrlPreview: React.FC<SimpleUrlPreviewProps> = ({
         rel="noopener noreferrer"
         className={`flex items-center gap-2 p-3 border rounded-lg hover:bg-accent transition-colors ${className}`}
       >
-        <ExternalLink className="h-4 w-4 text-muted-foreground" />
+        <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         <span className="text-sm truncate">{url}</span>
       </a>
     );

@@ -1,11 +1,17 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Initialize Supabase client for caching
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,16 +30,99 @@ serve(async (req) => {
 
     console.log('Fetching preview for URL:', url);
 
-    // Add user agent to mimic a browser request
+    // Check cache first
+    const { data: cachedData } = await supabase
+      .from('link_previews_cache')
+      .select('*')
+      .eq('url', url)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (cachedData) {
+      console.log('Cache hit for URL:', url);
+      if (cachedData.success) {
+        return new Response(
+          JSON.stringify({
+            title: cachedData.title,
+            description: cachedData.description,
+            thumbnailUrl: cachedData.thumbnail_url,
+            url: cachedData.url,
+            price: cachedData.price
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } else {
+        // Return cached error but with shorter TTL
+        return new Response(
+          JSON.stringify({ error: cachedData.error_message || 'Failed to fetch preview' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        );
+      }
+    }
+
+    console.log('Cache miss, fetching fresh data for:', url);
+
+    // Enhanced user agents for better success rates
+    const userAgents = [
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    ];
+    
+    const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+
     const options = {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml'
+        'User-Agent': randomUserAgent,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
       }
     };
 
-    const response = await fetch(url, options);
-    const html = await response.text();
+    let response;
+    let html;
+    let errorMessage = '';
+
+    try {
+      response = await fetch(url, options);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      html = await response.text();
+      
+      // Check for Cloudflare or other bot protection
+      if (html.includes('Just a moment...') || 
+          html.includes('cloudflare') || 
+          html.includes('Checking your browser') ||
+          html.includes('Please wait while we verify')) {
+        throw new Error('Site is protected by bot detection');
+      }
+      
+    } catch (error) {
+      errorMessage = error.message;
+      console.error('Error fetching URL:', error);
+      
+      // Cache the error with shorter TTL (1 hour)
+      await supabase
+        .from('link_previews_cache')
+        .upsert({
+          url,
+          success: false,
+          error_message: errorMessage,
+          expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour
+        });
+
+      return new Response(
+        JSON.stringify({ error: errorMessage }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
@@ -53,11 +142,7 @@ serve(async (req) => {
       { property: 'og:image:url' },
       { property: 'twitter:image:src' },
       { name: 'thumbnail' },
-      { itemprop: 'image' },
-      // Additional selectors for specific sites
-      { property: 'og:image:secure' },
-      { name: 'image' },
-      { property: 'image' }
+      { itemprop: 'image' }
     ];
 
     // Description selectors
@@ -102,7 +187,6 @@ serve(async (req) => {
     }
 
     // Try to get the best image
-    // First check meta tags
     for (const metaConfig of possibleMetaSelectors) {
       const [property, value] = Object.entries(metaConfig)[0];
       const tag = Array.from(metaTags || []).find(meta => 
@@ -133,7 +217,6 @@ serve(async (req) => {
               thumbnailUrl = image;
               break;
             } else if (image && Array.isArray(image) && image.length > 0) {
-              // Some sites provide image as an array
               const firstImage = typeof image[0] === 'string' ? image[0] : image[0]?.url;
               if (firstImage && isValidImageUrl(firstImage)) {
                 thumbnailUrl = firstImage;
@@ -147,63 +230,6 @@ serve(async (req) => {
       }
     }
 
-    // Amazon-specific image extraction if needed
-    if (!thumbnailUrl && (url.includes('amazon.com') || url.includes('amzn.to') || url.includes('a.co'))) {
-      // Try to find the main product image
-      const mainImage = doc?.querySelector('#landingImage, #imgBlkFront, #ebooksImgBlkFront');
-      if (mainImage) {
-        const src = mainImage.getAttribute('src') || mainImage.getAttribute('data-old-hires') || mainImage.getAttribute('data-a-dynamic-image');
-        if (src && isValidImageUrl(src)) {
-          thumbnailUrl = src;
-        } else if (src && src.startsWith('{')) {
-          // Handle the data-a-dynamic-image JSON string
-          try {
-            const imageData = JSON.parse(src);
-            const imageUrl = Object.keys(imageData)[0]; // Get the first URL
-            if (imageUrl && isValidImageUrl(imageUrl)) {
-              thumbnailUrl = imageUrl;
-            }
-          } catch (e) {
-            console.error('Error parsing Amazon image JSON:', e);
-          }
-        }
-      }
-    }
-
-    // If still no image found, look for the largest image that's likely to be a preview
-    if (!thumbnailUrl) {
-      const images = Array.from(doc?.querySelectorAll('img') || [])
-        .filter(img => {
-          const src = img.getAttribute('src');
-          return src && isValidImageUrl(src) && !src.includes('logo') && !src.includes('icon');
-        })
-        .map(img => {
-          const src = img.getAttribute('src');
-          // Convert relative URLs to absolute
-          const absoluteSrc = src ? new URL(src, url).href : '';
-          const width = parseInt(img.getAttribute('width') || '0');
-          const height = parseInt(img.getAttribute('height') || '0');
-          const alt = img.getAttribute('alt') || '';
-          
-          // Calculate score based on size and position
-          let score = 0;
-          if (width > 100 && height > 100) {
-            score += (width * height) / 5000; // Prefer larger images
-          }
-          // Boost score for images that might be product-related
-          if (alt && !alt.toLowerCase().includes('logo') && !alt.toLowerCase().includes('icon')) {
-            score += 20;
-          }
-          
-          return { src: absoluteSrc, score, width, height };
-        })
-        .sort((a, b) => b.score - a.score); // Sort by score descending
-      
-      if (images.length > 0) {
-        thumbnailUrl = images[0].src;
-      }
-    }
-
     // Make sure the URL is absolute
     if (thumbnailUrl) {
       try {
@@ -213,34 +239,21 @@ serve(async (req) => {
       }
     }
 
-    // Extract product price if available (for Amazon specifically)
-    if (url.includes('amazon.com') || url.includes('amzn.to/') || url.includes('a.co/')) {
-      // Try various price selectors specific to Amazon
-      const priceSelectors = [
-        '#priceblock_ourprice',
-        '#priceblock_dealprice',
-        '.a-price .a-offscreen',
-        '#corePrice_desktop .a-price .a-offscreen',
-        '.a-price .a-price-whole',
-        '.a-price',
-        '#tp_price_block_total_price_ww .a-offscreen'
-      ];
-      
-      for (const selector of priceSelectors) {
-        const priceElement = doc?.querySelector(selector);
-        if (priceElement) {
-          const priceText = priceElement.textContent || priceElement.getAttribute('content') || '';
-          // Extract digits and decimal point only
-          const priceMatch = priceText.match(/(\d+([.,]\d+)?)/);
-          if (priceMatch) {
-            price = parseFloat(priceMatch[0].replace(',', '.'));
-            break;
-          }
-        }
-      }
-    }
-
     console.log('Preview results:', { title, description, thumbnailUrl, url, price });
+
+    // Cache successful result for 24 hours
+    await supabase
+      .from('link_previews_cache')
+      .upsert({
+        url,
+        title,
+        description,
+        thumbnail_url: thumbnailUrl,
+        price,
+        success: true,
+        error_message: null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
+      });
 
     return new Response(
       JSON.stringify({
@@ -254,6 +267,22 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error generating preview:', error);
+    
+    // Cache generic error
+    if (req.json) {
+      const { url } = await req.json();
+      if (url) {
+        await supabase
+          .from('link_previews_cache')
+          .upsert({
+            url,
+            success: false,
+            error_message: error.message,
+            expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hour
+          });
+      }
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -261,21 +290,16 @@ serve(async (req) => {
   }
 });
 
-// Helper function to validate image URLs
 function isValidImageUrl(url: string): boolean {
   if (!url) return false;
   
-  // Check if it's a data URL for an image
   if (url.startsWith('data:image/')) return true;
   
-  // Check if it has a valid image extension
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
   const lowercaseUrl = url.toLowerCase();
   
-  // First check for common image extensions
   const hasImageExtension = imageExtensions.some(ext => lowercaseUrl.endsWith(ext));
   
-  // Then check for additional image-related patterns in the URL
   const hasImagePattern = 
     lowercaseUrl.includes('/image') ||
     lowercaseUrl.includes('/photo') ||
