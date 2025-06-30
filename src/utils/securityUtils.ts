@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { UserRole } from "@/types/user";
 
 /**
  * Check if the current user has admin privileges
@@ -21,7 +22,7 @@ export const checkIsAdmin = async (): Promise<boolean> => {
 /**
  * Check if user has specific role
  */
-export const checkUserRole = async (userId: string, roles: string[]): Promise<boolean> => {
+export const checkUserRole = async (userId: string, roles: UserRole[]): Promise<boolean> => {
   try {
     const { data, error } = await supabase.rpc('check_user_role', {
       _checking_user_id: userId,
