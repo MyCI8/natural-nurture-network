@@ -39,15 +39,9 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
           <h2 className="text-xl font-semibold mb-6 text-primary text-center md:text-left">
             Natural Remedies
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-9">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="space-y-3">
-                <div className="aspect-[16/9] bg-muted animate-pulse rounded-2xl" />
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted animate-pulse rounded" />
-                  <div className="h-3 bg-muted animate-pulse rounded w-3/4" />
-                </div>
-              </div>
+              <div key={i} className="rounded-2xl bg-muted aspect-[16/9] w-full h-[170px] animate-pulse flex items-center justify-center" />
             ))}
           </div>
         </div>
@@ -74,7 +68,7 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
         <h2 className="text-xl font-semibold mb-6 text-primary text-center md:text-left">
           Natural Remedies
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-9 w-full">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
           {remedies?.map((remedy) => (
             <div 
               key={remedy.id}
@@ -82,12 +76,12 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
               onClick={() => window.location.assign(`/remedies/${remedy.id}`)}
             >
               <div className="space-y-3">
-                <div className="aspect-[16/9] overflow-hidden rounded-2xl bg-muted">
+                <div className="rounded-2xl bg-muted aspect-[16/9] w-full h-[170px] overflow-hidden">
                   <OptimizedImage
                     src={remedy.image_url || "/placeholder.svg"}
                     alt={remedy.name}
                     width={400}
-                    height={225}
+                    height={170}
                     className="w-full h-full group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
