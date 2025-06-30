@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import RemedyImageCard from './remedies/RemedyImageCard';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 
 interface RemediesSectionProps {
@@ -30,7 +29,7 @@ const RemediesSection: React.FC<RemediesSectionProps> = ({ inNewsSection = false
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   if (isLoading) {

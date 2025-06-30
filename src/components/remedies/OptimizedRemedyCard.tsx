@@ -64,9 +64,10 @@ const OptimizedRemedyCard: React.FC<OptimizedRemedyCardProps> = memo(({
             {rating && (
               <div onClick={(e) => e.stopPropagation()}>
                 <RemedyRatingDisplay
-                  rating={rating}
+                  average={rating.average}
+                  count={rating.count}
                   userRating={userRating}
-                  onRate={() => onOpenRatingModal(remedy)}
+                  onClick={() => onOpenRatingModal(remedy)}
                 />
               </div>
             )}

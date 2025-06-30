@@ -1,4 +1,5 @@
 
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,7 +42,7 @@ export const useOptimizedRemedies = (searchTerm: string = '') => {
       return data || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Fetch user interactions in a single optimized query
@@ -70,7 +71,7 @@ export const useOptimizedRemedies = (searchTerm: string = '') => {
     },
     enabled: !!currentUser?.id,
     staleTime: 2 * 60 * 1000, // 2 minutes
-    cacheTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Fetch ratings only for visible remedies
@@ -90,7 +91,7 @@ export const useOptimizedRemedies = (searchTerm: string = '') => {
     },
     enabled: visibleRemedyIds.length > 0,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   // Process ratings data
