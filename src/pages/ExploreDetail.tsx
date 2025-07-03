@@ -236,10 +236,7 @@ const ExploreDetail = () => {
         </div>
         
         <main className="mx-auto h-full max-w-[600px] flex items-center justify-center">
-          <div 
-            className="w-full relative"
-            style={{ aspectRatio: '4/5', position: 'relative' }}
-          >
+          <div className="w-full h-full relative">
             <VideoPlayer 
               video={video} 
               autoPlay={true} 
