@@ -65,10 +65,9 @@ const ExploreDetail = () => {
   useLayoutEffect(() => {
     const calculateSize = () => {
       if (containerRef.current) {
-        // We want the video to fill as much space as possible, with a tiny margin.
-        const safetyFactor = 0.98;
-        const containerWidth = containerRef.current.clientWidth * safetyFactor;
-        const containerHeight = containerRef.current.clientHeight * safetyFactor;
+        // Use full available space - removed safety factor
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
 
         // Use naturalAspectRatio if available, otherwise fallback to 16:9.
         const ar = naturalAspectRatio || 16 / 9;
@@ -77,12 +76,13 @@ const ExploreDetail = () => {
         let width: number;
         let height: number;
 
+        // Always maximize the media to fill available space
         if (ar > containerAspectRatio) {
-          // Fit to width if video is wider than the container's aspect ratio
+          // Media is wider - fit to width and let height adjust
           width = containerWidth;
           height = width / ar;
         } else {
-          // Fit to height if video is taller or same aspect ratio
+          // Media is taller - fit to height and let width adjust
           height = containerHeight;
           width = height * ar;
         }
@@ -95,7 +95,7 @@ const ExploreDetail = () => {
 
     window.addEventListener('resize', calculateSize);
     return () => window.removeEventListener('resize', calculateSize);
-  }, [naturalAspectRatio]); // Re-calculates when the natural aspect ratio is found.
+  }, [naturalAspectRatio]);
 
   // Get current user for permission checks
   const { data: currentUser } = useQuery({
@@ -255,7 +255,7 @@ const ExploreDetail = () => {
       <Swipeable 
         onSwipe={handleSwipe} 
         threshold={100} 
-        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
+        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative py-8"
       >
         <div className="absolute top-4 right-4 z-50 flex gap-2">
           <Button
@@ -268,10 +268,10 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative">
+        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative px-4">
           <div 
-            className="bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300"
-            style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : {}}
+            className="bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300 w-full max-w-full"
+            style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : { width: '100%', height: '100%' }}
           >
             <VideoPlayer 
               video={video} 
