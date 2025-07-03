@@ -65,26 +65,43 @@ const ExploreDetail = () => {
   useLayoutEffect(() => {
     const calculateSize = () => {
       if (containerRef.current) {
-        // Use full available space - removed safety factor
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
 
-        // Use naturalAspectRatio if available, otherwise fallback to 16:9.
-        const ar = naturalAspectRatio || 16 / 9;
-        const containerAspectRatio = containerWidth / containerHeight;
+        // Maximum height constraint - industry standard (~75% of viewport for desktop, ~70% for mobile)
+        const maxViewportHeight = window.innerHeight * (isMobile ? 0.70 : 0.75);
+        const maxHeight = Math.min(containerHeight, maxViewportHeight);
+        
+        // Maximum width constraint - leave some breathing room
+        const maxWidth = containerWidth * 0.95;
 
+        // Use naturalAspectRatio if available, otherwise fallback to 16:9
+        const ar = naturalAspectRatio || 16 / 9;
+        
         let width: number;
         let height: number;
 
-        // Always maximize the media to fill available space
-        if (ar > containerAspectRatio) {
-          // Media is wider - fit to width and let height adjust
-          width = containerWidth;
+        // Calculate dimensions while respecting max constraints
+        if (ar > (maxWidth / maxHeight)) {
+          // Media is wider - fit to max width and let height adjust
+          width = Math.min(maxWidth, containerWidth);
           height = width / ar;
+          
+          // If height exceeds max, constrain by height instead
+          if (height > maxHeight) {
+            height = maxHeight;
+            width = height * ar;
+          }
         } else {
-          // Media is taller - fit to height and let width adjust
-          height = containerHeight;
+          // Media is taller - fit to max height and let width adjust
+          height = Math.min(maxHeight, containerHeight);
           width = height * ar;
+          
+          // If width exceeds max, constrain by width instead
+          if (width > maxWidth) {
+            width = maxWidth;
+            height = width / ar;
+          }
         }
         
         setVideoSize({ width: Math.round(width), height: Math.round(height) });
@@ -95,7 +112,7 @@ const ExploreDetail = () => {
 
     window.addEventListener('resize', calculateSize);
     return () => window.removeEventListener('resize', calculateSize);
-  }, [naturalAspectRatio]);
+  }, [naturalAspectRatio, isMobile]);
 
   // Get current user for permission checks
   const { data: currentUser } = useQuery({
@@ -255,7 +272,7 @@ const ExploreDetail = () => {
       <Swipeable 
         onSwipe={handleSwipe} 
         threshold={100} 
-        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
+        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative py-12 md:py-16"
       >
         <div className="absolute top-4 right-4 z-50 flex gap-2">
           <Button
