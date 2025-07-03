@@ -255,7 +255,7 @@ const ExploreDetail = () => {
       <Swipeable 
         onSwipe={handleSwipe} 
         threshold={100} 
-        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative py-8"
+        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
       >
         <div className="absolute top-4 right-4 z-50 flex gap-2">
           <Button
@@ -268,7 +268,7 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative px-4">
+        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative">
           <div 
             className="bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300 w-full max-w-full"
             style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : { width: '100%', height: '100%' }}
