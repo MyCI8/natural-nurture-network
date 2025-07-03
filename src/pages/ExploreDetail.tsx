@@ -236,13 +236,16 @@ const ExploreDetail = () => {
         </div>
         
         <main className="mx-auto h-full max-w-[600px] flex items-center justify-center">
-          <div className="w-full relative">
+          <div 
+            className="w-full relative"
+            style={{ aspectRatio: '4/5', position: 'relative' }}
+          >
             <VideoPlayer 
               video={video} 
               autoPlay={true} 
               showControls={false} 
               isFullscreen={false}
-              className="w-full" 
+              className="w-full h-full" 
               onClick={handleClose}
               onNaturalAspectRatioChange={handleNaturalAspectRatioChange}
               onTimeUpdate={handleTimeUpdate}
