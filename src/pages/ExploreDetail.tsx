@@ -62,57 +62,7 @@ const ExploreDetail = () => {
     }
   }, [naturalAspectRatio]);
 
-  useLayoutEffect(() => {
-    const calculateSize = () => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.clientWidth;
-        const containerHeight = containerRef.current.clientHeight;
-
-        // Maximum height constraint - industry standard (~75% of viewport for desktop, ~70% for mobile)
-        const maxViewportHeight = window.innerHeight * (isMobile ? 0.70 : 0.75);
-        const maxHeight = Math.min(containerHeight, maxViewportHeight);
-        
-        // Maximum width constraint - leave some breathing room
-        const maxWidth = containerWidth * 0.95;
-
-        // Use naturalAspectRatio if available, otherwise fallback to 16:9
-        const ar = naturalAspectRatio || 16 / 9;
-        
-        let width: number;
-        let height: number;
-
-        // Calculate dimensions while respecting max constraints
-        if (ar > (maxWidth / maxHeight)) {
-          // Media is wider - fit to max width and let height adjust
-          width = Math.min(maxWidth, containerWidth);
-          height = width / ar;
-          
-          // If height exceeds max, constrain by height instead
-          if (height > maxHeight) {
-            height = maxHeight;
-            width = height * ar;
-          }
-        } else {
-          // Media is taller - fit to max height and let width adjust
-          height = Math.min(maxHeight, containerHeight);
-          width = height * ar;
-          
-          // If width exceeds max, constrain by width instead
-          if (width > maxWidth) {
-            width = maxWidth;
-            height = width / ar;
-          }
-        }
-        
-        setVideoSize({ width: Math.round(width), height: Math.round(height) });
-      }
-    };
-    
-    calculateSize();
-
-    window.addEventListener('resize', calculateSize);
-    return () => window.removeEventListener('resize', calculateSize);
-  }, [naturalAspectRatio, isMobile]);
+  // Remove the complex sizing logic and use fixed container approach like explore page
 
   // Get current user for permission checks
   const { data: currentUser } = useQuery({
@@ -285,19 +235,14 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative">
-          <div 
-            className="bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300 w-full max-w-full"
-            style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : { width: '100%', height: '100%' }}
-          >
+        <main className="mx-auto h-full max-w-[600px] flex items-center justify-center">
+          <div className="w-full relative">
             <VideoPlayer 
               video={video} 
               autoPlay={true} 
               showControls={false} 
               isFullscreen={false}
-              className="w-full h-full overflow-hidden" 
-              objectFit="contain"
-              useAspectRatio={false}
+              className="w-full" 
               onClick={handleClose}
               onNaturalAspectRatioChange={handleNaturalAspectRatioChange}
               onTimeUpdate={handleTimeUpdate}
@@ -308,7 +253,7 @@ const ExploreDetail = () => {
               <Progress value={progress} className="h-1 rounded-none bg-white/20" />
             </div>
           </div>
-        </div>
+        </main>
       </Swipeable>
 
       {/* Delete Confirmation Dialog */}
