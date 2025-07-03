@@ -62,7 +62,40 @@ const ExploreDetail = () => {
     }
   }, [naturalAspectRatio]);
 
-  // Remove the complex sizing logic and use fixed container approach like explore page
+  useLayoutEffect(() => {
+    const calculateSize = () => {
+      if (containerRef.current) {
+        // We want the video to fill as much space as possible, with a tiny margin.
+        const safetyFactor = 0.98;
+        const containerWidth = containerRef.current.clientWidth * safetyFactor;
+        const containerHeight = containerRef.current.clientHeight * safetyFactor;
+
+        // Use naturalAspectRatio if available, otherwise fallback to 16:9.
+        const ar = naturalAspectRatio || 16 / 9;
+        const containerAspectRatio = containerWidth / containerHeight;
+
+        let width: number;
+        let height: number;
+
+        if (ar > containerAspectRatio) {
+          // Fit to width if video is wider than the container's aspect ratio
+          width = containerWidth;
+          height = width / ar;
+        } else {
+          // Fit to height if video is taller or same aspect ratio
+          height = containerHeight;
+          width = height * ar;
+        }
+        
+        setVideoSize({ width: Math.round(width), height: Math.round(height) });
+      }
+    };
+    
+    calculateSize();
+
+    window.addEventListener('resize', calculateSize);
+    return () => window.removeEventListener('resize', calculateSize);
+  }, [naturalAspectRatio]); // Re-calculates when the natural aspect ratio is found.
 
   // Get current user for permission checks
   const { data: currentUser } = useQuery({
@@ -222,7 +255,7 @@ const ExploreDetail = () => {
       <Swipeable 
         onSwipe={handleSwipe} 
         threshold={100} 
-        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative py-12 md:py-16"
+        className="min-h-screen bg-white dark:bg-dm-background flex flex-col touch-manipulation relative"
       >
         <div className="absolute top-4 right-4 z-50 flex gap-2">
           <Button
@@ -235,14 +268,19 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <main className="mx-auto h-full max-w-[600px] flex items-center justify-center">
-          <div className="w-full h-full relative">
+        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative">
+          <div 
+            className="bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300"
+            style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : {}}
+          >
             <VideoPlayer 
               video={video} 
               autoPlay={true} 
               showControls={false} 
               isFullscreen={false}
-              className="w-full h-full" 
+              className="w-full h-full overflow-hidden" 
+              objectFit="contain"
+              useAspectRatio={false}
               onClick={handleClose}
               onNaturalAspectRatioChange={handleNaturalAspectRatioChange}
               onTimeUpdate={handleTimeUpdate}
@@ -253,7 +291,7 @@ const ExploreDetail = () => {
               <Progress value={progress} className="h-1 rounded-none bg-white/20" />
             </div>
           </div>
-        </main>
+        </div>
       </Swipeable>
 
       {/* Delete Confirmation Dialog */}
