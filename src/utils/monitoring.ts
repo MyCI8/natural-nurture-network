@@ -3,7 +3,7 @@
  */
 
 import * as Sentry from '@sentry/react';
-import { onCLS, onFID, onFCP, onLCP, onTTFB, type Metric } from 'web-vitals';
+import { onCLS, onFCP, onLCP, onTTFB, type Metric } from 'web-vitals';
 
 // Initialize Sentry for error tracking
 export const initializeMonitoring = (): void => {
@@ -36,7 +36,7 @@ export const trackWebVitals = (): void => {
         category: 'web-vitals',
         message: `${metric.name}: ${metric.value}`,
         level: 'info',
-        data: metric as Record<string, unknown>,
+        data: metric as unknown as Record<string, unknown>,
       });
     }
 
@@ -47,7 +47,6 @@ export const trackWebVitals = (): void => {
   };
 
   onCLS(handleMetric);
-  onFID(handleMetric);
   onFCP(handleMetric);
   onLCP(handleMetric);
   onTTFB(handleMetric);
@@ -69,7 +68,7 @@ export const trackUserAction = (action: string, data?: Record<string, unknown>):
 export const captureException = (error: Error, context?: Record<string, unknown>): void => {
   if (import.meta.env.PROD) {
     Sentry.captureException(error, {
-      tags: context,
+      extra: context || {},
     });
   } else {
     console.error('Captured Exception:', error, context);

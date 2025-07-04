@@ -49,7 +49,7 @@ export function useInstagramSwipe(
     velocityHistory: []
   });
 
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number>(0);
   const [isActive, setIsActive] = useState(false);
 
   // Calculate instantaneous velocity using recent touch points

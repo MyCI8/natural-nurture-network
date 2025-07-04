@@ -44,7 +44,7 @@ export function useOptimizedSwipe(
     velocity: 0
   });
 
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number>(0);
   const velocityTracker = useRef<Array<{ time: number; y: number }>>([]);
 
   const calculateVelocity = useCallback(() => {

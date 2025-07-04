@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@/test/utils/test-utils';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import React from 'react';
@@ -13,7 +13,7 @@ const createWrapper = () => {
     },
   });
   
-  const Wrapper = ({ children }: { children: React.ReactNode }): JSX.Element => (
+  const Wrapper = ({ children }: { children: React.ReactNode }): React.JSX.Element => (
     React.createElement(QueryClientProvider, { client: queryClient }, children)
   );
   

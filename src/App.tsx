@@ -1,4 +1,5 @@
 
+import React, { useEffect } from 'react';
 import { Toaster } from "sonner";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Routes from "./routes";
@@ -6,7 +7,6 @@ import ScrollToTop from "./components/layout/ScrollToTop";
 import ErrorBoundary from './components/ErrorBoundary';
 import { log } from './utils/logger';
 import { initializeMonitoring, trackWebVitals } from './utils/monitoring';
-import { useEffect } from 'react';
 
 // Configure React Query for production
 const queryClient = new QueryClient({
@@ -46,7 +46,7 @@ window.addEventListener('unhandledrejection', (event) => {
   });
 });
 
-function App(): JSX.Element {
+function App(): React.JSX.Element {
   log.info('App component mounted');
 
   useEffect(() => {
