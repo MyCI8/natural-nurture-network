@@ -178,8 +178,10 @@ const Auth = () => {
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/`,
+          skipBrowserRedirect: true,
         },
       });
+      
       if (error) throw error;
       
       // Invalidate auth queries after successful Google sign in
