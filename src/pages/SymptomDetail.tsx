@@ -13,6 +13,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
+import { SafeHtml } from '@/utils/sanitizer';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Json } from "@/integrations/supabase/types";
 import { Swipeable } from "@/components/ui/swipeable";

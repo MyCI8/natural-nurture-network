@@ -1,3 +1,6 @@
+import React from 'react';
+import { SafeHtml } from '@/utils/sanitizer';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface IngredientDescriptionProps {
   fullDescription: string | null;
@@ -13,7 +16,7 @@ export const IngredientDescription = ({
   return (
     <div className="space-y-6">
       {imageUrl && (
-        <div className="mb-6">
+        <div className="w-full">
           <img
             src={imageUrl}
             alt={name}
@@ -33,3 +36,5 @@ export const IngredientDescription = ({
     </div>
   );
 };
+
+export default IngredientDescription;

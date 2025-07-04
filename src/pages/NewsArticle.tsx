@@ -12,6 +12,8 @@ import { useEffect } from "react";
 import type { Database } from "@/integrations/supabase/types";
 import "../styles/news-article.css";
 import { useLayout } from "@/contexts/LayoutContext";
+import { SafeHtml } from '@/utils/sanitizer';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 type Expert = Database["public"]["Tables"]["experts"]["Row"];
 type NewsArticleLink = Database["public"]["Tables"]["news_article_links"]["Row"];
