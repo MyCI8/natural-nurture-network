@@ -1341,6 +1341,10 @@ export type Database = {
         Args: { video_id: string }
         Returns: undefined
       }
+      is_admin_optimized: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_admin_action: {
         Args: { action: string; entity_type: string; entity_id: string }
         Returns: string
