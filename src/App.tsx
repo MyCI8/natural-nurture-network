@@ -5,6 +5,8 @@ import Routes from "./routes";
 import ScrollToTop from "./components/layout/ScrollToTop";
 import ErrorBoundary from './components/ErrorBoundary';
 import { log } from './utils/logger';
+import { initializeMonitoring, trackWebVitals } from './utils/monitoring';
+import { useEffect } from 'react';
 
 // Configure React Query for production
 const queryClient = new QueryClient({
@@ -44,8 +46,14 @@ window.addEventListener('unhandledrejection', (event) => {
   });
 });
 
-function App() {
+function App(): JSX.Element {
   log.info('App component mounted');
+
+  useEffect(() => {
+    // Initialize monitoring and performance tracking
+    initializeMonitoring();
+    trackWebVitals();
+  }, []);
 
   return (
     <ErrorBoundary level="page" showRetry={true}>
