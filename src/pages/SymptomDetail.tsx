@@ -333,9 +333,9 @@ const SymptomDetail = () => {
             <div className="overflow-hidden">
               <div className="p-4">
                 <h2 className="text-xl font-semibold mb-3">About This Symptom</h2>
-                <div 
+                <SafeHtml 
+                  html={symptomDetails.description}
                   className="prose max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: symptomDetails.description }}
                 />
               </div>
             </div>

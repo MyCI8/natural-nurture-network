@@ -165,10 +165,12 @@ const NewsArticle = () => {
             </figure>
           )}
 
-          <div 
-            className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-6 sm:mb-10 text-left text-[#333333] dark:text-dm-text"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
+          <ErrorBoundary level="component">
+            <SafeHtml 
+              html={article.content}
+              className="prose prose-sm sm:prose-base md:prose-lg max-w-none mb-6 sm:mb-10 text-left text-[#333333] dark:text-dm-text"
+            />
+          </ErrorBoundary>
 
           {article.experts?.length > 0 && (
             <RelatedNewsExperts experts={article.experts} />

@@ -23,10 +23,12 @@ export const IngredientDescription = ({
       )}
 
       {fullDescription && (
-        <div className="prose max-w-none">
-          <h2 className="text-xl font-semibold mb-2">Description</h2>
-          <div dangerouslySetInnerHTML={{ __html: fullDescription }} />
-        </div>
+        <ErrorBoundary level="component">
+          <div className="prose max-w-none">
+            <h2 className="text-xl font-semibold mb-2">Description</h2>
+            <SafeHtml html={fullDescription} />
+          </div>
+        </ErrorBoundary>
       )}
     </div>
   );

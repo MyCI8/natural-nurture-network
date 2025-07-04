@@ -62,12 +62,9 @@ const Ingredients = () => {
                 <CardTitle>{ingredient.name}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div 
-                  className="text-muted-foreground line-clamp-3"
-                  dangerouslySetInnerHTML={{ 
-                    __html: ingredient.full_description || ingredient.brief_description || ingredient.summary || "" 
-                  }}
-                />
+                <div className="text-muted-foreground line-clamp-3">
+                  <SafeContent content={ingredient.full_description || ingredient.brief_description || ingredient.summary || ""} />
+                </div>
               </CardContent>
             </Card>
           ))}
