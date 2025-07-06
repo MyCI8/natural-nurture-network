@@ -1,6 +1,4 @@
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -46,7 +44,6 @@ export const VideoLinkInput = ({
   }, [link.url]);
 
   // Helper function to extract YouTube video ID
-  const getYoutubeVideoId = (url: string): string | null => {
     if (!url) {return null;}
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);

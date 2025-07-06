@@ -1,27 +1,19 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, PlayCircle, Video, Clock, ArrowRight, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { SafeHtml } from '@/utils/sanitizer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Json } from "@/integrations/supabase/types";
 import { Swipeable } from "@/components/ui/swipeable";
 import { ZoomableImage } from "@/components/ui/zoomable-image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { DebugData } from "@/components/ui/debug-data";
-
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
 interface VideoLink {
@@ -77,9 +69,7 @@ const ensureArray = <T extends unknown>(data: any): T[] => {
 const SymptomDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const { setShowRightSection } = useLayout();
-  const { toast } = useToast();
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   console.log("Symptom ID from params:", id);

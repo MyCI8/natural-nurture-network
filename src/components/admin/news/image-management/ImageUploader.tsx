@@ -1,11 +1,7 @@
 
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
 interface ImageUploaderProps {
   imageUrl: string;
   setImageUrl: (url: string) => void;
@@ -49,7 +45,6 @@ export const ImageUploader = ({
         return;
       }
 
-      const { data: { publicUrl } } = supabase.storage
         .from('news-images-draft')
         .getPublicUrl(fileName);
 

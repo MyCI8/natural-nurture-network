@@ -1,9 +1,7 @@
 
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Star, Heart, Leaf } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -39,7 +37,6 @@ export const UserRemedies = ({ userId }: UserRemediesProps) => {
       const remedyIds = expertRemedies.map(er => er.remedy_id);
 
       // Then get the actual remedy details
-      const { data: remedies, error: remediesError } = await supabase
         .from('remedies')
         .select('id, name, summary, image_url, status, created_at')
         .in('id', remedyIds)

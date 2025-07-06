@@ -1,9 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
 import { UseMutationResult } from "@tanstack/react-query";
 import {
   AlertDialog,
@@ -39,7 +37,6 @@ export const HealthConcernsList = ({
   error,
   deleteHealthConcernMutation
 }: HealthConcernsListProps) => {
-  const navigate = useNavigate();
 
   const handleEdit = (concern: HealthConcern) => {
     // Show alert for now since we're using static data

@@ -99,7 +99,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const activeProductLinks = productLinks;
 
   // Handle touch interactions
-  const handleVideoTouch = () => {
     if (onClick) {
       onClick();
     }

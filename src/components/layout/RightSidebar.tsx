@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommentWithProfile } from '@/types';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-
 const RightSidebar = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -30,7 +28,6 @@ const RightSidebar = () => {
             };
           }
           
-          const { data: profileData } = await supabase
             .from('profiles')
             .select('id, full_name')
             .eq('id', comment.user_id)

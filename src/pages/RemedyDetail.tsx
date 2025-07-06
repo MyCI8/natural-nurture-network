@@ -2,12 +2,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, Users, Star, Share2, Heart, Bookmark, Eye, Calendar, Link, Leaf, Shield, Video, ChefHat, Pill, AlertTriangle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getSafeImageUrl } from "@/utils/imageValidation";
 import { parseRemedyContent, formatContentWithLists } from "@/utils/remedyContentParser";
@@ -17,7 +13,6 @@ import { RelatedExperts } from "@/components/remedies/RelatedExperts";
 const RemedyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   const { data: remedy, isLoading } = useQuery({
     queryKey: ["remedy", id],

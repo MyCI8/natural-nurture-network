@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { Edit, Grid, Bookmark, Heart } from 'lucide-react';
@@ -23,7 +21,6 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = React.useState('posts');
-  const isMobile = useIsMobile();
   const [isValidAvatar, setIsValidAvatar] = useState<boolean>(false);
 
   const { data: currentUser } = useQuery({

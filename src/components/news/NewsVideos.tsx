@@ -1,12 +1,9 @@
 
-import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { ChevronLeft, ChevronRight, X, Video as VideoIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Video } from '@/types/video';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Swipeable } from '@/components/ui/swipeable';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -24,7 +21,6 @@ interface NewsVideosProps {
 export const NewsVideos = ({ videoLinks, videoDescription, isDesktop = false }: NewsVideosProps) => {
   const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const isMobile = useIsMobile();
 
   // Filter out invalid video links
   const validVideoLinks = videoLinks.filter(link => 

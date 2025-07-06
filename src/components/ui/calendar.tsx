@@ -30,7 +30,6 @@ function Calendar({
   const [view, setView] = React.useState<"days" | "months" | "years">("days");
   
   // Handle touch swipe gestures for month navigation
-  const { handlers: swipeHandlers } = useTouchGestures({
     onSwipeLeft: () => {
       if (view === "days") {
         const nextMonth = new Date(currentMonth);

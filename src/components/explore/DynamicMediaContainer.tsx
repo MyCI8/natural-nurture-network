@@ -55,7 +55,6 @@ export const DynamicMediaContainer: React.FC<DynamicMediaContainerProps> = ({
       const maxWidth = 400; // Max container width
       const maxHeight = 600; // Max container height for images
       
-      const optimalDimensions = calculateContainerDimensions(
         dimensions.width,
         dimensions.height,
         maxWidth,

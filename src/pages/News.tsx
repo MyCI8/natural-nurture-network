@@ -1,21 +1,14 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLayout } from "@/contexts/LayoutContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect } from "react";
 import LatestVideos from "@/components/news/LatestVideos";
 
 const News = () => {
-  const navigate = useNavigate();
   const { setShowRightSection } = useLayout();
   const isMobile = useIsMobile();
   

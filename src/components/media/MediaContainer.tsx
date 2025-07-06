@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MediaInfo, getMediaInfo, calculateContainerDimensions, MediaType } from '@/utils/mediaUtils';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { cn } from '@/lib/utils';
 
 interface MediaContainerProps {
@@ -180,7 +179,6 @@ export const MediaContainer: React.FC<MediaContainerProps> = ({
 };
 
 // Helper function to extract YouTube video ID
-const extractYouTubeId = (url: string): string | null => {
   try {
     if (url.includes('youtube.com/watch')) {
       const urlParams = new URLSearchParams(new URL(url).search);

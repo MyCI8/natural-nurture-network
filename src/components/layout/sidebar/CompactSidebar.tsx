@@ -1,7 +1,5 @@
 
-import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Leaf, Shield, Upload } from "lucide-react";
 import NavigationItems from "./NavigationItems";
 import { UserProfileButton } from "./UserProfileButton";
@@ -22,7 +20,6 @@ export const CompactSidebar = ({
   onPostClick
 }: CompactSidebarProps) => {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
 
   return (
     <nav 

@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Outlet, useLocation } from "react-router-dom";
 import StatsGrid from "@/components/admin/dashboard/StatsGrid";
 import RecentNews from "@/components/admin/dashboard/RecentNews";
@@ -77,7 +76,6 @@ const Admin = () => {
 
       if (comments && comments.length > 0) {
         const userIds = comments.map(comment => comment.user_id).filter(Boolean);
-        const { data: profiles } = await supabase
           .from("profiles")
           .select("id, full_name")
           .in("id", userIds);

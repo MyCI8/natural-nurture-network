@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, X, Send } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-
 interface Comment {
   id: string;
   content: string;
@@ -226,7 +222,6 @@ const Comments: React.FC<CommentsProps> = ({
     }
   });
 
-  const getLikesCount = async (commentId: string): Promise<number> => {
     const {
       count,
       error

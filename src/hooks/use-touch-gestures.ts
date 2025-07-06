@@ -192,7 +192,6 @@ export function useTouchGestures({
   }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onTap, onDoubleTap, threshold, preventScroll]);
 
   // Function to calculate distance between two touch points
-  const getDistance = (touch1: TouchPoint, touch2: TouchPoint): number => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);

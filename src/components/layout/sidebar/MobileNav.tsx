@@ -1,12 +1,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Upload, Home, Video, Pill, Stethoscope, TestTube, Activity, Newspaper } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-
 interface MobileNavProps {
   showMobileNav: boolean;
   onPostClick: () => void;
@@ -37,7 +34,6 @@ export const MobileNav = ({ showMobileNav }: MobileNavProps) => {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
       return session?.user || null;
     },
   });

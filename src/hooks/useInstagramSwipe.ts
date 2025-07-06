@@ -69,7 +69,6 @@ export function useInstagramSwipe(
   }, []);
 
   // Apply resistance at boundaries (rubber band effect)
-  const applyResistance = useCallback((deltaY: number, canGoUp: boolean, canGoDown: boolean) => {
     const direction = deltaY < 0 ? 'up' : 'down';
     
     // If trying to swipe beyond boundaries, apply resistance
@@ -113,7 +112,6 @@ export function useInstagramSwipe(
 
     const now = performance.now();
     const deltaY = touch.clientY - state.startY;
-    const instantDeltaY = touch.clientY - state.lastY;
     
     // Update state
     state.currentY = touch.clientY;
@@ -158,7 +156,6 @@ export function useInstagramSwipe(
     setIsActive(false);
 
     const deltaY = state.currentY - state.startY;
-    const elapsedTime = state.lastTime - state.startTime;
     const velocity = calculateVelocity();
     const screenHeight = window.innerHeight;
     

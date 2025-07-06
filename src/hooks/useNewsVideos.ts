@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { Video } from "@/types/video";
 
@@ -98,7 +97,6 @@ export function useNewsVideos() {
     staleTime: 10000 // Short stale time to ensure fresh data
   });
 
-  const determineVideoUsage = (
     videoId: string, 
     articles: any[], 
     video: any

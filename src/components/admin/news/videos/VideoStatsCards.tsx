@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Video, Clock, ShoppingCart, PlayCircle } from 'lucide-react';
 import { Video as VideoType } from '@/types/video';
 
@@ -53,7 +52,6 @@ const VideoStatsCards = ({ videos }: VideoStatsCardsProps) => {
   );
 };
 
-const StatCard = ({ 
   title, 
   value, 
   description, 
@@ -79,7 +77,6 @@ const StatCard = ({
 };
 
 // Helper function to calculate average age of videos
-const calculateAverageAge = (videos: VideoType[]): string => {
   if (!videos.length) {return "N/A";}
   
   const now = new Date();

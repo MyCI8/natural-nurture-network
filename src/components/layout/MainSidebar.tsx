@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
@@ -19,8 +18,6 @@ const MainSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const breakpoint = useBreakpoint();
-  const { theme } = useTheme();
   const queryClient = useQueryClient();
   
   // State

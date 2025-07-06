@@ -2,15 +2,10 @@
  * Authentication guard component for protecting routes and components
  */
 
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { checkIsAdmin } from '@/utils/securityUtils';
 import { log } from '@/utils/logger';
-import { Button } from '@/components/ui/button';
 import { Shield, LogIn } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
 interface AuthGuardProps {
   children: React.ReactNode;
   requireAuth?: boolean;
@@ -54,7 +49,6 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   });
 
   // Check admin status if required
-  const { data: isAdmin = false, isLoading: adminLoading } = useQuery({
     queryKey: ['isAdmin', user?.id],
     queryFn: async () => {
       if (!user?.id || !requireAdmin) {return false;}

@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { useLayout } from '@/contexts/LayoutContext';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Swipeable } from '@/components/ui/swipeable';
 import { Progress } from '@/components/ui/progress';
@@ -28,8 +26,6 @@ const ExploreDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { setShowRightSection, setIsInReelsMode } = useLayout();
-  const { toast } = useToast();
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
@@ -218,7 +214,6 @@ const ExploreDetail = () => {
   };
 
   // Check if current user owns the post
-  const isPostOwner = currentUser && video && currentUser.id === video.creator_id;
 
   useEffect(() => {
     // Reset progress when video changes
