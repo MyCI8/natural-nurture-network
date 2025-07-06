@@ -29,18 +29,18 @@ export function useMobileSwipe({
 
   // Handler for touch start
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return;
+    if (e.touches.length !== 1) {return;}
     const touch = e.touches[0];
     touchStartY.current = touch.clientY;
     touchStartTime.current = Date.now();
     lastProgressDir.current = null;
 
-    if (onSwipeProgress) onSwipeProgress(null, 0);
+    if (onSwipeProgress) {onSwipeProgress(null, 0);}
   }, [onSwipeProgress]);
 
   // Handler for touch move, computes and emits swipe progress
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length !== 1) return;
+    if (e.touches.length !== 1) {return;}
     const deltaY = e.touches[0].clientY - touchStartY.current;
     let direction: SwipeDirection | null = null;
     let progress = 0;
@@ -51,7 +51,7 @@ export function useMobileSwipe({
 
     // Cancel horizontal if verticalOnly
     if (verticalOnly) {
-      if (Math.abs(deltaY) < 3) direction = null; // too little movement
+      if (Math.abs(deltaY) < 3) {direction = null;} // too little movement
       if (onSwipeProgress) {
         // keep only the direction when swipe is happening
         if (progressFrame.current) {
@@ -85,7 +85,7 @@ export function useMobileSwipe({
       }
     }
 
-    if (onSwipeProgress) onSwipeProgress(null, 0);
+    if (onSwipeProgress) {onSwipeProgress(null, 0);}
     if (succeeded && dir) {
       onSwipe(dir);
     }

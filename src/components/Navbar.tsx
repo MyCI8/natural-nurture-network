@@ -14,7 +14,7 @@ const Navbar = () => {
   const { data: isAdmin, isLoading: isCheckingAdmin } = useQuery({
     queryKey: ["userRole"],
     queryFn: async () => {
-      if (!session) return false;
+      if (!session) {return false;}
       const { data, error } = await supabase.rpc('check_is_admin');
       if (error) {
         console.error('Error checking admin role:', error);

@@ -7,7 +7,7 @@ interface IngredientVideosProps {
 }
 
 export const IngredientVideos = ({ videos }: IngredientVideosProps) => {
-  if (videos.length === 0) return null;
+  if (videos.length === 0) {return null;}
 
   return (
     <div>

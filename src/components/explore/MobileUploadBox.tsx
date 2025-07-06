@@ -38,7 +38,7 @@ function uploadReducer(state: State, action: Action): State {
 }
 
 interface MobileUploadBoxProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File | null) => void;
   accept?: string;
   maxSizeMB?: number;
 }
@@ -92,7 +92,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
   const handleRemove = () => {
     cleanupPreview();
     dispatch({ type: "RESET" });
-    onFileSelect(null as any); // Clear the selection
+    onFileSelect(null); // Clear the selection
   };
 
   return (
@@ -126,7 +126,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
             accept={accept}
             className="hidden"
             onChange={e => {
-              if (e.target.files?.[0]) handleSelectFile(e.target.files[0]);
+              if (e.target.files?.[0]) {handleSelectFile(e.target.files[0]);}
             }}
           />
           {state.status === "error" && (

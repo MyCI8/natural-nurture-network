@@ -23,7 +23,7 @@ export const RemedyExpertsSection = ({
         .select("*")
         .order('full_name');
       
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
   });
@@ -35,7 +35,7 @@ export const RemedyExpertsSection = ({
 
   // This effect will run when the component mounts and whenever the experts data changes
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading) {return;}
     console.log("Experts loaded:", experts.length);
   }, [experts, isLoading]);
 

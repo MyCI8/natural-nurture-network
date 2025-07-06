@@ -71,7 +71,7 @@ const VideoPreloader = forwardRef<VideoPreloaderRef, VideoPreloaderProps>(({
     }
 
     const video = videos[index];
-    if (!video?.video_url) return;
+    if (!video?.video_url) {return;}
 
     loadingRef.current.add(index);
     const videoEl = createVideoElement(video, index);

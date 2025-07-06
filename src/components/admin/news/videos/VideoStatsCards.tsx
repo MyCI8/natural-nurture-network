@@ -80,7 +80,7 @@ const StatCard = ({
 
 // Helper function to calculate average age of videos
 const calculateAverageAge = (videos: VideoType[]): string => {
-  if (!videos.length) return "N/A";
+  if (!videos.length) {return "N/A";}
   
   const now = new Date();
   const totalDays = videos.reduce((sum, video) => {

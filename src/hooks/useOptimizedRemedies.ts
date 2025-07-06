@@ -56,7 +56,7 @@ export const useOptimizedRemedies = () => {
   const { data: userInteractions } = useQuery({
     queryKey: ['user-interactions', currentUser?.id],
     queryFn: async (): Promise<UserInteractionData> => {
-      if (!currentUser) return { likes: new Set(), saves: new Set() };
+      if (!currentUser) {return { likes: new Set(), saves: new Set() };}
 
       const [likesResult, savesResult] = await Promise.all([
         supabase
@@ -85,7 +85,7 @@ export const useOptimizedRemedies = () => {
   const { data: ratings = [] } = useQuery({
     queryKey: ['remedy-ratings', visibleRemedyIds],
     queryFn: async (): Promise<RemedyRating[]> => {
-      if (visibleRemedyIds.length === 0) return [];
+      if (visibleRemedyIds.length === 0) {return [];}
       
       const { data, error } = await supabase
         .from('remedy_ratings')
@@ -113,7 +113,7 @@ export const useOptimizedRemedies = () => {
       const byRemedy: Record<string, number[]> = {};
       
       ratings.forEach((r) => {
-        if (!byRemedy[r.remedy_id]) byRemedy[r.remedy_id] = [];
+        if (!byRemedy[r.remedy_id]) {byRemedy[r.remedy_id] = [];}
         byRemedy[r.remedy_id].push(Number(r.rating));
         
         if (currentUser && r.user_id === currentUser.id) {

@@ -49,7 +49,7 @@ export function useOptimizedSwipe(
 
   const calculateVelocity = useCallback(() => {
     const tracker = velocityTracker.current;
-    if (tracker.length < 2) return 0;
+    if (tracker.length < 2) {return 0;}
 
     const recent = tracker.slice(-5); // Use last 5 points
     const first = recent[0];
@@ -63,7 +63,7 @@ export function useOptimizedSwipe(
 
   const updateProgress = useCallback(() => {
     const state = stateRef.current;
-    if (!state.isDragging) return;
+    if (!state.isDragging) {return;}
 
     const deltaY = state.currentY - state.startY;
     const progress = Math.min(Math.abs(deltaY) / threshold, 1);
@@ -78,7 +78,7 @@ export function useOptimizedSwipe(
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const touch = e.touches[0];
-    if (!touch) return;
+    if (!touch) {return;}
 
     const state = stateRef.current;
     state.startY = touch.clientY;
@@ -96,10 +96,10 @@ export function useOptimizedSwipe(
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
     const touch = e.touches[0];
-    if (!touch) return;
+    if (!touch) {return;}
 
     const state = stateRef.current;
-    if (!state.isDragging) return;
+    if (!state.isDragging) {return;}
 
     const deltaY = touch.clientY - state.startY;
     const deltaX = Math.abs(touch.clientX - e.touches[0].clientX);
@@ -130,7 +130,7 @@ export function useOptimizedSwipe(
 
   const handleTouchEnd = useCallback(() => {
     const state = stateRef.current;
-    if (!state.isDragging) return;
+    if (!state.isDragging) {return;}
 
     state.isDragging = false;
     

@@ -42,7 +42,7 @@ const Comments: React.FC<CommentsProps> = ({
   } = useQuery({
     queryKey: ['video-comments', videoId],
     queryFn: async () => {
-      if (!videoId) return [];
+      if (!videoId) {return [];}
       console.log('Fetching comments for video:', videoId);
       const {
         data,
@@ -169,13 +169,13 @@ const Comments: React.FC<CommentsProps> = ({
         const {
           error
         } = await supabase.from('comment_likes').delete().eq('comment_id', commentId).eq('user_id', currentUser.id);
-        if (error) throw error;
+        if (error) {throw error;}
         const {
           error: updateError
         } = await supabase.from('video_comments').update({
           likes_count: Math.max(0, (await getLikesCount(commentId)) - 1)
         }).eq('id', commentId);
-        if (updateError) throw updateError;
+        if (updateError) {throw updateError;}
         return {
           commentId,
           liked: false
@@ -187,13 +187,13 @@ const Comments: React.FC<CommentsProps> = ({
           comment_id: commentId,
           user_id: currentUser.id
         }]);
-        if (error) throw error;
+        if (error) {throw error;}
         const {
           error: updateError
         } = await supabase.from('video_comments').update({
           likes_count: (await getLikesCount(commentId)) + 1
         }).eq('id', commentId);
-        if (updateError) throw updateError;
+        if (updateError) {throw updateError;}
         return {
           commentId,
           liked: true
@@ -275,11 +275,11 @@ const Comments: React.FC<CommentsProps> = ({
 
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
-      if (!currentUser) throw new Error('You must be logged in to delete comments');
+      if (!currentUser) {throw new Error('You must be logged in to delete comments');}
       const {
         error
       } = await supabase.from('video_comments').delete().eq('id', commentId).eq('user_id', currentUser.id);
-      if (error) throw error;
+      if (error) {throw error;}
       return commentId;
     },
     onSuccess: commentId => {

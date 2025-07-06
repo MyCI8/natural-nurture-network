@@ -29,7 +29,7 @@ export const RemedyExpertsSection = ({ selectedExperts, onChange }: RemedyExpert
       }
 
       const { data, error } = await query.limit(10);
-      if (error) throw error;
+      if (error) {throw error;}
       return data || [];
     },
     enabled: showSearch && searchTerm.length > 0,
@@ -38,12 +38,12 @@ export const RemedyExpertsSection = ({ selectedExperts, onChange }: RemedyExpert
   const { data: selectedExpertDetails } = useQuery({
     queryKey: ['selectedExperts', selectedExperts],
     queryFn: async () => {
-      if (selectedExperts.length === 0) return [];
+      if (selectedExperts.length === 0) {return [];}
       const { data, error } = await supabase
         .from('experts')
         .select('id, full_name, image_url')
         .in('id', selectedExperts);
-      if (error) throw error;
+      if (error) {throw error;}
       return data || [];
     },
     enabled: selectedExperts.length > 0,

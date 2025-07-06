@@ -43,7 +43,7 @@ const UserProfile = () => {
         .eq('id', id)
         .single();
 
-      if (error) throw error;
+      if (error) {throw error;}
       console.log("Fetched user profile:", data);
       return data as User;
     },

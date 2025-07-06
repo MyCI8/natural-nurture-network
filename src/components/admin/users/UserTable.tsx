@@ -44,7 +44,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
           onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       queryClient.invalidateQueries({ queryKey: ["users"] });
 
@@ -69,7 +69,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
         .update({ account_status: newStatus })
         .eq("id", userId);
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       queryClient.invalidateQueries({ queryKey: ["users"] });
 
@@ -88,7 +88,7 @@ export const UserTable = ({ users, onEditUser, onDeactivateUser }: UserTableProp
   };
 
   const formatLastLogin = (lastLoginAt: string | null | undefined) => {
-    if (!lastLoginAt) return "Never";
+    if (!lastLoginAt) {return "Never";}
     try {
       return format(new Date(lastLoginAt), "PPp");
     } catch (error) {

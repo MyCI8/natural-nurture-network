@@ -59,7 +59,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     queryKey: ["ingredients"],
     queryFn: async () => {
       const { data, error } = await supabase.from("ingredients").select("*");
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
   });
@@ -107,7 +107,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
       // Upload new images
       const uploadedImages = await Promise.all(
         images.map(async (image) => {
-          if (!image.file) return image; // Already uploaded
+          if (!image.file) {return image;} // Already uploaded
           
           const fileExt = image.file.name.split('.').pop();
           const fileName = `${Math.random()}.${fileExt}`;
@@ -115,7 +115,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             .from("remedy-images")
             .upload(fileName, image.file);
 
-          if (uploadError) throw uploadError;
+          if (uploadError) {throw uploadError;}
 
           const { data: { publicUrl } } = supabase.storage
             .from("remedy-images")
@@ -139,7 +139,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           .update(remedyData as any)
           .eq("id", remedy.id);
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         toast({
           title: "Success",
@@ -150,7 +150,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           .from("remedies")
           .insert([remedyData as any]);
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         toast({
           title: "Success",

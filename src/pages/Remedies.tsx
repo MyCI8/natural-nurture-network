@@ -119,12 +119,12 @@ const Remedies = () => {
           .delete()
           .eq('user_id', currentUser.id)
           .eq('remedy_id', remedyId);
-        if (error) throw error;
+        if (error) {throw error;}
       } else {
         const { error } = await (supabase as any)
           .from('remedy_likes')
           .insert({ user_id: currentUser.id, remedy_id: remedyId });
-        if (error) throw error;
+        if (error) {throw error;}
       }
 
       queryClient.invalidateQueries({ queryKey: ['user-interactions', currentUser.id] });
@@ -152,13 +152,13 @@ const Remedies = () => {
           .delete()
           .eq('user_id', currentUser.id)
           .eq('remedy_id', remedyId);
-        if (error) throw error;
+        if (error) {throw error;}
         toast({ title: "Remedy removed from your saved list." });
       } else {
         const { error } = await (supabase as any)
           .from('saved_remedies')
           .insert({ user_id: currentUser.id, remedy_id: remedyId });
-        if (error) throw error;
+        if (error) {throw error;}
         toast({ title: "Remedy saved!", description: "You can find it in your profile." });
       }
       
@@ -193,7 +193,7 @@ const Remedies = () => {
   };
 
   const handleRatingSubmit = async (rating: number) => {
-    if (!remedyToRate || !currentUser) return;
+    if (!remedyToRate || !currentUser) {return;}
     
     const { data: existing, error: findError } = await (supabase as any)
       .from('remedy_ratings')

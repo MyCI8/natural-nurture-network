@@ -55,7 +55,7 @@ export function useInstagramSwipe(
   // Calculate instantaneous velocity using recent touch points
   const calculateVelocity = useCallback(() => {
     const history = stateRef.current.velocityHistory;
-    if (history.length < 2) return 0;
+    if (history.length < 2) {return 0;}
 
     // Use recent points for velocity calculation
     const recentPoints = history.slice(-5);
@@ -83,7 +83,7 @@ export function useInstagramSwipe(
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
-    if (!touch) return;
+    if (!touch) {return;}
 
     const now = performance.now();
     const state = stateRef.current;
@@ -106,10 +106,10 @@ export function useInstagramSwipe(
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
-    if (!touch) return;
+    if (!touch) {return;}
 
     const state = stateRef.current;
-    if (!state.isDragging) return;
+    if (!state.isDragging) {return;}
 
     const now = performance.now();
     const deltaY = touch.clientY - state.startY;
@@ -152,7 +152,7 @@ export function useInstagramSwipe(
 
   const handleTouchEnd = useCallback(() => {
     const state = stateRef.current;
-    if (!state.isDragging) return;
+    if (!state.isDragging) {return;}
 
     state.isDragging = false;
     setIsActive(false);

@@ -34,7 +34,7 @@ const PopularRemedies = () => {
         .order("created_at", { ascending: false })
         .limit(maxCards);
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
   });

@@ -139,7 +139,7 @@ function Calendar({
           open={props.name === "years" && view === "years" ? true : undefined}
           onOpenChange={props.name === "years" ? 
             (isOpen) => {
-              if (!isOpen) setView("days");
+              if (!isOpen) {setView("days");}
             } : undefined
           }
         >
@@ -252,7 +252,7 @@ function Calendar({
               const yearContainer = document.getElementById('year-grid');
               if (yearContainer && yearValue) {
                 const yearItems = yearContainer.querySelectorAll('[data-year]');
-                for (let item of yearItems) {
+                for (const item of yearItems) {
                   if (item.textContent?.includes(yearValue)) {
                     item.scrollIntoView({ block: "center" });
                     break;

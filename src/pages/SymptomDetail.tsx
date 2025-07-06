@@ -35,7 +35,7 @@ interface RelatedItem {
 }
 
 const parseVideoLinks = (links: Json | null): VideoLink[] => {
-  if (!links) return [];
+  if (!links) {return [];}
   
   try {
     if (typeof links === 'string') {
@@ -148,12 +148,12 @@ const SymptomDetail = () => {
   const { data: relatedContent } = useQuery({
     queryKey: ['symptom-content', symptomDetails?.symptom],
     queryFn: async () => {
-      if (!symptomDetails?.symptom) return {
+      if (!symptomDetails?.symptom) {return {
         related_remedies: [],
         related_experts: [],
         related_articles: [],
         related_links: []
-      };
+      };}
       
       console.log("Fetching related content for symptom:", symptomDetails.symptom);
       
@@ -605,7 +605,7 @@ const SymptomDetail = () => {
 };
 
 function getYoutubeVideoId(url: string): string | null {
-  if (!url) return null;
+  if (!url) {return null;}
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;

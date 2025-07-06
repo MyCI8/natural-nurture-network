@@ -14,7 +14,7 @@ export const isValidUrl = (string: string): boolean => {
 };
 
 export const formatUrlForDisplay = (url: string, maxLength: number = 50): string => {
-  if (url.length <= maxLength) return url;
+  if (url.length <= maxLength) {return url;}
   
   try {
     const urlObj = new URL(url);

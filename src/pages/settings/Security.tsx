@@ -50,7 +50,7 @@ const SettingsSecurity = () => {
         password: values.newPassword,
       });
 
-      if (error) throw error;
+      if (error) {throw error;}
       
       toast.success("Password updated successfully");
       form.reset();

@@ -9,7 +9,7 @@ export function useProductLinks(videoId: string) {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchProductLinks = async () => {
-    if (!videoId) return;
+    if (!videoId) {return;}
     
     setIsLoading(true);
     try {
@@ -18,7 +18,7 @@ export function useProductLinks(videoId: string) {
         .select('*')
         .eq('video_id', videoId);
         
-      if (error) throw error;
+      if (error) {throw error;}
       
       // Convert the results to ProductLink type
       const typedLinks = data?.map(link => ({
@@ -61,7 +61,7 @@ export function useProductLinks(videoId: string) {
         .insert(productLinkData)
         .select();
         
-      if (error) throw error;
+      if (error) {throw error;}
       
       if (data && data.length > 0) {
         // Create a fully typed ProductLink object from the response
@@ -95,7 +95,7 @@ export function useProductLinks(videoId: string) {
         .delete()
         .eq('id', id);
         
-      if (error) throw error;
+      if (error) {throw error;}
       
       setLinks(links.filter(link => link.id !== id));
       toast.success('Product link deleted successfully!');

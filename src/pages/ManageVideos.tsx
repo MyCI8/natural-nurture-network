@@ -145,7 +145,7 @@ const ManageVideos = () => {
         .delete()
         .eq("id", videoId);
       
-      if (error) throw error;
+      if (error) {throw error;}
       return videoId;
     },
     onSuccess: () => {
@@ -171,7 +171,7 @@ const ManageVideos = () => {
         .update({ status: "archived" })
         .eq("id", videoId);
       
-      if (error) throw error;
+      if (error) {throw error;}
       return videoId;
     },
     onSuccess: () => {
@@ -196,7 +196,7 @@ const ManageVideos = () => {
         .update({ show_in_latest: featured })
         .eq("id", videoId);
       
-      if (error) throw error;
+      if (error) {throw error;}
       return { videoId, featured };
     },
     onSuccess: ({ videoId, featured }) => {

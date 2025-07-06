@@ -49,7 +49,7 @@ const ExpertProfile = () => {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {throw error;}
       
       // Transform the response to match our Expert interface
       const expertData: Expert = {

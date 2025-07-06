@@ -91,7 +91,7 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
           .from("remedy-images")
           .upload(`ingredients/${fileName}`, imageFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {throw uploadError;}
 
         const { data: { publicUrl } } = supabase.storage
           .from("remedy-images")
@@ -124,7 +124,7 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
           .update(ingredientData)
           .eq("id", ingredient.id);
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         toast({
           title: "Success",
@@ -135,7 +135,7 @@ const IngredientForm = ({ onClose, ingredient, onSave }: IngredientFormProps) =>
           .from("ingredients")
           .insert([ingredientData]);
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         toast({
           title: "Success",

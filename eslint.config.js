@@ -2,18 +2,49 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "typescript-eslint";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 
-export default tseslint.config(
-  { ignores: ["dist"] },
+export default [
+  js.configs.recommended,
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.js"],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.serviceworker,
+        self: "readonly",
+        caches: "readonly",
+        Response: "readonly",
+      },
+    },
+  },
+  {
+    files: ["**/*.{ts,tsx}", "**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: "module",
+      },
+      globals: {
+        ...globals.browser,
+        React: "readonly",
+        Deno: "readonly",
+        __dirname: "readonly",
+        require: "readonly",
+        // Service Worker globals
+        self: "readonly",
+        caches: "readonly",
+        Response: "readonly",
+        // Node.js globals for test files
+        global: "readonly",
+        NodeJS: "readonly",
+        RequestInit: "readonly",
+      },
     },
     plugins: {
+      "@typescript-eslint": tseslint,
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
     },
@@ -25,13 +56,13 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/prefer-const": "error",
       "@typescript-eslint/no-non-null-assertion": "warn",
-      "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/explicit-function-return-type": "off",
       "prefer-const": "error",
       "no-var": "error",
       "eqeqeq": ["error", "always"],
       "curly": ["error", "all"],
+      "react-hooks/exhaustive-deps": "warn",
     },
-  }
-);
+  },
+];

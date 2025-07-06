@@ -38,7 +38,7 @@ const News = () => {
       } = await supabase.from("news_articles").select("*").eq("status", "published").order("published_at", {
         ascending: false
       });
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     }
   });

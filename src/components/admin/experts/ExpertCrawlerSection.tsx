@@ -36,7 +36,7 @@ export const ExpertCrawlerSection = ({ onDataSelect }: ExpertCrawlerProps) => {
         body: { searchQuery }
       });
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       if (data.success) {
         setCrawlResult({

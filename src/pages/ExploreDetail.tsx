@@ -123,7 +123,7 @@ const ExploreDetail = () => {
         `)
         .eq('id', id)
         .single();
-      if (error) throw error;
+      if (error) {throw error;}
 
       return {
         ...data,
@@ -136,7 +136,7 @@ const ExploreDetail = () => {
   const { data: adjacentVideos = [], isLoading: isAdjacentLoading } = useQuery({
     queryKey: ['adjacent-videos', id],
     queryFn: async () => {
-      if (!id) return [];
+      if (!id) {return [];}
       
       const { data, error } = await supabase
         .from('videos')
@@ -158,7 +158,7 @@ const ExploreDetail = () => {
         .order('created_at', { ascending: false })
         .limit(20);
         
-      if (error) throw error;
+      if (error) {throw error;}
       return data as Video[];
     },
     enabled: !!id

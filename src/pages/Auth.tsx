@@ -104,7 +104,7 @@ const Auth = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm()) {return;}
     
     setLoading(true);
 
@@ -127,7 +127,7 @@ const Auth = () => {
           },
         });
         
-        if (error) throw error;
+        if (error) {throw error;}
         
         // After successful signup, also update the profiles table with additional info
         // (The trigger will create the profile, but we need to update it with our additional fields)
@@ -155,7 +155,7 @@ const Auth = () => {
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {throw error;}
         
         // Invalidate auth queries after successful sign in
         invalidateAuthQueries(queryClient);
@@ -181,7 +181,7 @@ const Auth = () => {
         },
       });
       
-      if (error) throw error;
+      if (error) {throw error;}
     } catch (error: any) {
       toast({
         title: "Error",

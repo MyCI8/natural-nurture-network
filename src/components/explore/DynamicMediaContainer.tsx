@@ -68,7 +68,7 @@ export const DynamicMediaContainer: React.FC<DynamicMediaContainerProps> = ({
 
   // Calculate container style based on media type
   const getContainerStyle = () => {
-    if (!mediaInfo) return { aspectRatio: '4/5' };
+    if (!mediaInfo) {return { aspectRatio: '4/5' };}
     
     if (mediaInfo.isImage) {
       // For images, use natural aspect ratio with constraints

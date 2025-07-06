@@ -57,7 +57,7 @@ const BottomNav = () => {
   
   // Handle scroll behavior
   useEffect(() => {
-    if (!initialHideComplete) return;
+    if (!initialHideComplete) {return;}
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY;

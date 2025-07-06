@@ -65,7 +65,7 @@ const ManageRemedies = () => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
   });
@@ -79,7 +79,7 @@ const ManageRemedies = () => {
         .update({ status: "published" })
         .neq("status", "published");
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
       queryClient.invalidateQueries({ queryKey: ["remedies"] });
@@ -111,7 +111,7 @@ const ManageRemedies = () => {
         .update({ status: newStatus })
         .eq("id", remedy.id);
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       queryClient.invalidateQueries({ queryKey: ["admin-remedies"] });
       queryClient.invalidateQueries({ queryKey: ["remedies"] });
@@ -133,7 +133,7 @@ const ManageRemedies = () => {
   };
 
   const handleDelete = async () => {
-    if (!remedyToDelete) return;
+    if (!remedyToDelete) {return;}
 
     try {
       const { error } = await supabase
@@ -141,7 +141,7 @@ const ManageRemedies = () => {
         .delete()
         .eq("id", remedyToDelete.id);
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       if (remedyToDelete.image_url) {
         const imagePath = remedyToDelete.image_url.split("/").pop();

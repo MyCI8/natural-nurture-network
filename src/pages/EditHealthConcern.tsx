@@ -35,7 +35,7 @@ const EditHealthConcern = () => {
   const { data: concern, isLoading } = useQuery({
     queryKey: ["health-concern", id],
     queryFn: async () => {
-      if (isNewConcern) return null;
+      if (isNewConcern) {return null;}
       
       try {
         const { data, error } = await supabase
@@ -82,7 +82,7 @@ const EditHealthConcern = () => {
               suggested_by: user.user?.id
             });
           
-          if (error) throw error;
+          if (error) {throw error;}
         } else {
           const { error } = await supabase
             .from("health_concern_suggestions" as any)
@@ -93,7 +93,7 @@ const EditHealthConcern = () => {
             })
             .eq("id", id);
           
-          if (error) throw error;
+          if (error) {throw error;}
         }
       } catch (error) {
         console.error("Error saving health concern:", error);

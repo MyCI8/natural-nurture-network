@@ -25,7 +25,7 @@ export const ImageUploader = ({
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {return;}
 
       setUploading(true);
       
@@ -81,10 +81,10 @@ export const ImageUploader = ({
 
   const handleImageDelete = async () => {
     try {
-      if (!imageUrl) return;
+      if (!imageUrl) {return;}
 
       const fileName = imageUrl.split('/').pop();
-      if (!fileName) return;
+      if (!fileName) {return;}
 
       const { error } = await supabase.storage
         .from('news-images-draft')

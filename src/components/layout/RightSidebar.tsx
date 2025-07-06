@@ -18,7 +18,7 @@ const RightSidebar = () => {
         .order('created_at', { ascending: false })
         .limit(10);
       
-      if (commentsError) throw commentsError;
+      if (commentsError) {throw commentsError;}
       
       // For each comment, fetch the associated profile separately
       const commentsWithProfiles = await Promise.all(

@@ -15,7 +15,7 @@ const IngredientDetail = () => {
   const { data: ingredient, isLoading: isLoadingIngredient } = useQuery({
     queryKey: ["ingredient", id],
     queryFn: async () => {
-      if (!id) throw new Error("No ingredient ID provided");
+      if (!id) {throw new Error("No ingredient ID provided");}
       
       const { data, error } = await supabase
         .from("ingredients")
@@ -23,7 +23,7 @@ const IngredientDetail = () => {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
     enabled: !!id,
@@ -32,7 +32,7 @@ const IngredientDetail = () => {
   const { data: expertsData, isLoading: isLoadingExperts } = useQuery({
     queryKey: ["ingredient-experts", id],
     queryFn: async () => {
-      if (!id) throw new Error("No ingredient ID provided");
+      if (!id) {throw new Error("No ingredient ID provided");}
       
       const { data, error } = await supabase
         .from("remedies")
@@ -49,7 +49,7 @@ const IngredientDetail = () => {
         `)
         .contains('ingredients', [id]);
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       const experts = new Set<Expert>();
       data?.forEach(remedy => {

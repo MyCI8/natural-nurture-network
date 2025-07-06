@@ -57,7 +57,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   const { data: isAdmin = false, isLoading: adminLoading } = useQuery({
     queryKey: ['isAdmin', user?.id],
     queryFn: async () => {
-      if (!user?.id || !requireAdmin) return false;
+      if (!user?.id || !requireAdmin) {return false;}
       
       try {
         return await checkIsAdmin();

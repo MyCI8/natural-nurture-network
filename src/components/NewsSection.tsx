@@ -26,7 +26,7 @@ const NewsSection = () => {
       } = await supabase.from("news_articles").select("*").eq("status", "published").order("published_at", {
         ascending: false
       }).limit(4);
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     }
   });
@@ -43,7 +43,7 @@ const NewsSection = () => {
       } = await supabase.from("videos").select("*").eq("status", "published").eq("video_type", "news").eq("show_in_latest", true).order("created_at", {
         ascending: false
       }).limit(4);
-      if (error) throw error;
+      if (error) {throw error;}
       console.log("News Videos fetched:", data);
       return data || [];
     }
@@ -173,7 +173,7 @@ const NewsSection = () => {
 };
 
 const getYoutubeVideoId = url => {
-  if (!url) return '';
+  if (!url) {return '';}
   let videoId = '';
   try {
     if (url.includes('youtube.com/watch')) {

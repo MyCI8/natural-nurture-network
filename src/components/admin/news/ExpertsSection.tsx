@@ -59,7 +59,7 @@ export const ExpertsSection = ({
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       toast({
         title: "Success",

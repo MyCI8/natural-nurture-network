@@ -19,8 +19,8 @@ export const useExpertStats = (expertId: string) => {
           .eq("status", "published")
       ]);
 
-      if (remediesResult.error) throw remediesResult.error;
-      if (newsResult.error) throw newsResult.error;
+      if (remediesResult.error) {throw remediesResult.error;}
+      if (newsResult.error) {throw newsResult.error;}
 
       return {
         remediesCount: remediesResult.count || 0,

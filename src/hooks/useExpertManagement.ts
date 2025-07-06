@@ -124,7 +124,7 @@ export const useExpertManagement = ({
         .delete()
         .eq("id", expertId);
 
-      if (error) throw error;
+      if (error) {throw error;}
     },
     onSuccess: () => {
       toast({

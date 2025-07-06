@@ -5,16 +5,16 @@ import { supabase } from "@/integrations/supabase/client";
  * Validates if an image URL is a proper Supabase storage URL
  */
 export const isValidStorageImageUrl = (url: string | null | undefined): boolean => {
-  if (!url) return false;
+  if (!url) {return false;}
   
   // Check if it's a valid HTTP URL
-  if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {return false;}
   
   // Check if it's not a blob URL (temporary URLs)
-  if (url.startsWith('blob:')) return false;
+  if (url.startsWith('blob:')) {return false;}
   
   // Check if it's a Supabase storage URL
-  if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) return true;
+  if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {return true;}
   
   // Allow other valid HTTP URLs (for external images)
   return true;

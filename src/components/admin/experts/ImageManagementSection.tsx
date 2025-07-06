@@ -20,7 +20,7 @@ export const ImageManagementSection = ({
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {return;}
 
       setUploading(true);
       

@@ -59,7 +59,7 @@ const Admin = () => {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
   });
@@ -73,7 +73,7 @@ const Admin = () => {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       if (comments && comments.length > 0) {
         const userIds = comments.map(comment => comment.user_id).filter(Boolean);

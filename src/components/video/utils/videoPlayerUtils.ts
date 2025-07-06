@@ -5,7 +5,7 @@ import { getCdnUrl } from '@/utils/cdnUtils';
  * Check if URL is YouTube video
  */
 export const isYoutubeVideo = (url: string): boolean => {
-  if (!url) return false;
+  if (!url) {return false;}
   
   return url.includes('youtube.com/') || url.includes('youtu.be/');
 };
@@ -14,7 +14,7 @@ export const isYoutubeVideo = (url: string): boolean => {
  * Check if URL is an uploaded video file
  */
 export const isUploadedVideo = (url: string): boolean => {
-  if (!url) return false;
+  if (!url) {return false;}
   
   // Check for common video file extensions
   const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
@@ -32,7 +32,7 @@ export const isUploadedVideo = (url: string): boolean => {
  * Check if URL is an image file
  */
 export const isImagePost = (url: string): boolean => {
-  if (!url) return false;
+  if (!url) {return false;}
   
   // Check for common image file extensions
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
@@ -50,7 +50,7 @@ export const isImagePost = (url: string): boolean => {
  * Extract YouTube video ID from URL
  */
 export const getYouTubeVideoId = (url: string): string | null => {
-  if (!url) return null;
+  if (!url) {return null;}
   
   try {
     let videoId = "";
@@ -75,7 +75,7 @@ export const getYouTubeVideoId = (url: string): string | null => {
  * Get thumbnail URL for a video
  */
 export const getThumbnailUrl = (video: { thumbnail_url?: string | null; video_url: string }): string | null => {
-  if (video.thumbnail_url) return getCdnUrl(video.thumbnail_url);
+  if (video.thumbnail_url) {return getCdnUrl(video.thumbnail_url);}
   
   if (isYoutubeVideo(video.video_url)) {
     const videoId = getYouTubeVideoId(video.video_url);
@@ -95,7 +95,7 @@ export const getThumbnailUrl = (video: { thumbnail_url?: string | null; video_ur
  * Check if a media URL is playable directly in the browser
  */
 export const isPlayableMedia = (url: string): boolean => {
-  if (!url) return false;
+  if (!url) {return false;}
   return isUploadedVideo(url) || isImagePost(url) || isYoutubeVideo(url);
 };
 
@@ -103,7 +103,7 @@ export const isPlayableMedia = (url: string): boolean => {
  * Check if a URL is a valid media URL
  */
 export const isValidMediaUrl = (url: string): boolean => {
-  if (!url) return false;
+  if (!url) {return false;}
   
   try {
     new URL(url);
@@ -117,7 +117,7 @@ export const isValidMediaUrl = (url: string): boolean => {
  * Get file extension from URL
  */
 export const getFileExtensionFromUrl = (url: string): string | null => {
-  if (!url) return null;
+  if (!url) {return null;}
   
   try {
     const urlObj = new URL(url);

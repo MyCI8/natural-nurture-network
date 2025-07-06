@@ -92,7 +92,7 @@ export const EnhancedImageUpload = ({
   };
 
   const handleFile = useCallback(async (file: File) => {
-    if (!validateFile(file)) return;
+    if (!validateFile(file)) {return;}
 
     setIsUploading(true);
     setUploadProgress(0);

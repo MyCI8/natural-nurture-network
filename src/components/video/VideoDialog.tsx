@@ -38,7 +38,7 @@ const VideoDialog = ({
 }) => {
   const isMobile = useIsMobile();
 
-  if (!video || !isOpen) return null;
+  if (!video || !isOpen) {return null;}
 
   return (
     <div className="w-full bg-white dark:bg-dm-background min-h-screen">

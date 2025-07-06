@@ -43,13 +43,13 @@ const VideoFeed = () => {
   const { data: userLikesArray } = useQuery({
     queryKey: ['userLikes', currentUser?.id],
     queryFn: async () => {
-      if (!currentUser) return [];
+      if (!currentUser) {return [];}
       const { data, error } = await supabase
         .from('video_likes')
         .select('video_id')
         .eq('user_id', currentUser.id);
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data.map(like => like.video_id);
     },
     enabled: !!currentUser,
@@ -63,13 +63,13 @@ const VideoFeed = () => {
   const { data: userSaves } = useQuery({
     queryKey: ['userSaves', currentUser?.id],
     queryFn: async () => {
-      if (!currentUser) return [];
+      if (!currentUser) {return [];}
       const { data, error } = await supabase
         .from('saved_posts')
         .select('video_id')
         .eq('user_id', currentUser.id);
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data.map(save => save.video_id);
     },
     enabled: !!currentUser,

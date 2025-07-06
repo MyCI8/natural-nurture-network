@@ -37,7 +37,7 @@ const LatestVideosConfig = () => {
       query = query.order("created_at", { ascending: false });
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
   });
@@ -49,7 +49,7 @@ const LatestVideosConfig = () => {
         .update({ show_in_latest: showInLatest })
         .eq("id", videoId);
       
-      if (error) throw error;
+      if (error) {throw error;}
       return { videoId, showInLatest };
     },
     onSuccess: (data) => {
@@ -73,7 +73,7 @@ const LatestVideosConfig = () => {
   };
 
   const getYoutubeThumbnail = (url) => {
-    if (!url || !url.includes('youtube.com')) return null;
+    if (!url || !url.includes('youtube.com')) {return null;}
     
     try {
       const videoId = url.includes('v=') 

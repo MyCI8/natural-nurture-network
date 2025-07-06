@@ -67,7 +67,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     didMountRef.current = true;
   }, [isOpen]);
 
-  if (!video) return null;
+  if (!video) {return null;}
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

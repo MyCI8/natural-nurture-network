@@ -17,13 +17,13 @@ export const SidebarPortal = ({ children, isVisible }: SidebarPortalProps) => {
     return () => {
       const existingOverlay = document.getElementById('mobile-menu-overlay');
       const existingSidebar = document.getElementById('mobile-menu-sidebar');
-      if (existingOverlay) existingOverlay.remove();
-      if (existingSidebar) existingSidebar.remove();
+      if (existingOverlay) {existingOverlay.remove();}
+      if (existingSidebar) {existingSidebar.remove();}
     };
   }, []);
 
   // Early return if no portal root is available or sidebar is not visible
-  if (!portalRoot || !isVisible) return null;
+  if (!portalRoot || !isVisible) {return null;}
 
   return createPortal(
     <>

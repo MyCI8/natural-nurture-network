@@ -64,7 +64,7 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
   } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
-      if (!expertId || expertId === "new") return null;
+      if (!expertId || expertId === "new") {return null;}
 
       const { data, error } = await supabase
         .from("experts")
@@ -104,7 +104,7 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
         socialMedia: convertToSocialMediaLinks(expertData.social_media),
       });
     }
-  }, [expertData, initialData]);
+  }, [expertData, initialData, defaultFormData]);
 
   const handleSocialMediaChange = (platform: keyof SocialMediaLinks, value: string) => {
     setFormData(prev => ({
@@ -126,7 +126,12 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
     }));
   };
 
-  const handleCrawlerData = (data: any) => {
+  const handleCrawlerData = (data: {
+    name?: string;
+    biography?: string;
+    image?: string;
+    socialLinks?: Partial<SocialMediaLinks>;
+  }) => {
     setFormData(prev => ({
       ...prev,
       fullName: data.name || prev.fullName,

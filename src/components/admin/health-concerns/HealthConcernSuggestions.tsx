@@ -42,7 +42,7 @@ export const HealthConcernSuggestions = () => {
         }
 
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) {throw error;}
 
         return (data || []).map((item: any) => ({
           ...item,
@@ -58,7 +58,7 @@ export const HealthConcernSuggestions = () => {
   const updateSuggestionMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Must be logged in");
+      if (!user) {throw new Error("Must be logged in");}
 
       const { error } = await supabase
         .from("health_concern_suggestions" as any)
@@ -69,7 +69,7 @@ export const HealthConcernSuggestions = () => {
         })
         .eq("id", id);
 
-      if (error) throw error;
+      if (error) {throw error;}
     },
     onSuccess: (_, variables) => {
       toast({

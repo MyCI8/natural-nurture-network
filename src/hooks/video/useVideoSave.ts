@@ -137,7 +137,7 @@ export function useVideoSave() {
           .eq('id', videoId)
           .select()
           .single();
-        if (error) throw error;
+        if (error) {throw error;}
         result = data;
       } else {
         const { data, error } = await supabase
@@ -145,7 +145,7 @@ export function useVideoSave() {
           .insert(videoData)
           .select()
           .single();
-        if (error) throw error;
+        if (error) {throw error;}
         result = data;
       }
       

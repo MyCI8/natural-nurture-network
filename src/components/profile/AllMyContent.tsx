@@ -43,7 +43,7 @@ export const AllMyContent = ({ userId }: AllMyContentProps) => {
         .neq("video_type", "news")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {throw error;}
       return (data || []) as Video[];
     },
     enabled: !!userId,
@@ -61,8 +61,8 @@ export const AllMyContent = ({ userId }: AllMyContentProps) => {
         .select("remedy_id")
         .eq("expert_id", userId);
 
-      if (expertError) throw expertError;
-      if (!expertRemedies || expertRemedies.length === 0) return [];
+      if (expertError) {throw expertError;}
+      if (!expertRemedies || expertRemedies.length === 0) {return [];}
 
       const remedyIds = expertRemedies.map((er: any) => er.remedy_id);
 
@@ -72,7 +72,7 @@ export const AllMyContent = ({ userId }: AllMyContentProps) => {
         .in("id", remedyIds)
         .order("created_at", { ascending: false });
 
-      if (remediesError) throw remediesError;
+      if (remediesError) {throw remediesError;}
       return (remedies || []) as UserRemedy[];
     },
     enabled: !!userId,

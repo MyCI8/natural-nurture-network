@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, Edit, Play, Pause, RotateCw, Crop, Maximize2 } from "lucide-react";
+import { Trash2, Edit, Play, Pause, Crop, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MediaContainer } from "@/components/media/MediaContainer";
 import { getMediaInfo } from "@/utils/mediaUtils";
@@ -62,8 +62,10 @@ export function MediaPreviewCard({
     if (video) {
       if (isPlaying) {
         video.pause();
+        setIsPlaying(false);
       } else {
         video.play();
+        setIsPlaying(true);
       }
     }
   };

@@ -28,14 +28,14 @@ const RemedyDetail = () => {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {throw error;}
       return data;
     },
     enabled: !!id,
   });
 
   const handleShare = async () => {
-    if (!remedy) return;
+    if (!remedy) {return;}
     
     if (navigator.share) {
       try {
@@ -54,20 +54,20 @@ const RemedyDetail = () => {
 
   // Helper function to safely convert expert recommendations to strings
   const formatExpertRecommendations = (recommendations: any): string => {
-    if (!recommendations) return '';
+    if (!recommendations) {return '';}
     
     try {
       // If it's already a string, return it
-      if (typeof recommendations === 'string') return recommendations;
+      if (typeof recommendations === 'string') {return recommendations;}
       
       // If it's an array, join the string elements
       if (Array.isArray(recommendations)) {
         return recommendations
           .map((rec: any) => {
-            if (typeof rec === 'string') return rec;
-            if (typeof rec === 'number') return rec.toString();
-            if (typeof rec === 'boolean') return rec ? 'Yes' : 'No';
-            if (rec === null || rec === undefined) return '';
+            if (typeof rec === 'string') {return rec;}
+            if (typeof rec === 'number') {return rec.toString();}
+            if (typeof rec === 'boolean') {return rec ? 'Yes' : 'No';}
+            if (rec === null || rec === undefined) {return '';}
             if (typeof rec === 'object') {
               try {
                 return JSON.stringify(rec);
@@ -82,8 +82,8 @@ const RemedyDetail = () => {
       }
       
       // For other types, convert to string
-      if (typeof recommendations === 'number') return recommendations.toString();
-      if (typeof recommendations === 'boolean') return recommendations ? 'Yes' : 'No';
+      if (typeof recommendations === 'number') {return recommendations.toString();}
+      if (typeof recommendations === 'boolean') {return recommendations ? 'Yes' : 'No';}
       if (typeof recommendations === 'object') {
         try {
           return JSON.stringify(recommendations);

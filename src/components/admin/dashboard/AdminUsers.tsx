@@ -63,7 +63,7 @@ const AdminUsers = () => {
 
       const { data, error } = await query.limit(5);
 
-      if (error) throw error;
+      if (error) {throw error;}
       
       return data?.map(user => ({
         id: user.id,
@@ -88,7 +88,7 @@ const AdminUsers = () => {
           onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (error) {throw error;}
 
       toast.success("User role updated successfully");
     } catch (error) {

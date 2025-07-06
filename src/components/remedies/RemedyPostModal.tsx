@@ -34,7 +34,7 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
 
   const createRemedyMutation = useMutation({
     mutationFn: async () => {
-      if (!currentUser) throw new Error('User not authenticated');
+      if (!currentUser) {throw new Error('User not authenticated');}
 
       let imageUrl = '';
       
@@ -45,7 +45,7 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
           .from('remedy-images')
           .upload(fileName, imageFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {throw uploadError;}
 
         const { data: { publicUrl } } = supabase.storage
           .from('remedy-images')
@@ -68,7 +68,7 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
         .from('remedies')
         .insert(remedyData);
 
-      if (error) throw error;
+      if (error) {throw error;}
     },
     onSuccess: () => {
       toast.success('Remedy created successfully!');
@@ -110,7 +110,7 @@ export const RemedyPostModal = ({ isOpen, onClose }: RemedyPostModalProps) => {
     createRemedyMutation.mutate();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center overflow-y-auto">

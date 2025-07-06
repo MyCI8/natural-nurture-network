@@ -33,7 +33,7 @@ export const AllSavedContent = ({ userId }: AllSavedContentProps) => {
   const { data: savedRemedies, isLoading: loadingRemedies } = useQuery({
     queryKey: ['allSavedRemedies', userId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!userId) {return [];}
       const { data, error } = await supabase
         .from('saved_remedies')
         .select(`
@@ -56,7 +56,7 @@ export const AllSavedContent = ({ userId }: AllSavedContentProps) => {
   const { data: savedVideos, isLoading: loadingVideos } = useQuery({
     queryKey: ['allSavedVideos', userId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!userId) {return [];}
       const { data, error } = await supabase
         .from('saved_posts')
         .select(`

@@ -48,7 +48,7 @@ export const VideoLinksSection = ({
     newLinks[index] = { ...newLinks[index], [field]: value };
     
     const hasInvalid = newLinks.some(link => {
-      if (!link.url || !link.title) return false; // Empty fields are not considered invalid
+      if (!link.url || !link.title) {return false;} // Empty fields are not considered invalid
       
       if (link.url.includes('youtube.com') || link.url.includes('youtu.be')) {
         const videoId = getYoutubeVideoId(link.url);
@@ -63,7 +63,7 @@ export const VideoLinksSection = ({
   };
   
   const getYoutubeVideoId = (url: string): string | null => {
-    if (!url) return null;
+    if (!url) {return null;}
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;

@@ -68,7 +68,7 @@ export const useArticleOperations = (id: string | undefined) => {
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         if (relatedLinks.length > 0) {
           console.log('Inserting related links for new article:', relatedLinks);
@@ -83,7 +83,7 @@ export const useArticleOperations = (id: string | undefined) => {
               }))
             );
 
-          if (linksError) throw linksError;
+          if (linksError) {throw linksError;}
         }
 
         toast({
@@ -96,7 +96,7 @@ export const useArticleOperations = (id: string | undefined) => {
           .update(finalArticleData)
           .eq("id", id);
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         // Delete existing links
         const { error: deleteError } = await supabase
@@ -104,7 +104,7 @@ export const useArticleOperations = (id: string | undefined) => {
           .delete()
           .eq("article_id", id);
 
-        if (deleteError) throw deleteError;
+        if (deleteError) {throw deleteError;}
 
         // Insert new links if any
         if (relatedLinks.length > 0) {
@@ -120,7 +120,7 @@ export const useArticleOperations = (id: string | undefined) => {
               }))
             );
 
-          if (linksError) throw linksError;
+          if (linksError) {throw linksError;}
         }
 
         toast({

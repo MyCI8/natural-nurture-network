@@ -23,9 +23,9 @@ export const FontControls = ({ editor, fontFamilies }: FontControlsProps) => {
   ];
 
   const getCurrentHeadingLevel = () => {
-    if (editor.isActive("heading", { level: 1 })) return "heading-1";
-    if (editor.isActive("heading", { level: 2 })) return "heading-2";
-    if (editor.isActive("heading", { level: 3 })) return "heading-3";
+    if (editor.isActive("heading", { level: 1 })) {return "heading-1";}
+    if (editor.isActive("heading", { level: 2 })) {return "heading-2";}
+    if (editor.isActive("heading", { level: 3 })) {return "heading-3";}
     return "paragraph";
   };
 

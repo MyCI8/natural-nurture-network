@@ -30,7 +30,7 @@ export const UserRemedies = ({ userId }: UserRemediesProps) => {
         .select('remedy_id')
         .eq('expert_id', userId);
 
-      if (expertError) throw expertError;
+      if (expertError) {throw expertError;}
 
       if (!expertRemedies || expertRemedies.length === 0) {
         return [];
@@ -45,7 +45,7 @@ export const UserRemedies = ({ userId }: UserRemediesProps) => {
         .in('id', remedyIds)
         .order('created_at', { ascending: false });
 
-      if (remediesError) throw remediesError;
+      if (remediesError) {throw remediesError;}
       return remedies || [];
     },
   });
