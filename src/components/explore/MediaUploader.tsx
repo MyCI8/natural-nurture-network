@@ -150,6 +150,7 @@ export function MediaUploader({
         </Alert>
         <EnhancedMediaUploader
           onMediaUpload={handleMediaUploadWithPreview}
+          onVideoLinkChange={handleVideoLinkChangeWithPreview}
           compact={compact}
           maxSizeMB={50}
           acceptedTypes={["video/*", "image/*"]}
@@ -188,6 +189,7 @@ export function MediaUploader({
   return (
     <EnhancedMediaUploader
       onMediaUpload={handleMediaUploadWithPreview}
+      onVideoLinkChange={handleVideoLinkChangeWithPreview}
       compact={compact}
       maxSizeMB={50}
       acceptedTypes={["video/*", "image/*"]}

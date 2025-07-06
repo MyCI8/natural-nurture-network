@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface EnhancedMediaUploaderProps {
   onMediaUpload: (file: File) => Promise<void>;
+  onVideoLinkChange: (url: string) => void;
   compact?: boolean;
   maxSizeMB?: number;
   acceptedTypes?: string[];
@@ -18,6 +19,7 @@ interface DragState {
 
 export function EnhancedMediaUploader({
   onMediaUpload,
+  onVideoLinkChange,
   compact = false,
   maxSizeMB = 50,
   acceptedTypes = ["video/*", "image/*"]
@@ -26,7 +28,7 @@ export function EnhancedMediaUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragState, setDragState] = useState<DragState>({ isDragging: false, dragCounter: 0 });
 
-  const processFile = useCallback(async (file: File) => {
+  const validateFile = (file: File): boolean => {
     // Check file type
     const isValidType = acceptedTypes.some(type => {
       if (type.endsWith('/*')) {
@@ -41,7 +43,7 @@ export function EnhancedMediaUploader({
         description: `Please select a ${acceptedTypes.join(' or ')} file`,
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     // Check file size
@@ -51,8 +53,14 @@ export function EnhancedMediaUploader({
         description: `Please select a file smaller than ${maxSizeMB}MB`,
         variant: "destructive",
       });
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  const processFile = useCallback(async (file: File) => {
+    if (!validateFile(file)) {return;}
 
     try {
       await onMediaUpload(file);
@@ -60,7 +68,7 @@ export function EnhancedMediaUploader({
       // Error is now handled and toasted in useVideoForm
       console.error("Error during media upload processing:", error);
     }
-  }, [onMediaUpload, acceptedTypes, maxSizeMB, toast]);
+  }, [onMediaUpload, validateFile]);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();

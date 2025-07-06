@@ -8,18 +8,6 @@ import tsParser from "@typescript-eslint/parser";
 export default [
   js.configs.recommended,
   {
-    files: ["**/*.js"],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.serviceworker,
-        self: "readonly",
-        caches: "readonly",
-        Response: "readonly",
-      },
-    },
-  },
-  {
     files: ["**/*.{ts,tsx}", "**/*.ts", "**/*.tsx"],
     languageOptions: {
       parser: tsParser,
@@ -33,14 +21,6 @@ export default [
         Deno: "readonly",
         __dirname: "readonly",
         require: "readonly",
-        // Service Worker globals
-        self: "readonly",
-        caches: "readonly",
-        Response: "readonly",
-        // Node.js globals for test files
-        global: "readonly",
-        NodeJS: "readonly",
-        RequestInit: "readonly",
       },
     },
     plugins: {

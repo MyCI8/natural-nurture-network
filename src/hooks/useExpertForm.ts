@@ -104,7 +104,7 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
         socialMedia: convertToSocialMediaLinks(expertData.social_media),
       });
     }
-  }, [expertData, initialData, defaultFormData]);
+  }, [expertData, initialData]);
 
   const handleSocialMediaChange = (platform: keyof SocialMediaLinks, value: string) => {
     setFormData(prev => ({
@@ -126,12 +126,7 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
     }));
   };
 
-  const handleCrawlerData = (data: {
-    name?: string;
-    biography?: string;
-    image?: string;
-    socialLinks?: Partial<SocialMediaLinks>;
-  }) => {
+  const handleCrawlerData = (data: any) => {
     setFormData(prev => ({
       ...prev,
       fullName: data.name || prev.fullName,
