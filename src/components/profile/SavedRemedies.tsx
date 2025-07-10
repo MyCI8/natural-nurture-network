@@ -21,7 +21,7 @@ export const SavedRemedies = ({ userId }: SavedRemediesProps) => {
   const { data: savedRemedies, isLoading } = useQuery({
     queryKey: ['savedRemedies', userId],
     queryFn: async () => {
-      if (!userId) {return [];}
+      if (!userId) return [];
       const { data, error } = await (supabase as any)
         .from('saved_remedies')
         .select(`

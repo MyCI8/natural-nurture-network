@@ -10,7 +10,7 @@ interface ProductLinksListProps {
 }
 
 const ProductLinksList: React.FC<ProductLinksListProps> = ({ productLinks }) => {
-  if (productLinks.length === 0) {return null;}
+  if (productLinks.length === 0) return null;
 
   const handleProductClick = (url: string) => {
     window.open(url, '_blank');

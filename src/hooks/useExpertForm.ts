@@ -64,7 +64,7 @@ export const useExpertForm = (expertId?: string, initialData?: Partial<ExpertFor
   } = useQuery({
     queryKey: ["expert", expertId],
     queryFn: async () => {
-      if (!expertId || expertId === "new") {return null;}
+      if (!expertId || expertId === "new") return null;
 
       const { data, error } = await supabase
         .from("experts")

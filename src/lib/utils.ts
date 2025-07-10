@@ -6,12 +6,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(dateString: string) {
-  if (!dateString) {return "";}
+  if (!dateString) return "";
   
   const date = new Date(dateString);
   
   // Check if date is valid
-  if (isNaN(date.getTime())) {return "";}
+  if (isNaN(date.getTime())) return "";
   
   // Format: "Aug 31, 2023"
   return new Intl.DateTimeFormat("en-US", {

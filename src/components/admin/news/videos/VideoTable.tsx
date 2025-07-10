@@ -46,6 +46,7 @@ const VideoTable: React.FC<VideoTableProps> = ({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+  const { toast } = useToast();
 
   const columns = getVideoColumns({ navigate, onDelete, onArchive });
 

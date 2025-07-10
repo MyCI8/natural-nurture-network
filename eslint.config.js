@@ -2,29 +2,18 @@ import js from "@eslint/js";
 import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import tseslint from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
+import tseslint from "typescript-eslint";
 
-export default [
-  js.configs.recommended,
+export default tseslint.config(
+  { ignores: ["dist"] },
   {
-    files: ["**/*.{ts,tsx}", "**/*.ts", "**/*.tsx"],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: "module",
-      },
-      globals: {
-        ...globals.browser,
-        React: "readonly",
-        Deno: "readonly",
-        __dirname: "readonly",
-        require: "readonly",
-      },
+      ecmaVersion: 2020,
+      globals: globals.browser,
     },
     plugins: {
-      "@typescript-eslint": tseslint,
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
     },
@@ -36,13 +25,13 @@ export default [
       ],
       "@typescript-eslint/no-unused-vars": "error",
       "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/prefer-const": "error",
       "@typescript-eslint/no-non-null-assertion": "warn",
-      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-function-return-type": "warn",
       "prefer-const": "error",
       "no-var": "error",
       "eqeqeq": ["error", "always"],
       "curly": ["error", "all"],
-      "react-hooks/exhaustive-deps": "warn",
     },
-  },
-];
+  }
+);

@@ -9,7 +9,7 @@ interface SearchResultsProps {
 }
 
 export const SearchResults = ({ result, onSelectData }: SearchResultsProps) => {
-  if (!result) {return null;}
+  if (!result) return null;
 
   return (
     <Card className="p-4">

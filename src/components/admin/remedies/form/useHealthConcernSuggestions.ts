@@ -25,7 +25,7 @@ export const useHealthConcernSuggestions = (
     queryFn: async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {return [];}
+        if (!user) return [];
         
         const { data, error } = await supabase
           .from("health_concern_suggestions" as any)
@@ -38,7 +38,7 @@ export const useHealthConcernSuggestions = (
           return [];
         }
         
-        if (!data || !Array.isArray(data)) {return [];}
+        if (!data || !Array.isArray(data)) return [];
         
         return data
           .filter((item: any) => item && typeof item === 'object' && item.id && item.concern_name)
@@ -61,7 +61,7 @@ export const useHealthConcernSuggestions = (
     mutationFn: async (concernName: string) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {throw new Error("Must be logged in to suggest health concerns");}
+        if (!user) throw new Error("Must be logged in to suggest health concerns");
 
         const { data, error } = await supabase
           .from("health_concern_suggestions" as any)

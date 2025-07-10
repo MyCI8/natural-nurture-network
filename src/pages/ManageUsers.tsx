@@ -127,7 +127,7 @@ const ManageUsers = () => {
         .update({ account_status: "inactive" })
         .eq("id", userId);
 
-      if (error) {throw error;}
+      if (error) throw error;
 
       toast({
         title: "Success",

@@ -13,7 +13,7 @@ export function usePostManagement() {
         .update({ status: 'archived' })
         .eq('id', postId);
       
-      if (error) {throw error;}
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userVideos'] });
@@ -31,7 +31,7 @@ export function usePostManagement() {
         .delete()
         .eq('id', postId);
       
-      if (error) {throw error;}
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userVideos'] });

@@ -33,7 +33,7 @@ export const UserVideoGrid = ({ userId }: UserVideoGridProps) => {
         .neq('video_type', 'news')
         .order('created_at', { ascending: false });
 
-      if (error) {throw error;}
+      if (error) throw error;
       return data as Video[];
     },
   });

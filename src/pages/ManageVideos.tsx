@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
   BarChart, 
@@ -13,8 +14,10 @@ import {
   Video as VideoIcon,
   LucideProps 
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Video } from "@/types/video";
 
@@ -142,7 +145,7 @@ const ManageVideos = () => {
         .delete()
         .eq("id", videoId);
       
-      if (error) {throw error;}
+      if (error) throw error;
       return videoId;
     },
     onSuccess: () => {
@@ -168,7 +171,7 @@ const ManageVideos = () => {
         .update({ status: "archived" })
         .eq("id", videoId);
       
-      if (error) {throw error;}
+      if (error) throw error;
       return videoId;
     },
     onSuccess: () => {
@@ -193,7 +196,7 @@ const ManageVideos = () => {
         .update({ show_in_latest: featured })
         .eq("id", videoId);
       
-      if (error) {throw error;}
+      if (error) throw error;
       return { videoId, featured };
     },
     onSuccess: ({ videoId, featured }) => {
@@ -455,6 +458,7 @@ const ManageVideos = () => {
   );
 };
 
+const Card = ({ className, children }: { className?: string, children: React.ReactNode }) => {
   return (
     <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
       {children}

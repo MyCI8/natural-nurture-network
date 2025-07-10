@@ -14,11 +14,11 @@ export interface Expert {
 }
 
 export const parseVideos = (videosData: Json | null): Video[] => {
-  if (!videosData || !Array.isArray(videosData)) {return [];}
+  if (!videosData || !Array.isArray(videosData)) return [];
   
   return videosData
     .filter((video): video is { title: string; url: string; thumbnail?: string } => {
-      if (typeof video !== 'object' || video === null) {return false;}
+      if (typeof video !== 'object' || video === null) return false;
       const v = video as any;
       return typeof v.title === 'string' && typeof v.url === 'string' &&
              (v.thumbnail === undefined || typeof v.thumbnail === 'string');

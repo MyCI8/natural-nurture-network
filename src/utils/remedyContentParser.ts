@@ -7,7 +7,7 @@ interface ParsedRemedyContent {
 }
 
 export const formatContentWithLists = (text: string): string => {
-  if (!text) {return '';}
+  if (!text) return '';
 
   const trimmedText = text.trim();
   // If it looks like HTML, return it as is. This is a simple heuristic.
@@ -16,7 +16,7 @@ export const formatContentWithLists = (text: string): string => {
   }
 
   const cleanedText = text.replace(/\*\*/g, '').trim();
-  if (!cleanedText) {return '';}
+  if (!cleanedText) return '';
 
   const lines = cleanedText.split('\n');
   let html = '';

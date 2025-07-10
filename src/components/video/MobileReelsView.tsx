@@ -34,7 +34,7 @@ const MobileReelsView: React.FC<MobileReelsViewProps> = ({
   useEffect(() => {
     if (videos.length > 0) {
       const index = videos.findIndex(v => v.id === currentId);
-      if (index >= 0) {setActiveVideoIndex(index);}
+      if (index >= 0) setActiveVideoIndex(index);
     }
   }, [currentId, videos]);
 

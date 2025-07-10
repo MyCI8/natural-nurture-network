@@ -8,6 +8,8 @@ import { useVideoSave } from "./video/useVideoSave";
 import { toast } from "sonner";
 
 export function useVideoForm(videoId?: string, defaultVideoType: "news" | "explore" | "general" = "explore") {
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const { 
     video, 

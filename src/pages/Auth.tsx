@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,7 +104,7 @@ const Auth = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {return;}
+    if (!validateForm()) return;
     
     setLoading(true);
 
@@ -123,10 +127,11 @@ const Auth = () => {
           },
         });
         
-        if (error) {throw error;}
+        if (error) throw error;
         
         // After successful signup, also update the profiles table with additional info
         // (The trigger will create the profile, but we need to update it with our additional fields)
+        const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
           // Update the profile with additional info including avatar
@@ -150,7 +155,7 @@ const Auth = () => {
           email,
           password,
         });
-        if (error) {throw error;}
+        if (error) throw error;
         
         // Invalidate auth queries after successful sign in
         invalidateAuthQueries(queryClient);
@@ -176,7 +181,7 @@ const Auth = () => {
         },
       });
       
-      if (error) {throw error;}
+      if (error) throw error;
     } catch (error: any) {
       toast({
         title: "Error",

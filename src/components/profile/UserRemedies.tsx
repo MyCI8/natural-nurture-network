@@ -1,7 +1,9 @@
 
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Star, Heart, Leaf } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -28,7 +30,7 @@ export const UserRemedies = ({ userId }: UserRemediesProps) => {
         .select('remedy_id')
         .eq('expert_id', userId);
 
-      if (expertError) {throw expertError;}
+      if (expertError) throw expertError;
 
       if (!expertRemedies || expertRemedies.length === 0) {
         return [];
@@ -37,12 +39,13 @@ export const UserRemedies = ({ userId }: UserRemediesProps) => {
       const remedyIds = expertRemedies.map(er => er.remedy_id);
 
       // Then get the actual remedy details
+      const { data: remedies, error: remediesError } = await supabase
         .from('remedies')
         .select('id, name, summary, image_url, status, created_at')
         .in('id', remedyIds)
         .order('created_at', { ascending: false });
 
-      if (remediesError) {throw remediesError;}
+      if (remediesError) throw remediesError;
       return remedies || [];
     },
   });

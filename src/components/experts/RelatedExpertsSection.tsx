@@ -23,12 +23,12 @@ export const RelatedExpertsSection = ({
         .neq("id", currentExpertId)
         .limit(4);
 
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
   });
 
-  if (experts.length === 0) {return null;}
+  if (experts.length === 0) return null;
 
   return (
     <section className="bg-secondary py-16">

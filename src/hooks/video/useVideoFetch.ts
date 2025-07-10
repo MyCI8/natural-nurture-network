@@ -10,7 +10,7 @@ export function useVideoFetch(videoId?: string) {
   const [articles, setArticles] = useState<{id: string, title: string}[]>([]);
 
   const fetchVideo = async () => {
-    if (!videoId) {return;}
+    if (!videoId) return;
     
     setIsLoading(true);
     try {
@@ -29,7 +29,7 @@ export function useVideoFetch(videoId?: string) {
         .eq("id", videoId)
         .single();
         
-      if (error) {throw error;}
+      if (error) throw error;
       
       if (data) {
         setVideo(data as Video);
@@ -52,7 +52,7 @@ export function useVideoFetch(videoId?: string) {
         .select('id, title')
         .eq('status', 'published');
         
-      if (error) {throw error;}
+      if (error) throw error;
       setArticles(data || []);
     } catch (error) {
       console.error('Error fetching articles:', error);

@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Leaf, LogOut, Shield, Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 
 const Navbar = () => {
@@ -12,7 +14,7 @@ const Navbar = () => {
   const { data: isAdmin, isLoading: isCheckingAdmin } = useQuery({
     queryKey: ["userRole"],
     queryFn: async () => {
-      if (!session) {return false;}
+      if (!session) return false;
       const { data, error } = await supabase.rpc('check_is_admin');
       if (error) {
         console.error('Error checking admin role:', error);
@@ -43,6 +45,7 @@ const Navbar = () => {
   };
 
   const handleUploadClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate('/auth');
       return;

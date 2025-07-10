@@ -1,12 +1,18 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import RemediesSection from "./remedies/RemediesSection";
+import { useRef } from "react";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 
 const NewsSection = () => {
+  const remediesSectionRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   
   const {
     data: newsItems,
@@ -20,7 +26,7 @@ const NewsSection = () => {
       } = await supabase.from("news_articles").select("*").eq("status", "published").order("published_at", {
         ascending: false
       }).limit(4);
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     }
   });
@@ -37,7 +43,7 @@ const NewsSection = () => {
       } = await supabase.from("videos").select("*").eq("status", "published").eq("video_type", "news").eq("show_in_latest", true).order("created_at", {
         ascending: false
       }).limit(4);
-      if (error) {throw error;}
+      if (error) throw error;
       console.log("News Videos fetched:", data);
       return data || [];
     }
@@ -166,7 +172,8 @@ const NewsSection = () => {
   );
 };
 
-  if (!url) {return '';}
+const getYoutubeVideoId = url => {
+  if (!url) return '';
   let videoId = '';
   try {
     if (url.includes('youtube.com/watch')) {

@@ -23,7 +23,7 @@ export const useSwipeGesture = ({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!touchStartX.current || !isExpanded) {return;}
+      if (!touchStartX.current || !isExpanded) return;
       
       const touchX = e.touches[0].clientX;
       const diff = touchStartX.current - touchX;

@@ -16,7 +16,7 @@ export const AutoUrlPreview: React.FC<AutoUrlPreviewProps> = ({
 }) => {
   const urls = detectUrls(text).slice(0, maxPreviews);
 
-  if (urls.length === 0) {return null;}
+  if (urls.length === 0) return null;
 
   return (
     <div className={`space-y-2 ${className}`}>

@@ -19,14 +19,14 @@ export const useVideoMetadata = () => {
     
     for (const pattern of patterns) {
       const match = url.match(pattern);
-      if (match) {return match[1];}
+      if (match) return match[1];
     }
     return null;
   };
 
   const fetchYouTubeMetadata = async (url: string): Promise<VideoMetadata | null> => {
     const videoId = extractYouTubeVideoId(url);
-    if (!videoId) {return null;}
+    if (!videoId) return null;
 
     try {
       // Use YouTube's oEmbed API which doesn't require an API key
@@ -34,7 +34,7 @@ export const useVideoMetadata = () => {
         `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
       );
       
-      if (!response.ok) {throw new Error('Failed to fetch video metadata');}
+      if (!response.ok) throw new Error('Failed to fetch video metadata');
       
       const data = await response.json();
       return {
@@ -51,7 +51,7 @@ export const useVideoMetadata = () => {
   const fetchVimeoMetadata = async (url: string): Promise<VideoMetadata | null> => {
     try {
       const response = await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url)}`);
-      if (!response.ok) {throw new Error('Failed to fetch Vimeo metadata');}
+      if (!response.ok) throw new Error('Failed to fetch Vimeo metadata');
       
       const data = await response.json();
       return {

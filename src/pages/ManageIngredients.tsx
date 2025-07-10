@@ -65,14 +65,14 @@ const ManageIngredients = () => {
         .from("ingredients")
         .select("*")
         .order("name");
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
     enabled: !isLoading,
   });
 
   const handleDelete = async () => {
-    if (!deleteIngredient) {return;}
+    if (!deleteIngredient) return;
 
     try {
       const { error } = await supabase
@@ -80,7 +80,7 @@ const ManageIngredients = () => {
         .delete()
         .eq("id", deleteIngredient.id);
 
-      if (error) {throw error;}
+      if (error) throw error;
 
       toast({
         title: "Success",

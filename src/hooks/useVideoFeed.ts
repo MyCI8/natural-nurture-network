@@ -12,7 +12,7 @@ export function useVideoFeed(initialVideos: Video[]) {
 
   const handleSwipe = useCallback((direction: 'up' | 'down', currentVideoId: string) => {
     const currentIndex = initialVideos.findIndex(v => v.id === currentVideoId);
-    if (currentIndex === -1) {return;}
+    if (currentIndex === -1) return;
 
     if (direction === 'up' && currentIndex < initialVideos.length - 1) {
       setActiveVideoId(initialVideos[currentIndex + 1].id);

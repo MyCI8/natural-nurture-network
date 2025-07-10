@@ -31,7 +31,7 @@ export const useSecureForm = <T extends Record<string, any>>(
 
   const validateField = useCallback((name: string, value: any): string | null => {
     const rule = validationRules[name];
-    if (!rule) {return null;}
+    if (!rule) return null;
 
     // Required check
     if (rule.required && (!value || value.toString().trim() === '')) {
@@ -62,7 +62,7 @@ export const useSecureForm = <T extends Record<string, any>>(
     // Custom validation
     if (rule.custom) {
       const customError = rule.custom(value);
-      if (customError) {return customError;}
+      if (customError) return customError;
     }
 
     // Built-in validations for common types

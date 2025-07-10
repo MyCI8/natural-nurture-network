@@ -84,7 +84,7 @@ export function useTouchGestures({
   }, [onLongPress, longPressDelay, preventScroll]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent | TouchEvent) => {
-    if (!touchStartRef.current) {return;}
+    if (!touchStartRef.current) return;
     
     // If the user is moving their finger, cancel the long press timer
     if (longPressTimerRef.current) {
@@ -126,7 +126,7 @@ export function useTouchGestures({
   }, [threshold, onPinchIn, onPinchOut, preventScroll]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent | TouchEvent) => {
-    if (!touchStartRef.current) {return;}
+    if (!touchStartRef.current) return;
     
     // Clear long press timer
     if (longPressTimerRef.current) {
@@ -140,7 +140,7 @@ export function useTouchGestures({
       (e.changedTouches[0] || e.touches[0]) : 
       (e.changedTouches[0] || e.touches[0]);
     
-    if (!touch) {return;}
+    if (!touch) return;
     
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = touch.clientY - touchStartRef.current.y;
@@ -192,6 +192,7 @@ export function useTouchGestures({
   }, [onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onTap, onDoubleTap, threshold, preventScroll]);
 
   // Function to calculate distance between two touch points
+  const getDistance = (touch1: TouchPoint, touch2: TouchPoint): number => {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);

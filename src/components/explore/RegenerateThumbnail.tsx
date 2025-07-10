@@ -34,8 +34,8 @@ const RegenerateThumbnail = ({ video, onThumbnailUpdated }: RegenerateThumbnailP
         }
       });
 
-      if (error) {throw error;}
-      if (!data.thumbnailUrl) {throw new Error("No thumbnail URL returned");}
+      if (error) throw error;
+      if (!data.thumbnailUrl) throw new Error("No thumbnail URL returned");
 
       // Update the video with the new thumbnail URL
       const { error: updateError } = await supabase
@@ -43,7 +43,7 @@ const RegenerateThumbnail = ({ video, onThumbnailUpdated }: RegenerateThumbnailP
         .update({ thumbnail_url: data.thumbnailUrl })
         .eq("id", video.id);
 
-      if (updateError) {throw updateError;}
+      if (updateError) throw updateError;
 
       // Notify parent component
       onThumbnailUpdated(data.thumbnailUrl);

@@ -55,7 +55,7 @@ export const SuggestExpertModal = () => {
         },
       ]);
 
-      if (error) {throw error;}
+      if (error) throw error;
 
       toast({
         title: "Success",

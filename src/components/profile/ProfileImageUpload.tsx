@@ -59,7 +59,7 @@ export function ProfileImageUpload({
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) {return;}
+    if (!file) return;
     
     try {
       // Create a preview

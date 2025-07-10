@@ -23,7 +23,7 @@ const EditNews = () => {
       const { data, error } = await supabase
         .from("experts")
         .select("id, full_name, title");
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
   });
@@ -32,7 +32,7 @@ const EditNews = () => {
   const { data: article, isLoading } = useQuery({
     queryKey: ["news-article", id],
     queryFn: async () => {
-      if (!id || isNewArticle) {return null;}
+      if (!id || isNewArticle) return null;
       
       const { data, error } = await supabase
         .from("news_articles")

@@ -10,7 +10,7 @@ interface RelatedNewsExpertsProps {
 }
 
 export const RelatedNewsExperts = ({ experts }: RelatedNewsExpertsProps) => {
-  if (!experts || experts.length === 0) {return null;}
+  if (!experts || experts.length === 0) return null;
 
   return (
     <section className="mb-12">

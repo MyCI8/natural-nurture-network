@@ -125,7 +125,7 @@ const Explore = () => {
       .order('created_at', {
         ascending: false
       });
-      if (error) {throw error;}
+      if (error) throw error;
       return data.map((video: any) => ({
         ...video,
         comments_count: video.comments?.[0]?.count || 0
@@ -143,7 +143,7 @@ const Explore = () => {
         .from('video_product_links')
         .select('*');
       
-      if (error) {throw error;}
+      if (error) throw error;
       return data as ProductLink[];
     }
   });
@@ -163,7 +163,7 @@ const Explore = () => {
         const {
           error
         } = await supabase.from('video_likes').delete().eq('video_id', videoId).eq('user_id', currentUser.id);
-        if (error) {throw error;}
+        if (error) throw error;
         return {
           videoId,
           liked: false
@@ -175,7 +175,7 @@ const Explore = () => {
           video_id: videoId,
           user_id: currentUser.id
         }]);
-        if (error) {throw error;}
+        if (error) throw error;
         return {
           videoId,
           liked: true
@@ -228,7 +228,7 @@ const Explore = () => {
             full_name
           )
         `);
-      if (error) {throw error;}
+      if (error) throw error;
       return {
         videoId,
         comment,
@@ -334,7 +334,7 @@ const Explore = () => {
   };
 
   const handleComment = (videoId: string) => {
-    if (!commentText.trim()) {return;}
+    if (!commentText.trim()) return;
     if (!currentUser) {
       toast({
         title: "Authentication required",
@@ -393,12 +393,12 @@ const Explore = () => {
           .delete()
           .eq('user_id', currentUser.id)
           .eq('video_id', videoId);
-        if (error) {throw error;}
+        if (error) throw error;
       } else {
         const { error } = await supabase
           .from('saved_posts')
           .insert({ user_id: currentUser.id, video_id: videoId });
-        if (error) {throw error;}
+        if (error) throw error;
       }
       // Sync after change
       const { data, error: syncErr } = await supabase

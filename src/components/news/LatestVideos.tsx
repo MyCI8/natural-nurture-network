@@ -24,7 +24,7 @@ const LatestVideos = () => {
         .order("created_at", { ascending: false })
         .limit(6);
 
-      if (error) {throw error;}
+      if (error) throw error;
       return data as Video[];
     },
   });

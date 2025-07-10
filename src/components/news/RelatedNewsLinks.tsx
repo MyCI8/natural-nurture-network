@@ -9,7 +9,7 @@ interface RelatedNewsLinksProps {
 }
 
 export const RelatedNewsLinks = ({ links }: RelatedNewsLinksProps) => {
-  if (!links || links.length === 0) {return null;}
+  if (!links || links.length === 0) return null;
 
   return (
     <section>

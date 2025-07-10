@@ -3,7 +3,7 @@
  * Convert string to consistent color for placeholders
  */
 export function stringToColor(str: string): string {
-  if (!str) {return '#4CAF50';} // Default green if no string
+  if (!str) return '#4CAF50'; // Default green if no string
   
   let hash = 0;
   for (let i = 0; i < str.length; i++) {

@@ -1,11 +1,15 @@
 
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload as UploadIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useVideoForm } from "@/hooks/useVideoForm";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { VideoLoadingState } from "@/components/explore/VideoLoadingState";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { MediaUploader } from "@/components/explore/MediaUploader";
 
 const Post = () => {
@@ -15,6 +19,7 @@ const Post = () => {
   const { data: currentUser, isLoading: isLoadingUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       return session?.user || null;
     },
   });

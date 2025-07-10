@@ -28,7 +28,7 @@ export const PendingApprovalsSection = ({
   pendingSuggestions,
   updateSuggestionMutation
 }: PendingApprovalsSectionProps) => {
-  if (pendingCount === 0) {return null;}
+  if (pendingCount === 0) return null;
 
   return (
     <div className="mb-8">

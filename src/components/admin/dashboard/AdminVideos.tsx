@@ -52,7 +52,7 @@ const AdminVideos = () => {
       query = query.order("created_at", { ascending: false }).limit(6);
 
       const { data, error } = await query;
-      if (error) {throw error;}
+      if (error) throw error;
       
       return data as Video[];
     },
@@ -71,7 +71,7 @@ const AdminVideos = () => {
           .delete()
           .eq("id", deleteVideoId);
         
-        if (error) {throw error;}
+        if (error) throw error;
         
         toast.success("Video deleted successfully");
         refetch();
@@ -85,7 +85,7 @@ const AdminVideos = () => {
   };
 
   const getYoutubeVideoId = (url: string) => {
-    if (!url) {return null;}
+    if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;

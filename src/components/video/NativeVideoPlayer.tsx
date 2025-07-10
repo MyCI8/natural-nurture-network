@@ -174,10 +174,10 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   // Calculate black padding for letterboxing/pillarboxing
   const getPaddingStyles = () => {
     // For images, don't apply padding, just let them display naturally
-    if (isImage) {return {};}
+    if (isImage) return {};
     
     // If we don't know the video's natural aspect ratio yet, return no padding
-    if (!videoNaturalAspectRatio) {return {};}
+    if (!videoNaturalAspectRatio) return {};
     
     // If video is wider than container (landscape video in portrait container)
     if (videoNaturalAspectRatio > targetAspectRatio) {
@@ -206,7 +206,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
 
   const renderMobileControls = () => {
     // If hideControls is true, don't render mobile controls
-    if (!isMobile || !isFullscreen || hideControls) {return null;}
+    if (!isMobile || !isFullscreen || hideControls) return null;
     
     return (
       <div className="absolute right-4 bottom-20 flex flex-col gap-6 items-center z-20">

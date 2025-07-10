@@ -48,7 +48,7 @@ const RightSection = () => {
   const { data: video } = useQuery({
     queryKey: ['video', id],
     queryFn: async () => {
-      if (!id) {return null;}
+      if (!id) return null;
       
       const { data, error } = await supabase
         .from('videos')
@@ -64,7 +64,7 @@ const RightSection = () => {
         .eq('id', id)
         .single();
         
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
     enabled: !!id && location.pathname.startsWith('/explore/') && location.pathname.split('/').length === 3
@@ -74,14 +74,14 @@ const RightSection = () => {
   const { data: productLinks = [] } = useQuery({
     queryKey: ['videoProductLinks', id],
     queryFn: async () => {
-      if (!id) {return [];}
+      if (!id) return [];
       
       const { data, error } = await supabase
         .from('video_product_links')
         .select('*')
         .eq('video_id', id);
         
-      if (error) {throw error;}
+      if (error) throw error;
       return data || [];
     },
     enabled: !!id && location.pathname.startsWith('/explore/') && location.pathname.split('/').length === 3

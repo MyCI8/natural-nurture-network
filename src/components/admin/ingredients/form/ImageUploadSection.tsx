@@ -1,7 +1,11 @@
 
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
 interface ImageUploadSectionProps {
   imageUrl: string;
   onImageChange: (url: string) => void;
@@ -14,7 +18,7 @@ const ImageUploadSection = ({ imageUrl, onImageChange }: ImageUploadSectionProps
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = event.target.files?.[0];
-      if (!file) {return;}
+      if (!file) return;
 
       setUploading(true);
       
@@ -48,6 +52,7 @@ const ImageUploadSection = ({ imageUrl, onImageChange }: ImageUploadSectionProps
         return;
       }
 
+      const { data: { publicUrl } } = supabase.storage
         .from('remedy-images')
         .getPublicUrl(`ingredients/${fileName}`);
 

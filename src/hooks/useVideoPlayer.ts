@@ -28,7 +28,7 @@ export function useVideoPlayer(videoId: string) {
         .eq('id', videoId)
         .single();
       
-      if (error) {throw error;}
+      if (error) throw error;
       return data as Video;
     },
     enabled: !!videoId,
@@ -42,7 +42,7 @@ export function useVideoPlayer(videoId: string) {
         .select('*')
         .eq('video_id', videoId);
         
-      if (error) {throw error;}
+      if (error) throw error;
       return data as ProductLink[];
     },
     enabled: !!videoId,

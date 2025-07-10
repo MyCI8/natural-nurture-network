@@ -59,6 +59,7 @@ serve(async (req) => {
       const thumbnailFilename = `thumbnail_${videoId}_${timestamp}.jpg`;
       
       // Create a unique URL for the video thumbnail
+      const { data: publicUrlData } = supabase.storage
         .from('video-media')
         .getPublicUrl(thumbnailFilename);
         

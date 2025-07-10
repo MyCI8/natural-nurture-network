@@ -15,7 +15,7 @@ const EditUser = () => {
   const { data: user, isLoading } = useQuery({
     queryKey: ["user", id],
     queryFn: async () => {
-      if (isNewUser) {return null;}
+      if (isNewUser) return null;
 
       const { data: profile, error } = await supabase
         .from("profiles")
@@ -28,7 +28,7 @@ const EditUser = () => {
         .eq("id", id)
         .single();
 
-      if (error) {throw error;}
+      if (error) throw error;
 
       console.log("Fetched user profile:", profile);
 

@@ -60,7 +60,7 @@ export function EnhancedMediaUploader({
   };
 
   const processFile = useCallback(async (file: File) => {
-    if (!validateFile(file)) {return;}
+    if (!validateFile(file)) return;
 
     try {
       await onMediaUpload(file);
@@ -113,7 +113,7 @@ export function EnhancedMediaUploader({
     if (file) {
       processFile(file);
     }
-    if (e.target) {e.target.value = '';}
+    if (e.target) e.target.value = '';
   };
 
   const getFileTypeIcon = () => {

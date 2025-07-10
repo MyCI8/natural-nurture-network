@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile, useBreakpoint } from "@/hooks/use-mobile";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
@@ -18,6 +19,8 @@ const MainSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
+  const { theme } = useTheme();
   const queryClient = useQueryClient();
   
   // State
@@ -49,14 +52,14 @@ const MainSidebar = () => {
   const { data: profile } = useQuery({
     queryKey: ['userProfile', currentUser?.id],
     queryFn: async () => {
-      if (!currentUser?.id) {return null;}
+      if (!currentUser?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentUser.id)
         .single();
       
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
     enabled: !!currentUser?.id,
@@ -75,7 +78,7 @@ const MainSidebar = () => {
   const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin', currentUser?.id],
     queryFn: async () => {
-      if (!currentUser?.id) {return false;}
+      if (!currentUser?.id) return false;
       const { data, error } = await supabase.rpc('check_is_admin');
       if (error) {
         console.error('Error checking admin status:', error);
@@ -99,7 +102,7 @@ const MainSidebar = () => {
 
   // Handle mobile scroll
   useEffect(() => {
-    if (!isMobile) {return;}
+    if (!isMobile) return;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;

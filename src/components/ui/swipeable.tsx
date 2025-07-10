@@ -31,7 +31,7 @@ export function Swipeable({
 
   // Calculate distance between two touch points
   const getDistance = (touches: React.TouchList): number => {
-    if (touches.length < 2) {return 0;}
+    if (touches.length < 2) return 0;
     
     const dx = touches[0].clientX - touches[1].clientX;
     const dy = touches[0].clientY - touches[1].clientY;
@@ -107,7 +107,7 @@ export function Swipeable({
       // Limit scale to reasonable bounds
       if (newScale >= 0.5 && newScale <= 3) {
         setScale(newScale);
-        if (onPinch) {onPinch(newScale);}
+        if (onPinch) onPinch(newScale);
       }
       
       // Prevent default to stop page zooming
@@ -117,7 +117,7 @@ export function Swipeable({
 
   // Handle touch end
   const handleTouchEnd = useCallback(() => {
-    if (!touchStart.current || !touchEnd.current) {return;}
+    if (!touchStart.current || !touchEnd.current) return;
     
     setSwipeInProgress(false);
     

@@ -20,7 +20,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
   }, [])
   
   // Need this check to prevent hydration mismatch
-  if (!mounted) {return null}
+  if (!mounted) return null
   
   const isDark = resolvedTheme === "dark"
 

@@ -55,7 +55,7 @@ export function useInstagramSwipe(
   // Calculate instantaneous velocity using recent touch points
   const calculateVelocity = useCallback(() => {
     const history = stateRef.current.velocityHistory;
-    if (history.length < 2) {return 0;}
+    if (history.length < 2) return 0;
 
     // Use recent points for velocity calculation
     const recentPoints = history.slice(-5);
@@ -69,6 +69,7 @@ export function useInstagramSwipe(
   }, []);
 
   // Apply resistance at boundaries (rubber band effect)
+  const applyResistance = useCallback((deltaY: number, canGoUp: boolean, canGoDown: boolean) => {
     const direction = deltaY < 0 ? 'up' : 'down';
     
     // If trying to swipe beyond boundaries, apply resistance
@@ -82,7 +83,7 @@ export function useInstagramSwipe(
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
-    if (!touch) {return;}
+    if (!touch) return;
 
     const now = performance.now();
     const state = stateRef.current;
@@ -105,13 +106,14 @@ export function useInstagramSwipe(
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
-    if (!touch) {return;}
+    if (!touch) return;
 
     const state = stateRef.current;
-    if (!state.isDragging) {return;}
+    if (!state.isDragging) return;
 
     const now = performance.now();
     const deltaY = touch.clientY - state.startY;
+    const instantDeltaY = touch.clientY - state.lastY;
     
     // Update state
     state.currentY = touch.clientY;
@@ -150,12 +152,13 @@ export function useInstagramSwipe(
 
   const handleTouchEnd = useCallback(() => {
     const state = stateRef.current;
-    if (!state.isDragging) {return;}
+    if (!state.isDragging) return;
 
     state.isDragging = false;
     setIsActive(false);
 
     const deltaY = state.currentY - state.startY;
+    const elapsedTime = state.lastTime - state.startTime;
     const velocity = calculateVelocity();
     const screenHeight = window.innerHeight;
     

@@ -15,14 +15,14 @@ export const RelatedExperts = ({ expertIds }: RelatedExpertsProps) => {
   const { data: experts = [], isLoading } = useQuery({
     queryKey: ["related-experts", expertIds],
     queryFn: async () => {
-      if (expertIds.length === 0) {return [];}
+      if (expertIds.length === 0) return [];
       
       const { data, error } = await supabase
         .from("experts")
         .select("id, full_name, title, image_url, field_of_expertise")
         .in("id", expertIds);
 
-      if (error) {throw error;}
+      if (error) throw error;
       return data || [];
     },
     enabled: expertIds.length > 0,
@@ -41,7 +41,7 @@ export const RelatedExperts = ({ expertIds }: RelatedExpertsProps) => {
     );
   }
 
-  if (experts.length === 0) {return null;}
+  if (experts.length === 0) return null;
 
   return (
     <div className="space-y-3">

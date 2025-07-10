@@ -9,6 +9,7 @@ import {
 import { Video } from '@/types/video';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface VideoModalProps {
@@ -56,6 +57,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
   isOpen, 
   onClose 
 }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const didMountRef = useRef(false);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
     didMountRef.current = true;
   }, [isOpen]);
 
-  if (!video) {return null;}
+  if (!video) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

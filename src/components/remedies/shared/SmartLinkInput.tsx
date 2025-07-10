@@ -42,7 +42,7 @@ export const SmartLinkInput = ({ links, onLinksChange }: SmartLinkInputProps) =>
   const { fetchVideoMetadata, isLoading } = useVideoMetadata();
 
   const fetchTitleForUrl = async (url: string) => {
-    if (!isVideoUrl(url)) {return;}
+    if (!isVideoUrl(url)) return;
     
     const metadata = await fetchVideoMetadata(url);
     if (metadata?.title) {
@@ -76,7 +76,7 @@ export const SmartLinkInput = ({ links, onLinksChange }: SmartLinkInputProps) =>
   };
 
   const addLink = () => {
-    if (!newUrl.trim()) {return;}
+    if (!newUrl.trim()) return;
     
     const type = isVideoUrl(newUrl) ? 'video' : 'link';
     const newLink: LinkData = {

@@ -32,7 +32,7 @@ export const VideoInfoPanel = ({ video, isLoading }: VideoInfoPanelProps) => {
     );
   }
 
-  if (!video) {return null;}
+  if (!video) return null;
 
   // Calculate approximate file size (this is just an estimate)
   const fileSize = video.video_url?.includes('youtube.com') ? 

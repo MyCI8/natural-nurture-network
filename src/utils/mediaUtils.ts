@@ -19,7 +19,7 @@ export interface MediaInfo {
  * Detect media type from URL or file
  */
 export const detectMediaType = (url: string): MediaType => {
-  if (!url) {return 'unknown';}
+  if (!url) return 'unknown';
   
   const lowerUrl = url.toLowerCase();
   

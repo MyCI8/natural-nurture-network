@@ -122,7 +122,7 @@ const SmoothReelsContainer: React.FC<SmoothReelsContainerProps> = ({
       setIsTransitioning(false);
     },
     onSwipeProgress: (progress: number, direction: 'up' | 'down', deltaY: number) => {
-      if (isTransitioning) {return;}
+      if (isTransitioning) return;
       
       setSwipeProgress(progress);
       setSwipeDirection(direction);
@@ -196,7 +196,7 @@ const SmoothReelsContainer: React.FC<SmoothReelsContainerProps> = ({
     resetTransforms(false);
   }, [currentIndex, resetTransforms]);
 
-  if (!currentVideo) {return null;}
+  if (!currentVideo) return null;
 
   return (
     <div className="fixed inset-0 bg-black z-50 overflow-hidden">

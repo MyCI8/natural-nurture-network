@@ -42,7 +42,7 @@ const Experts = () => {
       }
 
       const { data: expertsData, error } = await query;
-      if (error) {throw error;}
+      if (error) throw error;
 
       // Get remedy counts for each expert
       const expertsWithCounts = await Promise.all(
@@ -77,7 +77,7 @@ const Experts = () => {
         .select("field_of_expertise")
         .not("field_of_expertise", "is", null);
 
-      if (error) {throw error;}
+      if (error) throw error;
       return [...new Set(data.map(e => e.field_of_expertise))].filter(Boolean);
     },
   });

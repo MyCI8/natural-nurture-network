@@ -126,7 +126,7 @@ export const MobileUploadBox: React.FC<MobileUploadBoxProps> = ({
             accept={accept}
             className="hidden"
             onChange={e => {
-              if (e.target.files?.[0]) {handleSelectFile(e.target.files[0]);}
+              if (e.target.files?.[0]) handleSelectFile(e.target.files[0]);
             }}
           />
           {state.status === "error" && (

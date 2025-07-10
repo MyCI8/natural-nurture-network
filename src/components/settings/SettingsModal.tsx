@@ -44,14 +44,14 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
   const { data: profile } = useQuery({
     queryKey: ['userProfile', userId],
     queryFn: async () => {
-      if (!userId) {return null;}
+      if (!userId) return null;
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
       
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
     enabled: !!userId,
@@ -61,9 +61,9 @@ export function SettingsModal({ open, onOpenChange, userId }: SettingsModalProps
   const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin', userId],
     queryFn: async () => {
-      if (!userId) {return false;}
+      if (!userId) return false;
       const { data, error } = await supabase.rpc('check_is_admin');
-      if (error) {return false;}
+      if (error) return false;
       return !!data;
     },
     enabled: !!userId,

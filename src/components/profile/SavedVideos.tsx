@@ -31,7 +31,7 @@ export const SavedVideos = ({ userId }: SavedVideosProps) => {
         `)
         .eq('user_id', userId);
 
-      if (error) {throw error;}
+      if (error) throw error;
 
       // Extract video objects from the query result and ensure proper typing
       const videos = (data as SavedPost[])

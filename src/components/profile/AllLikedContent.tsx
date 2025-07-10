@@ -34,7 +34,7 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
   const { data: likedRemedies, isLoading: loadingRemedies } = useQuery({
     queryKey: ['allLikedRemedies', userId],
     queryFn: async () => {
-      if (!userId) {return [];}
+      if (!userId) return [];
       const { data, error } = await supabase
         .from('remedy_likes')
         .select(`
@@ -58,7 +58,7 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
   const { data: likedVideos, isLoading: loadingVideos } = useQuery({
     queryKey: ['allLikedVideos', userId],
     queryFn: async () => {
-      if (!userId) {return [];}
+      if (!userId) return [];
       const { data, error } = await supabase
         .from('video_likes')
         .select(`
@@ -93,7 +93,7 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
     }
 
     const video = item.video;
-    if (!video) {return "/placeholder.svg";}
+    if (!video) return "/placeholder.svg";
     
     // For image posts, use video_url as the image source
     if (isImagePost(video.video_url || '')) {
@@ -135,7 +135,7 @@ export const AllLikedContent = ({ userId }: AllLikedContentProps) => {
     }
 
     const video = item.video;
-    if (!video) {return null;}
+    if (!video) return null;
     
     if (isImagePost(video.video_url || '')) {
       return <ImageIcon className="h-4 w-4 text-white" />;

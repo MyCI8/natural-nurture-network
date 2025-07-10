@@ -1,19 +1,27 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, PlayCircle, Video, Clock, ArrowRight, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { useLayout } from "@/contexts/LayoutContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { SafeHtml } from '@/utils/sanitizer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Json } from "@/integrations/supabase/types";
 import { Swipeable } from "@/components/ui/swipeable";
 import { ZoomableImage } from "@/components/ui/zoomable-image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DebugData } from "@/components/ui/debug-data";
+
 type SymptomType = Database['public']['Enums']['symptom_type'];
 
 interface VideoLink {
@@ -27,7 +35,7 @@ interface RelatedItem {
 }
 
 const parseVideoLinks = (links: Json | null): VideoLink[] => {
-  if (!links) {return [];}
+  if (!links) return [];
   
   try {
     if (typeof links === 'string') {
@@ -69,7 +77,9 @@ const ensureArray = <T extends unknown>(data: any): T[] => {
 const SymptomDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { setShowRightSection } = useLayout();
+  const { toast } = useToast();
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   console.log("Symptom ID from params:", id);
@@ -138,12 +148,12 @@ const SymptomDetail = () => {
   const { data: relatedContent } = useQuery({
     queryKey: ['symptom-content', symptomDetails?.symptom],
     queryFn: async () => {
-      if (!symptomDetails?.symptom) {return {
+      if (!symptomDetails?.symptom) return {
         related_remedies: [],
         related_experts: [],
         related_articles: [],
         related_links: []
-      };}
+      };
       
       console.log("Fetching related content for symptom:", symptomDetails.symptom);
       
@@ -595,7 +605,7 @@ const SymptomDetail = () => {
 };
 
 function getYoutubeVideoId(url: string): string | null {
-  if (!url) {return null;}
+  if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;

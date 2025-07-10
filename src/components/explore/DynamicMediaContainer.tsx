@@ -55,6 +55,7 @@ export const DynamicMediaContainer: React.FC<DynamicMediaContainerProps> = ({
       const maxWidth = 400; // Max container width
       const maxHeight = 600; // Max container height for images
       
+      const optimalDimensions = calculateContainerDimensions(
         dimensions.width,
         dimensions.height,
         maxWidth,
@@ -67,7 +68,7 @@ export const DynamicMediaContainer: React.FC<DynamicMediaContainerProps> = ({
 
   // Calculate container style based on media type
   const getContainerStyle = () => {
-    if (!mediaInfo) {return { aspectRatio: '4/5' };}
+    if (!mediaInfo) return { aspectRatio: '4/5' };
     
     if (mediaInfo.isImage) {
       // For images, use natural aspect ratio with constraints

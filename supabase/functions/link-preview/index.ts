@@ -129,7 +129,7 @@ serve(async (req) => {
     let title = '';
     let description = '';
     let thumbnailUrl = '';
-    const price = null;
+    let price = null;
 
     // Get meta tags (including OpenGraph and Twitter Card)
     const metaTags = doc?.querySelectorAll('meta');
@@ -291,9 +291,9 @@ serve(async (req) => {
 });
 
 function isValidImageUrl(url: string): boolean {
-  if (!url) {return false;}
+  if (!url) return false;
   
-  if (url.startsWith('data:image/')) {return true;}
+  if (url.startsWith('data:image/')) return true;
   
   const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
   const lowercaseUrl = url.toLowerCase();

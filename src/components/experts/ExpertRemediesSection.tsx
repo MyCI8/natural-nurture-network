@@ -20,7 +20,7 @@ export const ExpertRemediesSection = ({ expertId }: ExpertRemediesSectionProps) 
         .contains("expert_recommendations", [expertId])
         .eq("status", "published");
 
-      if (error) {throw error;}
+      if (error) throw error;
       return data || [];
     },
   });

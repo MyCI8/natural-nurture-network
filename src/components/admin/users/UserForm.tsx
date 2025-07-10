@@ -64,7 +64,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
             })
             .eq("id", userId);
 
-          if (profileError) {throw profileError;}
+          if (profileError) throw profileError;
 
           if (data.role) {
             const { error: roleError } = await supabase
@@ -76,7 +76,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
                 onConflict: "user_id",
               });
 
-            if (roleError) {throw roleError;}
+            if (roleError) throw roleError;
           }
         } else {
           const { error: signUpError, data: authData } = await supabase.auth.signUp({
@@ -84,10 +84,10 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
             password: crypto.randomUUID(),
           });
 
-          if (signUpError) {throw signUpError;}
+          if (signUpError) throw signUpError;
 
           const newUserId = authData.user?.id;
-          if (!newUserId) {throw new Error("Failed to create user");}
+          if (!newUserId) throw new Error("Failed to create user");
 
           const { error: profileError } = await supabase
             .from("profiles")
@@ -99,7 +99,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
             })
             .eq("id", newUserId);
 
-          if (profileError) {throw profileError;}
+          if (profileError) throw profileError;
 
           if (data.role) {
             const { error: roleError } = await supabase
@@ -109,7 +109,7 @@ export const UserForm = ({ userId, initialData }: UserFormProps) => {
                 role: data.role,
               });
 
-            if (roleError) {throw roleError;}
+            if (roleError) throw roleError;
           }
         }
       } finally {

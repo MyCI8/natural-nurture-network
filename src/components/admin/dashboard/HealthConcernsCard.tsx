@@ -78,7 +78,7 @@ const HealthConcernsCard = () => {
           })
           .eq("id", id);
         
-        if (error) {throw error;}
+        if (error) throw error;
       } catch (error) {
         console.error("Error updating suggestion:", error);
         throw error;

@@ -52,7 +52,7 @@ export const useRemedyForm = () => {
     queryFn: async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {return [];}
+        if (!user) return [];
         
         const { data, error } = await supabase
           .from("health_concern_suggestions" as any)
@@ -65,7 +65,7 @@ export const useRemedyForm = () => {
           return [];
         }
         
-        if (!data || !Array.isArray(data)) {return [];}
+        if (!data || !Array.isArray(data)) return [];
         
         return data
           .filter((item: any) => item && typeof item === 'object' && item.id && item.concern_name)
@@ -84,7 +84,7 @@ export const useRemedyForm = () => {
   const { data: remedy, isLoading } = useQuery({
     queryKey: ["remedy", id],
     queryFn: async () => {
-      if (!id || id === "new") {return null;}
+      if (!id || id === "new") return null;
       
       const { data, error } = await supabase
         .from("remedies")
@@ -92,7 +92,7 @@ export const useRemedyForm = () => {
         .eq("id", id)
         .single();
 
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
   });

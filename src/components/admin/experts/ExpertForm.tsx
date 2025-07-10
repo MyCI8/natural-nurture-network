@@ -60,7 +60,7 @@ export const ExpertForm = ({ expertId, onSuccess, initialData }: ExpertFormProps
           .insert([expertData]));
       }
 
-      if (error) {throw error;}
+      if (error) throw error;
 
       toast({
         title: "Success",

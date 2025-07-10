@@ -54,7 +54,7 @@ export const RemedyIngredientsSection = ({
             description: newIngredient.description.trim()
           }]);
 
-        if (error) {throw error;}
+        if (error) throw error;
       } catch (error) {
         console.error("Error adding ingredient:", error);
       }

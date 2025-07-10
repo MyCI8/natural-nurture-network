@@ -1,7 +1,11 @@
 
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 interface ImageUploaderProps {
   imageUrl: string;
   setImageUrl: (url: string) => void;
@@ -21,7 +25,7 @@ export const ImageUploader = ({
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = event.target.files?.[0];
-      if (!file) {return;}
+      if (!file) return;
 
       setUploading(true);
       
@@ -45,6 +49,7 @@ export const ImageUploader = ({
         return;
       }
 
+      const { data: { publicUrl } } = supabase.storage
         .from('news-images-draft')
         .getPublicUrl(fileName);
 
@@ -76,10 +81,10 @@ export const ImageUploader = ({
 
   const handleImageDelete = async () => {
     try {
-      if (!imageUrl) {return;}
+      if (!imageUrl) return;
 
       const fileName = imageUrl.split('/').pop();
-      if (!fileName) {return;}
+      if (!fileName) return;
 
       const { error } = await supabase.storage
         .from('news-images-draft')

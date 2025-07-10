@@ -28,7 +28,7 @@ export const RemedyIngredientsSection = ({ selectedIngredients, onChange }: Reme
       }
 
       const { data, error } = await query.limit(10);
-      if (error) {throw error;}
+      if (error) throw error;
       return data || [];
     },
     enabled: showSearch && searchTerm.length > 0,

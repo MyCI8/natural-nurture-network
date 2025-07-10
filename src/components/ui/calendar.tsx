@@ -30,6 +30,7 @@ function Calendar({
   const [view, setView] = React.useState<"days" | "months" | "years">("days");
   
   // Handle touch swipe gestures for month navigation
+  const { handlers: swipeHandlers } = useTouchGestures({
     onSwipeLeft: () => {
       if (view === "days") {
         const nextMonth = new Date(currentMonth);
@@ -138,7 +139,7 @@ function Calendar({
           open={props.name === "years" && view === "years" ? true : undefined}
           onOpenChange={props.name === "years" ? 
             (isOpen) => {
-              if (!isOpen) {setView("days");}
+              if (!isOpen) setView("days");
             } : undefined
           }
         >
@@ -251,7 +252,7 @@ function Calendar({
               const yearContainer = document.getElementById('year-grid');
               if (yearContainer && yearValue) {
                 const yearItems = yearContainer.querySelectorAll('[data-year]');
-                for (const item of yearItems) {
+                for (let item of yearItems) {
                   if (item.textContent?.includes(yearValue)) {
                     item.scrollIntoView({ block: "center" });
                     break;

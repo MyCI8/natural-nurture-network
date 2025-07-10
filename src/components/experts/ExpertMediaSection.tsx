@@ -16,7 +16,7 @@ export const ExpertMediaSection = ({ mediaLinks }: ExpertMediaSectionProps) => {
     (links) => Array.isArray(links) && links.length > 0
   );
 
-  if (!hasMedia) {return null;}
+  if (!hasMedia) return null;
 
   return (
     <section className="py-16">

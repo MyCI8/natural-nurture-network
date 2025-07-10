@@ -100,7 +100,7 @@ export const useCreateRemedyForm = () => {
 
   const createRemedyMutation = useMutation({
     mutationFn: async () => {
-      if (!currentUser) {throw new Error('User not authenticated');}
+      if (!currentUser) throw new Error('User not authenticated');
 
       let finalImageUrl = '';
 

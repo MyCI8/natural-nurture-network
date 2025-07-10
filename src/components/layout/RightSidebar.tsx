@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommentWithProfile } from '@/types';
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
 const RightSidebar = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -16,7 +18,7 @@ const RightSidebar = () => {
         .order('created_at', { ascending: false })
         .limit(10);
       
-      if (commentsError) {throw commentsError;}
+      if (commentsError) throw commentsError;
       
       // For each comment, fetch the associated profile separately
       const commentsWithProfiles = await Promise.all(
@@ -28,6 +30,7 @@ const RightSidebar = () => {
             };
           }
           
+          const { data: profileData } = await supabase
             .from('profiles')
             .select('id, full_name')
             .eq('id', comment.user_id)

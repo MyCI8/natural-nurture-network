@@ -1,8 +1,12 @@
 
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Newspaper, Video, BarChart2, ListFilter, Calendar, Settings, Bookmark } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import NewsStatsCard from "./news/dashboard/NewsStatsCard";
 import RecentActivity from "./news/dashboard/RecentActivity";
 import QuickActions from "./news/dashboard/QuickActions";
@@ -11,6 +15,7 @@ import ContentOverview from "./news/dashboard/ContentOverview";
 const ManageNews = () => {
   const navigate = useNavigate();
   
+  const { data: stats } = useQuery({
     queryKey: ["news-stats"],
     queryFn: async () => {
       // Get article count

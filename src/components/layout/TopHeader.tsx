@@ -26,14 +26,14 @@ const TopHeader = () => {
   const { data: profile } = useQuery({
     queryKey: ['userProfile', currentUser?.id],
     queryFn: async () => {
-      if (!currentUser?.id) {return null;}
+      if (!currentUser?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentUser.id)
         .single();
       
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
     enabled: !!currentUser?.id,
@@ -43,7 +43,7 @@ const TopHeader = () => {
     queryKey: ['isAdmin', currentUser?.id],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('check_is_admin');
-      if (error) {return false;}
+      if (error) return false;
       return data;
     },
     enabled: !!currentUser?.id,
@@ -71,7 +71,7 @@ const TopHeader = () => {
     navigate('/post');
   };
   
-  if (!mounted) {return null;}
+  if (!mounted) return null;
   
   return (
     <>

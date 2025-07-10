@@ -64,9 +64,9 @@ const AdvancedFilters = ({
   const [showSaveFilterPrompt, setShowSaveFilterPrompt] = useState(false);
   
   const activeFilterCount = Object.values(filters).filter(value => {
-    if (typeof value === 'boolean') {return value;}
-    if (value === undefined || value === "") {return false;}
-    if (Array.isArray(value)) {return value.length > 0;}
+    if (typeof value === 'boolean') return value;
+    if (value === undefined || value === "") return false;
+    if (Array.isArray(value)) return value.length > 0;
     return true;
   }).length - 1; // -1 because we don't count the sortBy filter
   
@@ -90,7 +90,7 @@ const AdvancedFilters = ({
   };
   
   const handleSaveFilter = () => {
-    if (!filterName.trim()) {return;}
+    if (!filterName.trim()) return;
     onSaveFilter?.(filterName, filters);
     setFilterName("");
     setShowSaveFilterPrompt(false);

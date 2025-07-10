@@ -16,7 +16,7 @@ export const useUrlPreview = (url: string) => {
   const { data: preview, isLoading, refetch } = useQuery({
     queryKey: ['url-preview', url],
     queryFn: async (): Promise<UrlPreviewData | null> => {
-      if (!url) {return null;}
+      if (!url) return null;
 
       setError(null);
 
@@ -25,7 +25,7 @@ export const useUrlPreview = (url: string) => {
           body: { url }
         });
 
-        if (error) {throw error;}
+        if (error) throw error;
 
         return {
           title: data.title || 'Untitled',

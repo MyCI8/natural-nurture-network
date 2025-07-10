@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 export const useApiKey = () => {
@@ -11,6 +12,7 @@ export const useApiKey = () => {
     loadApiKey();
   }, []);
 
+  const loadApiKey = async () => {
     try {
       const { data, error } = await supabase
         .from('api_keys')

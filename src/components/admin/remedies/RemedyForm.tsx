@@ -7,8 +7,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { UnifiedRemedyDetailsSection } from "@/components/remedies/shared/UnifiedRemedyDetailsSection";
 import { UnifiedRemedyContentSection } from "@/components/remedies/shared/UnifiedRemedyContentSection";
 import { RemedyHealthConcernsSection } from "@/components/admin/remedies/form/RemedyHealthConcernsSection";
@@ -57,7 +59,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
     queryKey: ["ingredients"],
     queryFn: async () => {
       const { data, error } = await supabase.from("ingredients").select("*");
-      if (error) {throw error;}
+      if (error) throw error;
       return data;
     },
   });
@@ -105,7 +107,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
       // Upload new images
       const uploadedImages = await Promise.all(
         images.map(async (image) => {
-          if (!image.file) {return image;} // Already uploaded
+          if (!image.file) return image; // Already uploaded
           
           const fileExt = image.file.name.split('.').pop();
           const fileName = `${Math.random()}.${fileExt}`;
@@ -113,8 +115,9 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
             .from("remedy-images")
             .upload(fileName, image.file);
 
-          if (uploadError) {throw uploadError;}
+          if (uploadError) throw uploadError;
 
+          const { data: { publicUrl } } = supabase.storage
             .from("remedy-images")
             .getPublicUrl(fileName);
 
@@ -136,7 +139,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           .update(remedyData as any)
           .eq("id", remedy.id);
 
-        if (error) {throw error;}
+        if (error) throw error;
 
         toast({
           title: "Success",
@@ -147,7 +150,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
           .from("remedies")
           .insert([remedyData as any]);
 
-        if (error) {throw error;}
+        if (error) throw error;
 
         toast({
           title: "Success",

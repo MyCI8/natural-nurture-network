@@ -48,7 +48,7 @@ const ProductLinkForm: React.FC<ProductLinkFormProps> = ({ onAddLink }) => {
         body: { url }
       });
       
-      if (error) {throw error;}
+      if (error) throw error;
       
       console.log("Link preview result:", data);
       

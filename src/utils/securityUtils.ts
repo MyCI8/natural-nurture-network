@@ -1,4 +1,5 @@
 
+import { supabase } from "@/integrations/supabase/client";
 import type { UserRole } from "@/types/user";
 
 /**
@@ -42,6 +43,7 @@ export const checkUserRole = async (userId: string, roles: UserRole[]): Promise<
  * Get current authenticated user
  */
 export const getCurrentUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
   return user;
 };
 

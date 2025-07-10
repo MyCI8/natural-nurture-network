@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+
+import { useState, useEffect } from 'react';
+import { useMemoryCleanup } from '@/hooks/useMemoryCleanup';
 import { useLocation } from 'react-router-dom';
 
 export const useHeaderVisibility = () => {
@@ -9,7 +11,7 @@ export const useHeaderVisibility = () => {
   const [initialHideComplete, setInitialHideComplete] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
-  const timeoutsRef = useRef<number[]>([]);
+  const { addTimeout, addEventListener } = useMemoryCleanup();
 
   // Determine if we're on the homepage
   useEffect(() => {
@@ -23,14 +25,11 @@ export const useHeaderVisibility = () => {
   useEffect(() => {
     if (isHomePage) {
       setVisible(false);
-      const timeoutId = window.setTimeout(() => {
+      
+      addTimeout(() => {
         setInitialHideComplete(true);
         setInitialLoad(false);
       }, 100);
-      timeoutsRef.current.push(timeoutId);
-      return () => {
-        window.clearTimeout(timeoutId);
-      };
     } else {
       setVisible(true);
       setInitialHideComplete(true);
@@ -40,7 +39,7 @@ export const useHeaderVisibility = () => {
   
   // Handle scroll-based visibility
   useEffect(() => {
-    if (!initialHideComplete || initialLoad) {return;}
+    if (!initialHideComplete || initialLoad) return;
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -58,41 +57,35 @@ export const useHeaderVisibility = () => {
           setVisible(false);
         }
       }
+      
       setLastScrollY(currentScrollY);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    
+    addEventListener(window, 'scroll', handleScroll, { passive: true });
   }, [lastScrollY, isHomePage, initialHideComplete, initialLoad]);
 
   // Handle touch interactions for visibility
   useEffect(() => {
-    if (!isHomePage || initialLoad) {return;}
+    if (!isHomePage || initialLoad) return;
 
     const handleUserInteraction = () => {
       setUserInteracted(true);
       setVisible(true);
+      
       // Hide again after 3 seconds if at the top of the page
       if (window.scrollY < 100) {
-        const timeoutId = window.setTimeout(() => {
+        addTimeout(() => {
           if (window.scrollY < 100) {
             setUserInteracted(false);
             setVisible(false);
           }
         }, 3000);
-        timeoutsRef.current.push(timeoutId);
       }
     };
-    document.addEventListener('touchstart', handleUserInteraction, { passive: true });
-    document.addEventListener('click', handleUserInteraction);
-    return () => {
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('click', handleUserInteraction);
-      // Clear all timeouts set in this effect
-      timeoutsRef.current.forEach(timeoutId => window.clearTimeout(timeoutId));
-      timeoutsRef.current.length = 0;
-    };
+
+    // Add event listeners
+    addEventListener(document, 'touchstart', handleUserInteraction, { passive: true });
+    addEventListener(document, 'click', handleUserInteraction);
   }, [isHomePage, initialLoad]);
 
   return { visible, isHomePage };

@@ -29,7 +29,7 @@ const RemedyModal: React.FC<RemedyModalProps> = ({
   onSave,
   onShare
 }) => {
-  if (!isOpen || !remedy) {return null;}
+  if (!isOpen || !remedy) return null;
 
   // Use only image_url field - standardized approach
   const safeImageUrl = getSafeImageUrl(remedy.image_url);

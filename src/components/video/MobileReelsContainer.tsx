@@ -50,7 +50,7 @@ const MobileReelsContainer: React.FC<MobileReelsContainerProps> = ({
 
   const updateTransform = useCallback((progress: number, direction: 'up' | 'down') => {
     const container = containerRef.current;
-    if (!container) {return;}
+    if (!container) return;
 
     const translateY = direction === 'up' ? -progress * 100 : progress * 100;
     transformRef.current = translateY;
@@ -62,7 +62,7 @@ const MobileReelsContainer: React.FC<MobileReelsContainerProps> = ({
 
   const resetTransform = useCallback(() => {
     const container = containerRef.current;
-    if (!container) {return;}
+    if (!container) return;
 
     container.style.transform = 'translate3d(0, 0, 0)';
     container.style.willChange = 'auto';
@@ -141,7 +141,7 @@ const MobileReelsContainer: React.FC<MobileReelsContainerProps> = ({
   // Prevent default touch behaviors for smooth experience
   useEffect(() => {
     const preventDefault = (e: TouchEvent) => {
-      if (e.touches.length > 1) {return;} // Allow pinch zoom
+      if (e.touches.length > 1) return; // Allow pinch zoom
       e.preventDefault();
     };
 
@@ -152,7 +152,7 @@ const MobileReelsContainer: React.FC<MobileReelsContainerProps> = ({
     }
   }, []);
 
-  if (!currentVideo) {return null;}
+  if (!currentVideo) return null;
 
   return (
     <div className="fixed inset-0 bg-black z-50 overflow-hidden">

@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 import { Home, Play, Newspaper, Leaf, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RemedyPostModal } from "@/components/remedies/RemedyPostModal";
 
@@ -18,6 +20,7 @@ const BottomNav = () => {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       return session?.user || null;
     },
   });
@@ -54,7 +57,7 @@ const BottomNav = () => {
   
   // Handle scroll behavior
   useEffect(() => {
-    if (!initialHideComplete) {return;}
+    if (!initialHideComplete) return;
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY;

@@ -64,11 +64,11 @@ export const TouchFriendlyDrawer = ({
   const handleTouchMove = (e: React.TouchEvent) => {
     handlers.onTouchMove(e);
     
-    if (!isDragging) {return;}
+    if (!isDragging) return;
     
     const touch = e.touches[0];
     const rect = drawerRef.current?.getBoundingClientRect();
-    if (!rect) {return;}
+    if (!rect) return;
     
     if (position === 'bottom') {
       const newOffset = Math.max(0, touch.clientY - rect.top);
@@ -82,7 +82,7 @@ export const TouchFriendlyDrawer = ({
   const handleTouchEnd = (e: React.TouchEvent) => {
     handlers.onTouchEnd(e);
     
-    if (!isDragging) {return;}
+    if (!isDragging) return;
     
     // Close if dragged more than 40% of the way
     const threshold = position === 'bottom'

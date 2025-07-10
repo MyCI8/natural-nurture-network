@@ -1,5 +1,8 @@
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 interface ImageManagementSectionProps {
@@ -17,7 +20,7 @@ export const ImageManagementSection = ({
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = event.target.files?.[0];
-      if (!file) {return;}
+      if (!file) return;
 
       setUploading(true);
       
@@ -36,6 +39,7 @@ export const ImageManagementSection = ({
         return;
       }
 
+      const { data: { publicUrl } } = supabase.storage
         .from('expert-images')
         .getPublicUrl(fileName);
 
