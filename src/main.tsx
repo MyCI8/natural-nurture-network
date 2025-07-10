@@ -5,7 +5,6 @@ import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from './components/theme-provider'
 import App from './App.tsx'
 import './index.css'
-import { registerServiceWorker, preloadCriticalRoutes } from './utils/lazyLoad'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +30,4 @@ createRoot(document.getElementById("root")!).render(
   </BrowserRouter>
 );
 
-// Register service worker and preload critical routes
-registerServiceWorker();
-preloadCriticalRoutes();
+// Simplified entry point - service worker and preload removed for now
