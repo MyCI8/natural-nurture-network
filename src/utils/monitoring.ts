@@ -1,3 +1,4 @@
+
 /**
  * Production monitoring and performance tracking utilities
  */
@@ -26,52 +27,69 @@ export const initializeMonitoring = (): void => {
   }
 };
 
-// Performance monitoring
+// Performance monitoring with proper error handling
 export const trackWebVitals = (): void => {
   const handleMetric = (metric: Metric): void => {
-    // Send to analytics service
-    if (import.meta.env.PROD) {
-      // Send to Sentry
-      Sentry.addBreadcrumb({
-        category: 'web-vitals',
-        message: `${metric.name}: ${metric.value}`,
-        level: 'info',
-        data: metric as unknown as Record<string, unknown>,
-      });
-    }
+    try {
+      // Send to analytics service
+      if (import.meta.env.PROD) {
+        // Send to Sentry
+        Sentry.addBreadcrumb({
+          category: 'web-vitals',
+          message: `${metric.name}: ${metric.value}`,
+          level: 'info',
+          data: metric as unknown as Record<string, unknown>,
+        });
+      }
 
-    // Log in development
-    if (import.meta.env.DEV) {
-      console.log(`Web Vital ${metric.name}:`, metric.value);
+      // Log in development
+      if (import.meta.env.DEV) {
+        console.log(`Web Vital ${metric.name}:`, metric.value);
+      }
+    } catch (error) {
+      console.warn('Failed to track web vital:', error);
     }
   };
 
-  onCLS(handleMetric);
-  onFCP(handleMetric);
-  onLCP(handleMetric);
-  onTTFB(handleMetric);
+  try {
+    onCLS(handleMetric);
+    onFCP(handleMetric);
+    onLCP(handleMetric);
+    onTTFB(handleMetric);
+  } catch (error) {
+    console.warn('Failed to initialize web vitals tracking:', error);
+  }
 };
 
 // Custom performance tracking
 export const trackUserAction = (action: string, data?: Record<string, unknown>): void => {
-  if (import.meta.env.PROD) {
-    Sentry.addBreadcrumb({
-      category: 'user-action',
-      message: action,
-      level: 'info',
-      data,
-    });
+  try {
+    if (import.meta.env.PROD) {
+      Sentry.addBreadcrumb({
+        category: 'user-action',
+        message: action,
+        level: 'info',
+        data,
+      });
+    }
+  } catch (error) {
+    console.warn('Failed to track user action:', error);
   }
 };
 
 // Error boundary integration
 export const captureException = (error: Error, context?: Record<string, unknown>): void => {
-  if (import.meta.env.PROD) {
-    Sentry.captureException(error, {
-      extra: context || {},
-    });
-  } else {
-    console.error('Captured Exception:', error, context);
+  try {
+    if (import.meta.env.PROD) {
+      Sentry.captureException(error, {
+        extra: context || {},
+      });
+    } else {
+      console.error('Captured Exception:', error, context);
+    }
+  } catch (sentryError) {
+    console.error('Failed to capture exception:', sentryError);
+    console.error('Original error:', error, context);
   }
 };
 
@@ -124,5 +142,10 @@ export const performHealthCheck = async (): Promise<{
 export const withMonitoring = <P extends object>(
   Component: React.ComponentType<P>
 ): React.ComponentType<P> => {
-  return Sentry.withProfiler(Component);
+  try {
+    return Sentry.withProfiler(Component);
+  } catch (error) {
+    console.warn('Failed to wrap component with monitoring:', error);
+    return Component;
+  }
 };

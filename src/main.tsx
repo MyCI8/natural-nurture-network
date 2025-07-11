@@ -6,6 +6,25 @@ import { ThemeProvider } from './components/theme-provider'
 import App from './App.tsx'
 import './index.css'
 
+// Import monitoring utilities with error handling
+let initializeMonitoring: (() => void) | null = null;
+let trackWebVitals: (() => void) | null = null;
+
+try {
+  const monitoring = await import('./utils/monitoring');
+  initializeMonitoring = monitoring.initializeMonitoring;
+  trackWebVitals = monitoring.trackWebVitals;
+} catch (error) {
+  console.warn('Failed to load monitoring utilities:', error);
+}
+
+// Initialize monitoring if available
+try {
+  initializeMonitoring?.();
+} catch (error) {
+  console.warn('Failed to initialize monitoring:', error);
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -30,4 +49,9 @@ createRoot(document.getElementById("root")!).render(
   </BrowserRouter>
 );
 
-// Simplified entry point - service worker and preload removed for now
+// Initialize web vitals tracking if available
+try {
+  trackWebVitals?.();
+} catch (error) {
+  console.warn('Failed to initialize web vitals tracking:', error);
+}
