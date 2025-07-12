@@ -4,15 +4,10 @@
 
 import * as Sentry from '@sentry/react';
 
-// Lazy import web-vitals to avoid build-time issues
+// Temporarily disable web-vitals to avoid import issues
 const loadWebVitals = async () => {
-  try {
-    const { onCLS, onFCP, onLCP, onTTFB } = await import('web-vitals');
-    return { onCLS, onFCP, onLCP, onTTFB };
-  } catch (error) {
-    console.warn('Failed to load web-vitals:', error);
-    return null;
-  }
+  console.log('Web vitals disabled due to import issues');
+  return null;
 };
 
 // Initialize Sentry for error tracking
