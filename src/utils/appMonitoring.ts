@@ -1,5 +1,5 @@
 /**
- * Clean monitoring system - completely free of external dependencies
+ * Application monitoring utilities - zero external dependencies
  */
 
 export const captureException = (error: Error, context?: Record<string, unknown>): void => {
@@ -16,7 +16,7 @@ export const trackUserAction = (action: string, data?: Record<string, unknown>):
 
 export const initializeMonitoring = (): void => {
   if (import.meta.env.DEV) {
-    console.log('Clean monitoring system active');
+    console.log('App monitoring system initialized');
   }
 };
 

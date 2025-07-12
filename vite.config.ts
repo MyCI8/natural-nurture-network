@@ -14,7 +14,8 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
   optimizeDeps: {
-    force: true, // Force dependency re-optimization to clear cache
+    force: true,
+    exclude: ['web-vitals'] // Completely exclude from optimization
   },
   resolve: {
     alias: {
