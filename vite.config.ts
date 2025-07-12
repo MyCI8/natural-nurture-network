@@ -16,6 +16,10 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     exclude: ['web-vitals'], // Prevent Vite from caching web-vitals to avoid export issues
     force: true, // Force dependency re-optimization
+    esbuildOptions: {
+      // Ensure web-vitals is completely ignored during optimization
+      external: ['web-vitals']
+    }
   },
   build: {
     rollupOptions: {
