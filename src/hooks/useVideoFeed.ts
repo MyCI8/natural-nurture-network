@@ -1,31 +1,79 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Video } from '@/types/video';
 
+interface VideoFeedState {
+  activeVideoId: string | null;
+  globalAudioEnabled: boolean;
+  visibleVideoIds: Set<string>;
+}
+
 export function useVideoFeed(initialVideos: Video[]) {
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
-  const [globalAudioEnabled, setGlobalAudioEnabled] = useState(false);
+  const [state, setState] = useState<VideoFeedState>({
+    activeVideoId: null,
+    globalAudioEnabled: false,
+    visibleVideoIds: new Set(),
+  });
+
+  // Memoized video map for O(1) lookups
+  const videoMap = useMemo(() => {
+    const map = new Map<string, number>();
+    initialVideos.forEach((video, index) => {
+      map.set(video.id, index);
+    });
+    return map;
+  }, [initialVideos]);
 
   const handleVideoClick = useCallback((videoId: string) => {
-    setActiveVideoId(prevId => prevId === videoId ? null : videoId);
+    setState(prev => ({
+      ...prev,
+      activeVideoId: prev.activeVideoId === videoId ? null : videoId,
+    }));
   }, []);
 
   const handleSwipe = useCallback((direction: 'up' | 'down', currentVideoId: string) => {
-    const currentIndex = initialVideos.findIndex(v => v.id === currentVideoId);
-    if (currentIndex === -1) return;
+    const currentIndex = videoMap.get(currentVideoId);
+    if (currentIndex === undefined) return;
 
+    let newIndex: number;
     if (direction === 'up' && currentIndex < initialVideos.length - 1) {
-      setActiveVideoId(initialVideos[currentIndex + 1].id);
+      newIndex = currentIndex + 1;
     } else if (direction === 'down' && currentIndex > 0) {
-      setActiveVideoId(initialVideos[currentIndex - 1].id);
+      newIndex = currentIndex - 1;
+    } else {
+      return;
     }
-  }, [initialVideos]);
+
+    const newVideoId = initialVideos[newIndex]?.id;
+    if (newVideoId) {
+      setState(prev => ({
+        ...prev,
+        activeVideoId: newVideoId,
+      }));
+    }
+  }, [videoMap, initialVideos]);
+
+  const setGlobalAudioEnabled = useCallback((enabled: boolean) => {
+    setState(prev => ({
+      ...prev,
+      globalAudioEnabled: enabled,
+    }));
+  }, []);
+
+  const updateVisibleVideos = useCallback((videoIds: string[]) => {
+    setState(prev => ({
+      ...prev,
+      visibleVideoIds: new Set(videoIds),
+    }));
+  }, []);
 
   return {
-    activeVideoId,
-    globalAudioEnabled,
+    activeVideoId: state.activeVideoId,
+    globalAudioEnabled: state.globalAudioEnabled,
+    visibleVideoIds: state.visibleVideoIds,
     setGlobalAudioEnabled,
     handleVideoClick,
     handleSwipe,
+    updateVisibleVideos,
   };
 }

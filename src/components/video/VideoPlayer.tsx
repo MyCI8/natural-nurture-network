@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { isYoutubeVideo, isImagePost } from './utils/videoPlayerUtils';
-import YouTubePlayer from './YouTubePlayer';
-import NativeVideoPlayer from './NativeVideoPlayer';
 import { getCdnUrl } from '@/utils/cdnUtils';
+import OptimizedVideoPlayer from '@/features/video/components/OptimizedVideoPlayer';
 
 interface VideoPlayerProps {
   video: Video;
@@ -105,34 +104,13 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   };
 
-  // Render the appropriate player based on video type
-  if (isYoutubeVideo(cdnVideoUrl || '')) {
-    return (
-      <YouTubePlayer
-        video={{ ...video, video_url: cdnVideoUrl }}
-        productLinks={activeProductLinks}
-        autoPlay={autoPlay}
-        isMuted={isMuted}
-        showControls={showControls}
-        isFullscreen={isFullscreen}
-        className={className}
-        visibleProductLink={activeProductLink}
-        onClick={onClick}
-        onClose={onClose}
-        toggleProductLink={handleToggleProductLink}
-        useAspectRatio={useAspectRatio}
-        feedAspectRatio={feedAspectRatio}
-        onNaturalAspectRatioChange={onNaturalAspectRatioChange}
-      />
-    );
-  }
-
+  // Use the optimized video player
   return (
-    <NativeVideoPlayer
+    <OptimizedVideoPlayer
       video={{ ...video, video_url: cdnVideoUrl }}
       productLinks={activeProductLinks}
       autoPlay={autoPlay && !isImage} // Don't autoplay images
-      isMuted={isMuted}
+      muted={isMuted}
       showControls={showControls}
       isFullscreen={isFullscreen}
       className={className}
@@ -141,13 +119,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       onClose={onClose}
       onMuteToggle={toggleMute}
       toggleProductLink={handleToggleProductLink}
-      playbackStarted={playbackStarted}
-      setPlaybackStarted={setPlaybackStarted}
       useAspectRatio={useAspectRatio}
       feedAspectRatio={feedAspectRatio}
       objectFit={objectFit}
-      onInView={handleInView}
-      onTimeUpdate={onTimeUpdate}
       showProgress={showProgress}
       progressValue={progressValue}
       hideControls={hideControls}
