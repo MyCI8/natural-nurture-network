@@ -1,5 +1,7 @@
+
 /**
  * Clean monitoring utilities without external dependencies
+ * This replaces the problematic web-vitals integration
  */
 
 // Simple error capture without external dependencies
@@ -24,10 +26,10 @@ export const initializeMonitoring = (): void => {
   }
 };
 
-// Performance monitoring placeholder
+// Performance monitoring without web-vitals
 export const reportWebVitals = (): void => {
-  // No-op - simple placeholder function
+  // No-op - removes dependency on web-vitals
   if (import.meta.env.DEV) {
-    console.log('Performance monitoring disabled');
+    console.log('Web vitals reporting disabled to avoid cache issues');
   }
 };
