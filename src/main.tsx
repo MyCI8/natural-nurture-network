@@ -6,25 +6,6 @@ import { ThemeProvider } from './components/theme-provider'
 import App from './App.tsx'
 import './index.css'
 
-// Import monitoring utilities with error handling
-let initializeMonitoring: (() => void) | null = null;
-let trackWebVitals: (() => void) | null = null;
-
-try {
-  const monitoring = await import('./utils/monitoring');
-  initializeMonitoring = monitoring.initializeMonitoring;
-  trackWebVitals = monitoring.trackWebVitals;
-} catch (error) {
-  console.warn('Failed to load monitoring utilities:', error);
-}
-
-// Initialize monitoring if available
-try {
-  initializeMonitoring?.();
-} catch (error) {
-  console.warn('Failed to initialize monitoring:', error);
-}
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -39,6 +20,20 @@ const queryClient = new QueryClient({
   },
 })
 
+// Initialize monitoring asynchronously without blocking
+const initializeMonitoringAsync = async () => {
+  try {
+    const { initializeMonitoring, trackWebVitals } = await import('./utils/monitoring');
+    initializeMonitoring();
+    trackWebVitals();
+  } catch (error) {
+    console.warn('Monitoring utilities not available:', error);
+  }
+};
+
+// Start monitoring in the background
+initializeMonitoringAsync();
+
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
@@ -48,10 +43,3 @@ createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </BrowserRouter>
 );
-
-// Initialize web vitals tracking if available
-try {
-  trackWebVitals?.();
-} catch (error) {
-  console.warn('Failed to initialize web vitals tracking:', error);
-}
