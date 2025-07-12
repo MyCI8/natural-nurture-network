@@ -4,19 +4,19 @@ import { AppProviders } from './components/providers/AppProviders'
 import App from './App.tsx'
 import './index.css'
 
-// Initialize monitoring asynchronously without blocking
+// Initialize monitoring with safe fallback to avoid cache issues
 const initializeMonitoringAsync = async () => {
   try {
-    const { initializeMonitoring } = await import('./utils/monitoring');
+    // Use safe monitoring to avoid web-vitals cache issues
+    const { initializeMonitoring } = await import('./utils/safeMonitoring');
     initializeMonitoring();
-    // trackWebVitals temporarily removed due to Vite caching issues
   } catch (error) {
-    console.warn('Monitoring utilities not available:', error);
+    console.warn('Monitoring initialization failed:', error);
   }
 };
 
-// Start monitoring in the background
-initializeMonitoringAsync();
+// Start monitoring in the background (non-blocking)
+setTimeout(initializeMonitoringAsync, 0);
 
 createRoot(document.getElementById("root")!).render(
   <AppProviders>

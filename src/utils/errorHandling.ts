@@ -3,7 +3,22 @@
  */
 
 import { toast } from 'sonner';
-import { captureException } from './monitoring';
+
+// Safe import of monitoring with fallback
+const getCaptureException = () => {
+  try {
+    // Use safe monitoring to avoid cache issues
+    const { captureException } = require('./safeMonitoring');
+    return captureException;
+  } catch {
+    // Fallback function if monitoring is not available
+    return (error: Error, context?: Record<string, unknown>) => {
+      console.warn('Monitoring not available, logging error locally:', error, context);
+    };
+  }
+};
+
+const captureException = getCaptureException();
 
 // Standard error types
 export enum ErrorType {
