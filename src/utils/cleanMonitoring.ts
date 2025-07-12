@@ -1,33 +1,27 @@
 /**
- * Clean monitoring utilities without external dependencies
+ * Clean monitoring system - completely free of external dependencies
  */
 
-// Simple error capture without external dependencies
 export const captureException = (error: Error, context?: Record<string, unknown>): void => {
   if (import.meta.env.DEV) {
     console.error('Error captured:', error, context);
   }
-  // In production, you could send to external service here
 };
 
-// Simple user action tracking
 export const trackUserAction = (action: string, data?: Record<string, unknown>): void => {
   if (import.meta.env.DEV) {
     console.log('User action:', action, data);
   }
 };
 
-// Initialize monitoring (no-op for now)
 export const initializeMonitoring = (): void => {
   if (import.meta.env.DEV) {
-    console.log('Simple monitoring initialized');
+    console.log('Clean monitoring system active');
   }
 };
 
-// Performance monitoring placeholder
 export const reportWebVitals = (): void => {
-  // No-op - simple placeholder function
   if (import.meta.env.DEV) {
-    console.log('Performance monitoring disabled');
+    console.log('Performance monitoring placeholder');
   }
 };

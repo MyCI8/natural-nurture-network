@@ -4,8 +4,8 @@ import { AppProviders } from './components/providers/AppProviders'
 import App from './App.tsx'
 import './index.css'
 
-// Initialize clean monitoring without external dependencies - cache bust
-import { initializeMonitoring } from './utils/monitoring'
+// Initialize clean monitoring system - force cache refresh
+import { initializeMonitoring } from './utils/cleanMonitoring'
 
 console.log('🚀 App starting with clean monitoring setup');
 

@@ -4,7 +4,7 @@
  */
 
 import { toast } from 'sonner';
-import { captureException } from './monitoring';
+import { captureException } from './cleanMonitoring';
 
 // Standard error types
 export enum ErrorType {
