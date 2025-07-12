@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 // Safe import of monitoring with fallback
 const getCaptureException = () => {
   try {
-    // Use safe monitoring to avoid cache issues
-    const { captureException } = require('./safeMonitoring');
+    // Use the clean monitoring file
+    const { captureException } = require('./monitoring');
     return captureException;
   } catch {
     // Fallback function if monitoring is not available

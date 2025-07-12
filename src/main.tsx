@@ -4,11 +4,16 @@ import { AppProviders } from './components/providers/AppProviders'
 import App from './App.tsx'
 import './index.css'
 
+// Temporary import verification for debugging
+if (import.meta.env.DEV) {
+  import('./utils/importVerification');
+}
+
 // Initialize monitoring with safe fallback to avoid cache issues
 const initializeMonitoringAsync = async () => {
   try {
-    // Use safe monitoring to avoid web-vitals cache issues
-    const { initializeMonitoring } = await import('./utils/safeMonitoring');
+    // Use the renamed monitoring file directly
+    const { initializeMonitoring } = await import('./utils/monitoring');
     initializeMonitoring();
   } catch (error) {
     console.warn('Monitoring initialization failed:', error);
