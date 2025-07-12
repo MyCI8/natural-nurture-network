@@ -34,40 +34,11 @@ export const initializeMonitoring = (): void => {
 // Performance monitoring with proper error handling
 export const trackWebVitals = async (): Promise<void> => {
   const webVitals = await loadWebVitals();
-  if (!webVitals) return;
-
-  const { onCLS, onFCP, onLCP, onTTFB } = webVitals;
-
-  const handleMetric = (metric: any): void => {
-    try {
-      // Send to analytics service
-      if (import.meta.env.PROD) {
-        // Send to Sentry
-        Sentry.addBreadcrumb({
-          category: 'web-vitals',
-          message: `${metric.name}: ${metric.value}`,
-          level: 'info',
-          data: metric as unknown as Record<string, unknown>,
-        });
-      }
-
-      // Log in development
-      if (import.meta.env.DEV) {
-        console.log(`Web Vital ${metric.name}:`, metric.value);
-      }
-    } catch (error) {
-      console.warn('Failed to track web vital:', error);
-    }
-  };
-
-  try {
-    onCLS(handleMetric);
-    onFCP(handleMetric);
-    onLCP(handleMetric);
-    onTTFB(handleMetric);
-  } catch (error) {
-    console.warn('Failed to initialize web vitals tracking:', error);
+  if (!webVitals) {
+    console.log('Web vitals tracking disabled');
+    return;
   }
+  // Web vitals functionality temporarily disabled
 };
 
 // Custom performance tracking
