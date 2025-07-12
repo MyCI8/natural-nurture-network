@@ -20,8 +20,9 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
   optimizeDeps: {
-    force: true,
-    exclude: ['web-vitals', 'sentry'], // Force exclude problematic deps
+    force: true, // Nuclear cache invalidation
+    exclude: ['web-vitals', 'sentry', 'monitoring'], // Force exclude all monitoring deps
+    include: [], // Explicit inclusion only
     esbuildOptions: {
       target: 'esnext'
     }
@@ -29,7 +30,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: 'esnext',
     rollupOptions: {
-      external: ['web-vitals']
+      external: ['web-vitals', 'monitoring']
     }
   },
   resolve: {
@@ -38,6 +39,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    __BUILD_TIME__: Date.now(), // Force cache bust with build timestamp
+    __BUILD_TIME__: `"${Date.now()}"`, // Force cache bust with build timestamp as string
+    __CACHE_BUST__: `"${Math.random()}"`, // Additional cache buster
   },
+  clearScreen: false, // Keep logs visible
 }));
