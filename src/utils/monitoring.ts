@@ -4,12 +4,6 @@
 
 import * as Sentry from '@sentry/react';
 
-// Temporarily disable web-vitals to avoid import issues
-const loadWebVitals = async () => {
-  console.log('Web vitals disabled due to import issues');
-  return null;
-};
-
 // Initialize Sentry for error tracking
 export const initializeMonitoring = (): void => {
   if (import.meta.env.PROD) {
@@ -31,14 +25,9 @@ export const initializeMonitoring = (): void => {
   }
 };
 
-// Performance monitoring with proper error handling
+// Web vitals tracking has been removed to avoid dependency issues
 export const trackWebVitals = async (): Promise<void> => {
-  const webVitals = await loadWebVitals();
-  if (!webVitals) {
-    console.log('Web vitals tracking disabled');
-    return;
-  }
-  // Web vitals functionality temporarily disabled
+  console.log('Web vitals tracking disabled');
 };
 
 // Custom performance tracking
