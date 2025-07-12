@@ -4,7 +4,7 @@
  */
 
 import * as Sentry from '@sentry/react';
-import { onCLS, onFCP, onLCP, onTTFB, type Metric } from 'web-vitals';
+import { onCLS, onFCP, onLCP, onTTFB } from 'web-vitals';
 
 // Initialize Sentry for error tracking
 export const initializeMonitoring = (): void => {
@@ -29,7 +29,7 @@ export const initializeMonitoring = (): void => {
 
 // Performance monitoring with proper error handling
 export const trackWebVitals = (): void => {
-  const handleMetric = (metric: Metric): void => {
+  const handleMetric = (metric: any): void => {
     try {
       // Send to analytics service
       if (import.meta.env.PROD) {
