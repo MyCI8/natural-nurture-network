@@ -1,5 +1,4 @@
 
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,6 +7,9 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import RemediesSection from "./remedies/RemediesSection";
 import { useRef } from "react";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
+import { useOptimizedQuery } from "@/hooks/useOptimizedQuery";
+import { queryKeys } from "@/lib/queryClient";
+import { logger } from "@/utils/logger";
 
 const NewsSection = () => {
   const remediesSectionRef = useRef<HTMLDivElement>(null);
@@ -17,37 +19,42 @@ const NewsSection = () => {
   const {
     data: newsItems,
     isLoading
-  } = useQuery({
-    queryKey: ["news-articles"],
-    queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from("news_articles").select("*").eq("status", "published").order("published_at", {
-        ascending: false
-      }).limit(4);
+  } = useOptimizedQuery(
+    queryKeys.news,
+    async () => {
+      const { data, error } = await supabase
+        .from("news_articles")
+        .select("*")
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(4);
+      
       if (error) throw error;
       return data;
-    }
-  });
+    },
+    { staleTime: 10 * 60 * 1000 } // 10 minutes for news
+  );
   
   const {
     data: videos,
     isLoading: videosLoading
-  } = useQuery({
-    queryKey: ["news-videos"],
-    queryFn: async () => {
-      const {
-        data,
-        error
-      } = await supabase.from("videos").select("*").eq("status", "published").eq("video_type", "news").eq("show_in_latest", true).order("created_at", {
-        ascending: false
-      }).limit(4);
+  } = useOptimizedQuery(
+    queryKeys.newsVideos,
+    async () => {
+      const { data, error } = await supabase
+        .from("videos")
+        .select("*")
+        .eq("status", "published")
+        .eq("video_type", "news")
+        .eq("show_in_latest", true)
+        .order("created_at", { ascending: false })
+        .limit(4);
+      
       if (error) throw error;
-      console.log("News Videos fetched:", data);
       return data || [];
-    }
-  });
+    },
+    { staleTime: 5 * 60 * 1000 } // 5 minutes for videos
+  );
   
   if (isLoading) {
     return (
@@ -183,7 +190,7 @@ const getYoutubeVideoId = url => {
       videoId = url.split('youtu.be/')[1].split('?')[0];
     }
   } catch (error) {
-    console.error('Error parsing YouTube URL:', error);
+    logger.warn('Invalid YouTube URL format', { url, error: error.message });
   }
   return videoId;
 };

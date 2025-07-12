@@ -84,8 +84,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
   
   const handleInView = (inView: boolean) => {
-    // This can be used for additional visibility logic if needed
-    console.log(`Video is ${inView ? 'in view' : 'out of view'}`);
+    // Visibility tracking removed for performance
   };
 
   // Default to 9:16 (portrait) for fullscreen mobile view, or use provided aspectRatio

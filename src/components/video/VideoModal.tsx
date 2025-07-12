@@ -62,7 +62,7 @@ const VideoModal: React.FC<VideoModalProps> = ({
 
   useEffect(() => {
     if (isOpen && didMountRef.current) {
-      console.log("Modal opened, video should autoplay");
+      // Video autoplay is handled by the player component
     }
     didMountRef.current = true;
   }, [isOpen]);
