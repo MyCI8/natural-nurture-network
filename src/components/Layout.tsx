@@ -5,44 +5,50 @@ import RightSection from "./layout/RightSection";
 import TopHeader from "./layout/TopHeader";
 import BottomNav from "./layout/BottomNav";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
-import { useEffect, useState } from "react";
-import { LayoutProvider, useLayout } from "@/contexts/LayoutContext";
+import { useEffect, useState, useMemo } from "react";
+import { OptimizedLayoutProvider, useOptimizedLayout } from "@/contexts/OptimizedLayoutContext";
 
 // Inner layout component that uses the layout context
 const LayoutContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
-  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth, isInReelsMode } = useLayout();
-  const [isHomePage, setIsHomePage] = useState(false);
+  const { layoutMode, showRightSection, contentWidth, contentMaxWidth, isFullWidth, isInReelsMode } = useOptimizedLayout();
   
-  // Determine if we're on the home page
-  useEffect(() => {
+  // Memoize computed values
+  const isHomePage = useMemo(() => {
     const path = location.pathname;
-    setIsHomePage(path === '/' || path === '/home');
-  }, [location]);
+    return path === '/' || path === '/home';
+  }, [location.pathname]);
   
-  // Prevent unwanted redirects
-  useEffect(() => {
-    const preventUnwantedRedirect = (e: BeforeUnloadEvent) => {
-      if (location.pathname !== "/") {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-
-    window.addEventListener("beforeunload", preventUnwantedRedirect);
-    return () => {
-      window.removeEventListener("beforeunload", preventUnwantedRedirect);
-    };
-  }, [location]);
+  const shouldShowTopHeader = useMemo(() => 
+    isMobile && !isInReelsMode, [isMobile, isInReelsMode]
+  );
+  
+  const shouldShowBottomNav = useMemo(() => 
+    isMobile && !isInReelsMode, [isMobile, isInReelsMode]
+  );
+  
+  const mainContentClasses = useMemo(() => {
+    const baseClasses = 'flex-1 min-h-screen relative z-0 overflow-x-hidden';
+    const mobileClasses = isMobile ? 
+      `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : '';
+    return `${baseClasses} ${mobileClasses}`;
+  }, [isMobile, isHomePage, isInReelsMode]);
+  
+  const contentContainerClasses = useMemo(() => {
+    const widthClass = isFullWidth || isHomePage ? 'w-full' : 'mx-auto';
+    const contentWidthClass = (!isFullWidth && !isHomePage) ? contentWidth : '';
+    const maxWidthClass = (!isFullWidth && !isHomePage) ? contentMaxWidth : '';
+    return `${widthClass} ${contentWidthClass} ${maxWidthClass} h-full`;
+  }, [isFullWidth, isHomePage, contentWidth, contentMaxWidth]);
 
   return (
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
-      {/* Main container with responsive layout - increased max-width to 1400px */}
+      {/* Main container with responsive layout */}
       <div className="w-full max-w-[1400px] mx-auto flex relative" style={{ isolation: 'isolate' }}>
-        {/* Mobile Top Header - only on mobile and not in reels mode */}
-        {isMobile && !isInReelsMode && <TopHeader />}
+        {/* Mobile Top Header */}
+        {shouldShowTopHeader && <TopHeader />}
         
         {/* Left Sidebar - Hide on mobile */}
         {!isMobile && (
@@ -52,28 +58,17 @@ const LayoutContent = () => {
         )}
         
         {/* Main Content Area */}
-        <main 
-          className={`flex-1 min-h-screen ${
-            isMobile ? `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : ''
-          } relative z-0 overflow-x-hidden`}
-        >
-          <div 
-            className={`
-              ${isFullWidth || isHomePage ? 'w-full' : 'mx-auto'} 
-              ${(!isFullWidth && !isHomePage) ? contentWidth : ''}
-              ${(!isFullWidth && !isHomePage) ? contentMaxWidth : ''}
-              h-full
-            `}
-          >
+        <main className={mainContentClasses}>
+          <div className={contentContainerClasses}>
             <Outlet />
           </div>
         </main>
 
-        {/* Right Section - rendered conditionally by the RightSection component itself */}
+        {/* Right Section */}
         {!isMobile && showRightSection && <RightSection />}
         
-        {/* Mobile Bottom Navigation - only on mobile and not in reels mode */}
-        {isMobile && !isInReelsMode && <BottomNav />}
+        {/* Mobile Bottom Navigation */}
+        {shouldShowBottomNav && <BottomNav />}
       </div>
     </div>
   );
@@ -82,9 +77,9 @@ const LayoutContent = () => {
 // Main layout component that provides the context
 const Layout = () => {
   return (
-    <LayoutProvider>
+    <OptimizedLayoutProvider>
       <LayoutContent />
-    </LayoutProvider>
+    </OptimizedLayoutProvider>
   );
 };
 
