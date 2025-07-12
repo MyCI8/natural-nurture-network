@@ -8,6 +8,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    hmr: {
+      overlay: false
+    },
+    fs: {
+      strict: false
+    }
   },
   plugins: [
     react(),
@@ -15,11 +21,23 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   optimizeDeps: {
     force: true,
-    exclude: ['web-vitals'] // Completely exclude from optimization
+    exclude: ['web-vitals', 'sentry'], // Force exclude problematic deps
+    esbuildOptions: {
+      target: 'esnext'
+    }
+  },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      external: ['web-vitals']
+    }
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  define: {
+    __BUILD_TIME__: Date.now(), // Force cache bust with build timestamp
   },
 }));
