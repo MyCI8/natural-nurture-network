@@ -17,6 +17,11 @@ export default defineConfig(({ mode }) => ({
     exclude: ['web-vitals'], // Prevent Vite from caching web-vitals to avoid export issues
     force: true, // Force dependency re-optimization
   },
+  build: {
+    rollupOptions: {
+      external: ['web-vitals'], // Ensure web-vitals is never bundled
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
