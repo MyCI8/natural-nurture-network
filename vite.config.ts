@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
+  optimizeDeps: {
+    exclude: ['web-vitals'], // Prevent Vite from caching web-vitals to avoid export issues
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
