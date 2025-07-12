@@ -1,17 +1,10 @@
+
 /**
  * Standardized error handling patterns and utilities
  */
 
 import { toast } from 'sonner';
-
-// Temporarily disable monitoring imports to avoid cache issues
-const captureException = (error: Error, context?: Record<string, unknown>) => {
-  if (import.meta.env.DEV) {
-    console.error('Error captured:', error, context);
-  } else {
-    console.warn('Error logging disabled due to cache issues:', error, context);
-  }
-};
+import { captureException } from './monitoring';
 
 // Standard error types
 export enum ErrorType {

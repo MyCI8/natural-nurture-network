@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   optimizeDeps: {
     exclude: ['web-vitals'], // Prevent Vite from caching web-vitals to avoid export issues
+    force: true, // Force dependency re-optimization
   },
   resolve: {
     alias: {
