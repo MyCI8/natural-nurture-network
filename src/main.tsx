@@ -4,24 +4,27 @@ import { AppProviders } from './components/providers/AppProviders'
 import App from './App.tsx'
 import './index.css'
 
-// Temporary import verification for debugging
-if (import.meta.env.DEV) {
-  import('./utils/importVerification');
-}
+// Removed all monitoring imports to avoid Vite cache issues
+// Testing cache resolution with simple console log
+console.log('🚀 App starting without monitoring imports - cache issue should be resolved');
 
-// Initialize monitoring with safe fallback to avoid cache issues
-const initializeMonitoringAsync = async () => {
+// Test the cache-free bridge and debug info
+setTimeout(async () => {
   try {
-    // Use the renamed monitoring file directly
-    const { initializeMonitoring } = await import('./utils/monitoring');
-    initializeMonitoring();
+    const { verifyNoCacheIssues } = await import('./utils/cacheFreeBridge');
+    const { logCacheStatus, printCacheResolutionSteps } = await import('./utils/viteDebugHelper');
+    
+    verifyNoCacheIssues();
+    logCacheStatus();
+    
+    // Show manual resolution steps if needed
+    console.log('ℹ️ If you still see web-vitals errors, run these steps:');
+    printCacheResolutionSteps();
   } catch (error) {
-    console.warn('Monitoring initialization failed:', error);
+    console.warn('Cache verification failed, but app continues:', error);
+    console.log('🛠️ Manual fix: rm -rf node_modules/.vite && npm run dev -- --force');
   }
-};
-
-// Start monitoring in the background (non-blocking)
-setTimeout(initializeMonitoringAsync, 0);
+}, 1000);
 
 createRoot(document.getElementById("root")!).render(
   <AppProviders>
