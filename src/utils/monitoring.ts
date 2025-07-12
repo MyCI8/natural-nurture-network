@@ -1,10 +1,19 @@
-
 /**
  * Production monitoring and performance tracking utilities
  */
 
 import * as Sentry from '@sentry/react';
-import { onCLS, onFCP, onLCP, onTTFB } from 'web-vitals';
+
+// Lazy import web-vitals to avoid build-time issues
+const loadWebVitals = async () => {
+  try {
+    const { onCLS, onFCP, onLCP, onTTFB } = await import('web-vitals');
+    return { onCLS, onFCP, onLCP, onTTFB };
+  } catch (error) {
+    console.warn('Failed to load web-vitals:', error);
+    return null;
+  }
+};
 
 // Initialize Sentry for error tracking
 export const initializeMonitoring = (): void => {
@@ -28,7 +37,12 @@ export const initializeMonitoring = (): void => {
 };
 
 // Performance monitoring with proper error handling
-export const trackWebVitals = (): void => {
+export const trackWebVitals = async (): Promise<void> => {
+  const webVitals = await loadWebVitals();
+  if (!webVitals) return;
+
+  const { onCLS, onFCP, onLCP, onTTFB } = webVitals;
+
   const handleMetric = (metric: any): void => {
     try {
       // Send to analytics service
