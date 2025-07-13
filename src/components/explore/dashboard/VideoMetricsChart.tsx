@@ -1,14 +1,5 @@
-
 import React from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { ChartContainer, ChartLine } from '@/components/ui/chart';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ChartData {
@@ -36,79 +27,72 @@ const VideoMetricsChart = ({ title, data, description }: VideoMetricsChartProps)
       </CardHeader>
       <CardContent className="pt-4">
         <div className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={data}
-              margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="name"
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `${value}`}
-              />
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#e5e5e5"
-                vertical={false}
-              />
-              <Tooltip />
-              {data[0]?.views !== undefined && (
-                <Area
-                  type="monotone"
-                  dataKey="views"
-                  stroke="#8884d8"
-                  fillOpacity={1}
-                  fill="url(#colorViews)"
-                />
-              )}
-              {data[0]?.likes !== undefined && (
-                <Area
-                  type="monotone"
-                  dataKey="likes"
-                  stroke="#82ca9d"
-                  fillOpacity={1}
-                  fill="url(#colorLikes)"
-                />
-              )}
-              {data[0]?.comments !== undefined && (
-                <Area
-                  type="monotone"
-                  dataKey="comments"
-                  stroke="#ffc658"
-                  fill="#ffc658"
-                  fillOpacity={0.3}
-                />
-              )}
-              {data[0]?.shares !== undefined && (
-                <Area
-                  type="monotone"
-                  dataKey="shares"
-                  stroke="#ff7300"
-                  fill="#ff7300"
-                  fillOpacity={0.3}
-                />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
+          <ChartContainer config={{
+            views: { color: "#8884d8" },
+            likes: { color: "#82ca9d" },
+            comments: { color: "#ffc658" },
+            shares: { color: "#ff7300" }
+          }}>
+            <ChartLine 
+              data={{
+                labels: data.map(d => d.name),
+                datasets: (() => {
+                  const datasets = [];
+                  if (data[0]?.views !== undefined) {
+                    datasets.push({
+                      label: 'Views',
+                      data: data.map(d => d.views || 0),
+                      borderColor: '#8884d8',
+                      backgroundColor: 'rgba(136, 132, 216, 0.2)',
+                      fill: true,
+                    });
+                  }
+                  if (data[0]?.likes !== undefined) {
+                    datasets.push({
+                      label: 'Likes',
+                      data: data.map(d => d.likes || 0),
+                      borderColor: '#82ca9d',
+                      backgroundColor: 'rgba(130, 202, 157, 0.2)',
+                      fill: true,
+                    });
+                  }
+                  if (data[0]?.comments !== undefined) {
+                    datasets.push({
+                      label: 'Comments',
+                      data: data.map(d => d.comments || 0),
+                      borderColor: '#ffc658',
+                      backgroundColor: 'rgba(255, 198, 88, 0.3)',
+                      fill: true,
+                    });
+                  }
+                  if (data[0]?.shares !== undefined) {
+                    datasets.push({
+                      label: 'Shares',
+                      data: data.map(d => d.shares || 0),
+                      borderColor: '#ff7300',
+                      backgroundColor: 'rgba(255, 115, 0, 0.3)',
+                      fill: true,
+                    });
+                  }
+                  return datasets;
+                })()
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                elements: {
+                  point: { radius: 3 }
+                },
+                plugins: {
+                  legend: { display: false }
+                },
+                scales: {
+                  x: { display: false },
+                  y: { display: false }
+                }
+              }}
+            />
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

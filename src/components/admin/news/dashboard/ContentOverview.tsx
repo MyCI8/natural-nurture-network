@@ -1,10 +1,9 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartBar } from '@/components/ui/chart';
 
 interface ContentOverviewProps {
   className?: string;
@@ -75,46 +74,44 @@ const ContentOverview = ({ className }: ContentOverviewProps) => {
             <p className="text-muted-foreground">Loading chart data...</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={data}
-              margin={{
-                top: 5,
-                right: 5,
-                left: 0,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 12 }} 
-                tickFormatter={(value) => {
-                  // Format date based on period
-                  if (period === "7days") {
-                    return new Date(value).toLocaleDateString(undefined, { weekday: 'short' });
-                  }
-                  return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          <div className="h-[300px] w-full">
+            <ChartContainer config={{
+              Articles: { color: "#4f46e5" },
+              Videos: { color: "#0ea5e9" }
+            }}>
+              <ChartBar 
+                data={{
+                  labels: data?.map(d => new Date(d.date).toLocaleDateString(undefined, 
+                    period === "7days" ? { weekday: 'short' } : { month: 'short', day: 'numeric' })) || [],
+                  datasets: [
+                    {
+                      label: 'Articles',
+                      data: data?.map(d => d.Articles) || [],
+                      backgroundColor: '#4f46e5',
+                      borderRadius: 4,
+                    },
+                    {
+                      label: 'Videos',
+                      data: data?.map(d => d.Videos) || [],
+                      backgroundColor: '#0ea5e9',
+                      borderRadius: 4,
+                    }
+                  ]
                 }}
-                interval={period === "7days" ? 0 : period === "30days" ? 6 : 14}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, ticks: { stepSize: 1 } }
+                  },
+                  plugins: {
+                    legend: { position: 'top' as const }
+                  }
+                }}
               />
-              <YAxis 
-                tick={{ fontSize: 12 }} 
-                tickFormatter={(value) => value.toFixed(0)}
-              />
-              <Tooltip 
-                formatter={(value, name) => [value, name]}
-                labelFormatter={(label) => new Date(label).toLocaleDateString(undefined, { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              />
-              <Bar dataKey="Articles" stackId="a" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Videos" stackId="a" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+            </ChartContainer>
+          </div>
         )}
       </CardContent>
     </Card>
