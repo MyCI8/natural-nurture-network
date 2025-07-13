@@ -1,6 +1,7 @@
 // Service Worker for offline functionality and caching
-const CACHE_NAME = 'natural-remedies-v1';
-const API_CACHE_NAME = 'api-cache-v1';
+const CACHE_VERSION = Date.now();
+const CACHE_NAME = `natural-remedies-v${CACHE_VERSION}`;
+const API_CACHE_NAME = `api-cache-v${CACHE_VERSION}`;
 
 // Assets to cache immediately
 const STATIC_ASSETS = [

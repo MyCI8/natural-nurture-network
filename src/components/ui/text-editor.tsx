@@ -50,11 +50,26 @@ const TextEditor = ({
         },
       }),
       Table.configure({
-        resizable: true,
+        resizable: false, // Disable resizing to reduce bundle size
+        HTMLAttributes: {
+          class: 'border-collapse border border-border',
+        },
       }),
-      TableRow,
-      TableHeader,
-      TableCell,
+      TableRow.configure({
+        HTMLAttributes: {
+          class: 'border-b border-border',
+        },
+      }),
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: 'font-semibold bg-muted/50 p-2 text-left border border-border',
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: 'p-2 border border-border',
+        },
+      }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),

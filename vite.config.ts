@@ -20,17 +20,28 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
   optimizeDeps: {
-    force: true, // Nuclear cache invalidation
-    exclude: ['web-vitals', 'sentry', 'monitoring'], // Force exclude all monitoring deps
-    include: [], // Explicit inclusion only
+    force: true,
+    include: [
+      '@supabase/supabase-js',
+      'react',
+      'react-dom',
+      'react-router-dom'
+    ],
     esbuildOptions: {
       target: 'esnext'
     }
   },
   build: {
     target: 'esnext',
+    sourcemap: false,
     rollupOptions: {
-      external: ['web-vitals', 'monitoring']
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        }
+      }
     }
   },
   resolve: {
@@ -39,8 +50,9 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    __BUILD_TIME__: `"${Date.now()}"`, // Force cache bust with build timestamp as string
-    __CACHE_BUST__: `"${Math.random()}"`, // Additional cache buster
+    __BUILD_TIME__: `"${Date.now()}"`,
+    __CACHE_BUST__: `"${Math.random()}"`,
+    __DEV__: mode === 'development'
   },
   clearScreen: false, // Keep logs visible
 }));
