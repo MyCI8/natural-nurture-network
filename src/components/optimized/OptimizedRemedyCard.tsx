@@ -72,9 +72,9 @@ export const OptimizedRemedyCard = React.memo<OptimizedRemedyCardProps>(({
         
         {remedy.symptoms && remedy.symptoms.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {remedy.symptoms.slice(0, 3).map((symptom) => (
-              <Badge key={symptom} variant="outline" className="text-xs">
-                {symptom}
+            {remedy.symptoms.slice(0, 3).map((healthConcern) => (
+              <Badge key={healthConcern} variant="outline" className="text-xs">
+                {healthConcern}
               </Badge>
             ))}
             {remedy.symptoms.length > 3 && (

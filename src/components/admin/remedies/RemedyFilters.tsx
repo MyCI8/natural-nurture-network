@@ -10,26 +10,24 @@ import {
 } from "@/components/ui/select";
 import { Database } from "@/integrations/supabase/types";
 
-type SymptomType = Database['public']['Enums']['symptom_type'];
-
 interface RemedyFiltersProps {
   searchQuery: string;
   setSearchQuery: (value: string) => void;
-  symptomFilter: string;
-  setSymptomFilter: (value: string) => void;
+  healthConcernFilter: string;
+  setHealthConcernFilter: (value: string) => void;
   sortBy: "popularity" | "recent";
   setSortBy: (value: "popularity" | "recent") => void;
-  defaultSymptoms: SymptomType[];
+  defaultHealthConcerns: string[];
 }
 
 const RemedyFilters = ({
   searchQuery,
   setSearchQuery,
-  symptomFilter,
-  setSymptomFilter,
+  healthConcernFilter,
+  setHealthConcernFilter,
   sortBy,
   setSortBy,
-  defaultSymptoms,
+  defaultHealthConcerns,
 }: RemedyFiltersProps) => {
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -44,17 +42,17 @@ const RemedyFilters = ({
       </div>
 
       <Select 
-        value={symptomFilter} 
-        onValueChange={setSymptomFilter}
+        value={healthConcernFilter} 
+        onValueChange={setHealthConcernFilter}
       >
         <SelectTrigger className="bg-background">
-          <SelectValue placeholder="Filter by symptom" />
+          <SelectValue placeholder="Filter by health concern" />
         </SelectTrigger>
         <SelectContent className="bg-background">
-          <SelectItem value="all">All Symptoms</SelectItem>
-          {defaultSymptoms.map((symptom) => (
-            <SelectItem key={symptom} value={symptom}>
-              {symptom}
+          <SelectItem value="all">All Health Concerns</SelectItem>
+          {defaultHealthConcerns.map((concern) => (
+            <SelectItem key={concern} value={concern}>
+              {concern}
             </SelectItem>
           ))}
         </SelectContent>

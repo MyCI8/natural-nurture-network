@@ -31,7 +31,7 @@ interface CreateRemedyFormData {
   experts: string[];
 }
 
-const VALID_SYMPTOMS = [
+const VALID_HEALTH_CONCERNS = [
   'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 'Anxiety', 
   'Depression', 'Insomnia', 'Headache', 'Joint Pain', 'Digestive Issues', 
   'Fatigue', 'Skin Irritation', 'Hair Loss', 'Eye Strain'
@@ -137,9 +137,9 @@ export const useCreateRemedyForm = () => {
         fullDescription += `\n\n**Precautions & Side Effects:**\n${formData.precautions_side_effects}`;
       }
 
-      const validSymptoms = formData.health_concerns.filter(concern => 
-        VALID_SYMPTOMS.some(validSymptom => validSymptom === concern)
-      ) as typeof VALID_SYMPTOMS[number][];
+      const validHealthConcerns = formData.health_concerns.filter(concern => 
+        VALID_HEALTH_CONCERNS.some(validConcern => validConcern === concern)
+      ) as typeof VALID_HEALTH_CONCERNS[number][];
 
       const remedyData = {
         name: formData.name,
@@ -149,7 +149,7 @@ export const useCreateRemedyForm = () => {
         image_url: finalImageUrl,
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: validSymptoms,
+        symptoms: validHealthConcerns,
         expert_recommendations: formData.experts,
         status: 'published' as const
       };

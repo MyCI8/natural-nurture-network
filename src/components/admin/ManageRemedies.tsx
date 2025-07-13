@@ -19,9 +19,7 @@ import RemedyFilters from "./remedies/RemedyFilters";
 import RemedyGrid from "./remedies/RemedyGrid";
 import { Database } from "@/integrations/supabase/types";
 
-type SymptomType = Database['public']['Enums']['symptom_type'];
-
-const defaultSymptoms: SymptomType[] = [
+const defaultHealthConcerns: string[] = [
   'Cough', 'Cold', 'Sore Throat', 'Cancer', 'Stress', 
   'Anxiety', 'Depression', 'Insomnia', 'Headache', 'Joint Pain',
   'Digestive Issues', 'Fatigue', 'Skin Irritation', 'High Blood Pressure', 'Allergies',
@@ -32,13 +30,13 @@ const ManageRemedies = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [symptomFilter, setSymptomFilter] = useState<string>("all");
+  const [healthConcernFilter, setHealthConcernFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"popularity" | "recent">("recent");
   const [remedyToDelete, setRemedyToDelete] = useState<any>(null);
   const [isPublishingAll, setIsPublishingAll] = useState(false);
 
   const { data: remedies = [], isLoading } = useQuery({
-    queryKey: ["admin-remedies", searchQuery, symptomFilter, sortBy],
+    queryKey: ["admin-remedies", searchQuery, healthConcernFilter, sortBy],
     queryFn: async () => {
       let query = supabase
         .from("remedies")
@@ -53,8 +51,8 @@ const ManageRemedies = () => {
         query = query.ilike("name", `%${searchQuery}%`);
       }
 
-      if (symptomFilter && symptomFilter !== "all") {
-        query = query.contains("symptoms", [symptomFilter]);
+      if (healthConcernFilter && healthConcernFilter !== "all") {
+        query = query.contains("symptoms", [healthConcernFilter]);
       }
 
       if (sortBy === "popularity") {
@@ -188,11 +186,11 @@ const ManageRemedies = () => {
       <RemedyFilters
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        symptomFilter={symptomFilter}
-        setSymptomFilter={setSymptomFilter}
+        healthConcernFilter={healthConcernFilter}
+        setHealthConcernFilter={setHealthConcernFilter}
         sortBy={sortBy}
         setSortBy={setSortBy}
-        defaultSymptoms={defaultSymptoms}
+        defaultHealthConcerns={defaultHealthConcerns}
       />
 
       <RemedyGrid 
