@@ -100,9 +100,24 @@ function fixUnusedVariables(content) {
   return { content: lines.join('\n'), modified };
 }
 
-// Function to fix specific patterns
+// Function to fix specific patterns  
 function fixSpecificPatterns(content) {
   let modified = false;
+  
+  // Replace console calls with environment-checked versions
+  const consoleReplacements = [
+    { from: /console\.log\(/g, to: 'if (import.meta.env.DEV) console.log(' },
+    { from: /console\.warn\(/g, to: 'if (import.meta.env.DEV) console.warn(' },
+    { from: /console\.error\(/g, to: 'if (import.meta.env.DEV) console.error(' },
+    { from: /console\.info\(/g, to: 'if (import.meta.env.DEV) console.info(' },
+    { from: /console\.debug\(/g, to: 'if (import.meta.env.DEV) console.debug(' },
+  ];
+  
+  consoleReplacements.forEach(({ from, to }) => {
+    const oldContent = content;
+    content = content.replace(from, to);
+    if (content !== oldContent) modified = true;
+  });
   
   // Remove unused React imports
   content = content.replace(/import\s+React\s+from\s+['"]react['"];?\s*\n?/g, '');
@@ -254,7 +269,7 @@ function fixSpecificPatterns(content) {
   // Clean up multiple consecutive empty lines
   content = content.replace(/\n\s*\n\s*\n/g, '\n\n');
   
-  return { content, modified: content !== content };
+  return { content, modified };
 }
 
 // Main function to process files

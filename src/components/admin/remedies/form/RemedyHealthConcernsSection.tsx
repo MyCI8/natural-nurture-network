@@ -27,7 +27,7 @@ export const RemedyHealthConcernsSection = ({
     setLocalPendingConcerns
   } = useHealthConcernSuggestions(selectedConcerns, onConcernsChange);
 
-  console.log("RemedyHealthConcernsSection render", { selectedConcerns, open });
+  if (import.meta.env.DEV) console.log("RemedyHealthConcernsSection render", { selectedConcerns, open });
 
   // Combine regular concerns with pending suggestions
   const allConcerns = [...allAvailableConcerns, ...pendingSuggestions.map(s => s.concern_name)];
@@ -42,7 +42,7 @@ export const RemedyHealthConcernsSection = ({
     !allConcerns.some(concern => concern.toLowerCase() === searchValue.toLowerCase());
 
   const addConcern = (concern: string) => {
-    console.log("Adding concern:", concern);
+    if (import.meta.env.DEV) console.log("Adding concern:", concern);
     if (!selectedConcerns.includes(concern)) {
       onConcernsChange([...selectedConcerns, concern]);
     }
@@ -51,13 +51,13 @@ export const RemedyHealthConcernsSection = ({
   };
 
   const removeConcern = (concernToRemove: string) => {
-    console.log("Removing concern:", concernToRemove);
+    if (import.meta.env.DEV) console.log("Removing concern:", concernToRemove);
     onConcernsChange(selectedConcerns.filter(concern => concern !== concernToRemove));
     setLocalPendingConcerns(prev => prev.filter(concern => concern !== concernToRemove));
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    console.log("Popover open state changing:", newOpen);
+    if (import.meta.env.DEV) console.log("Popover open state changing:", newOpen);
     setOpen(newOpen);
   };
 
@@ -85,7 +85,7 @@ export const RemedyHealthConcernsSection = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("Button clicked, current open state:", open);
+              if (import.meta.env.DEV) console.log("Button clicked, current open state:", open);
               setOpen(!open);
             }}
           >

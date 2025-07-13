@@ -17,7 +17,7 @@ const Navbar = () => {
       if (!session) return false;
       const { data, error } = await supabase.rpc('check_is_admin');
       if (error) {
-        console.error('Error checking admin role:', error);
+        if (import.meta.env.DEV) console.error('Error checking admin role:', error);
         return false;
       }
       return !!data; // Ensure boolean

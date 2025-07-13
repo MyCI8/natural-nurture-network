@@ -35,7 +35,7 @@ const HealthConcernsMarquee = () => {
         description: `Navigating to ${concernName}`,
       });
     } catch (error) {
-      console.error('Error:', error);
+      if (import.meta.env.DEV) console.error('Error:', error);
     }
   };
 

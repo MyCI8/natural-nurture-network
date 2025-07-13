@@ -35,7 +35,7 @@ const SEOSettings = () => {
     e.preventDefault();
     
     // Here we would typically save to the database
-    console.log("Saving SEO settings:", formState);
+    if (import.meta.env.DEV) console.log("Saving SEO settings:", formState);
     
     // Show success toast
     toast.success("SEO settings saved successfully");

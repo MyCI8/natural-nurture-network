@@ -36,7 +36,7 @@ export const RemedyExpertsSection = ({
   // This effect will run when the component mounts and whenever the experts data changes
   useEffect(() => {
     if (isLoading) return;
-    console.log("Experts loaded:", experts.length);
+    if (import.meta.env.DEV) console.log("Experts loaded:", experts.length);
   }, [experts, isLoading]);
 
   return (

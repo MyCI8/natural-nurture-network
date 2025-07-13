@@ -6,8 +6,9 @@ import './index.css'
 
 // Initialize app monitoring system - complete cache reset
 import { initializeMonitoring } from './utils/appMonitoring'
+import { log } from './utils/logger'
 
-console.log('🚀 App starting with clean monitoring setup');
+log.info('🚀 App starting with clean monitoring setup');
 
 // Initialize monitoring safely
 initializeMonitoring();

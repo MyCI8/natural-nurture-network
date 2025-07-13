@@ -30,7 +30,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Use structured logging instead of console.error
+    // Use structured logging for errors
     log.error('ErrorBoundary caught an error', error, {
       componentStack: errorInfo.componentStack,
       level: this.props.level || 'component'
