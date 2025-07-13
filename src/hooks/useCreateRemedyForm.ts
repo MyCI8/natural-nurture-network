@@ -149,7 +149,7 @@ export const useCreateRemedyForm = () => {
         image_url: finalImageUrl,
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: validHealthConcerns,
+        health_concerns: validHealthConcerns,
         expert_recommendations: formData.experts,
         status: 'published' as const
       };

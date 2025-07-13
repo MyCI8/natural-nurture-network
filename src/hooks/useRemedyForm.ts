@@ -104,8 +104,8 @@ export const useRemedyForm = () => {
       
       const parsed = parseRemedyContent(remedy.description || "");
       
-      // Get all stored health concerns from database (legacy symptoms field)
-      const storedConcerns = remedy.symptoms || [];
+      // Get all stored health concerns from database (using health_concerns field)
+      const storedConcerns = remedy.health_concerns || [];
       
       // Get previously selected pending concerns from localStorage
       const storageKey = `remedy-pending-concerns-${id}`;
@@ -285,7 +285,7 @@ export const useRemedyForm = () => {
         image_url: finalImageUrl,
         video_url: links.find(link => link.type === 'video')?.url || '',
         ingredients: formData.ingredients,
-        symptoms: allSelectedConcerns as any, // Legacy field for backward compatibility
+        health_concerns: allSelectedConcerns,
         expert_recommendations: selectedExperts,
         status: shouldPublish ? "published" as const : formData.status,
       };

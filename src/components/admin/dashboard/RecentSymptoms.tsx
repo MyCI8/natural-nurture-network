@@ -4,12 +4,10 @@ import { Stethoscope, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Database } from "@/integrations/supabase/types";
-
-type SymptomType = Database["public"]["Enums"]["symptom_type"];
+// Note: This component is deprecated - symptoms replaced with health concerns system
 
 interface RecentSymptomsProps {
-  symptoms: { symptom: SymptomType; click_count: number }[];
+  symptoms: { concern_name: string; click_count: number }[];
   isLoading: boolean;
 }
 
@@ -37,9 +35,9 @@ const RecentSymptoms = ({ symptoms, isLoading }: RecentSymptomsProps) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {symptoms?.map((item) => (
+            {symptoms?.map((item, index) => (
               <div
-                key={item.symptom}
+                key={item.concern_name || index}
                 className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
                 onClick={() => navigate(`/admin/health-concerns`)}
                 role="button"
@@ -53,7 +51,7 @@ const RecentSymptoms = ({ symptoms, isLoading }: RecentSymptomsProps) => {
                 <div className="space-y-1">
                   <p className="font-medium flex items-center">
                     <Stethoscope className="h-4 w-4 mr-2" />
-                    {item.symptom}
+                    {item.concern_name || 'Unknown'}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {item.click_count} clicks

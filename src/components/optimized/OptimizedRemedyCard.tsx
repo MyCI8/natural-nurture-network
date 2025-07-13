@@ -70,16 +70,16 @@ export const OptimizedRemedyCard = React.memo<OptimizedRemedyCardProps>(({
           {remedy.brief_description || remedy.summary}
         </p>
         
-        {remedy.symptoms && remedy.symptoms.length > 0 && (
+        {remedy.health_concerns && remedy.health_concerns.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {remedy.symptoms.slice(0, 3).map((healthConcern) => (
+            {remedy.health_concerns.slice(0, 3).map((healthConcern) => (
               <Badge key={healthConcern} variant="outline" className="text-xs">
                 {healthConcern}
               </Badge>
             ))}
-            {remedy.symptoms.length > 3 && (
+            {remedy.health_concerns.length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{remedy.symptoms.length - 3} more
+                +{remedy.health_concerns.length - 3} more
               </Badge>
             )}
           </div>

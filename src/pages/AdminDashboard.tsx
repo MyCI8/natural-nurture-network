@@ -35,14 +35,12 @@ const AdminDashboard = () => {
         remediesCount, 
         expertsCount, 
         commentsCount, 
-        symptoms, 
         news
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact" }),
         supabase.from("remedies").select("*", { count: "exact" }),
         supabase.from("experts").select("*", { count: "exact" }),
         supabase.from("comments").select("*", { count: "exact" }),
-        supabase.rpc('get_top_symptoms', { limit_count: 5 }),
         supabase
           .from("news_articles")
           .select("*")
@@ -55,7 +53,6 @@ const AdminDashboard = () => {
         remedies: remediesCount.count || 0,
         experts: expertsCount.count || 0,
         comments: commentsCount.count || 0,
-        symptoms: symptoms.data || [],
         recentNews: news.data || [],
       };
     },
@@ -146,7 +143,7 @@ const AdminDashboard = () => {
         {/* Health Concerns Management - Priority Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <HealthConcernsCard />
-          <RecentSymptoms symptoms={stats?.symptoms || []} isLoading={isLoading} />
+          <RecentSymptoms symptoms={[]} isLoading={isLoading} />
         </div>
 
         {/* Quick Links */}

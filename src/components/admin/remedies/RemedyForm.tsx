@@ -73,7 +73,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
         preparation_method: remedy.preparation_method || "",
         dosage_instructions: remedy.dosage_instructions || "",
         precautions_side_effects: remedy.precautions_side_effects || "",
-        health_concerns: remedy.symptoms || [], // Map old symptoms to health_concerns
+        health_concerns: remedy.health_concerns || [],
         ingredients: remedy.ingredients || [],
         status: remedy.status || "draft",
       });
@@ -127,7 +127,7 @@ const RemedyForm = ({ onClose, remedy }: RemedyFormProps) => {
 
       const remedyData = {
         ...formData,
-        symptoms: formData.health_concerns, // Map health_concerns back to symptoms for compatibility
+        health_concerns: formData.health_concerns,
         image_url: uploadedImages[0]?.url || "", // Keep first image as main for compatibility
         images: uploadedImages,
         links: links,

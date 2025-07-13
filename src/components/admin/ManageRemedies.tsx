@@ -52,7 +52,7 @@ const ManageRemedies = () => {
       }
 
       if (healthConcernFilter && healthConcernFilter !== "all") {
-        query = query.contains("symptoms", [healthConcernFilter]);
+        query = query.contains("health_concerns", [healthConcernFilter]);
       }
 
       if (sortBy === "popularity") {

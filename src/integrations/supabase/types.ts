@@ -540,6 +540,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           expert_recommendations: string[] | null
+          health_concerns: string[] | null
           id: string
           image_url: string | null
           ingredients: string[] | null
@@ -550,7 +551,6 @@ export type Database = {
           shopping_list: Json | null
           status: string | null
           summary: string
-          symptoms: Database["public"]["Enums"]["symptom_type"][] | null
           thumbnail_description: string | null
           video_description: string | null
           video_url: string | null
@@ -561,6 +561,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           expert_recommendations?: string[] | null
+          health_concerns?: string[] | null
           id?: string
           image_url?: string | null
           ingredients?: string[] | null
@@ -571,7 +572,6 @@ export type Database = {
           shopping_list?: Json | null
           status?: string | null
           summary: string
-          symptoms?: Database["public"]["Enums"]["symptom_type"][] | null
           thumbnail_description?: string | null
           video_description?: string | null
           video_url?: string | null
@@ -582,6 +582,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           expert_recommendations?: string[] | null
+          health_concerns?: string[] | null
           id?: string
           image_url?: string | null
           ingredients?: string[] | null
@@ -592,7 +593,6 @@ export type Database = {
           shopping_list?: Json | null
           status?: string | null
           summary?: string
-          symptoms?: Database["public"]["Enums"]["symptom_type"][] | null
           thumbnail_description?: string | null
           video_description?: string | null
           video_url?: string | null
@@ -783,212 +783,6 @@ export type Database = {
             columns: ["remedy_id"]
             isOneToOne: false
             referencedRelation: "remedies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      symptom_clicks: {
-        Row: {
-          clicked_at: string | null
-          id: string
-          symptom: Database["public"]["Enums"]["symptom_type"]
-          user_id: string | null
-        }
-        Insert: {
-          clicked_at?: string | null
-          id?: string
-          symptom: Database["public"]["Enums"]["symptom_type"]
-          user_id?: string | null
-        }
-        Update: {
-          clicked_at?: string | null
-          id?: string
-          symptom?: Database["public"]["Enums"]["symptom_type"]
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      symptom_details: {
-        Row: {
-          brief_description: string | null
-          created_at: string | null
-          description: string | null
-          id: string
-          image_url: string | null
-          related_experts: string[] | null
-          related_ingredients: string[] | null
-          symptom: Database["public"]["Enums"]["symptom_type"]
-          thumbnail_description: string | null
-          updated_at: string | null
-          video_description: string | null
-          video_links: Json | null
-          video_url: string | null
-        }
-        Insert: {
-          brief_description?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          related_experts?: string[] | null
-          related_ingredients?: string[] | null
-          symptom: Database["public"]["Enums"]["symptom_type"]
-          thumbnail_description?: string | null
-          updated_at?: string | null
-          video_description?: string | null
-          video_links?: Json | null
-          video_url?: string | null
-        }
-        Update: {
-          brief_description?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          related_experts?: string[] | null
-          related_ingredients?: string[] | null
-          symptom?: Database["public"]["Enums"]["symptom_type"]
-          thumbnail_description?: string | null
-          updated_at?: string | null
-          video_description?: string | null
-          video_links?: Json | null
-          video_url?: string | null
-        }
-        Relationships: []
-      }
-      symptom_experts: {
-        Row: {
-          created_at: string | null
-          expert_id: string
-          symptom_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          expert_id: string
-          symptom_id: string
-        }
-        Update: {
-          created_at?: string | null
-          expert_id?: string
-          symptom_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "symptom_experts_expert_id_fkey"
-            columns: ["expert_id"]
-            isOneToOne: false
-            referencedRelation: "experts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "symptom_experts_symptom_id_fkey"
-            columns: ["symptom_id"]
-            isOneToOne: false
-            referencedRelation: "symptom_details"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      symptom_related_articles: {
-        Row: {
-          article_id: string | null
-          created_at: string | null
-          id: string
-          symptom_id: string | null
-        }
-        Insert: {
-          article_id?: string | null
-          created_at?: string | null
-          id?: string
-          symptom_id?: string | null
-        }
-        Update: {
-          article_id?: string | null
-          created_at?: string | null
-          id?: string
-          symptom_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "symptom_related_articles_article_id_fkey"
-            columns: ["article_id"]
-            isOneToOne: false
-            referencedRelation: "news_articles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "symptom_related_articles_symptom_id_fkey"
-            columns: ["symptom_id"]
-            isOneToOne: false
-            referencedRelation: "symptom_details"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      symptom_related_links: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          symptom_id: string | null
-          title: string
-          url: string
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          symptom_id?: string | null
-          title: string
-          url: string
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          symptom_id?: string | null
-          title?: string
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "symptom_related_links_symptom_id_fkey"
-            columns: ["symptom_id"]
-            isOneToOne: false
-            referencedRelation: "symptom_details"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      symptom_remedies: {
-        Row: {
-          created_at: string | null
-          remedy_id: string
-          symptom_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          remedy_id: string
-          symptom_id: string
-        }
-        Update: {
-          created_at?: string | null
-          remedy_id?: string
-          symptom_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "symptom_remedies_remedy_id_fkey"
-            columns: ["remedy_id"]
-            isOneToOne: false
-            referencedRelation: "remedies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "symptom_remedies_symptom_id_fkey"
-            columns: ["symptom_id"]
-            isOneToOne: false
-            referencedRelation: "symptom_details"
             referencedColumns: ["id"]
           },
         ]
@@ -1307,41 +1101,6 @@ export type Database = {
         Args: { title: string }
         Returns: string
       }
-      get_symptom_by_id: {
-        Args: { id_param: string }
-        Returns: {
-          brief_description: string | null
-          created_at: string | null
-          description: string | null
-          id: string
-          image_url: string | null
-          related_experts: string[] | null
-          related_ingredients: string[] | null
-          symptom: Database["public"]["Enums"]["symptom_type"]
-          thumbnail_description: string | null
-          updated_at: string | null
-          video_description: string | null
-          video_links: Json | null
-          video_url: string | null
-        }[]
-      }
-      get_symptom_related_content: {
-        Args: { p_symptom: Database["public"]["Enums"]["symptom_type"] }
-        Returns: {
-          related_remedies: Json
-          related_ingredients: Json
-          related_experts: Json
-          related_articles: Json
-          related_links: Json
-        }[]
-      }
-      get_top_symptoms: {
-        Args: { limit_count?: number }
-        Returns: {
-          symptom: Database["public"]["Enums"]["symptom_type"]
-          click_count: number
-        }[]
-      }
       increment_video_views: {
         Args: { video_id: string }
         Returns: undefined
@@ -1364,27 +1123,6 @@ export type Database = {
       }
     }
     Enums: {
-      symptom_type:
-        | "Cough"
-        | "Cold"
-        | "Sore Throat"
-        | "Cancer"
-        | "Stress"
-        | "Anxiety"
-        | "Depression"
-        | "Insomnia"
-        | "Headache"
-        | "Joint Pain"
-        | "Digestive Issues"
-        | "Fatigue"
-        | "Skin Irritation"
-        | "High Blood Pressure"
-        | "Allergies"
-        | "Weak Immunity"
-        | "Back Pain"
-        | "Poor Circulation"
-        | "Hair Loss"
-        | "Eye Strain"
       user_role: "user" | "admin" | "super_admin"
       video_status: "draft" | "published" | "archived"
     }
@@ -1514,28 +1252,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      symptom_type: [
-        "Cough",
-        "Cold",
-        "Sore Throat",
-        "Cancer",
-        "Stress",
-        "Anxiety",
-        "Depression",
-        "Insomnia",
-        "Headache",
-        "Joint Pain",
-        "Digestive Issues",
-        "Fatigue",
-        "Skin Irritation",
-        "High Blood Pressure",
-        "Allergies",
-        "Weak Immunity",
-        "Back Pain",
-        "Poor Circulation",
-        "Hair Loss",
-        "Eye Strain",
-      ],
       user_role: ["user", "admin", "super_admin"],
       video_status: ["draft", "published", "archived"],
     },

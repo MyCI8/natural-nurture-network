@@ -51,7 +51,7 @@ export const remedySchema = z.object({
   video_description: z.string().max(500, 'Video description must be less than 500 characters').optional(),
   ingredients: z.array(z.string()).optional(),
   expert_recommendations: z.array(z.string().uuid()).optional(),
-  symptoms: z.array(z.string()).optional(),
+  health_concerns: z.array(z.string()).optional(),
   status: z.enum(['draft', 'published']),
   shopping_list: z.array(z.object({
     name: z.string().min(1, 'Item name is required'),
