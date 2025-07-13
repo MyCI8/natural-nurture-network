@@ -83,7 +83,7 @@ export const LayoutProvider: React.FC<{children: React.ReactNode}> = ({ children
       setContentMaxWidth(isTablet ? 'max-w-[800px]' : 'max-w-[900px]');
       setIsFullWidth(true);
     }
-    else if (path.startsWith('/symptoms/')) {
+    else if (path.startsWith('/health-concerns/')) {
       setLayoutMode('three-column');
       setShowRightSection(!isMobile);
       setContentWidth(isMobile ? 'px-0' : 'px-2 sm:px-4');

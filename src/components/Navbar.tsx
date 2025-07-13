@@ -58,7 +58,7 @@ const Navbar = () => {
     { name: "Remedies", path: "/remedies", protected: true },
     { name: "News", path: "/news" },
     { name: "Videos", path: "/videos" },
-    { name: "Symptoms", path: "/symptoms" },
+    { name: "Health Concerns", path: "/health-concerns" },
     { name: "Experts", path: "/experts" },
     { name: "Shopping List", path: "/shopping", protected: true },
   ];

@@ -19,11 +19,11 @@ const RecentSymptoms = ({ symptoms, isLoading }: RecentSymptomsProps) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl">Top Symptoms</CardTitle>
+        <CardTitle className="text-xl">Top Health Concerns</CardTitle>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate("/admin/symptoms")}
+          onClick={() => navigate("/admin/health-concerns")}
         >
           View All
         </Button>
@@ -41,12 +41,12 @@ const RecentSymptoms = ({ symptoms, isLoading }: RecentSymptomsProps) => {
               <div
                 key={item.symptom}
                 className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
-                onClick={() => navigate(`/admin/symptoms`)}
+                onClick={() => navigate(`/admin/health-concerns`)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    navigate(`/admin/symptoms`);
+                    navigate(`/admin/health-concerns`);
                   }
                 }}
               >

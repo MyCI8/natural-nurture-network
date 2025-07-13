@@ -19,7 +19,7 @@ const getNavigationItems = (isAdmin: boolean) => [
   { name: 'Remedies', icon: Pill, path: '/remedies', label: 'Remedies' },
   { name: 'Experts', icon: Stethoscope, path: '/experts', label: 'Experts' },
   { name: 'Ingredients', icon: TestTube, path: '/ingredients', label: 'Ingredients' },
-  { name: 'Symptoms', icon: Activity, path: '/symptoms', label: 'Symptoms' },
+  { name: 'Health Concerns', icon: Activity, path: '/health-concerns', label: 'Health Concerns' },
   { name: 'News', icon: Newspaper, path: '/news', label: 'News' },
 ];
 

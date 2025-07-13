@@ -101,7 +101,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Manage Health Concerns",
-      description: "Manage health concerns and symptoms",
+      description: "Manage health concerns",
       icon: Heart,
       path: "/admin/health-concerns",
     },
