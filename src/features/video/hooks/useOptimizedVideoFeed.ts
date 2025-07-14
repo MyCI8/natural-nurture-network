@@ -64,10 +64,14 @@ const fetchVideos = async ({
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  // Add type filter if not 'general'
-  if (type !== 'general') {
-    query = query.eq('video_type', type);
+  // Add type filter with proper mapping
+  if (type === 'explore') {
+    // Explore page shows 'general' videos
+    query = query.eq('video_type', 'general');
+  } else if (type === 'news') {
+    query = query.eq('video_type', 'news');
   }
+  // For 'general' type, show all videos (no filter)
 
   const { data, error } = await query;
 
