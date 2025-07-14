@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import VideoDialog from '@/components/video/VideoDialog';
 import type { Video } from '@/types/video';
 import { useAuth } from '@/hooks/useAuth';
-import OptimizedVideoFeed from '@/features/video/components/OptimizedVideoFeed';
+import ExploreVideoFeed from '@/components/video/ExploreVideoFeed';
 import '../styles/explore.css';
 
 const Explore = () => {
@@ -16,13 +16,9 @@ const Explore = () => {
   return (
     <div className="min-h-screen bg-background pt-16">
       <main className="mx-auto max-w-[600px] h-[calc(100vh-4rem)]">
-        <OptimizedVideoFeed
+        <ExploreVideoFeed
           type="explore"
           onVideoClick={handleVideoClick}
-          itemHeight={700}
-          gap={16}
-          showControls={false}
-          autoPlay={true}
           className="h-full"
         />
       </main>
