@@ -21,6 +21,13 @@ const LayoutContent = () => {
     return path === '/' || path === '/home';
   }, [location.pathname]);
   
+  const shouldHideRightSection = useMemo(() => {
+    const path = location.pathname;
+    return path === '/' || path === '/home' || path === '/explore' || 
+           path === '/experts' || path === '/ingredients' || 
+           path === '/health-concerns';
+  }, [location.pathname]);
+  
   const shouldShowTopHeader = useMemo(() => 
     isMobile && !isInReelsMode, [isMobile, isInReelsMode]
   );
@@ -65,7 +72,7 @@ const LayoutContent = () => {
         </main>
 
         {/* Right Section */}
-        {!isMobile && showRightSection && <RightSection />}
+        {!isMobile && showRightSection && !shouldHideRightSection && <RightSection />}
         
         {/* Mobile Bottom Navigation */}
         {shouldShowBottomNav && <BottomNav />}
