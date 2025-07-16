@@ -14,12 +14,11 @@ const Explore = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background pt-16">
-      <main className="mx-auto max-w-[600px] h-[calc(100vh-4rem)]">
+    <div className="min-h-screen bg-white dark:bg-dm-background pt-16">
+      <main className="mx-auto max-w-[500px] px-4">
         <ExploreVideoFeed
           type="explore"
           onVideoClick={handleVideoClick}
-          className="h-full"
         />
       </main>
 
