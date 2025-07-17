@@ -8,7 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, ShoppingCart } from 'lucide-react';
+import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, ShoppingCart, Search, Smile } from 'lucide-react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { getCdnUrl } from '@/utils/cdnUtils';
 import { toast } from 'sonner';
@@ -258,7 +258,6 @@ const InstagramVideoFeed: React.FC<InstagramVideoFeedProps> = ({
                 <span className="instagram-username" onClick={() => video.creator?.id && navigate(`/users/${video.creator.id}`)}>
                   {video.creator?.username || video.creator?.full_name || 'Anonymous User'}
                 </span>
-                <span className="text-gray-500 ml-1">• 10h</span>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -279,37 +278,25 @@ const InstagramVideoFeed: React.FC<InstagramVideoFeedProps> = ({
               </DropdownMenu>
             </div>
 
-            {/* Media Container with Overlay Text */}
-            <div className="instagram-video-container relative" onClick={() => handleNavigateToVideo(video.id)}>
+            {/* Media Container */}
+            <div className="instagram-video-container" onClick={() => handleNavigateToVideo(video.id)}>
               {isImagePost ? (
-                <div className="relative">
-                  <img 
-                    src={video.video_url} 
-                    alt={video.title}
-                    className="w-full h-auto object-contain bg-black"
-                  />
-                  {video.title && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <h2 className="text-white text-2xl md:text-3xl font-bold text-center leading-tight max-w-[90%] drop-shadow-2xl">
-                        {video.title}
-                      </h2>
-                    </div>
-                  )}
-                </div>
+                <img 
+                  src={video.video_url} 
+                  alt={video.title}
+                  className="w-full h-full object-contain"
+                  style={{
+                    aspectRatio: 'auto',
+                    maxHeight: '600px'
+                  }}
+                />
               ) : (
-                <div className="relative">
+                <div className="w-full h-full" style={{ aspectRatio: '4/5' }}>
                   <VideoPlayer 
                     video={video} 
-                    autoPlay={false}
-                    showControls={true}
+                    autoPlay={true}
+                    showControls={false}
                   />
-                  {video.title && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <h2 className="text-white text-2xl md:text-3xl font-bold text-center leading-tight max-w-[90%] drop-shadow-2xl">
-                        {video.title}
-                      </h2>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -349,20 +336,17 @@ const InstagramVideoFeed: React.FC<InstagramVideoFeedProps> = ({
 
             {/* Likes */}
             <div className="instagram-likes">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`h-6 w-6 p-0 mr-2 ${userLikes[video.id] ? 'text-red-500' : ''}`}
+              <span 
+                className={`cursor-pointer ${userLikes[video.id] ? 'text-red-500' : ''}`}
                 onClick={() => handleLike(video.id)}
               >
-                <Heart className="h-5 w-5" fill={userLikes[video.id] ? "currentColor" : "none"} />
-              </Button>
-              <span>❤️ {video.likes_count || 0} likes</span>
+                ❤️ {video.likes_count || 0} likes
+              </span>
             </div>
 
             {/* Description */}
             <div className="instagram-description">
-              <span className="font-semibold">{video.creator?.username || 'user'}</span>
+              <span className="font-bold">{video.creator?.username || 'user'}</span>
               <span className="ml-1">{video.description}</span>
             </div>
 
@@ -395,11 +379,14 @@ const InstagramVideoFeed: React.FC<InstagramVideoFeedProps> = ({
                 </div>
               ) : (
                 <>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 mr-2">
+                    <Smile className="h-5 w-5" />
+                  </Button>
                   <Input
                     placeholder="Add a comment..."
                     value={commentInputs[video.id] || ''}
                     onChange={(e) => setCommentInputs(prev => ({ ...prev, [video.id]: e.target.value }))}
-                    className="border-none bg-transparent p-0 focus-visible:ring-0"
+                    className="border-none bg-transparent p-0 focus-visible:ring-0 flex-1"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -407,14 +394,8 @@ const InstagramVideoFeed: React.FC<InstagramVideoFeedProps> = ({
                       }
                     }}
                   />
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    disabled={!commentInputs[video.id]?.trim()}
-                    onClick={() => handleSubmitComment(video.id)}
-                    className="text-blue-500 hover:text-blue-600"
-                  >
-                    Post
+                  <Button variant="ghost" size="icon" className="h-8 w-8 ml-2">
+                    <Search className="h-5 w-5" />
                   </Button>
                 </>
               )}
