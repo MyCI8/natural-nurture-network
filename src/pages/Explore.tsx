@@ -15,7 +15,7 @@ const Explore = () => {
 
   return (
     <div className="min-h-screen bg-background dark:bg-dm-background pt-16">
-      <main className="w-full max-w-[500px] mx-auto border-0 m-0 p-0">
+      <main className="w-full max-w-[500px] mx-auto py-2 px-0 mt-0 border-0 m-0 p-0">
         <ExploreVideoFeed
           type="explore"
           onVideoClick={handleVideoClick}

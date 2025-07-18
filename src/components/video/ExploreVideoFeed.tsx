@@ -292,7 +292,7 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
   }
 
   return (
-    <div className={cn("w-full border-0 m-0 p-0 space-y-0", className)}>
+    <div className={cn("w-full border-0 m-0 p-0 space-y-2", className)}>
       {videos.map((video, index) => {
         const isPostOwner = currentUser?.id === video.creator_id;
         const videoComments = localComments[video.id] || [];
@@ -378,14 +378,11 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                 <img 
                   src={video.video_url} 
                   alt={video.title}
-                  className="w-full h-auto object-contain"
-                  style={{
-                    aspectRatio: 'auto',
-                    maxHeight: '80vh'
-                  }}
+                  className="aspect-auto max-h-[80vh] object-contain m-auto"
+                  onLoad={() => console.log('Media no crop centered', video.id)}
                 />
               ) : (
-                <div className="w-full relative" style={{ aspectRatio: '4/5' }}>
+                <div className="aspect-[4/5] object-cover">
                   <video
                     ref={(el) => {
                       if (el) videoRefs.current[video.id] = el;
@@ -396,6 +393,7 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                     loop
                     playsInline
                     preload="metadata"
+                    onLoadedData={() => console.log('Media no crop centered', video.id)}
                   />
                 </div>
               )}

@@ -6,6 +6,7 @@
   border-radius: 0 !important;
   background: white;
   overflow: hidden;
+  gap: 8px;
 }
 
 .dark .feed-item {
@@ -57,7 +58,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 6px 12px 4px;
+  padding: 8px 12px;
   gap: 16px;
   border: none;
   margin: 0;
@@ -74,7 +75,7 @@
 
 /* Description */
 .post-description {
-  padding: 0 12px 4px;
+  padding: 8px 12px;
   font-size: 14px;
   color: hsl(var(--foreground));
   border: none;
@@ -83,7 +84,7 @@
 
 /* View comments */
 .post-view-comments {
-  padding: 0 12px 4px;
+  padding: 8px 12px;
   font-size: 14px;
   color: hsl(var(--muted-foreground));
   cursor: pointer;
@@ -95,7 +96,7 @@
 .post-comment-input {
   display: flex;
   align-items: center;
-  padding: 6px 12px 12px;
+  padding: 8px 12px;
   gap: 8px;
   border: none;
   margin: 0;
@@ -144,23 +145,23 @@
   }
   
   .post-header {
-    padding: 6px 12px !important;
+    padding: 8px 12px !important;
   }
   
   .post-actions {
-    padding: 4px 12px !important;
+    padding: 8px 12px !important;
   }
   
   .post-description {
-    padding: 0 12px 4px !important;
+    padding: 8px 12px !important;
   }
   
   .post-view-comments {
-    padding: 0 12px 4px !important;
+    padding: 8px 12px !important;
   }
   
   .post-comment-input {
-    padding: 4px 12px 8px !important;
+    padding: 8px 12px !important;
   }
   
   .feed-video-container,
@@ -168,6 +169,8 @@
   .feed-video-container video {
     border-radius: 0 !important;
     border: none !important;
+    object-fit: contain !important;
+    margin: auto !important;
   }
 
   /* Ensure full width on mobile */
