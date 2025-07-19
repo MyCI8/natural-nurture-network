@@ -7,6 +7,7 @@ import BottomNav from "./layout/BottomNav";
 import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 import { useEffect, useState, useMemo } from "react";
 import { OptimizedLayoutProvider, useOptimizedLayout } from "@/contexts/OptimizedLayoutContext";
+import { cn } from "@/lib/utils";
 
 // Inner layout component that uses the layout context
 const LayoutContent = () => {
@@ -37,7 +38,7 @@ const LayoutContent = () => {
   );
   
   const mainContentClasses = useMemo(() => {
-    const baseClasses = 'flex-1 min-h-screen relative z-0 overflow-x-hidden';
+    const baseClasses = 'flex-1 min-h-screen relative z-0 overflow-auto'; // Changed overflow-x-hidden to overflow-auto
     const mobileClasses = isMobile ? 
       `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : '';
     return `${baseClasses} ${mobileClasses}`;
@@ -53,7 +54,13 @@ const LayoutContent = () => {
   return (
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">
       {/* Main container with responsive layout */}
-      <div className="w-full max-w-[1400px] mx-auto flex relative" style={{ isolation: 'isolate' }}>
+      <div 
+        className={cn(
+          "w-full max-w-[1400px] mx-auto flex relative",
+          !isMobile && "md:grid md:grid-cols-[auto_1fr_auto] md:gap-4 lg:gap-6" // Grid with flexible center for desktop
+        )} 
+        style={{ isolation: 'isolate' }}
+      >
         {/* Mobile Top Header */}
         {shouldShowTopHeader && <TopHeader />}
         

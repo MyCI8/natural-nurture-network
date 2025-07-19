@@ -63,6 +63,7 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
   const [currentProgress, setCurrentProgress] = useState(0);
   const [buffering, setBuffering] = useState(false);
   const [videoNaturalAspectRatio, setVideoNaturalAspectRatio] = useState<number | null>(null);
+  const [dynamicAspectRatio, setDynamicAspectRatio] = useState(feedAspectRatio);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const isMobile = useIsMobile();
@@ -71,6 +72,16 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
     threshold: 0.5,
     triggerOnce: false,
   });
+
+  // Dynamic aspect ratio based on screen size
+  useEffect(() => {
+    if (isMobile) {
+      setDynamicAspectRatio(4/5); // Portrait for mobile
+    } else {
+      setDynamicAspectRatio(16/9); // Widescreen for desktop
+    }
+    console.log('Dynamic aspect ratio set:', { isMobile, ratio: isMobile ? '4/5' : '16/9' });
+  }, [isMobile]);
 
   // Memoize video type checks
   const isYoutube = useMemo(() => isYoutubeVideo(video.video_url || ''), [video.video_url]);
@@ -101,9 +112,15 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
         const ratio = videoWidth / videoHeight;
         setVideoNaturalAspectRatio(ratio);
         onNaturalAspectRatioChange?.(ratio);
+        console.log('Video natural ratio:', { width: videoWidth, height: videoHeight, ratio });
+        console.log('Object-fit decision:', { 
+          objectFit: isMobile ? 'cover' : 'contain', 
+          isMobile, 
+          dimensions: { width: videoWidth, height: videoHeight } 
+        });
       }
     }
-  }, [onNaturalAspectRatioChange]);
+  }, [onNaturalAspectRatioChange, isMobile]);
 
   // Handle time updates with throttling
   const handleTimeUpdate = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
@@ -143,6 +160,7 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
   useEffect(() => {
     if (isYoutube && onNaturalAspectRatioChange) {
       onNaturalAspectRatioChange(16 / 9);
+      console.log('YouTube video natural ratio set to 16:9');
     }
   }, [isYoutube, onNaturalAspectRatioChange]);
 
@@ -212,13 +230,16 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
     return (
       <iframe
         src={`https://www.youtube.com/embed/${youtubeId}?autoplay=${autoPlay ? 1 : 0}&mute=${muted ? 1 : 0}&controls=${showControls ? 1 : 0}&playsinline=1&rel=0&showinfo=0&modestbranding=1&color=white&iv_load_policy=3`}
-        className="w-full h-full"
+        className={cn(
+          "w-full h-full",
+          !isMobile && "md:max-h-[80vh] md:max-w-[90%] md:mx-auto"
+        )}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
         title={video.title}
       />
     );
-  }, [isYoutube, youtubeId, autoPlay, muted, showControls, video.title]);
+  }, [isYoutube, youtubeId, autoPlay, muted, showControls, video.title, isMobile]);
 
   // Native video/image component
   const MediaElement = useMemo(() => {
@@ -229,13 +250,16 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
         <img 
           src={video.video_url || ''} 
           alt={video.title || ''} 
-          className="w-full h-full"
-          style={{ objectFit }}
+          className={cn(
+            "w-full h-full object-contain", // Always contain for images
+            "md:max-h-[80vh] md:max-w-[90%] md:mx-auto" // Desktop constraints
+          )}
           onLoad={(e) => {
             const img = e.currentTarget;
             if (img.naturalWidth && img.naturalHeight) {
               const ratio = img.naturalWidth / img.naturalHeight;
               onNaturalAspectRatioChange?.(ratio);
+              console.log('Image natural ratio:', { width: img.naturalWidth, height: img.naturalHeight, ratio });
             }
           }}
           onError={(e) => {
@@ -253,8 +277,12 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
         loop
         playsInline
         disableRemotePlayback={true}
-        className="w-full h-full"
-        style={{ objectFit }}
+        preload="metadata"
+        className={cn(
+          "w-full h-full",
+          isMobile ? "object-cover" : "object-contain", // Responsive object-fit
+          "md:max-h-[80vh] md:max-w-[90%] md:mx-auto" // Desktop constraints
+        )}
         onTimeUpdate={handleTimeUpdate}
         onWaiting={() => setBuffering(true)}
         onPlaying={() => setBuffering(false)}
@@ -265,7 +293,7 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
         }}
       />
     );
-  }, [isYoutube, YouTubePlayer, isImage, video.video_url, video.title, objectFit, onNaturalAspectRatioChange, handleError, muted, handleTimeUpdate, handleMetadataLoaded]);
+  }, [isYoutube, YouTubePlayer, isImage, video.video_url, video.title, onNaturalAspectRatioChange, handleError, muted, handleTimeUpdate, handleMetadataLoaded, isMobile]);
 
   const displayProgress = progressValue !== undefined ? progressValue : currentProgress;
 
@@ -294,7 +322,13 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
       ref={inViewRef}
     >
       {useAspectRatio ? (
-        <AspectRatio ratio={feedAspectRatio} className="w-full h-full bg-black overflow-hidden rounded-md">
+        <AspectRatio 
+          ratio={dynamicAspectRatio} 
+          className={cn(
+            "w-full h-full bg-black overflow-hidden rounded-md",
+            !isMobile && "md:max-h-[80vh] lg:max-w-[90%] mx-auto" // Flexible caps for desktop
+          )}
+        >
           {content}
         </AspectRatio>
       ) : (
