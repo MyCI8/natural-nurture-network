@@ -38,7 +38,7 @@ const LayoutContent = () => {
   );
   
   const mainContentClasses = useMemo(() => {
-    const baseClasses = 'flex-1 min-h-screen relative z-0 overflow-auto'; // Changed overflow-x-hidden to overflow-auto
+    const baseClasses = 'flex-1 min-h-screen relative z-0 overflow-visible'; // Change to overflow-visible for full expansion
     const mobileClasses = isMobile ? 
       `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : '';
     return `${baseClasses} ${mobileClasses}`;
@@ -56,8 +56,8 @@ const LayoutContent = () => {
       {/* Main container with responsive layout */}
       <div 
         className={cn(
-          "w-full max-w-[1400px] mx-auto flex relative",
-          !isMobile && "md:grid md:grid-cols-[auto_1fr_auto] md:gap-4 lg:gap-6" // Grid with flexible center for desktop
+          "w-full max-w-7xl mx-auto flex relative",
+          !isMobile && "md:grid md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-4 lg:gap-6" // Center layout, flexible center
         )} 
         style={{ isolation: 'isolate' }}
       >

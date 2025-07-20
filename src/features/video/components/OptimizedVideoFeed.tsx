@@ -7,6 +7,7 @@ import { Video } from '@/types/video';
 import { useOptimizedVideoFeed } from '../hooks/useOptimizedVideoFeed';
 import OptimizedVideoPlayer from './OptimizedVideoPlayer';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface OptimizedVideoFeedProps {
   type?: 'explore' | 'news' | 'general';
@@ -62,7 +63,7 @@ const VideoItem = memo<VideoItemProps>(({ index, style, data }) => {
           showControls={showControls}
           onClick={handleVideoClick}
           onMuteToggle={handleAudioStateChange}
-          className="w-full h-full rounded-lg overflow-hidden"
+          className="w-full rounded-lg overflow-hidden" // Ensure full container width
         />
         
         {/* Video metadata */}
@@ -180,8 +181,15 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
     );
   }
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className={cn("w-full h-full", className)}>
+    <div className={cn(
+      "w-full h-full",
+      "flex flex-col space-y-4",
+      !isMobile && "md:max-w-2xl lg:max-w-4xl mx-auto", // Expand width on desktop, center
+      className
+    )}>
       <AutoSizer>
         {({ height, width }) => (
           <InfiniteLoader

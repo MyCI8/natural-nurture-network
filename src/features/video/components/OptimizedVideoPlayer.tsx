@@ -73,14 +73,28 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
     triggerOnce: false,
   });
 
-  // Dynamic aspect ratio based on screen size
+  // Dynamic aspect ratio based on screen size with resize listener
   useEffect(() => {
-    if (isMobile) {
-      setDynamicAspectRatio(4/5); // Portrait for mobile
-    } else {
-      setDynamicAspectRatio(16/9); // Widescreen for desktop
-    }
-    console.log('Dynamic aspect ratio set:', { isMobile, ratio: isMobile ? '4/5' : '16/9' });
+    const updateAspectRatio = () => {
+      if (isMobile) {
+        setDynamicAspectRatio(4/5); // Portrait for mobile
+      } else {
+        const newRatio = window.innerWidth > 1024 ? 21/9 : 16/9; // Ultra-wide for large desktops
+        setDynamicAspectRatio(newRatio);
+      }
+    };
+    
+    updateAspectRatio();
+    console.log('Dynamic aspect ratio set:', { isMobile, ratio: isMobile ? '4/5' : (window.innerWidth > 1024 ? '21/9' : '16/9') });
+    
+    // Add window resize listener for dynamic adjustment
+    const handleResize = () => {
+      updateAspectRatio();
+      console.log('Resize detected, new aspect ratio:', { width: window.innerWidth, ratio: isMobile ? '4/5' : (window.innerWidth > 1024 ? '21/9' : '16/9') });
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [isMobile]);
 
   // Memoize video type checks
@@ -326,7 +340,7 @@ const OptimizedVideoPlayer = memo<OptimizedVideoPlayerProps>(({
           ratio={dynamicAspectRatio} 
           className={cn(
             "w-full h-full bg-black overflow-hidden rounded-md",
-            !isMobile && "md:max-h-[80vh] lg:max-w-[90%] mx-auto" // Flexible caps for desktop
+            !isMobile && "md:object-contain md:max-h-[80vh] lg:max-w-full mx-auto" // Full width on desktop, contain fit
           )}
         >
           {content}
