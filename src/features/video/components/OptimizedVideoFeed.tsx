@@ -1,3 +1,4 @@
+
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { VariableSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
@@ -63,7 +64,7 @@ const VideoItem = memo<VideoItemProps>(({ index, style, data }) => {
           showControls={showControls}
           onClick={handleVideoClick}
           onMuteToggle={handleAudioStateChange}
-          className="w-full rounded-lg overflow-hidden" // Ensure full container width
+          className="w-full rounded-lg overflow-hidden"
         />
         
         {/* Video metadata */}
@@ -107,12 +108,19 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
   showControls = false,
   autoPlay = true,
 }) => {
-  // All hooks must be at the top level and in consistent order
   const { currentUser } = useAuth();
   const isMobile = useIsMobile();
   const { videos, hasNextPage, fetchNextPage, isFetchingNextPage, isFetching, error } = useOptimizedVideoFeed({ 
     type,
-    limit: 15 // Slightly larger for better scrolling
+    limit: 15
+  });
+
+  console.log('OptimizedVideoFeed render:', {
+    videosCount: videos.length,
+    hasNextPage,
+    isFetching,
+    error: error?.message,
+    type
   });
 
   // Calculate item height including gap
@@ -146,7 +154,7 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
   // Handle loading state
   if (isFetching && videos.length === 0) {
     return (
-      <div className={cn("flex items-center justify-center min-h-[400px]", className)}>
+      <div className={cn("flex items-center justify-center h-full", className)}>
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="text-muted-foreground">Loading videos...</p>
@@ -158,7 +166,7 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
   // Handle error state
   if (error && videos.length === 0) {
     return (
-      <div className={cn("flex items-center justify-center min-h-[400px]", className)}>
+      <div className={cn("flex items-center justify-center h-full", className)}>
         <div className="text-center space-y-4">
           <p className="text-destructive">Failed to load videos</p>
           <p className="text-sm text-muted-foreground">
@@ -172,7 +180,7 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
   // Handle empty state
   if (!isFetching && videos.length === 0) {
     return (
-      <div className={cn("flex items-center justify-center min-h-[400px]", className)}>
+      <div className={cn("flex items-center justify-center h-full", className)}>
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">No videos found</p>
           <p className="text-sm text-muted-foreground">
@@ -184,36 +192,39 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
   }
 
   return (
-    <div className={cn(
-      "w-full h-full",
-      "flex flex-col space-y-4",
-      !isMobile && "md:max-w-2xl lg:max-w-4xl mx-auto", // Expand width on desktop, center
-      className
-    )}>
+    <div className={cn("w-full h-full", className)}>
       <AutoSizer>
-        {({ height, width }) => (
-          <InfiniteLoader
-            isItemLoaded={isItemLoaded}
-            itemCount={itemCount}
-            loadMoreItems={loadMoreItems}
-            threshold={3} // Load more when 3 items from the end
-          >
-            {({ onItemsRendered, ref }) => (
-              <List
-                ref={ref}
-                height={height}
-                width={width}
-                itemCount={itemCount}
-                itemSize={() => adjustedItemHeight}
-                itemData={itemData}
-                onItemsRendered={onItemsRendered}
-                overscanCount={2} // Render 2 extra items for smooth scrolling
-              >
-                {VideoItem}
-              </List>
-            )}
-          </InfiniteLoader>
-        )}
+        {({ height, width }) => {
+          console.log('AutoSizer dimensions:', { height, width });
+          
+          // Fallback dimensions if AutoSizer fails
+          const actualHeight = height || 600;
+          const actualWidth = width || 400;
+          
+          return (
+            <InfiniteLoader
+              isItemLoaded={isItemLoaded}
+              itemCount={itemCount}
+              loadMoreItems={loadMoreItems}
+              threshold={3}
+            >
+              {({ onItemsRendered, ref }) => (
+                <List
+                  ref={ref}
+                  height={actualHeight}
+                  width={actualWidth}
+                  itemCount={itemCount}
+                  itemSize={() => adjustedItemHeight}
+                  itemData={itemData}
+                  onItemsRendered={onItemsRendered}
+                  overscanCount={2}
+                >
+                  {VideoItem}
+                </List>
+              )}
+            </InfiniteLoader>
+          );
+        }}
       </AutoSizer>
     </div>
   );
