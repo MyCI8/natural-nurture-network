@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, memo, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Video, ProductLink } from '@/types/video';
 import { X, Heart, MessageCircle, Share2, ShoppingCart, Volume2, VolumeX } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -8,7 +8,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Progress } from '@/components/ui/progress';
 import { isImagePost } from './utils/videoPlayerUtils';
 import ProductLinkCard from './ProductLinkCard';
-import { cn } from '@/lib/utils';
 
 interface NativeVideoPlayerProps {
   video: Video;
@@ -36,7 +35,7 @@ interface NativeVideoPlayerProps {
   onNaturalAspectRatioChange?: (ratio: number) => void;
 }
 
-const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
+const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = ({
   video,
   productLinks = [],
   autoPlay = true,
@@ -79,18 +78,19 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
   // Check if this is an image post
   const isImage = isImagePost(video.video_url || '');
 
+  // Log for debugging
+  useEffect(() => {
+    console.log(`NativeVideoPlayer: video_url=${video.video_url}, isImage=${isImage}`);
+  }, [video.video_url, isImage]);
+
   // Handle video metadata load to get natural dimensions
-  const handleMetadataLoaded = (e: React.SyntheticEvent<HTMLVideoElement>) => {
-    const videoElement = e.currentTarget;
-    if (videoElement) {
-      const { videoWidth, videoHeight } = videoElement;
+  const handleMetadataLoaded = () => {
+    if (videoRef.current) {
+      const { videoWidth, videoHeight } = videoRef.current;
       if (videoWidth && videoHeight) {
         const ratio = videoWidth / videoHeight;
         setVideoNaturalAspectRatio(ratio);
         onNaturalAspectRatioChange?.(ratio);
-        console.log('Video natural ratio:', { width: videoWidth, height: videoHeight, ratio });
-        console.log('Container size:', { containerWidth: containerRef.current?.clientWidth, containerHeight: containerRef.current?.clientHeight });
-        console.log('Object-fit decision:', { objectFit: isMobile ? 'cover' : 'contain', isMobile, dimensions: { width: videoWidth, height: videoHeight } });
       }
     }
   };
@@ -168,12 +168,44 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
     onClick?.();
   };
 
-  // Dynamic object-fit based on screen size
-  const getObjectFit = () => {
-    return isMobile ? 'cover' : 'contain';
+  // Target aspect ratio is 9:16 (portrait) for full-screen mobile view
+  const targetAspectRatio = isFullscreen ? 9/16 : feedAspectRatio;
+  
+  // Calculate black padding for letterboxing/pillarboxing
+  const getPaddingStyles = () => {
+    // For images, don't apply padding, just let them display naturally
+    if (isImage) return {};
+    
+    // If we don't know the video's natural aspect ratio yet, return no padding
+    if (!videoNaturalAspectRatio) return {};
+    
+    // If video is wider than container (landscape video in portrait container)
+    if (videoNaturalAspectRatio > targetAspectRatio) {
+      // Add letterboxing (black bars on top and bottom)
+      const heightPercentage = (targetAspectRatio / videoNaturalAspectRatio) * 100;
+      const verticalPadding = (100 - heightPercentage) / 2;
+      return {
+        paddingTop: `${verticalPadding}%`,
+        paddingBottom: `${verticalPadding}%`,
+      };
+    } 
+    // If video is taller than container (portrait video wider than container)
+    else if (videoNaturalAspectRatio < targetAspectRatio) {
+      // Add pillarboxing (black bars on sides)
+      const widthPercentage = (videoNaturalAspectRatio / targetAspectRatio) * 100;
+      const horizontalPadding = (100 - widthPercentage) / 2;
+      return {
+        paddingLeft: `${horizontalPadding}%`,
+        paddingRight: `${horizontalPadding}%`,
+      };
+    }
+    
+    // If aspect ratios match, no padding needed
+    return {};
   };
 
   const renderMobileControls = () => {
+    // If hideControls is true, don't render mobile controls
     if (!isMobile || !isFullscreen || hideControls) return null;
     
     return (
@@ -211,6 +243,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
           className="text-white bg-black/60 hover:bg-black/80 rounded-full w-12 h-12 touch-manipulation"
           onClick={(e) => {
             e.stopPropagation();
+            // Handle share action
           }}
         >
           <Share2 className="h-6 w-6" />
@@ -223,7 +256,7 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
 
   return (
     <div
-      className={cn("relative", className)}
+      className={`relative ${className}`}
       onClick={handleVideoClick}
       ref={inViewRef}
     >
@@ -232,23 +265,21 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
           <div 
             ref={containerRef}
             className="w-full h-full flex items-center justify-center bg-black"
+            style={getPaddingStyles()}
           >
             {isImage ? (
               <img 
                 src={video.video_url || ''} 
                 alt={video.title || ''} 
-                className={cn(
-                  "w-full h-full object-contain", // Always contain for images
-                  "md:max-h-[80vh] md:max-w-[90%] md:mx-auto" // Desktop constraints
-                )}
+                className="w-full h-full"
+                style={{ objectFit }}
                 onLoad={(e) => {
                   console.log("Image loaded successfully:", video.video_url);
                   onInView?.(true);
-                  const img = e.currentTarget;
+                   const img = e.currentTarget;
                   if (img.naturalWidth && img.naturalHeight) {
                     const ratio = img.naturalWidth / img.naturalHeight;
                     onNaturalAspectRatioChange?.(ratio);
-                    console.log('Image natural ratio:', { width: img.naturalWidth, height: img.naturalHeight, ratio });
                   }
                 }}
                 onError={(e) => {
@@ -263,12 +294,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
                 loop
                 playsInline
                 disableRemotePlayback={true}
-                preload="metadata"
-                className={cn(
-                  "w-full h-full",
-                  isMobile ? "object-cover" : "object-contain", // Responsive object-fit
-                  "md:max-h-[80vh] md:max-w-[90%] md:mx-auto" // Desktop constraints
-                )}
+                className="w-full h-full"
+                style={{ objectFit }}
                 onTimeUpdate={handleTimeUpdate}
                 onWaiting={handleWaiting}
                 onPlaying={handlePlaying}
@@ -287,19 +314,18 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
           <div 
             ref={containerRef}
             className="w-full h-full flex items-center justify-center bg-black"
+            style={getPaddingStyles()}
           >
             {isImage ? (
               <img 
                 src={video.video_url || ''} 
                 alt={video.title || ''} 
-                className={cn(
-                  "w-full h-full object-contain", // Always contain for images
-                  "md:max-h-[80vh] md:max-w-[90%] md:mx-auto" // Desktop constraints
-                )}
+                className="w-full h-full"
+                style={{ objectFit }}
                 onLoad={(e) => {
                   console.log("Image loaded successfully:", video.video_url);
                   onInView?.(true);
-                  const img = e.currentTarget;
+                   const img = e.currentTarget;
                   if (img.naturalWidth && img.naturalHeight) {
                     const ratio = img.naturalWidth / img.naturalHeight;
                     onNaturalAspectRatioChange?.(ratio);
@@ -317,12 +343,8 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
                 loop
                 playsInline
                 disableRemotePlayback={true}
-                preload="metadata"
-                className={cn(
-                  "w-full h-full",
-                  isMobile ? "object-cover" : "object-contain", // Responsive object-fit
-                  "md:max-h-[80vh] md:max-w-[90%] md:mx-auto" // Desktop constraints
-                )}
+                className="w-full h-full"
+                style={{ objectFit }}
                 onTimeUpdate={handleTimeUpdate}
                 onWaiting={handleWaiting}
                 onPlaying={handlePlaying}
@@ -390,8 +412,6 @@ const NativeVideoPlayer: React.FC<NativeVideoPlayerProps> = memo(({
       )}
     </div>
   );
-});
-
-NativeVideoPlayer.displayName = 'NativeVideoPlayer';
+};
 
 export default NativeVideoPlayer;

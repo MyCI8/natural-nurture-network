@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +23,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { usePostManagement } from '@/hooks/usePostManagement';
-import { cn } from '@/lib/utils';
 
 const ExploreDetail = () => {
   const { id } = useParams();
@@ -61,7 +59,6 @@ const ExploreDetail = () => {
     // Check for a valid, new ratio to prevent unnecessary re-renders
     if (ratio > 0 && ratio !== naturalAspectRatio) {
       setNaturalAspectRatio(ratio);
-      console.log('Natural aspect ratio changed:', ratio);
     }
   }, [naturalAspectRatio]);
 
@@ -91,12 +88,6 @@ const ExploreDetail = () => {
         }
         
         setVideoSize({ width: Math.round(width), height: Math.round(height) });
-        console.log('Container size calculated:', { 
-          containerWidth, 
-          containerHeight, 
-          naturalAspectRatio: ar, 
-          calculatedSize: { width: Math.round(width), height: Math.round(height) } 
-        });
       }
     };
     
@@ -277,18 +268,9 @@ const ExploreDetail = () => {
           </Button>
         </div>
         
-        <div 
-          ref={containerRef} 
-          className={cn(
-            "flex-1 w-full h-full flex flex-col items-center justify-center relative overflow-auto",
-            "md:flex-row md:items-start md:justify-start md:p-6 lg:gap-8" // Row layout for desktop
-          )}
-        >
+        <div ref={containerRef} className="flex-1 w-full h-full flex flex-col items-center justify-center relative">
           <div 
-            className={cn(
-              "bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300",
-              "w-full max-w-4xl flex-1" // Flexible container
-            )}
+            className="bg-black overflow-hidden flex items-center justify-center relative transition-all duration-300"
             style={videoSize ? { width: `${videoSize.width}px`, height: `${videoSize.height}px` } : {}}
           >
             <VideoPlayer 
