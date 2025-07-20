@@ -107,7 +107,9 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
   showControls = false,
   autoPlay = true,
 }) => {
+  // All hooks must be at the top level and in consistent order
   const { currentUser } = useAuth();
+  const isMobile = useIsMobile();
   const { videos, hasNextPage, fetchNextPage, isFetchingNextPage, isFetching, error } = useOptimizedVideoFeed({ 
     type,
     limit: 15 // Slightly larger for better scrolling
@@ -180,8 +182,6 @@ const OptimizedVideoFeed = memo<OptimizedVideoFeedProps>(({
       </div>
     );
   }
-
-  const isMobile = useIsMobile();
 
   return (
     <div className={cn(
