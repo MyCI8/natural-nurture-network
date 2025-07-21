@@ -44,11 +44,31 @@ const LayoutContent = () => {
   }, [isMobile, isHomePage, isInReelsMode]);
   
   const contentContainerClasses = useMemo(() => {
-    const widthClass = isFullWidth || isHomePage ? 'w-full' : 'mx-auto';
-    const contentWidthClass = (!isFullWidth && !isHomePage) ? contentWidth : '';
-    const maxWidthClass = (!isFullWidth && !isHomePage) ? contentMaxWidth : '';
+    const isExplorePage = location.pathname === '/explore';
+    
+    // For Instagram-style pages, use full width without constraints
+    if (isFullWidth || isHomePage || isExplorePage) {
+      console.log('🎯 Layout: Full width mode for page:', { 
+        pathname: location.pathname, 
+        isFullWidth, 
+        isHomePage, 
+        isExplorePage 
+      });
+      return 'w-full h-full';
+    }
+    
+    // For other pages, apply normal layout constraints
+    const widthClass = 'mx-auto';
+    const contentWidthClass = contentWidth;
+    const maxWidthClass = contentMaxWidth;
+    
+    console.log('📐 Layout: Constrained width mode:', { 
+      pathname: location.pathname, 
+      classes: `${widthClass} ${contentWidthClass} ${maxWidthClass}` 
+    });
+    
     return `${widthClass} ${contentWidthClass} ${maxWidthClass} h-full`;
-  }, [isFullWidth, isHomePage, contentWidth, contentMaxWidth]);
+  }, [isFullWidth, isHomePage, contentWidth, contentMaxWidth, location.pathname]);
 
   return (
     <div className="min-h-screen flex bg-background dark:bg-background w-full max-w-[100vw] overflow-x-hidden">

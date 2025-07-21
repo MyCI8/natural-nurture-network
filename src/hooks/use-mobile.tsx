@@ -9,7 +9,13 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   const checkMobile = useCallback(() => {
-    return window.innerWidth < MOBILE_BREAKPOINT;
+    const isMobileResult = window.innerWidth < MOBILE_BREAKPOINT;
+    console.log('🔍 Breakpoint Detection - Mobile:', { 
+      width: window.innerWidth, 
+      isMobile: isMobileResult, 
+      breakpoint: MOBILE_BREAKPOINT 
+    });
+    return isMobileResult;
   }, []);
 
   useEffect(() => {
@@ -34,7 +40,13 @@ export function useIsTablet() {
   const [isTablet, setIsTablet] = useState<boolean>(false);
 
   const checkTablet = useCallback(() => {
-    return window.innerWidth >= MOBILE_BREAKPOINT && window.innerWidth < TABLET_BREAKPOINT;
+    const isTabletResult = window.innerWidth >= MOBILE_BREAKPOINT && window.innerWidth < TABLET_BREAKPOINT;
+    console.log('🔍 Breakpoint Detection - Tablet:', { 
+      width: window.innerWidth, 
+      isTablet: isTabletResult, 
+      range: `${MOBILE_BREAKPOINT}px - ${TABLET_BREAKPOINT}px` 
+    });
+    return isTabletResult;
   }, []);
 
   useEffect(() => {
@@ -87,13 +99,23 @@ export function useBreakpoint() {
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
+      let newBreakpoint: 'mobile' | 'tablet' | 'desktop';
+      
       if (width < MOBILE_BREAKPOINT) {
-        setBreakpoint('mobile');
+        newBreakpoint = 'mobile';
       } else if (width < TABLET_BREAKPOINT) {
-        setBreakpoint('tablet');
+        newBreakpoint = 'tablet';
       } else {
-        setBreakpoint('desktop');
+        newBreakpoint = 'desktop';
       }
+      
+      console.log('🔍 Unified Breakpoint Detection:', { 
+        width, 
+        breakpoint: newBreakpoint,
+        thresholds: { mobile: MOBILE_BREAKPOINT, tablet: TABLET_BREAKPOINT }
+      });
+      
+      setBreakpoint(newBreakpoint);
     };
 
     // Initial check

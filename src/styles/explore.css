@@ -185,40 +185,107 @@
   }
 }
 
-/* Dynamic media handling with responsive breakpoints */
-.dynamic-media-container.image-container {
-  aspect-ratio: auto;
-  max-height: 80vh;
+/* Enhanced responsive media container - Instagram-inspired */
+.dynamic-media-container {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: black;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
 }
 
+/* Desktop hover effects */
 @media (min-width: 768px) {
-  .dynamic-media-container.image-container {
-    max-height: 70vh;
+  .dynamic-media-container:hover {
+    transform: scale(1.002);
   }
 }
 
-@media (min-width: 1024px) {
-  .dynamic-media-container.image-container {
-    max-height: 75vh;
+/* Responsive media handling with breakpoint-aware sizing */
+.responsive-media-container {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  background: black;
+  border-radius: 8px;
+  margin: 0 auto;
+}
+
+/* Mobile: Full width, portrait-optimized */
+@media (max-width: 767px) {
+  .responsive-media-container {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    border-radius: 0;
   }
-}
-
-.dynamic-media-container.video-container {
-  aspect-ratio: 4/5;
-  min-height: 400px;
-}
-
-@media (min-width: 768px) {
-  .dynamic-media-container.video-container {
-    aspect-ratio: 3/4;
-    min-height: 450px;
+  
+  .responsive-media-container img {
+    max-height: 80vh;
+    object-fit: contain;
+    width: 100%;
+    height: auto;
   }
-}
-
-@media (min-width: 1024px) {
-  .dynamic-media-container.video-container {
+  
+  .responsive-media-container video {
     aspect-ratio: 4/5;
-    min-height: 500px;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* Tablet: Centered Instagram-like feed */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .responsive-media-container {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  
+  .responsive-media-container img {
+    max-height: 70vh;
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  
+  .responsive-media-container video {
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+  }
+}
+
+/* Desktop: Optimized for larger screens with Instagram aesthetics */
+@media (min-width: 1200px) {
+  .responsive-media-container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  
+  .responsive-media-container img {
+    max-height: 75vh;
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  
+  .responsive-media-container video {
+    aspect-ratio: 4/5;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+  }
+  
+  /* Desktop-specific hover states */
+  .responsive-media-container:hover img,
+  .responsive-media-container:hover video {
+    opacity: 0.95;
   }
 }
 
@@ -290,39 +357,59 @@
   }
 }
 
-/* Desktop enhancements */
+/* Desktop enhancements - Instagram-inspired responsive design */
 @media (min-width: 768px) {
-  /* Wider containers for larger screens */
-  .w-full.max-w-\[600px\] {
-    max-width: 600px !important;
+  .feed-item {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto 24px auto;
+    border: 1px solid hsl(var(--border));
+    border-radius: 12px;
   }
-}
-
-@media (min-width: 1024px) {
-  .w-full.max-w-\[700px\] {
-    max-width: 700px !important;
+  
+  .post-header {
+    padding: 16px 20px 12px 20px;
   }
-}
-
-@media (min-width: 1280px) {
-  .w-full.max-w-\[800px\] {
-    max-width: 800px !important;
+  
+  .post-actions {
+    padding: 8px 20px;
+  }
+  
+  .post-description {
+    padding: 0 20px 12px 20px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  .post-view-comments {
+    padding: 0 20px 8px 20px;
+  }
+  
+  .post-comment-input {
+    padding: 8px 20px 16px 20px;
+  }
+  
+  /* Desktop hover effects - Instagram-like */
+  .feed-item:hover {
+    border-color: hsl(var(--border) / 0.8);
+    box-shadow: 0 4px 12px hsl(var(--shadow) / 0.15);
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+  
+  /* Button hover states for desktop */
+  .post-actions button:hover {
+    background-color: hsl(var(--muted) / 0.8);
+    scale: 1.05;
+    transition: all 0.15s ease;
   }
 }
 
 /* Ultra-wide screen considerations */
 @media (min-width: 1400px) {
   .feed-item {
-    margin: 0 auto 16px !important;
-  }
-  
-  .post-header,
-  .post-actions,
-  .post-description,
-  .post-view-comments,
-  .post-comment-input {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    margin: 0 auto 20px !important;
+    max-width: 100%;
   }
 }
 
