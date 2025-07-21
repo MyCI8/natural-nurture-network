@@ -1,3 +1,4 @@
+
 /* Feed item - mobile-first Instagram style */
 .feed-item {
   width: 100%;
@@ -23,6 +24,14 @@
   margin: 0;
 }
 
+/* Responsive header adjustments */
+@media (min-width: 768px) {
+  .post-header {
+    padding: 12px 16px;
+    gap: 16px;
+  }
+}
+
 .post-username {
   font-weight: 600;
   color: hsl(var(--foreground));
@@ -32,7 +41,7 @@
   padding: 0;
 }
 
-/* Video/Media container */
+/* Responsive Media Container */
 .feed-video-container {
   position: relative;
   width: 100%;
@@ -44,6 +53,18 @@
   padding: 0;
 }
 
+.responsive-media-container {
+  transition: transform 0.2s ease-out;
+}
+
+/* Desktop hover effects */
+@media (min-width: 768px) {
+  .responsive-media-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
 .feed-video-container img,
 .feed-video-container video {
   width: 100%;
@@ -51,6 +72,12 @@
   object-fit: cover;
   border-radius: 0 !important;
   border: none;
+}
+
+/* Responsive image handling */
+.feed-video-container img {
+  object-fit: contain !important;
+  margin: auto !important;
 }
 
 /* Actions row */
@@ -64,6 +91,14 @@
   margin: 0;
 }
 
+/* Responsive actions adjustments */
+@media (min-width: 768px) {
+  .post-actions {
+    padding: 12px 16px;
+    gap: 20px;
+  }
+}
+
 .post-actions button {
   background: none;
   border: none !important;
@@ -73,6 +108,17 @@
   padding: 6px;
 }
 
+/* Enhanced button interactions for desktop */
+@media (min-width: 768px) {
+  .post-actions button {
+    padding: 8px;
+  }
+  
+  .post-actions button:hover {
+    transform: scale(1.1);
+  }
+}
+
 /* Description */
 .post-description {
   padding: 8px 12px;
@@ -80,6 +126,22 @@
   color: hsl(var(--foreground));
   border: none;
   margin: 0;
+  line-height: 1.4;
+}
+
+/* Responsive description adjustments */
+@media (min-width: 768px) {
+  .post-description {
+    padding: 8px 16px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+}
+
+@media (min-width: 1024px) {
+  .post-description {
+    font-size: 16px;
+  }
 }
 
 /* View comments */
@@ -90,6 +152,19 @@
   cursor: pointer;
   border: none;
   margin: 0;
+  transition: color 0.2s ease;
+}
+
+/* Responsive view comments adjustments */
+@media (min-width: 768px) {
+  .post-view-comments {
+    padding: 8px 16px;
+    font-size: 15px;
+  }
+  
+  .post-view-comments:hover {
+    color: hsl(var(--foreground));
+  }
 }
 
 /* Comment input */
@@ -102,15 +177,49 @@
   margin: 0;
 }
 
-/* Dynamic media handling */
+/* Responsive comment input adjustments */
+@media (min-width: 768px) {
+  .post-comment-input {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+}
+
+/* Dynamic media handling with responsive breakpoints */
 .dynamic-media-container.image-container {
   aspect-ratio: auto;
   max-height: 80vh;
 }
 
+@media (min-width: 768px) {
+  .dynamic-media-container.image-container {
+    max-height: 70vh;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dynamic-media-container.image-container {
+    max-height: 75vh;
+  }
+}
+
 .dynamic-media-container.video-container {
   aspect-ratio: 4/5;
   min-height: 400px;
+}
+
+@media (min-width: 768px) {
+  .dynamic-media-container.video-container {
+    aspect-ratio: 3/4;
+    min-height: 450px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dynamic-media-container.video-container {
+    aspect-ratio: 4/5;
+    min-height: 500px;
+  }
 }
 
 /* Video Progress */
@@ -136,7 +245,7 @@
 }
 
 /* Mobile responsive overrides */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .feed-item {
     margin: 0 !important;
     padding: 0 !important;
@@ -180,6 +289,44 @@
     margin: 0 !important;
   }
 }
+
+/* Desktop enhancements */
+@media (min-width: 768px) {
+  /* Wider containers for larger screens */
+  .w-full.max-w-\[600px\] {
+    max-width: 600px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .w-full.max-w-\[700px\] {
+    max-width: 700px !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .w-full.max-w-\[800px\] {
+    max-width: 800px !important;
+  }
+}
+
+/* Ultra-wide screen considerations */
+@media (min-width: 1400px) {
+  .feed-item {
+    margin: 0 auto 16px !important;
+  }
+  
+  .post-header,
+  .post-actions,
+  .post-description,
+  .post-view-comments,
+  .post-comment-input {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+/* ... keep existing code (legacy classes support) the same */
 
 /* Legacy classes support (can be removed after full migration) */
 .instagram-feed-item {

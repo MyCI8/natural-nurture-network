@@ -15,6 +15,12 @@ export interface MediaInfo {
   naturalHeight?: number;
 }
 
+export interface ResponsiveMediaConfig {
+  maxHeight: string;
+  aspectRatio: string;
+  breakpoint: 'mobile' | 'tablet' | 'desktop';
+}
+
 /**
  * Detect media type from URL or file
  */
@@ -60,6 +66,32 @@ export const getMediaInfo = (url: string, knownType?: MediaType): MediaInfo => {
 };
 
 /**
+ * Get responsive media configuration based on breakpoint
+ */
+export const getResponsiveMediaConfig = (
+  breakpoint: 'mobile' | 'tablet' | 'desktop',
+  mediaType: MediaType
+): ResponsiveMediaConfig => {
+  if (mediaType === 'image') {
+    return {
+      maxHeight: breakpoint === 'mobile' ? '80vh' : 
+                 breakpoint === 'tablet' ? '70vh' : '75vh',
+      aspectRatio: 'auto',
+      breakpoint
+    };
+  }
+  
+  // Video configurations
+  return {
+    maxHeight: breakpoint === 'mobile' ? '600px' : 
+               breakpoint === 'tablet' ? '650px' : '700px',
+    aspectRatio: breakpoint === 'mobile' ? '4/5' : 
+                 breakpoint === 'tablet' ? '3/4' : '4/5',
+    breakpoint
+  };
+};
+
+/**
  * Get optimal aspect ratio for media display
  */
 export const getOptimalAspectRatio = (mediaInfo: MediaInfo, container: { width: number; height: number }) => {
@@ -99,6 +131,40 @@ export const calculateContainerDimensions = (
   }
   
   return { width, height };
+};
+
+/**
+ * Calculate responsive feed dimensions based on breakpoint
+ */
+export const calculateResponsiveFeedDimensions = (
+  naturalWidth: number,
+  naturalHeight: number,
+  breakpoint: 'mobile' | 'tablet' | 'desktop'
+) => {
+  const aspectRatio = naturalWidth / naturalHeight;
+  const feedWidth = breakpoint === 'mobile' ? 400 : 
+                    breakpoint === 'tablet' ? 500 : 600;
+  
+  // For images in the feed
+  if (aspectRatio > 1) {
+    // Landscape images - responsive max height
+    const maxHeight = breakpoint === 'mobile' ? 400 : 
+                      breakpoint === 'tablet' ? 450 : 500;
+    return {
+      width: feedWidth,
+      height: Math.min(feedWidth / aspectRatio, maxHeight),
+      aspectRatio
+    };
+  } else {
+    // Portrait images - responsive max height with more space
+    const maxHeight = breakpoint === 'mobile' ? 600 : 
+                      breakpoint === 'tablet' ? 650 : 700;
+    return {
+      width: feedWidth,
+      height: Math.min(feedWidth / aspectRatio, maxHeight),
+      aspectRatio
+    };
+  }
 };
 
 /**
@@ -188,4 +254,18 @@ export const isValidMediaFile = (file: File): { isValid: boolean; type: MediaTyp
  */
 export const shouldUseDynamicSizing = (mediaInfo: MediaInfo): boolean => {
   return mediaInfo.isImage;
+};
+
+/**
+ * Get responsive breakpoint class names for Tailwind
+ */
+export const getResponsiveClasses = (
+  base: string,
+  tablet?: string,
+  desktop?: string
+): string => {
+  let classes = base;
+  if (tablet) classes += ` md:${tablet}`;
+  if (desktop) classes += ` lg:${desktop}`;
+  return classes;
 };

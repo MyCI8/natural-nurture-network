@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { Video } from '@/types/video';
 import { useOptimizedVideoFeed } from '@/features/video/hooks/useOptimizedVideoFeed';
 import { useAuth } from '@/hooks/useAuth';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useBreakpoint } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const breakpoint = useBreakpoint();
   const { videos, hasNextPage, fetchNextPage, isFetchingNextPage, isFetching, error } = useOptimizedVideoFeed({ 
     type,
     limit: 10
@@ -245,10 +246,18 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
     if (video) onVideoClick?.(video);
   }, [onVideoClick, videos]);
 
-  // Get media info for dynamic handling
-  const getMediaInfo = (url: string) => {
+  // Get responsive media info for dynamic handling
+  const getResponsiveMediaInfo = (url: string) => {
     const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-    return { isImage };
+    return { 
+      isImage,
+      // Responsive max heights based on breakpoint
+      maxHeight: breakpoint === 'mobile' ? '80vh' : 
+                 breakpoint === 'tablet' ? '70vh' : '75vh',
+      // Responsive aspect ratios for videos
+      aspectRatio: breakpoint === 'mobile' ? '4/5' : 
+                   breakpoint === 'tablet' ? '3/4' : '4/5'
+    };
   };
 
   // Handle loading state
@@ -296,13 +305,13 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
       {videos.map((video, index) => {
         const isPostOwner = currentUser?.id === video.creator_id;
         const videoComments = localComments[video.id] || [];
-        const mediaInfo = getMediaInfo(video.video_url || '');
+        const mediaInfo = getResponsiveMediaInfo(video.video_url || '');
 
         return (
           <div key={video.id} className="feed-item border-0 m-0 p-0">
             {/* Header */}
             <div className="post-header">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-8 w-8 md:h-10 md:w-10">
                 {video.creator?.avatar_url ? (
                   <AvatarImage src={getCdnUrl(video.creator.avatar_url) || ''} alt={video.creator?.full_name || 'User'} />
                 ) : (
@@ -312,7 +321,10 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                 )}
               </Avatar>
               <div className="flex-1">
-                <span className="post-username" onClick={() => video.creator?.id && navigate(`/users/${video.creator.id}`)}>
+                <span 
+                  className="post-username transition-colors hover:text-primary cursor-pointer" 
+                  onClick={() => video.creator?.id && navigate(`/users/${video.creator.id}`)}
+                >
                   {video.creator?.username || video.creator?.full_name || 'Anonymous User'}
                 </span>
               </div>
@@ -361,16 +373,16 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                   </SheetContent>
                 </Sheet>
               ) : (
-                // Desktop dropdown menu
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                // Desktop dropdown menu with hover state
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted transition-colors">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               )}
             </div>
 
-            {/* Media Container */}
+            {/* Responsive Media Container */}
             <div 
-              className="feed-video-container" 
+              className="feed-video-container responsive-media-container" 
               data-video-id={video.id}
               onClick={() => handleNavigateToVideo(video.id)}
             >
@@ -378,11 +390,18 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                 <img 
                   src={video.video_url} 
                   alt={video.title}
-                  className="aspect-auto max-h-[80vh] object-contain m-auto"
-                  onLoad={() => console.log('Media no crop centered', video.id)}
+                  className={cn(
+                    "aspect-auto object-contain m-auto transition-opacity hover:opacity-95",
+                    `max-h-[${mediaInfo.maxHeight}]`
+                  )}
+                  style={{ maxHeight: mediaInfo.maxHeight }}
+                  onLoad={() => console.log('Responsive media rendered', video.id)}
                 />
               ) : (
-                <div className="aspect-[4/5] object-cover">
+                <div 
+                  className="object-cover transition-transform hover:scale-[1.01]"
+                  style={{ aspectRatio: mediaInfo.aspectRatio }}
+                >
                   <video
                     ref={(el) => {
                       if (el) videoRefs.current[video.id] = el;
@@ -393,65 +412,71 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                     loop
                     playsInline
                     preload="metadata"
-                    onLoadedData={() => console.log('Media no crop centered', video.id)}
+                    onLoadedData={() => console.log('Responsive video rendered', video.id)}
                   />
                 </div>
               )}
             </div>
 
-            {/* Actions */}
+            {/* Actions with responsive sizing */}
             <div className="post-actions">
-              <div className="flex gap-4">
+              <div className="flex gap-3 md:gap-4">
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8 text-white hover:text-white/80"
+                  className="h-8 w-8 md:h-10 md:w-10 text-white hover:text-white/80 hover:bg-white/10 transition-colors"
                 >
-                  <MessageCircle className="h-6 w-6" />
+                  <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8"
+                  className="h-8 w-8 md:h-10 md:w-10 hover:bg-white/10 transition-colors"
                   onClick={() => handleLike(video.id)}
                 >
                   <Heart 
-                    className={cn("h-6 w-6", userLikes[video.id] ? "text-red-500 fill-red-500" : "text-white")}
+                    className={cn(
+                      "h-5 w-5 md:h-6 md:w-6", 
+                      userLikes[video.id] ? "text-red-500 fill-red-500" : "text-white"
+                    )}
                   />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8"
+                  className="h-8 w-8 md:h-10 md:w-10 hover:bg-white/10 transition-colors"
                   onClick={(e) => handleSave(video.id, e)}
                 >
                   <Bookmark 
-                    className={cn("h-6 w-6", userSaves.includes(video.id) ? "text-yellow-500 fill-yellow-500" : "text-white")}
+                    className={cn(
+                      "h-5 w-5 md:h-6 md:w-6", 
+                      userSaves.includes(video.id) ? "text-yellow-500 fill-yellow-500" : "text-white"
+                    )}
                   />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8 text-white hover:text-white/80"
+                  className="h-8 w-8 md:h-10 md:w-10 text-white hover:text-white/80 hover:bg-white/10 transition-colors"
                   onClick={() => handleShare(video)}
                 >
-                  <Share2 className="h-6 w-6" />
+                  <Share2 className="h-5 w-5 md:h-6 md:w-6" />
                 </Button>
               </div>
             </div>
 
-            {/* Description */}
-            <div className="post-description">
+            {/* Description with responsive typography */}
+            <div className="post-description text-sm md:text-base">
               <span className="font-bold">{video.creator?.username || video.creator?.full_name || 'user'}</span>
               <span className="ml-1">{video.description}</span>
             </div>
 
-            {/* View Comments */}
-            <div className="post-view-comments">
+            {/* View Comments with responsive text */}
+            <div className="post-view-comments text-sm md:text-base">
               View all {(video.comments_count || 0) + videoComments.length} comments
             </div>
 
-            {/* Comment Input */}
+            {/* Comment Input with responsive sizing */}
             <div className="post-comment-input">
               {submittingCommentFor === video.id ? (
                 <div className="flex items-center">
@@ -464,7 +489,7 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                     placeholder="Add a comment..."
                     value={commentInputs[video.id] || ''}
                     onChange={(e) => setCommentInputs(prev => ({ ...prev, [video.id]: e.target.value }))}
-                    className="border-none bg-transparent p-0 focus-visible:ring-0 flex-1"
+                    className="border-none bg-transparent p-0 focus-visible:ring-0 flex-1 text-sm md:text-base"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -472,8 +497,8 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                       }
                     }}
                   />
-                  <Button variant="ghost" size="icon" className="h-8 w-8 ml-2">
-                    <Search className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 ml-2 hover:bg-muted transition-colors">
+                    <Search className="h-4 w-4 md:h-5 md:w-5" />
                   </Button>
                 </>
               )}
