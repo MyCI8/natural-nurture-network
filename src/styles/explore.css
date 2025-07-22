@@ -1,4 +1,12 @@
 
+/* Instagram-inspired feed container */
+.feed-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem; /* space-y-4 equivalent */
+}
+
 /* Feed item - mobile-first Instagram style */
 .feed-item {
   width: 100%;
@@ -205,11 +213,19 @@
 /* Responsive media handling with breakpoint-aware sizing */
 .responsive-media-container {
   width: 100%;
+  aspect-ratio: 4/5; /* Default for posts */
   position: relative;
   overflow: hidden;
   background: black;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   margin: 0 auto;
+}
+
+.responsive-media-container img, 
+.responsive-media-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Fill without distortion */
 }
 
 /* Mobile: Full width, portrait-optimized */
@@ -359,6 +375,15 @@
 
 /* Desktop enhancements - Instagram-inspired responsive design */
 @media (min-width: 768px) {
+  .feed-container {
+    max-width: 614px;
+  }
+  
+  .responsive-media-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+  }
+  
   .feed-item {
     max-width: 100%;
     width: 100%;
@@ -402,6 +427,16 @@
     background-color: hsl(var(--muted) / 0.8);
     scale: 1.05;
     transition: all 0.15s ease;
+  }
+}
+
+@media (min-width: 1200px) {
+  .feed-container {
+    max-width: 935px;
+  }
+  
+  .responsive-media-container {
+    aspect-ratio: 1/1; /* Optional square for wider views */
   }
 }
 

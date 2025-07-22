@@ -4,62 +4,32 @@ import VideoDialog from '@/components/video/VideoDialog';
 import type { Video } from '@/types/video';
 import { useAuth } from '@/hooks/useAuth';
 import { useOptimizedLayout } from '@/contexts/OptimizedLayoutContext';
-import { useBreakpoint } from '@/hooks/use-mobile';
 import ExploreVideoFeed from '@/components/video/ExploreVideoFeed';
 import '../styles/explore.css';
 
 const Explore = () => {
   const { currentUser } = useAuth();
   const { setFullWidth } = useOptimizedLayout();
-  const breakpoint = useBreakpoint();
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
 
   // Override layout constraints for Instagram-style feed
   useEffect(() => {
-    console.log('🎯 Explore page layout override:', { breakpoint });
-    setFullWidth(true);
-    
-    return () => {
-      setFullWidth(false); // Reset on unmount
-    };
-  }, [setFullWidth, breakpoint]);
+    setFullWidth(true); // Bypass max-w constraints
+    return () => setFullWidth(false);
+  }, [setFullWidth]);
 
   const handleVideoClick = useCallback((video: Video) => {
     setSelectedVideo(video);
   }, []);
 
-  // Get responsive container classes based on breakpoint
-  const getContainerClasses = () => {
-    const baseClasses = "min-h-screen bg-background dark:bg-dm-background";
-    const mobilePadding = breakpoint === 'mobile' ? 'pt-16' : 'pt-0';
-    
-    console.log('📱 Container classes for breakpoint:', { breakpoint, classes: `${baseClasses} ${mobilePadding}` });
-    
-    return `${baseClasses} ${mobilePadding}`;
-  };
-
-  const getMainClasses = () => {
-    // Instagram-inspired responsive container widths
-    const widthClasses = {
-      mobile: 'w-full px-0',                    // Full width, no padding
-      tablet: 'w-full max-w-[600px] mx-auto px-4',  // Centered, Instagram-like width
-      desktop: 'w-full max-w-[700px] mx-auto px-6'   // Slightly wider for desktop
-    };
-    
-    const classes = `${widthClasses[breakpoint]} py-2 border-0 m-0`;
-    console.log('🎨 Main container classes:', { breakpoint, classes });
-    
-    return classes;
-  };
-
   return (
-    <div className={getContainerClasses()}>
-      <main className={getMainClasses()}>
+    <div className="flex w-full justify-center items-start min-h-screen bg-background dark:bg-dm-background">
+      <div className="w-full max-w-full sm:max-w-md md:max-w-[614px] lg:max-w-[700px] xl:max-w-[935px] mx-auto px-0 sm:px-4 md:px-0 feed-container">
         <ExploreVideoFeed
           type="explore"
           onVideoClick={handleVideoClick}
         />
-      </main>
+      </div>
 
       <VideoDialog
         video={selectedVideo}

@@ -109,11 +109,7 @@ export function useBreakpoint() {
         newBreakpoint = 'desktop';
       }
       
-      console.log('🔍 Unified Breakpoint Detection:', { 
-        width, 
-        breakpoint: newBreakpoint,
-        thresholds: { mobile: MOBILE_BREAKPOINT, tablet: TABLET_BREAKPOINT }
-      });
+      console.log(`🔍 Breakpoint Detection - ${newBreakpoint}: { width: ${width}, thresholds: { mobile: ${MOBILE_BREAKPOINT}, tablet: ${TABLET_BREAKPOINT} } }`);
       
       setBreakpoint(newBreakpoint);
     };

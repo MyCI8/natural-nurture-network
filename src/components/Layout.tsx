@@ -37,11 +37,11 @@ const LayoutContent = () => {
   );
   
   const mainContentClasses = useMemo(() => {
-    const baseClasses = 'flex-1 min-h-screen relative z-0 overflow-x-hidden';
+    const baseClasses = `flex-1 min-h-screen relative z-0 overflow-x-hidden flex justify-center items-start ${isFullWidth ? 'p-0' : 'p-4 md:p-6'}`;
     const mobileClasses = isMobile ? 
       `${isHomePage ? 'pt-0' : isInReelsMode ? 'pt-0' : 'pt-14'} pb-16` : '';
     return `${baseClasses} ${mobileClasses}`;
-  }, [isMobile, isHomePage, isInReelsMode]);
+  }, [isMobile, isHomePage, isInReelsMode, isFullWidth]);
   
   const contentContainerClasses = useMemo(() => {
     const isExplorePage = location.pathname === '/explore';
@@ -54,7 +54,7 @@ const LayoutContent = () => {
         isHomePage, 
         isExplorePage 
       });
-      return 'w-full h-full';
+      return `w-full ${isFullWidth ? 'max-w-none' : contentMaxWidth} mx-auto h-full`;
     }
     
     // For other pages, apply normal layout constraints
