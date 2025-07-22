@@ -20,18 +20,14 @@ export const SmartMediaRenderer: React.FC<SmartMediaRendererProps> = ({
   if (mediaInfo.isImage) {
     return (
       <div
-        className={cn("w-full relative overflow-hidden bg-black rounded-lg cursor-pointer", className)}
+        className={cn("responsive-media-container cursor-pointer", className)}
         onClick={onClick}
       >
         <img
           src={video.video_url}
           alt={video.description || ''}
-          className="w-full h-auto object-contain max-h-[600px]"
+          className="w-full h-full object-cover"
           draggable={false}
-          style={{
-            aspectRatio: 'auto',
-            maxHeight: '600px'
-          }}
         />
         
         {/* Image indicator */}
@@ -42,14 +38,20 @@ export const SmartMediaRenderer: React.FC<SmartMediaRendererProps> = ({
     );
   }
 
-  // For videos, maintain the existing container structure
+  // For videos, use uniform container structure
   return (
     <div
-      className={cn("w-full relative", className)}
-      style={{ aspectRatio: '4/5' }}
+      className={cn("responsive-media-container cursor-pointer", className)}
       onClick={onClick}
     >
-      {/* This will be handled by the existing VideoPlayer in the parent */}
+      <video
+        src={video.video_url}
+        className="w-full h-full object-cover"
+        muted
+        loop
+        playsInline
+        preload="metadata"
+      />
     </div>
   );
 };

@@ -73,7 +73,7 @@ const VideoPost: React.FC<VideoPostProps> = ({
 
                 {/* Video Container */}
                 <div 
-                    className="w-full relative cursor-pointer" 
+                    className="responsive-media-container cursor-pointer" 
                     onClick={() => handleVideoClick(video)}
                 >
                     <VideoPlayer

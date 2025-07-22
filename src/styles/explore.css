@@ -4,7 +4,47 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem; /* space-y-4 equivalent */
+  gap: 1rem;
+}
+
+/* Responsive media container - Instagram style */
+.responsive-media-container {
+  width: 100%;
+  aspect-ratio: 4/5;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: transparent;
+  position: relative;
+}
+
+.responsive-media-container img, 
+.responsive-media-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .feed-container {
+    max-width: 614px;
+  }
+  .responsive-media-container {
+    aspect-ratio: 1/1;
+  }
+  .responsive-media-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+  }
+}
+
+@media (min-width: 1200px) {
+  .feed-container {
+    max-width: 935px;
+  }
+  .responsive-media-container {
+    aspect-ratio: 1/1;
+  }
 }
 
 /* Feed item - mobile-first Instagram style */

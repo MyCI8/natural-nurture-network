@@ -1,10 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { isImagePost } from '@/components/video/utils/videoPlayerUtils';
 
 interface VideoMetadata {
   title: string;
   description?: string;
   thumbnail?: string;
+  aspectRatio: string;
 }
 
 export const useVideoMetadata = () => {
@@ -40,7 +42,8 @@ export const useVideoMetadata = () => {
       return {
         title: data.title || '',
         description: data.author_name || '',
-        thumbnail: data.thumbnail_url || ''
+        thumbnail: data.thumbnail_url || '',
+        aspectRatio: '4/5'
       };
     } catch (error) {
       console.error('Error fetching YouTube metadata:', error);
@@ -57,7 +60,8 @@ export const useVideoMetadata = () => {
       return {
         title: data.title || '',
         description: data.author_name || '',
-        thumbnail: data.thumbnail_url || ''
+        thumbnail: data.thumbnail_url || '',
+        aspectRatio: '4/5'
       };
     } catch (error) {
       console.error('Error fetching Vimeo metadata:', error);
@@ -80,8 +84,25 @@ export const useVideoMetadata = () => {
     }
   };
 
+  const detectAspectRatio = (src: string): Promise<string> => {
+    return new Promise((resolve) => {
+      if (isImagePost(src)) {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          const ratio = img.width / img.height;
+          resolve(ratio > 0.9 && ratio < 1.1 ? '1/1' : '4/5');
+        };
+        img.onerror = () => resolve('4/5');
+      } else {
+        resolve('4/5');
+      }
+    });
+  };
+
   return {
     fetchVideoMetadata,
+    detectAspectRatio,
     isLoading
   };
 };
