@@ -9,8 +9,9 @@ interface VideoMetadata {
   aspectRatio: string;
 }
 
-export const useVideoMetadata = () => {
+export const useVideoMetadata = (src?: string) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState('4/5');
 
   const extractYouTubeVideoId = (url: string): string | null => {
     const patterns = [
@@ -90,19 +91,34 @@ export const useVideoMetadata = () => {
         const img = new Image();
         img.src = src;
         img.onload = () => {
-          const ratio = img.width / img.height;
-          resolve(ratio > 0.9 && ratio < 1.1 ? '1/1' : '4/5');
+          setAspectRatio(`${img.width}/${img.height}`);
+          resolve(`${img.width}/${img.height}`);
         };
         img.onerror = () => resolve('4/5');
       } else {
-        resolve('4/5');
+        const video = document.createElement('video');
+        video.src = src;
+        video.onloadedmetadata = () => {
+          const ratio = `${video.videoWidth}/${video.videoHeight}`;
+          setAspectRatio(ratio);
+          resolve(ratio);
+        };
+        video.onerror = () => resolve('4/5');
       }
     });
   };
 
+  // Auto-detect aspect ratio when src is provided
+  useEffect(() => {
+    if (src) {
+      detectAspectRatio(src);
+    }
+  }, [src]);
+
   return {
     fetchVideoMetadata,
     detectAspectRatio,
+    aspectRatio,
     isLoading
   };
 };

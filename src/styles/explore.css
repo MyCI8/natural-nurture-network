@@ -7,21 +7,25 @@
   gap: 1rem;
 }
 
-/* Responsive media container - Instagram style */
+/* Responsive media container - Instagram style with theme-matched bars */
 .responsive-media-container {
   width: 100%;
-  aspect-ratio: 4/5;
-  overflow: hidden;
+  min-height: 300px;
+  max-height: 80vh;
+  overflow: visible;
   border-radius: 0.5rem;
-  background: transparent;
+  background: hsl(var(--background));
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .responsive-media-container img, 
 .responsive-media-container video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   display: block;
 }
 
@@ -30,7 +34,8 @@
     max-width: 614px;
   }
   .responsive-media-container {
-    aspect-ratio: 1/1;
+    min-height: 400px;
+    max-height: 600px;
   }
   .responsive-media-container:hover {
     transform: scale(1.02);
@@ -41,9 +46,6 @@
 @media (min-width: 1200px) {
   .feed-container {
     max-width: 935px;
-  }
-  .responsive-media-container {
-    aspect-ratio: 1/1;
   }
 }
 

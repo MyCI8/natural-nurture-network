@@ -8,6 +8,7 @@ import { Heart, MessageCircle, Bookmark, Share2 } from 'lucide-react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import Comments from '@/components/video/Comments';
 import { getCdnUrl } from '@/utils/cdnUtils';
+import { useVideoMetadata } from '@/hooks/useVideoMetadata';
 
 interface VideoPostProps {
   video: Video & { profiles: any };
@@ -36,6 +37,7 @@ const VideoPost: React.FC<VideoPostProps> = ({
 }) => {
   const navigate = useNavigate();
   const postRef = useRef<HTMLDivElement>(null);
+  const { aspectRatio } = useVideoMetadata(video.video_url);
 
   useEffect(() => {
     if (postRef.current) {
@@ -75,6 +77,7 @@ const VideoPost: React.FC<VideoPostProps> = ({
                 <div 
                     className="responsive-media-container cursor-pointer" 
                     onClick={() => handleVideoClick(video)}
+                    style={{ aspectRatio: aspectRatio || 'auto' }}
                 >
                     <VideoPlayer
                     video={video}
