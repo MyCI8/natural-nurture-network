@@ -91,8 +91,9 @@ export const useVideoMetadata = (src?: string) => {
         const img = new Image();
         img.src = src;
         img.onload = () => {
-          setAspectRatio(`${img.width}/${img.height}`);
-          resolve(`${img.width}/${img.height}`);
+          const ratio = `${img.width}/${img.height}`;
+          setAspectRatio(ratio);
+          resolve(ratio);
         };
         img.onerror = () => resolve('4/5');
       } else {

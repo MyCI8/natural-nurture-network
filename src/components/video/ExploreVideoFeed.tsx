@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Heart, MessageCircle, Bookmark, Share2, MoreHorizontal, Search } from 'lucide-react';
 import VideoPlayer from '@/components/video/VideoPlayer';
 import { SmartMediaRenderer } from '@/components/explore/SmartMediaRenderer';
+import CommentPanel from '@/components/video/CommentPanel';
 import { getCdnUrl } from '@/utils/cdnUtils';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +44,7 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
   const [submittingCommentFor, setSubmittingCommentFor] = useState<string | null>(null);
   const [videoVisibility, setVideoVisibility] = useState<Record<string, boolean>>({});
+  const [selectedVideoForComments, setSelectedVideoForComments] = useState<Video | null>(null);
 
   // Load more when scrolling near bottom
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -425,6 +427,10 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
                   variant="ghost" 
                   size="icon" 
                   className="h-8 w-8 md:h-10 md:w-10 text-white hover:text-white/80 hover:bg-white/10 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedVideoForComments(video);
+                  }}
                 >
                   <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
                 </Button>
@@ -472,7 +478,10 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
             </div>
 
             {/* View Comments with responsive text */}
-            <div className="post-view-comments text-sm md:text-base">
+            <div 
+              className="post-view-comments text-sm md:text-base cursor-pointer hover:text-foreground transition-colors"
+              onClick={() => setSelectedVideoForComments(video)}
+            >
               View all {(video.comments_count || 0) + videoComments.length} comments
             </div>
 
@@ -515,6 +524,18 @@ const ExploreVideoFeed: React.FC<ExploreVideoFeedProps> = ({
           </div>
         )}
       </div>
+
+      {/* Comment Panel */}
+      <CommentPanel
+        video={selectedVideoForComments}
+        isOpen={!!selectedVideoForComments}
+        onClose={() => setSelectedVideoForComments(null)}
+        currentUser={currentUser}
+        userLikes={userLikes}
+        userSaves={userSaves}
+        handleLike={handleLike}
+        handleSave={handleSave}
+      />
     </div>
   );
 };

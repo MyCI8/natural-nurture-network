@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { cn } from '@/lib/utils';
 import { isImagePost } from '@/components/video/utils/videoPlayerUtils';
 
 interface SmartMediaRendererProps {
